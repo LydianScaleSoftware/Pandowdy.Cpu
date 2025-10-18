@@ -1,3 +1,6 @@
 [submodule "legacy/AppleSAWS"]
 	path = legacy/AppleSAWS
 	url = https://github.com/markdavidlong/AppleSAWS.git
+[submodule "legacy/CiderPress2"]
+	path = legacy/CiderPress2
+	url = https://github.com/markdavidlong/CiderPress2.git
