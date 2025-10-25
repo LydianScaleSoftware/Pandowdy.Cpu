@@ -26,10 +26,39 @@
                      AcceptsReturn="True"
                      TextWrapping="Wrap"
                      IsReadOnly="True"
-                     FontFamily="Consolas,Courier New,monospace"
+                     FontFamily="Apple2Forever,Consolas,Courier New,monospace"
                      FontSize="12"
                      Padding="10"
-                     BorderThickness="0" />
+                     Background="Black"
+                     Foreground="Green"
+                     BorderThickness="0"
+                     LineHeight="14"
+                     SelectionBrush="DarkGreen"
+                     SelectionForegroundBrush="black" />
         </ScrollViewer>
     </DockPanel>
+    
+    <Window.Styles>
+        <Style Selector="TextBox#OutputTextBox">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="Transparent"
+                            BorderThickness="0"
+                            Padding="{TemplateBinding Padding}">
+                        <TextPresenter x:Name="PART_TextPresenter"
+                                       Text="{TemplateBinding Text}"
+                                       CaretIndex="{TemplateBinding CaretIndex}"
+                                       SelectionStart="{TemplateBinding SelectionStart}"
+                                       SelectionEnd="{TemplateBinding SelectionEnd}"
+                                       SelectionBrush="{TemplateBinding SelectionBrush}"
+                                       SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                       TextAlignment="{TemplateBinding TextAlignment}"
+                                       TextWrapping="{TemplateBinding TextWrapping}"
+                                       LineHeight="{TemplateBinding LineHeight}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </Window.Styles>
 </Window>

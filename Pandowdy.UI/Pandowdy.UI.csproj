@@ -4,13 +4,10 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <!-- Use the ICO in the repo's assets folder as the application icon -->
-    <ApplicationIcon>..\assets\ico\pandowdy.ico</ApplicationIcon>
     <!-- Path to generated .res file -->
     <PandowdyWinRes>$(IntermediateOutputPath)pandowdy.res</PandowdyWinRes>
-    <!-- Do not set Win32Resource here; it will be set by the target only if the .res was successfully generated -->
+    <!-- Do not set ApplicationIcon or ApplicationManifest here; they will be embedded in Win32Resource -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,6 +33,19 @@
       <Visible>true</Visible>
     </None>
   </ItemGroup>
+
+  <!-- Include custom fonts as resources (add this section once font files exist in assets/fonts) -->
+  <ItemGroup>
+    <None Include="..\assets\Apple2Forever\Apple2Forever.ttf">
+      <Link>Assets\Fonts\Apple2Forever.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\assets\Apple2Forever\Apple2Forever80.ttf">
+      <Link>Assets\Fonts\Apple2Forever80.ttf</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\legacy\CiderPress2\CommonUtil\CommonUtil.csproj" />
     <ProjectReference Include="..\legacy\CiderPress2\DiskArc\DiskArc.csproj" />
