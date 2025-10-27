@@ -64,6 +64,71 @@ public class DiskReadTestTemp
         return files[0].Path.LocalPath;
     }
 
+    /// <summary>
+    /// Handles reading a disk image or archive file.
+    /// Opens file picker, analyzes file, and displays contents.
+    /// </summary>
+    /// <param name="lastDiskPath">Last used directory path (will be updated with selected file's directory)</param>
+    /// <returns>Updated last disk path after file selection</returns>
+    public async Task<string> HandleDiskRead(string lastDiskPath)
+    {
+        string? fileName = await GetDiskFileToProcess(lastDiskPath);
+
+        if (fileName == null)
+        {
+            // User cancelled
+            return lastDiskPath;
+        }
+
+        // Update the last used path to the directory of the selected file
+        string? directory = Path.GetDirectoryName(fileName);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            lastDiskPath = directory;
+        }
+
+        try
+        {
+            // Open the archive file.
+            using FileStream arcFile = new(fileName, FileMode.Open,
+                FileAccess.ReadWrite);
+
+            // Analyze the file.  Disk images and file archives are handled differently.
+            string? ext = Path.GetExtension(fileName);
+            FileAnalyzer.AnalysisResult result = FileAnalyzer.Analyze(arcFile, ext,
+                mAppHook, out FileKind kind, out SectorOrder orderHint);
+            if (result != FileAnalyzer.AnalysisResult.Success)
+            {
+                mAppendText("Archive or disk image not recognized\n");
+                return lastDiskPath;
+            }
+
+            if (IsDiskImageFile(kind))
+            {
+                if (!HandleDiskImage(arcFile, kind, orderHint))
+                {
+                    mAppendText("Error: !HandleDiskImage\n");
+                    return lastDiskPath;
+                }
+            }
+            else
+            {
+                if (!HandleFileArchive(arcFile, kind))
+                {
+                    mAppendText("Error: !HandleFileArchive\n");
+                    return lastDiskPath;
+                }
+            }
+        }
+        catch (IOException ex)
+        {
+            // Probably a FileNotFoundException.
+            mAppendText("Error: " + ex.Message + "\n");
+        }
+
+        return lastDiskPath;
+    }
+
     public bool HandleDiskImage(Stream arcFile, FileKind kind, SectorOrder orderHint)
     {
         using IDiskImage? diskImage = FileAnalyzer.PrepareDiskImage(arcFile, kind, mAppHook);

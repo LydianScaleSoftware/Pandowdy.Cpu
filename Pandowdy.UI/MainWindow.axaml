@@ -2,10 +2,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:pandowdy"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="pandowdy.MainWindow"
         Title="Pandowdy"
-        Width="800" Height="600">
+        Width="800" Height="600"
+        MinWidth="600" MinHeight="480">
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
@@ -19,9 +21,27 @@
                 <MenuItem Header="_Clear Text" Click="OnClearTextClicked" InputGesture="Ctrl+L" />
                 <MenuItem Header="_Test Disk Read" Click="OnTestDiskReadClicked" InputGesture="Ctrl+T" />
             </MenuItem>
+            <MenuItem Header="_Emulator">
+                <MenuItem Header="_Start" Click="OnEmuStartClicked" InputGesture="F5" />
+                <MenuItem Header="S_top" Click="OnEmuStopClicked" InputGesture="Shift+F5" />
+                <Separator/>
+                <MenuItem Header="_Reset" Click="OnEmuResetClicked" InputGesture="Ctrl+R" />
+                <MenuItem Header="Ste_p Once" Click="OnEmuStepOnceClicked" InputGesture="F10" />
+            </MenuItem>
         </Menu>
         
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <!-- Apple2TextScreen centered and scaled to fill available space -->
+        <Grid Background="Black"
+              DockPanel.Dock="Bottom">
+            <local:Apple2TextScreen x:Name="ScreenDisplay"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+        </Grid>
+        
+        <!-- TODO: Hide this when Apple2TextScreen is ready; restore for text output later -->
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" 
+                      VerticalScrollBarVisibility="Auto"
+                      IsVisible="False">
             <TextBox x:Name="OutputTextBox"
                      AcceptsReturn="True"
                      TextWrapping="Wrap"

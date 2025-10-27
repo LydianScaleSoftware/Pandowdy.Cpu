@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- Enable unsafe code for direct bitmap pixel manipulation -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- Path to generated .res file -->
     <PandowdyWinRes>$(IntermediateOutputPath)pandowdy.res</PandowdyWinRes>
     <!-- Do not set ApplicationIcon or ApplicationManifest here; they will be embedded in Win32Resource -->
@@ -46,10 +48,23 @@
     </None>
   </ItemGroup>
 
+  <!-- Apple II Enhanced Video ROM font data -->
   <ItemGroup>
+    <EmbeddedResource Include="..\assets\a2e_enh_video.rom">
+      <Link>Resources\a2e_enh_video.rom</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\legacy\6502.NET\Emulator\Emulator.csproj" />
     <ProjectReference Include="..\legacy\CiderPress2\CommonUtil\CommonUtil.csproj" />
     <ProjectReference Include="..\legacy\CiderPress2\DiskArc\DiskArc.csproj" />
     <ProjectReference Include="..\legacy\CiderPress2\FileConv\FileConv.csproj" />
+    <ProjectReference Include="..\Pandowdy.Core\Pandowdy.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Themes\" />
   </ItemGroup>
 
   <!-- On Windows, compile the RC to a RES using rc.exe before the build collects Win32Resource. Make this tolerant when rc.exe is not available. -->

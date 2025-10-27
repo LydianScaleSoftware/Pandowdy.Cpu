@@ -6,4 +6,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\legacy\6502.NET\Emulator\Emulator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\assets\a2e_enh_c-f.rom">
+      <Link>Resources\a2e_enh_c-f.rom</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

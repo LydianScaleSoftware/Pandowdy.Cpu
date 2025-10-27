@@ -4,8 +4,11 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using CommonUtil;
 using DiskArc;
+using Pandowdy.Core;
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using static DiskArc.Defs;
 
 namespace pandowdy;
@@ -16,10 +19,72 @@ public partial class MainWindow : Window
     private DiskReadTestTemp? mDiskReadTest;
     private string mLastDiskPath = "E:\\develop\\Pandowdy";
 
+    private VA2M _machine = new VA2M();
+    private CancellationTokenSource? _emuCts;
+
     public MainWindow()
     {
         InitializeComponent();
         mDiskReadTest = new DiskReadTestTemp(mAppHook, AppendText, this);
+
+        // Wire emulator memory to the Apple2TextScreen via machine's mapped RAM
+        var screen = this.FindControl<Apple2TextScreen>("ScreenDisplay");
+        if (screen != null)
+        {
+            screen.MemorySource = _machine.RamMapped;
+        }
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        base.OnClosed(e);
+        StopEmulator();
+        _machine.Dispose();
+    }
+
+    private async void OnEmuStartClicked(object? sender, RoutedEventArgs e)
+    {
+        if (_emuCts != null) // already running
+           { return; }
+
+        _emuCts = new CancellationTokenSource();
+        try
+        {
+            // run at 1ms slices
+            await _machine.RunAsync(_emuCts.Token, 1000);
+        }
+        catch (OperationCanceledException)
+        {
+            // ignore
+        }
+        finally
+        {
+            _emuCts.Dispose();
+            _emuCts = null;
+        }
+    }
+
+    private void OnEmuStopClicked(object? sender, RoutedEventArgs e)
+    {
+        StopEmulator();
+    }
+
+    private void OnEmuResetClicked(object? sender, RoutedEventArgs e)
+    {
+        _machine.Reset();
+    }
+
+    private void OnEmuStepOnceClicked(object? sender, RoutedEventArgs e)
+    {
+        _machine.Clock();
+    }
+
+    private void StopEmulator()
+    {
+        if (_emuCts != null)
+        {
+            _emuCts.Cancel();
+        }
     }
 
     /// <summary>
@@ -89,60 +154,7 @@ public partial class MainWindow : Window
     private async void OnTestDiskReadClicked(object? sender, RoutedEventArgs e)
     {
         ClearText();
-        
-        string? fileName = await mDiskReadTest!.GetDiskFileToProcess(mLastDiskPath);
-        
-        if (fileName == null)
-        {
-            // User cancelled
-            return;
-        }
-
-        // Update the last used path to the directory of the selected file
-        string? directory = Path.GetDirectoryName(fileName);
-        if (!string.IsNullOrEmpty(directory))
-        {
-            mLastDiskPath = directory;
-        }
-        
-        try
-        {
-            // Open the archive file.
-            using FileStream arcFile = new(fileName, FileMode.Open,
-                FileAccess.ReadWrite);
-
-            // Analyze the file.  Disk images and file archives are handled differently.
-            string? ext = Path.GetExtension(fileName);
-            FileAnalyzer.AnalysisResult result = FileAnalyzer.Analyze(arcFile, ext,
-                mAppHook, out FileKind kind, out SectorOrder orderHint);
-            if (result != FileAnalyzer.AnalysisResult.Success)
-            {
-                AppendText("Archive or disk image not recognized\n");
-                return;
-            }
-
-            if (IsDiskImageFile(kind))
-            {
-                if (!mDiskReadTest!.HandleDiskImage(arcFile, kind, orderHint))
-                {
-                    AppendText("Error: !HandleDiskImage\n");
-                    return;
-                }
-            }
-            else
-            {
-                if (!mDiskReadTest!.HandleFileArchive(arcFile, kind))
-                {
-                    AppendText("Error: !HandleFileArchive\n");
-                    return;
-                }
-            }
-        }
-        catch (IOException ex)
-        {
-            // Probably a FileNotFoundException.
-            AppendText("Error: " + ex.Message + "\n");
-        }
+        mLastDiskPath = await mDiskReadTest!.HandleDiskRead(mLastDiskPath);
     }
 
     private void OnCopyClicked(object? sender, RoutedEventArgs e)
