@@ -402,25 +402,22 @@ public class Apple2TextScreen : Control
                             int finalScreenX = screenX + col * pixelCount + p;
 
                             // Bounds check
-                            if (finalScreenX >= bitmapWidth || screenY >= bitmapHeight)
+                            if (finalScreenX < bitmapWidth && screenY < bitmapHeight)
                             {
-                                continue;
+                                // Calculate pixel index in BGRA format (4 bytes per pixel)
+                                int pixelIndex = (screenY * 2 * bitmapWidth + finalScreenX) * 4;
+
+                                // Set BGRA values (B, G, R, A)
+                                byte colorValue = isPixelSet ? (byte) 255 : (byte) 0;
+                                pixelPtr[pixelIndex + 0] = colorValue;     // B
+                                pixelPtr[pixelIndex + 1] = colorValue;     // G
+                                pixelPtr[pixelIndex + 2] = colorValue;     // R
+                                pixelPtr[pixelIndex + 3] = 255;            // A (fully opaque)
+                                pixelPtr[pixelIndex + bitmapWidth * 4 + 0] = colorValue;     // B
+                                pixelPtr[pixelIndex + bitmapWidth * 4 + 1] = colorValue;     // G
+                                pixelPtr[pixelIndex + bitmapWidth * 4 + 2] = colorValue;     // R
+                                pixelPtr[pixelIndex + bitmapWidth * 4 + 3] = 255;
                             }
-
-                            // Calculate pixel index in BGRA format (4 bytes per pixel)
-                            int pixelIndex = (screenY * 2 * bitmapWidth + finalScreenX) * 4;
-
-                            // Set BGRA values (B, G, R, A)
-                            byte colorValue = isPixelSet ? (byte) 255 : (byte) 0;
-                            pixelPtr[pixelIndex + 0] = colorValue;     // B
-                            pixelPtr[pixelIndex + 1] = colorValue;     // G
-                            pixelPtr[pixelIndex + 2] = colorValue;     // R
-                            pixelPtr[pixelIndex + 3] = 255;            // A (fully opaque)
-                            pixelPtr[pixelIndex + bitmapWidth * 4 + 0] = colorValue;     // B
-                            pixelPtr[pixelIndex + bitmapWidth * 4 + 1] = colorValue;     // G
-                            pixelPtr[pixelIndex + bitmapWidth * 4 + 2] = colorValue;     // R
-                            pixelPtr[pixelIndex + bitmapWidth * 4 + 3] = 255;            // A (fully opaque)
-
                         }
                     }
                 }

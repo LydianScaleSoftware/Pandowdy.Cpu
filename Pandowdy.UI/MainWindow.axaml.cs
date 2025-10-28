@@ -24,11 +24,13 @@ public partial class MainWindow : Window
     private VA2M _machine = new();
     private CancellationTokenSource? _emuCts;
     private TextBox? _outputTextBox;
+    private MenuItem? _throttleMenuItem;
 
     public MainWindow()
     {
         InitializeComponent();
         _outputTextBox = this.FindControl<TextBox>("OutputTextBox");
+        _throttleMenuItem = this.FindControl<MenuItem>("ThrottleMenuItem");
         mDiskReadTest = new DiskReadTestTemp(mAppHook, AppendText, this);
 
         // Wire emulator memory to the Apple2TextScreen via machine's mapped RAM
@@ -38,6 +40,12 @@ public partial class MainWindow : Window
             screen.MemorySource = _machine.RamMapped;
             screen.AttachMachine(_machine);
             screen.Focus();
+        }
+
+        // Initialize throttle menu checked state to reflect machine
+        if (_throttleMenuItem != null)
+        {
+            _throttleMenuItem.IsChecked = _machine.ThrottleEnabled;
         }
     }
 
@@ -90,6 +98,15 @@ public partial class MainWindow : Window
     private void OnEmuStepOnceClicked(object? sender, RoutedEventArgs e)
     {
         _machine.Clock();
+    }
+
+    private void OnEmuThrottleClicked(object? sender, RoutedEventArgs e)
+    {
+        _machine.ThrottleEnabled = !_machine.ThrottleEnabled;
+        if (_throttleMenuItem != null)
+        {
+            _throttleMenuItem.IsChecked = _machine.ThrottleEnabled;
+        }
     }
 
     private void StopEmulator()

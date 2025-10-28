@@ -14,7 +14,9 @@ public sealed class VA2M : IDisposable
 
     public IBus Bus { get; }
     public VA2MMemory RamModel { get; }
+    public VA2MMemory AuxRamModel { get; }
     public IMappedMemory RamMapped => RamModel;
+    public IMappedMemory AuxRamMapped => AuxRamModel;
 
     private readonly CPU _cpu;
     private readonly Stopwatch _throttleSw = Stopwatch.StartNew();
@@ -23,36 +25,39 @@ public sealed class VA2M : IDisposable
     public double TargetHz { get; set; } = 1_023_000d;
     public ulong SystemClock => Bus.SystemClockCounter;
 
+    // 16KB ROM space at $C000-$FFFF
+    private VA2MMemory ROM = new (0x0000, 64 * 1024, VA2MMemory.MemAccessType.ReadWrite); 
+
     public VA2M()
     {
+        TryLoadEmbeddedRom("Pandowdy.Core.Resources.a2e_enh_c-f.rom", 0xC000);
+  
         var mem = new VA2MMemory(0,RamSize);
         RamModel = mem;
-        // IO = new VA2MIO();
-        // ROM = new VA2MMemory(16 * 1024, Va2MMemory::ReadOnly); // 16KB ROM space at $C000-$FFFF
-        Bus = new VA2MBus(mem/*,IO*/);
+        var auxmem = new VA2MMemory(0, RamSize);
+        AuxRamModel = auxmem;
+        // IO = new VA2MIO(mem, auxmem, ROM);
+        Bus = new VA2MBus(mem,auxmem,ROM/*,IO*/);
         _cpu = new CPU();
         Bus.Connect(_cpu);
 
-        TryLoadEmbeddedRomToRam("Pandowdy.Core.Resources.a2e_enh_c-f.rom", 0xC000);
-        for (var addr = 0xc400; addr < 0xc800; addr++)
-        {
-            Poke((ushort) addr, 0x00); // BRK
-        }
     }
 
-    private void TryLoadEmbeddedRomToRam(string resourceName, ushort baseAddress)
+    private void TryLoadEmbeddedRom(string resourceName, ushort baseAddress)
     {
-        try
+        // Temporarily disable exceptions for missing resources. Don't want it to silently catch.
+        //    try
         {
             var asm = Assembly.GetExecutingAssembly();
             using Stream? s = asm.GetManifestResourceStream(resourceName);
-            if (s == null)
-            { return; }
-            using var ms = new MemoryStream();
-            s.CopyTo(ms);
-            LoadRom(ms.ToArray(), baseAddress);
+            if (s != null)
+            {
+                using var ms = new MemoryStream();
+                s.CopyTo(ms);
+                LoadRom(ms.ToArray(), baseAddress);
+            }
         }
-        catch { }
+   //     catch { }
     }
 
     /// <summary>
@@ -104,6 +109,8 @@ public sealed class VA2M : IDisposable
     /// <summary>
     /// Run the emulator asynchronously with batched cycles and time slices.
     /// Batches cycles per tick (e.g.,1 ms or60 Hz) to reduce overhead of per-cycle waits.
+    /// When ThrottleEnabled is true, pacing uses the periodic timer to approximate TargetHz.
+    /// When false, runs fast batches without waiting.
     /// </summary>
     /// <param name="ct">Cancellation token to stop the runner.</param>
     /// <param name="ticksPerSecond">Time slice frequency. Use1000 for1ms slices or60 for video-frame pacing.</param>
@@ -113,29 +120,47 @@ public sealed class VA2M : IDisposable
         using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1.0 / ticksPerSecond));
         double cyclesPerTick = TargetHz / ticksPerSecond;
         double carry = 0.0;
-        // The async runner does its own pacing; disable per-cycle throttle effects
-        bool prevThrottle = ThrottleEnabled;
-        ThrottleEnabled = false;
-        try
+
+        while (!ct.IsCancellationRequested)
         {
-            while (await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
+            if (ThrottleEnabled)
             {
+                try
+                {
+                    if (!await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
+                    {
+                        break;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    break; // normal stop
+                }
                 double want = cyclesPerTick + carry;
-                int cycles = (int) want;
+                int cycles = (int)want;
                 carry = want - cycles;
                 for (int i = 0; i < cycles; i++)
                 {
                     Bus.Clock();
+                    _throttleCycles++;
                 }
             }
-        }
-        catch (OperationCanceledException)
-        {
-            // normal stop
-        }
-        finally
-        {
-            ThrottleEnabled = prevThrottle;
+            else
+            {
+                // Run unthrottled in batches, checking cancellation and yielding to UI.
+                const int FastBatch = 10_000;
+                for (int i = 0; i < FastBatch; i++)
+                {
+                    Bus.Clock();
+                    _throttleCycles++;
+                    if (ct.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                }
+                // Allow UI and other tasks to run.
+                await Task.Yield();
+            }
         }
     }
 
@@ -170,7 +195,7 @@ public sealed class VA2M : IDisposable
 
         // IMemoryModel has WriteBlock with params byte[] - allocate exact-sized array slice
         byte[] buffer = image[..toCopy].ToArray();
-        RamModel.WriteBlock(baseAddress, buffer);
+        ROM.WriteBlock(baseAddress, buffer);
     }
 
     public void Dispose()

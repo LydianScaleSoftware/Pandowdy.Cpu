@@ -27,6 +27,8 @@
                 <Separator/>
                 <MenuItem Header="_Reset" Click="OnEmuResetClicked" InputGesture="Ctrl+R" />
                 <MenuItem Header="Ste_p Once" Click="OnEmuStepOnceClicked" InputGesture="F10" />
+                <Separator/>
+                <MenuItem x:Name="ThrottleMenuItem" Header="_Throttle" ToggleType="CheckBox" Click="OnEmuThrottleClicked" />
             </MenuItem>
         </Menu>
         
