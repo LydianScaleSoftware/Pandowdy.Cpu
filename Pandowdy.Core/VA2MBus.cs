@@ -1,4 +1,7 @@
 using Emulator;
+using Microsoft.VisualBasic;
+using System;
+using System.Diagnostics;
 
 namespace Pandowdy.Core;
 
@@ -23,9 +26,9 @@ public sealed class VA2MBus(VA2MMemory ram, VA2MMemory auxram, VA2MMemory ROM) :
     public byte CpuRead(ushort address, bool readOnly = false)
     {
         if (address < 0xC000)
-        { 
+        {
             return RAM.Read(address);
-        } 
+        }
         else if (address < 0xC100)
         {
             if (address == 0xc010)
@@ -37,7 +40,7 @@ public sealed class VA2MBus(VA2MMemory ram, VA2MMemory auxram, VA2MMemory ROM) :
         }
         else
         {
-            
+
             return ROM.Read(address);
         }
 
@@ -66,8 +69,32 @@ public sealed class VA2MBus(VA2MMemory ram, VA2MMemory auxram, VA2MMemory ROM) :
         }
     }
 
+    private int lastDebugCount = 0;
+
     public void Clock()
     {
+
+        var currPc = _cpu!.PC;
+
+        if (currPc == 0xd805)
+        {
+            if (lastDebugCount == 0) // First time for this address.
+            {
+                var lineNum = CpuRead(0x75) + (CpuRead(0x76) * 256);
+                // Write curr PC to debug output window
+                if (lineNum < 0xFF00)
+                {
+                    Debug.WriteLine($"PC={currPc:X4} LineNum:{lineNum}");
+                }
+                else
+                {
+                    Debug.WriteLine($"PC={currPc:X4} LineNum: IMMEDIATE");
+                }
+            }
+            lastDebugCount++;
+            lastDebugCount %= 3;
+        }
+
         _cpu!.Clock();
         _systemClock++;
     }
