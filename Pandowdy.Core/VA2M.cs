@@ -196,6 +196,19 @@ public sealed class VA2M : IDisposable
         // IMemoryModel has WriteBlock with params byte[] - allocate exact-sized array slice
         byte[] buffer = image[..toCopy].ToArray();
         ROM.WriteBlock(baseAddress, buffer);
+
+        /*
+        const byte NormalCharOffset = 0x80;
+        ROM.Write(0xff0a, (byte) 'P' + NormalCharOffset, true);
+        ROM.Write(0xff0b, (byte) 'a' + NormalCharOffset, true);
+        ROM.Write(0xff0c, (byte) 'n' + NormalCharOffset, true);
+        ROM.Write(0xff0d, (byte) 'd' + NormalCharOffset, true);
+        ROM.Write(0xff0e, (byte) 'o' + NormalCharOffset, true);
+        ROM.Write(0xff0f, (byte) 'w' + NormalCharOffset, true);
+        ROM.Write(0xff10, (byte) 'd' + NormalCharOffset, true);
+        ROM.Write(0xff11, (byte) 'y' + NormalCharOffset, true);
+        ROM.Write(0xff12, (byte) '!' + NormalCharOffset, true);
+        */
     }
 
     public void Dispose()
