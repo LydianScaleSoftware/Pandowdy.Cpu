@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -25,27 +26,46 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _emuCts;
     private TextBox? _outputTextBox;
     private MenuItem? _throttleMenuItem;
+    private MenuItem? _capsLockMenuItem;
+    private Menu? _mainMenu;
+    private Apple2TextScreen? _screen;
+    private bool _menuPointerActive; // true while pointer is over the menu bar
+
+    private bool _capsLockEnabled = true; // default ON
+    public bool IsCapsLockEnabledForInput => _capsLockEnabled; // expose to Apple2TextScreen
 
     public MainWindow()
     {
         InitializeComponent();
         _outputTextBox = this.FindControl<TextBox>("OutputTextBox");
         _throttleMenuItem = this.FindControl<MenuItem>("ThrottleMenuItem");
+        _capsLockMenuItem = this.FindControl<MenuItem>("CapsLockMenuItem");
+        _mainMenu = this.FindControl<Menu>("MainMenu");
         mDiskReadTest = new DiskReadTestTemp(mAppHook, AppendText, this);
 
-        // Wire emulator memory to the Apple2TextScreen via machine's mapped RAM
-        var screen = this.FindControl<Apple2TextScreen>("ScreenDisplay");
-        if (screen != null)
+        if (_mainMenu != null)
         {
-            screen.MemorySource = _machine.RamMapped;
-            screen.AttachMachine(_machine);
-            screen.Focus();
+            _mainMenu.PointerEntered += (_, __) => _menuPointerActive = true;
+            _mainMenu.PointerExited += (_, __) => _menuPointerActive = false;
         }
 
-        // Initialize throttle menu checked state to reflect machine
+        // Wire emulator memory to the Apple2TextScreen via machine's mapped RAM
+        _screen = this.FindControl<Apple2TextScreen>("ScreenDisplay");
+        if (_screen != null)
+        {
+            _screen.MemorySource = _machine.RamMapped;
+            _screen.AttachMachine(_machine);
+            _screen.Focus();
+        }
+
+        // Initialize menu states
         if (_throttleMenuItem != null)
         {
             _throttleMenuItem.IsChecked = _machine.ThrottleEnabled;
+        }
+        if (_capsLockMenuItem != null)
+        {
+            _capsLockMenuItem.IsChecked = _capsLockEnabled;
         }
     }
 
@@ -54,11 +74,60 @@ public partial class MainWindow : Window
         AvaloniaXamlLoader.Load(this);
     }
 
-    protected override void OnClosed(EventArgs e)
+    protected override void OnOpened(EventArgs e)
     {
-        base.OnClosed(e);
-        StopEmulator();
-        _machine.Dispose();
+        base.OnOpened(e);
+        // Ensure the screen has focus when window opens
+        _screen?.Focus();
+        // Auto-start the emulator after the window is shown
+        Dispatcher.UIThread.Post(() => OnEmuStartClicked(this, new RoutedEventArgs()));
+    }
+
+    protected override void OnGotFocus(GotFocusEventArgs e)
+    {
+        base.OnGotFocus(e);
+        // Keep focus on screen unless actively interacting with menu via pointer
+        if (!_menuPointerActive)
+        {
+            _screen?.Focus();
+        }
+    }
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+        // Clicking anywhere should give focus back to the screen (unless clicking on menu)
+        if (!_menuPointerActive)
+        {
+            _screen?.Focus();
+        }
+    }
+
+    private bool IsAnyMenuOpen()
+    {
+        if (_mainMenu == null)
+            return false;
+        foreach (var item in _mainMenu.Items)
+        {
+            if (item is MenuItem mi && mi.IsSubMenuOpen)
+                return true;
+        }
+        return false;
+    }
+
+    private void CloseAllMenus()
+    {
+        if (_mainMenu == null)
+            return;
+        foreach (var item in _mainMenu.Items)
+        {
+            if (item is MenuItem mi)
+            {
+                mi.IsSubMenuOpen = false;
+            }
+        }
+        _menuPointerActive = false;
+        _screen?.Focus();
     }
 
     private async void OnEmuStartClicked(object? sender, RoutedEventArgs e)
@@ -71,8 +140,8 @@ public partial class MainWindow : Window
         _emuCts = new CancellationTokenSource();
         try
         {
-            // run at 1ms slices
-            await _machine.RunAsync(_emuCts.Token, 1000);
+            // run at1ms slices
+            await _machine.RunAsync(_emuCts.Token,1000);
         }
         catch (OperationCanceledException)
         {
@@ -109,9 +178,162 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OnEmuCapsLockClicked(object? sender, RoutedEventArgs e)
+    {
+        _capsLockEnabled = !_capsLockEnabled;
+        if (_capsLockMenuItem != null)
+        {
+            _capsLockMenuItem.IsChecked = _capsLockEnabled;
+        }
+    }
+
     private void StopEmulator()
     {
         _emuCts?.Cancel();
+    }
+
+    // Window-level key handling for accelerators when child controls have focus.
+    // If menu is not active or the key isn't handled by menu, forward to the screen.
+    private void OnWindowKeyDown(object? sender, KeyEventArgs e)
+    {
+        // When pointer is over menu, let accelerators fire; otherwise, keep screen focused
+        if (_menuPointerActive || IsAnyMenuOpen())
+        {
+            // Let menu handle accelerators first
+            if (HandleAccelerator(e))
+            {
+                e.Handled = true;
+                return;
+            }
+            // Not handled by menu: close menu and process in main control
+            if (IsAnyMenuOpen())
+            {
+                CloseAllMenus();
+            }
+            if (!TryInjectSpecialKey(e))
+            {
+                // Printable characters will come via TextInput
+            }
+            return;
+        }
+
+        // Menu not active: handle accelerators, else keep focus on screen
+        if (HandleAccelerator(e))
+        {
+            e.Handled = true;
+            return;
+        }
+        _screen?.Focus();
+    }
+
+    // Handle window-level TextInput when menu pointer is active to forward printable characters to the machine
+    protected override void OnTextInput(TextInputEventArgs e)
+    {
+        base.OnTextInput(e);
+        if ((_menuPointerActive || IsAnyMenuOpen()) && !string.IsNullOrEmpty(e.Text))
+        {
+            if (IsAnyMenuOpen())
+            {
+                CloseAllMenus();
+            }
+            InjectTextToMachine(e.Text);
+            e.Handled = true;
+        }
+    }
+
+    private bool HandleAccelerator(KeyEventArgs e)
+    {
+        // ALT accelerators
+        if ((e.KeyModifiers & KeyModifiers.Alt) !=0)
+        {
+            switch (e.Key)
+            {
+                case Key.A:
+                    OnSelectAllClicked(this, new RoutedEventArgs());
+                    return true;
+                case Key.L:
+                    OnClearTextClicked(this, new RoutedEventArgs());
+                    return true;
+                case Key.F4:
+                    OnQuitClicked(this, new RoutedEventArgs());
+                    return true;
+            }
+        }
+        // Function keys
+        switch (e.Key)
+        {
+            case Key.F5:
+                OnEmuStartClicked(this, new RoutedEventArgs());
+                return true;
+            case Key.F6:
+                OnEmuCapsLockClicked(this, new RoutedEventArgs());
+                return true;
+            case Key.F7:
+                OnEmuThrottleClicked(this, new RoutedEventArgs());
+                return true;
+            case Key.F10:
+                OnEmuStepOnceClicked(this, new RoutedEventArgs());
+                return true;
+            case Key.F12:
+                OnEmuResetClicked(this, new RoutedEventArgs());
+                return true;
+        }
+        // Shift+F5
+        if (e.Key == Key.F5 && (e.KeyModifiers & KeyModifiers.Shift) !=0)
+        {
+            OnEmuStopClicked(this, new RoutedEventArgs());
+            return true;
+        }
+        return false;
+    }
+
+    // Map special (non-printable) keys to Apple II equivalents and inject.
+    private bool TryInjectSpecialKey(KeyEventArgs e)
+    {
+        if ((e.KeyModifiers & KeyModifiers.Control) !=0 && e.Key >= Key.A && e.Key <= Key.Z)
+        {
+            byte ctrl = (byte)(e.Key - Key.A +1);
+            _machine.InjectKey((byte)(ctrl |0x80));
+            e.Handled = true;
+            return true;
+        }
+        byte? ascii = e.Key switch
+        {
+            Key.Up => (byte)0x0B, // ^K
+            Key.Down => (byte)0x0A, // LF
+            Key.Left => (byte)0x08, // BS
+            Key.Right => (byte)0x15, // ^U
+            Key.Delete => (byte)0x7F, // DEL
+            Key.Enter => (byte) '\r',
+            Key.Tab => (byte) '\t',
+            Key.Escape => (byte)0x1B,
+            Key.Back => ((e.KeyModifiers & KeyModifiers.Shift) !=0) ? (byte)0x7F : (byte)0x08,
+            _ => null
+        };
+        if (ascii.HasValue)
+        {
+            _machine.InjectKey((byte) (ascii.Value |0x80));
+            e.Handled = true;
+            return true;
+        }
+        return false;
+    }
+
+    private void InjectTextToMachine(string text)
+    {
+        foreach (char ch in text)
+        {
+            char c = ch;
+            if (c == '\n') c = '\r';
+            if (_capsLockEnabled && c >= 'a' && c <= 'z')
+            {
+                c = (char)(c -32);
+            }
+            if (c <=0x7F)
+            {
+                _machine.InjectKey((byte)(((byte)c) |0x80));
+            }
+        }
     }
 
     /// <summary>
@@ -126,7 +348,7 @@ public partial class MainWindow : Window
             {
                 _outputTextBox.Text += text;
                 // Auto-scroll to the end
-                _outputTextBox.CaretIndex = _outputTextBox.Text?.Length ?? 0;
+                _outputTextBox.CaretIndex = _outputTextBox.Text?.Length ??0;
             }
         });
     }
@@ -143,7 +365,7 @@ public partial class MainWindow : Window
             {
                 _outputTextBox.Text = text;
                 // Auto-scroll to the end
-                _outputTextBox.CaretIndex = _outputTextBox.Text?.Length ?? 0;
+                _outputTextBox.CaretIndex = _outputTextBox.Text?.Length ??0;
             }
         });
     }

@@ -1,86 +1,88 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Pandowdy.UI"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="Pandowdy.UI.MainWindow"
-        Title="Pandowdy"
-        Width="800" Height="600"
-        MinWidth="600" MinHeight="480">
-    <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="_File">
-                <MenuItem Header="_Quit" Click="OnQuitClicked" InputGesture="Alt+F4" />
-            </MenuItem>
-            <MenuItem Header="_Edit">
-                <MenuItem Header="Select _All" Click="OnSelectAllClicked" InputGesture="Ctrl+A" />
-                <MenuItem Header="_Copy" Click="OnCopyClicked" InputGesture="Ctrl+C" />
-            </MenuItem>
-            <MenuItem Header="_View">
-                <MenuItem Header="_Clear Text" Click="OnClearTextClicked" InputGesture="Ctrl+L" />
-                <MenuItem Header="_Test Disk Read" Click="OnTestDiskReadClicked" InputGesture="Ctrl+T" />
-            </MenuItem>
-            <MenuItem Header="_Emulator">
-                <MenuItem Header="_Start" Click="OnEmuStartClicked" InputGesture="F5" />
-                <MenuItem Header="S_top" Click="OnEmuStopClicked" InputGesture="Shift+F5" />
-                <Separator/>
-                <MenuItem Header="_Reset" Click="OnEmuResetClicked" InputGesture="Ctrl+R" />
-                <MenuItem Header="Ste_p Once" Click="OnEmuStepOnceClicked" InputGesture="F10" />
-                <Separator/>
-                <MenuItem x:Name="ThrottleMenuItem" Header="_Throttle" ToggleType="CheckBox" Click="OnEmuThrottleClicked" />
-            </MenuItem>
-        </Menu>
-        
-        <!-- Apple2TextScreen centered and scaled to fill available space -->
-        <Grid Background="Black"
-              DockPanel.Dock="Bottom">
-            <local:Apple2TextScreen x:Name="ScreenDisplay"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center" />
-        </Grid>
-        
-        <!-- TODO: Hide this when Apple2TextScreen is ready; restore for text output later -->
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" 
-                      VerticalScrollBarVisibility="Auto"
-                      IsVisible="False">
-            <TextBox x:Name="OutputTextBox"
-                     AcceptsReturn="True"
-                     TextWrapping="Wrap"
-                     IsReadOnly="True"
-                     FontFamily="Apple2Forever,Consolas,Courier New,monospace"
-                     FontSize="12"
-                     Padding="10"
-                     Background="Black"
-                     Foreground="Green"
-                     BorderThickness="0"
-                     LineHeight="14"
-                     SelectionBrush="DarkGreen"
-                     SelectionForegroundBrush="black" />
-        </ScrollViewer>
-    </DockPanel>
-    
-    <Window.Styles>
-        <Style Selector="TextBox#OutputTextBox">
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Border Background="{TemplateBinding Background}"
-                            BorderBrush="Transparent"
-                            BorderThickness="0"
-                            Padding="{TemplateBinding Padding}">
-                        <TextPresenter x:Name="PART_TextPresenter"
-                                       Text="{TemplateBinding Text}"
-                                       CaretIndex="{TemplateBinding CaretIndex}"
-                                       SelectionStart="{TemplateBinding SelectionStart}"
-                                       SelectionEnd="{TemplateBinding SelectionEnd}"
-                                       SelectionBrush="{TemplateBinding SelectionBrush}"
-                                       SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
-                                       TextAlignment="{TemplateBinding TextAlignment}"
-                                       TextWrapping="{TemplateBinding TextWrapping}"
-                                       LineHeight="{TemplateBinding LineHeight}"/>
-                    </Border>
-                </ControlTemplate>
-            </Setter>
-        </Style>
-    </Window.Styles>
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:local="clr-namespace:Pandowdy.UI"
+		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		x:Class="Pandowdy.UI.MainWindow"
+		Title="Pandowdy"
+		Width="800" Height="600"
+		MinWidth="600" MinHeight="480"
+		KeyDown="OnWindowKeyDown">
+	<DockPanel>
+		<Menu x:Name="MainMenu" DockPanel.Dock="Top">
+			<MenuItem Header="_File">
+				<MenuItem Header="_Quit" Click="OnQuitClicked" InputGesture="Alt+F4" />
+			</MenuItem>
+			<MenuItem Header="_Edit">
+				<MenuItem Header="Select _All" Click="OnSelectAllClicked" InputGesture="Alt+A" />
+				<MenuItem Header="_Copy" Click="OnCopyClicked" InputGesture="Alt+Ctrl+C" />
+			</MenuItem>
+			<MenuItem Header="_View">
+				<MenuItem Header="_Clear Text" Click="OnClearTextClicked" InputGesture="Alt+L" />
+				<MenuItem Header="_Test Disk Read" Click="OnTestDiskReadClicked" InputGesture="Ctrl+T" />
+			</MenuItem>
+			<MenuItem Header="_Emulator">
+				<MenuItem Header="_Start" Click="OnEmuStartClicked" InputGesture="F5" />
+				<MenuItem Header="S_top" Click="OnEmuStopClicked" InputGesture="Shift+F5" />
+				<Separator/>
+				<MenuItem Header="_Reset" Click="OnEmuResetClicked" InputGesture="F12" />
+				<MenuItem Header="Ste_p Once" Click="OnEmuStepOnceClicked" InputGesture="F10" />
+				<Separator/>
+				<MenuItem x:Name="ThrottleMenuItem" Header="_Throttle" ToggleType="CheckBox" Click="OnEmuThrottleClicked" InputGesture="F7" />
+				<MenuItem x:Name="CapsLockMenuItem" Header="Caps _Lock" ToggleType="CheckBox" Click="OnEmuCapsLockClicked" InputGesture="F6" />
+			</MenuItem>
+		</Menu>
+
+		<!-- Apple2TextScreen centered and scaled to fill available space -->
+		<Grid Background="Black"
+			  DockPanel.Dock="Bottom">
+			<local:Apple2TextScreen x:Name="ScreenDisplay"
+									HorizontalAlignment="Center"
+									VerticalAlignment="Center" />
+		</Grid>
+
+		<!-- TODO: Hide this when Apple2TextScreen is ready; restore for text output later -->
+		<ScrollViewer HorizontalScrollBarVisibility="Auto"
+					  VerticalScrollBarVisibility="Auto"
+					  IsVisible="False">
+			<TextBox x:Name="OutputTextBox"
+					 AcceptsReturn="True"
+					 TextWrapping="Wrap"
+					 IsReadOnly="True"
+					 FontFamily="Apple2Forever,Consolas,Courier New,monospace"
+					 FontSize="12"
+					 Padding="10"
+					 Background="Black"
+					 Foreground="Green"
+					 BorderThickness="0"
+					 LineHeight="14"
+					 SelectionBrush="DarkGreen"
+					 SelectionForegroundBrush="black" />
+		</ScrollViewer>
+	</DockPanel>
+
+	<Window.Styles>
+		<Style Selector="TextBox#OutputTextBox">
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border Background="{TemplateBinding Background}"
+							BorderBrush="Transparent"
+							BorderThickness="0"
+							Padding="{TemplateBinding Padding}">
+						<TextPresenter x:Name="PART_TextPresenter"
+									   Text="{TemplateBinding Text}"
+									   CaretIndex="{TemplateBinding CaretIndex}"
+									   SelectionStart="{TemplateBinding SelectionStart}"
+									   SelectionEnd="{TemplateBinding SelectionEnd}"
+									   SelectionBrush="{TemplateBinding SelectionBrush}"
+									   SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+									   TextAlignment="{TemplateBinding TextAlignment}"
+									   TextWrapping="{TemplateBinding TextWrapping}"
+									   LineHeight="{TemplateBinding LineHeight}"/>
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+	</Window.Styles>
 </Window>
