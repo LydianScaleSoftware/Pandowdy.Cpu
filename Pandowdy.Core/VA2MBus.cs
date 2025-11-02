@@ -69,32 +69,40 @@ public sealed class VA2MBus(VA2MMemory ram, VA2MMemory auxram, VA2MMemory ROM) :
         }
     }
 
-    private int lastDebugCount = 0;
+    private int lastPc = 0;
 
     public void Clock()
     {
 
         var currPc = _cpu!.PC;
 
-        if (currPc == 0xd805)
+        if (lastPc != currPc)
         {
-            if (lastDebugCount == 0) // First time for this address.
+            if (currPc == 0xd805)
             {
+
                 var lineNum = CpuRead(0x75) + (CpuRead(0x76) * 256);
                 // Write curr PC to debug output window
                 if (lineNum < 0xFF00)
                 {
-                    Debug.WriteLine($"PC={currPc:X4} LineNum:{lineNum}");
+                    Debug.WriteLine($"LineNum: {lineNum}");
                 }
                 else
                 {
-                    Debug.WriteLine($"PC={currPc:X4} LineNum: IMMEDIATE");
+                    Debug.WriteLine($"LineNum: IMMEDIATE");
                 }
-            }
-            lastDebugCount++;
-            lastDebugCount %= 3;
-        }
 
+            }
+            else if (currPc == 0xd766)
+            {
+                Debug.WriteLine("   FOR");
+            }
+            else if (currPc == 0xDCF9)
+            {
+                Debug.WriteLine("   NEXT");
+            }
+        }
+        lastPc = currPc;
         _cpu!.Clock();
         _systemClock++;
     }
