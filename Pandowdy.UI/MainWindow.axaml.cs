@@ -79,8 +79,29 @@ public partial class MainWindow : Window
         base.OnOpened(e);
         // Ensure the screen has focus when window opens
         _screen?.Focus();
-        // Auto-start the emulator after the window is shown
-        Dispatcher.UIThread.Post(() => OnEmuStartClicked(this, new RoutedEventArgs()));
+        // subscribe to vblank
+        if (_screen != null && _machine?.Bus is VA2MBus bus)
+        {
+            _screen.SubscribeToVBlank(bus);
+        }
+        else
+        {
+            throw new System.Exception("Failed to subscribe to VBlank: screen or bus is null.");
+        }
+            // Auto-start the emulator after the window is shown
+            Dispatcher.UIThread.Post(() => OnEmuStartClicked(this, new RoutedEventArgs()));
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        // unsubscribe
+        if (_screen != null && _machine?.Bus is VA2MBus bus)
+        {
+            _screen.UnsubscribeFromVBlank(bus);
+        }
+        base.OnClosed(e);
+        StopEmulator();
+        _machine.Dispose();
     }
 
     protected override void OnGotFocus(GotFocusEventArgs e)
@@ -141,7 +162,7 @@ public partial class MainWindow : Window
         try
         {
             // run at1ms slices
-            await _machine.RunAsync(_emuCts.Token,1000);
+            await _machine.RunAsync(_emuCts.Token,60 /*1000*/);
         }
         catch (OperationCanceledException)
         {

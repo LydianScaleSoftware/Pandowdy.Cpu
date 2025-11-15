@@ -113,7 +113,7 @@ public sealed class VA2M : IDisposable
     /// When false, runs fast batches without waiting.
     /// </summary>
     /// <param name="ct">Cancellation token to stop the runner.</param>
-    /// <param name="ticksPerSecond">Time slice frequency. Use1000 for1ms slices or60 for video-frame pacing.</param>
+    /// <param name="ticksPerSecond">Time slice frequency. Use 1000 for 1ms slices or 60 for video-frame pacing.</param>
     public async Task RunAsync(CancellationToken ct, double ticksPerSecond = 1000d)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(ticksPerSecond);
