@@ -28,19 +28,68 @@ public sealed class VA2M : IDisposable
     // 16KB ROM space at $C000-$FFFF
     private VA2MMemory ROM = new (0x0000, 64 * 1024, VA2MMemory.MemAccessType.ReadWrite); 
 
-    public VA2M()
+    private readonly IEmulatorState? _stateSink; // optional DI-provided state publisher
+    private readonly IFrameProvider? _frameSink; // optional DI-provided frame publisher
+
+    public VA2M() : this(null, null) { }
+
+    public VA2M(IEmulatorState? stateSink, IFrameProvider? frameSink)
     {
+        _stateSink = stateSink;
+        _frameSink = frameSink;
         TryLoadEmbeddedRom("Pandowdy.Core.Resources.a2e_enh_c-f.rom", 0xC000);
-  
         var mem = new VA2MMemory(0,RamSize);
         RamModel = mem;
         var auxmem = new VA2MMemory(0, RamSize);
         AuxRamModel = auxmem;
-        // IO = new VA2MIO(mem, auxmem, ROM);
-        Bus = new VA2MBus(mem,auxmem,ROM/*,IO*/);
+        Bus = new VA2MBus(mem,auxmem,ROM);
         _cpu = new CPU();
         Bus.Connect(_cpu);
+        if (_frameSink is not null && Bus is VA2MBus vb)
+        {
+            vb.VBlank += OnVBlank;
+        }
+    }
 
+    private void OnVBlank(object? sender, EventArgs e)
+    {
+        if (_frameSink is null) return;
+        var buf = _frameSink.BorrowWritable();
+        Array.Clear(buf, 0, buf.Length);
+        // Compose text page into 80x192 buffer: each 40-col char -> two horizontal bytes (duplicated), each font row 7 bits used.
+        for (int addr = 0x400; addr < 0x800; addr++)
+        {
+            int off = AddressToOffset(addr);
+            if (off < 0) continue;
+            int col = off % 40;
+            int row = off / 40; // 0-23
+            byte ch = RamModel.Read((ushort)addr);
+            ch &= 0x7F; // strip high bit
+            var glyph = VideoFont.Glyph(ch);
+            for (int r = 0; r < 8; r++)
+            {
+                int y = row * 8 + r;
+                if (y >= _frameSink.Height) break;
+                byte fontRow = glyph[r];
+                int baseX = col * 2;
+                if (baseX + 1 >= _frameSink.Width) break;
+                buf[y * _frameSink.Width + baseX] = fontRow;
+                buf[y * _frameSink.Width + baseX + 1] = fontRow; // duplicate for 40-col widening
+            }
+        }
+        _frameSink.CommitWritable();
+    }
+
+    private static int AddressToOffset(int address)
+    {
+        if (address < 0x400 || address >= 0x800) return -1;
+        address -= 0x400;
+        var macroline_x = address % 128;
+        var macroline_y = address / 128;
+        if (macroline_x >= 120) return -1;
+        int section = macroline_x / 40;
+        int row = macroline_y + 8 * section;
+        return macroline_x % 40 + 40 * row;
     }
 
     private void TryLoadEmbeddedRom(string resourceName, ushort baseAddress)
@@ -72,6 +121,7 @@ public sealed class VA2M : IDisposable
         {
             ThrottleOneCycle();
         }
+        PublishState();
     }
 
     private void ThrottleOneCycle()
@@ -120,22 +170,15 @@ public sealed class VA2M : IDisposable
         using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1.0 / ticksPerSecond));
         double cyclesPerTick = TargetHz / ticksPerSecond;
         double carry = 0.0;
-
         while (!ct.IsCancellationRequested)
         {
             if (ThrottleEnabled)
             {
                 try
                 {
-                    if (!await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
-                    {
-                        break;
-                    }
+                    if (!await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) break;
                 }
-                catch (OperationCanceledException)
-                {
-                    break; // normal stop
-                }
+                catch (OperationCanceledException) { break; }
                 double want = cyclesPerTick + carry;
                 int cycles = (int)want;
                 carry = want - cycles;
@@ -144,24 +187,30 @@ public sealed class VA2M : IDisposable
                     Bus.Clock();
                     _throttleCycles++;
                 }
+                PublishState();
             }
             else
             {
-                // Run unthrottled in batches, checking cancellation and yielding to UI.
                 const int FastBatch = 10_000;
                 for (int i = 0; i < FastBatch; i++)
                 {
                     Bus.Clock();
                     _throttleCycles++;
-                    if (ct.IsCancellationRequested)
-                    {
-                        break;
-                    }
+                    if (ct.IsCancellationRequested) break;
                 }
-                // Allow UI and other tasks to run.
+                PublishState();
                 await Task.Yield();
             }
         }
+    }
+
+    private void PublishState()
+    {
+        if (_stateSink is null) return;
+        int lineNum = (int)(Bus.CpuRead(0x75) + (Bus.CpuRead(0x76) << 8));
+        int? basicLine = lineNum < 0xFA00 ? lineNum : null; // treat IMMEDIATE as null
+        var snapshot = new StateSnapshot((ushort)_cpu.PC, (byte)_cpu.SP, Bus.SystemClockCounter, basicLine, true, false);
+        _stateSink.Update(snapshot);
     }
 
     /// <summary>

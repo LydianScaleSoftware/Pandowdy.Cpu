@@ -8,11 +8,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\legacy\6502.NET\Emulator\Emulator.csproj" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="..\assets\a2e_enh_c-f.rom">
       <Link>Resources\a2e_enh_c-f.rom</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\assets\a2e_enh_video.rom">
+      <Link>Resources\a2e_enh_video.rom</Link>
     </EmbeddedResource>
   </ItemGroup>
 

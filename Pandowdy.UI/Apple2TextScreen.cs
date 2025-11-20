@@ -46,6 +46,9 @@ public class Apple2TextScreen : Control
     private readonly bool[] _cellDirty = new bool[40 *24];
     private readonly object _dirtyLock = new();
 
+    private IFrameProvider? _frameProvider;
+    private byte[]? _lastFrame;
+
     /// <summary>
     /// Optional mapped memory source this screen listens to for write notifications.
     /// When set, the control subscribes to MemoryWritten and MemoryBlockWritten events.
@@ -261,7 +264,22 @@ public class Apple2TextScreen : Control
         }
     }
 
+    public void AttachFrameProvider(IFrameProvider provider)
+    {
+        if (_frameProvider != null)
+        {
+            _frameProvider.FrameAvailable -= OnFrameAvailable;
+        }
+        _frameProvider = provider;
+        _frameProvider.FrameAvailable += OnFrameAvailable;
+        _lastFrame = _frameProvider.GetFrame();
+    }
 
+    private void OnFrameAvailable(object? sender, EventArgs e)
+    {
+        _lastFrame = _frameProvider?.GetFrame();
+        InvalidateVisual();
+    }
 
     /// <summary>
     /// Measures the desired size of the control.
@@ -351,27 +369,76 @@ public class Apple2TextScreen : Control
     public override void Render(DrawingContext context)
     {
         base.Render(context);
-
+        if (_frameProvider != null && _lastFrame != null && _frameProvider.Width == 80 && _frameProvider.Height == 192)
+        {
+            EnsureBitmapForFrame();
+            if (Bitmap is WriteableBitmap wb)
+            {
+                using var fb = wb.Lock();
+                unsafe
+                {
+                    byte* dst = (byte*)fb.Address;
+                    int stridePixels = 561; // existing width assumption
+                    // Simple upscale: each source byte represents 7 pixels; we approximate to 7 wide *2 vertical scaling
+                    // For now render each bit as white pixel horizontally; duplicate vertically to 2 rows.
+                    for (int y = 0; y < _frameProvider.Height; y++)
+                    {
+                        int outYTop = y * 2;
+                        if (outYTop + 1 >= 384) break;
+                        for (int xByte = 0; xByte < 80; xByte++)
+                        {
+                            byte bits = _lastFrame[y * 80 + xByte];
+                            for (int bit = 0; bit < 7; bit++)
+                            {
+                                bool on = (bits & (1 << bit)) == 0; // Apple2 inverted logic retained
+                                int outX = xByte * 7 + bit;
+                                if (outX >= 561) break;
+                                uint color = on ? 0xFFFFFFFFu : 0xFF000000u;
+                                WritePixel(dst, stridePixels, outX, outYTop, color);
+                                WritePixel(dst, stridePixels, outX, outYTop + 1, color);
+                            }
+                        }
+                    }
+                }
+            }
+            DrawBitmapScaled(context);
+            return;
+        }
+        // fallback to existing path
         if (Bitmap == null)
         {
-            // Draw a placeholder if no bitmap is set
             context.FillRectangle(new SolidColorBrush(Colors.Black), new Rect(Bounds.Size));
             return;
         }
+        DrawBitmapScaled(context);
+    }
 
+    private void EnsureBitmapForFrame()
+    {
+        if (Bitmap is WriteableBitmap) return;
+        Bitmap = new WriteableBitmap(new PixelSize(561, 384), new Vector(96,96), PixelFormat.Bgra8888);
+    }
+
+    private static unsafe void WritePixel(byte* basePtr, int width, int x, int y, uint rgba)
+    {
+        int idx = (y * width + x) * 4;
+        basePtr[idx + 0] = (byte)(rgba & 0xFF);
+        basePtr[idx + 1] = (byte)((rgba >> 8) & 0xFF);
+        basePtr[idx + 2] = (byte)((rgba >> 16) & 0xFF);
+        basePtr[idx + 3] = 0xFF;
+    }
+
+    private void DrawBitmapScaled(DrawingContext context)
+    {
         const double padding = 30;
-
-        // Available space after padding
+        if (Bitmap == null) return;
         double availableWidth = Bounds.Width - padding * 2;
         double availableHeight = Bounds.Height - padding * 2;
-
         double displayAspect = availableWidth / availableHeight;
-
+        double SourceWidth = 561, SourceHeight = 384, SourceAspect = SourceWidth / SourceHeight;
         double scaledWidth, scaledHeight, offsetX, offsetY;
-
         if (displayAspect > SourceAspect)
         {
-            // Available space is wider - letterbox top/bottom
             scaledHeight = availableHeight;
             scaledWidth = availableHeight * SourceAspect;
             offsetX = padding + (availableWidth - scaledWidth) / 2;
@@ -379,17 +446,12 @@ public class Apple2TextScreen : Control
         }
         else
         {
-            // Available space is taller - pillarbox left/right
             scaledWidth = availableWidth;
             scaledHeight = availableWidth / SourceAspect;
             offsetX = padding;
             offsetY = padding + (availableHeight - scaledHeight) / 2;
         }
-
-        // Draw the bitmap with pixel-perfect scaling using nearest-neighbor
         var rect = new Rect(offsetX, offsetY, scaledWidth, scaledHeight);
-
-        // Create a clipped context to prevent blur from scaling
         using (context.PushClip(new Rect(Bounds.Size)))
         {
             context.DrawImage(Bitmap, rect);
