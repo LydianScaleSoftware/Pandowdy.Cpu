@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
@@ -48,7 +48,7 @@ public class Apple2TextScreen : Control
 
     private IFrameProvider? _frameProvider;
     private byte[]? _lastFrame;
-    private DispatcherTimer? _refreshTimer; // wall-clock display timer (?60Hz)
+    private DispatcherTimer? _refreshTimer; // wall-clock display timer (â‰ˆ60Hz)
 
     /// <summary>
     /// Optional mapped memory source this screen listens to for write notifications.
@@ -334,7 +334,7 @@ public class Apple2TextScreen : Control
     /// <summary>
     /// Creates a checkerboard pattern bitmap for the default display.
     /// Pattern:14x16 pixel blocks in alternating black/white.
-    /// Resolution:561x384 (4014-pixel blocks wide ×2416-pixel blocks tall +1 pixel horizontal). 
+    /// Resolution:561x384 (4014-pixel blocks wide Ã—2416-pixel blocks tall +1 pixel horizontal). 
     /// </summary>
     /// <returns>A new Bitmap with checkerboard pattern.</returns>
     private static Bitmap CreateCheckerboardBitmap
@@ -345,8 +345,8 @@ public class Apple2TextScreen : Control
             const int numCols = 80; //80 max,40 colum doubles pixel values.
             const int blockWidth = 7;
             const int blockHeight = 16;
-            const int bitmapWidth = 561; //40 blocks ×14 pixels (+1 pixel)
-            const int bitmapHeight = 384; //24 blocks ×16 pixels
+            const int bitmapWidth = 561; //40 blocks Ã—14 pixels (+1 pixel)
+            const int bitmapHeight = 384; //24 blocks Ã—16 pixels
 
             // Create pixel data (BGRA format,32 bits per pixel)
             var pixelData = new byte[bitmapWidth * bitmapHeight * 4];
@@ -409,19 +409,8 @@ public class Apple2TextScreen : Control
                     {
                         int outYTop = y * 2;
                         if (outYTop + 1 >= 384) break;
-                        for (int xByte = 0; xByte < 80; xByte++)
-                        {
-                            byte bits = _lastFrame[y * 80 + xByte];
-                            for (int bit = 0; bit < 7; bit++)
-                            {
-                                bool on = (bits & (1 << bit)) == 0;
-                                int outX = xByte * 7 + bit;
-                                if (outX >= 561) break;
-                                uint color = on ? 0xFFFFFFFFu : 0xFF000000u;
-                                WritePixel(dst, stridePixels, outX, outYTop, color);
-                                WritePixel(dst, stridePixels, outX, outYTop + 1, color);
-                            }
-                        }
+                        int lineOffset = y * 80;
+                        RenderLine(dst, stridePixels, outYTop, _lastFrame, lineOffset);
                     }
                 }
             }
@@ -431,10 +420,29 @@ public class Apple2TextScreen : Control
         // fallback legacy path
         if (Bitmap == null)
         {
-            context.FillRectangle(new SolidColorBrush(Colors.Black), new Rect(Bounds.Size));
+            context.FillRectangle(new SolidColorBrush(Colors.Red), new Rect(Bounds.Size));
             return;
         }
         DrawBitmapScaled(context);
+    }
+
+    private unsafe void RenderLine(byte* dst, int stridePixels, int outYTop, byte[] frame, int lineOffset)
+    {
+        // Each of 80 bytes -> 7 pixels horizontal; duplicate vertically (2 rows) for 384 height mapping.
+        for (int xByte = 0; xByte < 80; xByte++)
+        {
+            byte bits = frame[lineOffset + xByte];
+            for (int bit = 0; bit < 7; bit++)
+            {
+                bool on = (bits & (1 << bit)) == 0; // inverted Apple II convention
+                int outX = xByte * 7 + bit;
+                if (outX >= 561) break;
+                uint color = on ? 0xFFFFFFFFu : 0xFF000000u;
+                WritePixel(dst, stridePixels, outX, outYTop, color);
+                WritePixel(dst, stridePixels, outX, outYTop + 1, color);
+            }
+        }
+        // Future per-line tweaks (flash, inverse region, mixed mode) can be added here.
     }
 
     private void EnsureBitmapForFrame()
