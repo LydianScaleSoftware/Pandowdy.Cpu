@@ -13,10 +13,11 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using static DiskArc.Defs;
+using Pandowdy.UI.ViewModels; // ensure ViewModel type is visible
 
 namespace Pandowdy.UI;
 
-public partial class MainWindow : Window
+public partial class MainWindow : Window // reverted base class
 {
     private readonly AppHook mAppHook = new(new SimpleMessageLog());
     private DiskReadTestTemp? mDiskReadTest;
@@ -38,7 +39,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        // Retrieve DI-provided machine
+
         var app = (App?)Application.Current;
         _machine = (VA2M)app!.Services.GetService(typeof(VA2M))!;
 
@@ -58,30 +59,39 @@ public partial class MainWindow : Window
         if (_screen != null)
         {
             _screen.AttachMachine(_machine);
-
             // Attach frame provider from DI
             var frameProvider = (IFrameProvider)app!.Services.GetService(typeof(IFrameProvider))!;
             _screen.AttachFrameProvider(frameProvider);
             _screen.Focus();
         }
 
-        if (_throttleMenuItem != null) _throttleMenuItem.IsChecked = _machine.ThrottleEnabled;
-        if (_capsLockMenuItem != null) _capsLockMenuItem.IsChecked = _capsLockEnabled;
+        if (_throttleMenuItem != null)
+        {
+            _throttleMenuItem.IsChecked = _machine.ThrottleEnabled;
+        }
+
+        if (_capsLockMenuItem != null)
+        {
+            _capsLockMenuItem.IsChecked = _capsLockEnabled;
+        }
+
+        // Manual activation of nested SystemStatus view model
+        if (DataContext is MainWindowViewModel vm)
+        {
+            // Activation no longer required after direct subscription change.
+        }
     }
 
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
+    private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
-        // Ensure the screen has focus when window opens
-        _screen?.Focus();
-
-            // Auto-start the emulator after the window is shown
-            Dispatcher.UIThread.Post(() => OnEmuStartClicked(this, new RoutedEventArgs()));
+        if (_screen != null)
+        {
+            _screen.Focus();
+        }
+        Dispatcher.UIThread.Post(() => OnEmuStartClicked(this, new RoutedEventArgs()));
     }
 
     protected override void OnClosed(EventArgs e)
@@ -93,31 +103,39 @@ public partial class MainWindow : Window
     protected override void OnGotFocus(GotFocusEventArgs e)
     {
         base.OnGotFocus(e);
-        // Keep focus on screen unless actively interacting with menu via pointer
         if (!_menuPointerActive)
         {
-            _screen?.Focus();
+            if (_screen != null)
+            {
+                _screen.Focus();
+            }
         }
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
-        // Clicking anywhere should give focus back to the screen (unless clicking on menu)
         if (!_menuPointerActive)
         {
-            _screen?.Focus();
+            if (_screen != null)
+            {
+                _screen.Focus();
+            }
         }
     }
 
     private bool IsAnyMenuOpen()
     {
         if (_mainMenu == null)
+        {
             return false;
+        }
         foreach (var item in _mainMenu.Items)
         {
             if (item is MenuItem mi && mi.IsSubMenuOpen)
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -125,7 +143,9 @@ public partial class MainWindow : Window
     private void CloseAllMenus()
     {
         if (_mainMenu == null)
+        {
             return;
+        }
         foreach (var item in _mainMenu.Items)
         {
             if (item is MenuItem mi)
@@ -134,15 +154,19 @@ public partial class MainWindow : Window
             }
         }
         _menuPointerActive = false;
-        _screen?.Focus();
+        if (_screen != null)
+        {
+            _screen.Focus();
+        }
     }
 
     private async void OnEmuStartClicked(object? sender, RoutedEventArgs e)
     {
-        if (_emuCts != null) return; // already running
-
+        if (_emuCts != null)
+        {
+            return;
+        }
         _machine.Reset();
-
         _emuCts = new CancellationTokenSource();
         var token = _emuCts.Token;
         _emuTask = Task.Run(async () =>
@@ -151,13 +175,12 @@ public partial class MainWindow : Window
             {
                 await _machine.RunAsync(token, 60).ConfigureAwait(false);
             }
-            catch (OperationCanceledException) { }
+            catch (OperationCanceledException)
+            {
+            }
         });
-
-        // Optionally observe completion (fire-and-forget)
         _ = _emuTask.ContinueWith(t =>
         {
-            // Cleanup after exit
             Dispatcher.UIThread.Post(() =>
             {
                 _emuCts?.Dispose();
@@ -167,20 +190,15 @@ public partial class MainWindow : Window
         });
     }
 
-    private void OnEmuStopClicked(object? sender, RoutedEventArgs e)
-    {
-        StopEmulator();
-    }
-
-    private void OnEmuResetClicked(object? sender, RoutedEventArgs e)
-    {
-        _machine.Reset();
-    }
+    private void OnEmuStopClicked(object? sender, RoutedEventArgs e) => StopEmulator();
+    private void OnEmuResetClicked(object? sender, RoutedEventArgs e) => _machine.Reset();
 
     private void OnEmuStepOnceClicked(object? sender, RoutedEventArgs e)
     {
-        // Prevent stepping while background thread running
-        if (_emuCts != null) return;
+        if (_emuCts != null)
+        {
+            return;
+        }
         _machine.Clock();
     }
 
@@ -204,45 +222,42 @@ public partial class MainWindow : Window
 
     private void StopEmulator()
     {
-        if (_emuCts == null) return;
+        if (_emuCts == null)
+        {
+            return;
+        }
         _emuCts.Cancel();
     }
 
-    // Window-level key handling for accelerators when child controls have focus.
-    // If menu is not active or the key isn't handled by menu, forward to the screen.
     private void OnWindowKeyDown(object? sender, KeyEventArgs e)
     {
-        // When pointer is over menu, let accelerators fire; otherwise, keep screen focused
         if (_menuPointerActive || IsAnyMenuOpen())
         {
-            // Let menu handle accelerators first
             if (HandleAccelerator(e))
             {
                 e.Handled = true;
                 return;
             }
-            // Not handled by menu: close menu and process in main control
             if (IsAnyMenuOpen())
             {
                 CloseAllMenus();
             }
             if (!TryInjectSpecialKey(e))
             {
-                // Printable characters will come via TextInput
             }
             return;
         }
-
-        // Menu not active: handle accelerators, else keep focus on screen
         if (HandleAccelerator(e))
         {
             e.Handled = true;
             return;
         }
-        _screen?.Focus();
+        if (_screen != null)
+        {
+            _screen.Focus();
+        }
     }
 
-    // Handle window-level TextInput when menu pointer is active to forward printable characters to the machine
     protected override void OnTextInput(TextInputEventArgs e)
     {
         base.OnTextInput(e);
@@ -259,8 +274,7 @@ public partial class MainWindow : Window
 
     private bool HandleAccelerator(KeyEventArgs e)
     {
-        // ALT accelerators
-        if ((e.KeyModifiers & KeyModifiers.Alt) !=0)
+        if ((e.KeyModifiers & KeyModifiers.Alt) != 0)
         {
             switch (e.Key)
             {
@@ -271,11 +285,10 @@ public partial class MainWindow : Window
                     OnClearTextClicked(this, new RoutedEventArgs());
                     return true;
                 case Key.F4:
-                    OnQuitClicked(this, new RoutedEventArgs());
+                    Close();
                     return true;
             }
         }
-        // Function keys
         switch (e.Key)
         {
             case Key.F5:
@@ -294,8 +307,7 @@ public partial class MainWindow : Window
                 OnEmuResetClicked(this, new RoutedEventArgs());
                 return true;
         }
-        // Shift+F5
-        if (e.Key == Key.F5 && (e.KeyModifiers & KeyModifiers.Shift) !=0)
+        if (e.Key == Key.F5 && (e.KeyModifiers & KeyModifiers.Shift) != 0)
         {
             OnEmuStopClicked(this, new RoutedEventArgs());
             return true;
@@ -303,32 +315,31 @@ public partial class MainWindow : Window
         return false;
     }
 
-    // Map special (non-printable) keys to Apple II equivalents and inject.
     private bool TryInjectSpecialKey(KeyEventArgs e)
     {
-        if ((e.KeyModifiers & KeyModifiers.Control) !=0 && e.Key >= Key.A && e.Key <= Key.Z)
+        if ((e.KeyModifiers & KeyModifiers.Control) != 0 && e.Key >= Key.A && e.Key <= Key.Z)
         {
-            byte ctrl = (byte)(e.Key - Key.A +1);
-            _machine.InjectKey((byte)(ctrl |0x80));
+            byte ctrl = (byte)(e.Key - Key.A + 1);
+            _machine.InjectKey((byte)(ctrl | 0x80));
             e.Handled = true;
             return true;
         }
         byte? ascii = e.Key switch
         {
-            Key.Up => (byte)0x0B, // ^K
-            Key.Down => (byte)0x0A, // LF
-            Key.Left => (byte)0x08, // BS
-            Key.Right => (byte)0x15, // ^U
-            Key.Delete => (byte)0x7F, // DEL
-            Key.Enter => (byte) '\r',
-            Key.Tab => (byte) '\t',
+            Key.Up => (byte)0x0B,
+            Key.Down => (byte)0x0A,
+            Key.Left => (byte)0x08,
+            Key.Right => (byte)0x15,
+            Key.Delete => (byte)0x7F,
+            Key.Enter => (byte)'\r',
+            Key.Tab => (byte)'\t',
             Key.Escape => (byte)0x1B,
-            Key.Back => ((e.KeyModifiers & KeyModifiers.Shift) !=0) ? (byte)0x7F : (byte)0x08,
+            Key.Back => (e.KeyModifiers & KeyModifiers.Shift) != 0 ? (byte)0x7F : (byte)0x08,
             _ => null
         };
         if (ascii.HasValue)
         {
-            _machine.InjectKey((byte) (ascii.Value |0x80));
+            _machine.InjectKey((byte)(ascii.Value | 0x80));
             e.Handled = true;
             return true;
         }
@@ -339,23 +350,18 @@ public partial class MainWindow : Window
     {
         foreach (char ch in text)
         {
-            char c = ch;
-            if (c == '\n') c = '\r';
+            char c = ch == '\n' ? '\r' : ch;
             if (_capsLockEnabled && c >= 'a' && c <= 'z')
             {
-                c = (char)(c -32);
+                c = (char)(c - 32);
             }
-            if (c <=0x7F)
+            if (c <= 0x7F)
             {
-                _machine.InjectKey((byte)(((byte)c) |0x80));
+                _machine.InjectKey((byte)(((byte)c) | 0x80));
             }
         }
     }
 
-    /// <summary>
-    /// Appends text to the output window.
-    /// </summary>
-    /// <param name="text">The text to append.</param>
     public void AppendText(string text)
     {
         Dispatcher.UIThread.Post(() =>
@@ -363,16 +369,11 @@ public partial class MainWindow : Window
             if (_outputTextBox != null)
             {
                 _outputTextBox.Text += text;
-                // Auto-scroll to the end
-                _outputTextBox.CaretIndex = _outputTextBox.Text?.Length ??0;
+                _outputTextBox.CaretIndex = _outputTextBox.Text?.Length ?? 0;
             }
         });
     }
 
-    /// <summary>
-    /// Sets the text in the output window, replacing any existing content.
-    /// </summary>
-    /// <param name="text">The text to set.</param>
     public void SetText(string text)
     {
         Dispatcher.UIThread.Post(() =>
@@ -380,15 +381,11 @@ public partial class MainWindow : Window
             if (_outputTextBox != null)
             {
                 _outputTextBox.Text = text;
-                // Auto-scroll to the end
-                _outputTextBox.CaretIndex = _outputTextBox.Text?.Length ??0;
+                _outputTextBox.CaretIndex = _outputTextBox.Text?.Length ?? 0;
             }
         });
     }
 
-    /// <summary>
-    /// Clears all text from the output window.
-    /// </summary>
     public void ClearText()
     {
         Dispatcher.UIThread.Post(() =>
@@ -400,13 +397,7 @@ public partial class MainWindow : Window
         });
     }
 
-    // Menu event handlers
-
-    private void OnQuitClicked(object? sender, RoutedEventArgs e)
-    {
-        Close();
-    }
-
+    private void OnQuitClicked(object? sender, RoutedEventArgs e) => Close();
     private void OnSelectAllClicked(object? sender, RoutedEventArgs e)
     {
         if (_outputTextBox != null)
@@ -415,30 +406,23 @@ public partial class MainWindow : Window
             _outputTextBox.Focus();
         }
     }
-
     private async void OnTestDiskReadClicked(object? sender, RoutedEventArgs e)
     {
         ClearText();
         mLastDiskPath = await mDiskReadTest!.HandleDiskRead(mLastDiskPath);
     }
-
     private void OnCopyClicked(object? sender, RoutedEventArgs e)
     {
         if (_outputTextBox != null && !string.IsNullOrEmpty(_outputTextBox.SelectedText))
         {
-            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            var clipboard = TopLevel.GetTopLevel(_outputTextBox)?.Clipboard;
             clipboard?.SetTextAsync(_outputTextBox.SelectedText);
         }
         else if (_outputTextBox != null && !string.IsNullOrEmpty(_outputTextBox.Text))
         {
-            // If nothing is selected, copy all text
-            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            var clipboard = TopLevel.GetTopLevel(_outputTextBox)?.Clipboard;
             clipboard?.SetTextAsync(_outputTextBox.Text);
         }
     }
-
-    private void OnClearTextClicked(object? sender, RoutedEventArgs e)
-    {
-        ClearText();
-    }
+    private void OnClearTextClicked(object? sender, RoutedEventArgs e) => ClearText();
 }

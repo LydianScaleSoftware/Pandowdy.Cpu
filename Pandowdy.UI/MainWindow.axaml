@@ -1,13 +1,15 @@
 <Window xmlns="https://github.com/avaloniaui"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		x:CompileBindings="False"
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:local="clr-namespace:Pandowdy.UI"
-		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		xmlns:viewmodels="clr-namespace:Pandowdy.UI.ViewModels"
+		mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="480"
 		x:Class="Pandowdy.UI.MainWindow"
 		Title="Pandowdy"
-		Width="600" Height="480"
-		MinWidth="600" MinHeight="480"
+		Width="800" Height="480"
+		MinWidth="800" MinHeight="480"
 		KeyDown="OnWindowKeyDown">
 	<DockPanel>
 		<Menu x:Name="MainMenu" DockPanel.Dock="Top">
@@ -34,18 +36,57 @@
 			</MenuItem>
 		</Menu>
 
-		<!-- Apple2TextScreen centered and scaled to fill available space -->
-		<Grid Background="Black"
-			  DockPanel.Dock="Bottom">
-			<local:Apple2Display x:Name="ScreenDisplay"
-									HorizontalAlignment="Center"
-									VerticalAlignment="Center" />
+		<Grid DockPanel.Dock="Right" Background="Black" ColumnDefinitions="* Auto">
+			<Border Grid.Column="1" Padding="8" Margin="8" Background="#222" CornerRadius="4">
+				<Grid RowDefinitions="Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto"
+					  ColumnDefinitions="Auto Auto"
+					  DataContext="{Binding SystemStatus}">
+					<TextBlock Text="80STORE" Grid.Row="0" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding State80Store}" Grid.Row="0" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="RAMRD" Grid.Row="1" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateRamRd}" Grid.Row="1" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="RAMWRT" Grid.Row="2" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateRamWrt}" Grid.Row="2" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="INTCXROM" Grid.Row="3" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateIntCxRom}" Grid.Row="3" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="ALTZP" Grid.Row="4" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateAltZp}" Grid.Row="4" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="SLOT C3" Grid.Row="5" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateSlotC3Rom}" Grid.Row="5" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="PB0" Grid.Row="6" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StatePb0}" Grid.Row="6" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="PB1" Grid.Row="7" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StatePb1}" Grid.Row="7" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="PB2" Grid.Row="8" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StatePb2}" Grid.Row="8" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="ANN0" Grid.Row="9" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateAnn0}" Grid.Row="9" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="ANN1" Grid.Row="10" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateAnn1}" Grid.Row="10" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="ANN2" Grid.Row="11" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateAnn2}" Grid.Row="11" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="ANN3" Grid.Row="12" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateAnn3}" Grid.Row="12" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="PAGE2" Grid.Row="13" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StatePage2}" Grid.Row="13" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="HIRES" Grid.Row="14" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateHiRes}" Grid.Row="14" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="MIXED" Grid.Row="15" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateMixed}" Grid.Row="15" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="TEXT" Grid.Row="16" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateTextMode}" Grid.Row="16" Grid.Column="1" Foreground="White" />
+					<TextBlock Text="ALTCHAR" Grid.Row="17" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateAltCharSet}" Grid.Row="17" Grid.Column="1" Foreground="White" />
+				</Grid>
+			</Border>
 		</Grid>
 
-		<!-- TODO: Hide this when Apple2TextScreen is ready; restore for text output later -->
+		<Grid DockPanel.Dock="Bottom" Background="Blue" ColumnDefinitions="* Auto">
+
+				<!-- TODO: Hide this when Apple2TextScreen is ready; restore for text output later -->
 		<ScrollViewer HorizontalScrollBarVisibility="Auto"
 					  VerticalScrollBarVisibility="Auto"
-					  IsVisible="False">
+					  IsVisible="True">
 			<TextBox x:Name="OutputTextBox"
 					 AcceptsReturn="True"
 					 TextWrapping="Wrap"
@@ -60,6 +101,15 @@
 					 SelectionBrush="DarkGreen"
 					 SelectionForegroundBrush="black" />
 		</ScrollViewer>
+		</Grid>
+		
+			<!-- Apple2TextScreen centered and scaled to fill available space -->
+			<local:Apple2Display x:Name="ScreenDisplay"
+								HorizontalAlignment="Center"
+								VerticalAlignment="Center" MinWidth="600" MinHeight="480"/>
+		
+
+
 	</DockPanel>
 
 	<Window.Styles>

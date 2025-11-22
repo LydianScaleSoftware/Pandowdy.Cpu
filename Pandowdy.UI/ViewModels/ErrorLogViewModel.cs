@@ -29,7 +29,10 @@ public sealed class ErrorLogViewModel : ReactiveObject, IActivatableViewModel
                     foreach (var evt in batch)
                     {
                         _mutable.Add(evt);
-                        if (_mutable.Count > 1000) _mutable.RemoveAt(0); // simple cap
+                        if (_mutable.Count > 1000)
+                        {
+                            _mutable.RemoveAt(0); // simple cap
+                        }
                     }
                 })
                 .DisposeWith(disposables);

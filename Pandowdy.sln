@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36518.9
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11218.70 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandowdy.UI", "Pandowdy.UI\Pandowdy.UI.csproj", "{C04F2AF5-3C3E-AC7C-1AC8-E98647B00F3B}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -18,8 +18,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandowdy.Core", "Pandowdy.C
 		{30F13AD7-DE47-F71A-4A08-C6D554092F13} = {30F13AD7-DE47-F71A-4A08-C6D554092F13}
 		{F5E74FE8-2A77-4E18-9BAC-3F0245F96DEE} = {F5E74FE8-2A77-4E18-9BAC-3F0245F96DEE}
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandowdy.Tests", "Pandowdy.Tests\Pandowdy.Tests.csproj", "{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
@@ -110,22 +108,6 @@ Global
 		{2B3AAF1B-836B-46B3-87CE-3D3A08F80255}.RelWithDebInfo|Any CPU.Build.0 = Debug|Any CPU
 		{2B3AAF1B-836B-46B3-87CE-3D3A08F80255}.RelWithDebInfo|x64.ActiveCfg = Debug|Any CPU
 		{2B3AAF1B-836B-46B3-87CE-3D3A08F80255}.RelWithDebInfo|x64.Build.0 = Debug|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.Debug|x64.Build.0 = Debug|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.MinSizeRel|Any CPU.ActiveCfg = Release|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.MinSizeRel|Any CPU.Build.0 = Release|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.MinSizeRel|x64.ActiveCfg = Release|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.MinSizeRel|x64.Build.0 = Release|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.Release|x64.ActiveCfg = Release|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.Release|x64.Build.0 = Release|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.RelWithDebInfo|Any CPU.ActiveCfg = Debug|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.RelWithDebInfo|Any CPU.Build.0 = Debug|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.RelWithDebInfo|x64.ActiveCfg = Debug|Any CPU
-		{CAF7F731-5EEF-45F4-9C9B-B70FADA19360}.RelWithDebInfo|x64.Build.0 = Debug|Any CPU
 		{F5E74FE8-2A77-4E18-9BAC-3F0245F96DEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F5E74FE8-2A77-4E18-9BAC-3F0245F96DEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5E74FE8-2A77-4E18-9BAC-3F0245F96DEE}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -175,7 +157,6 @@ Global
 		{26CBF272-F5E7-C706-D3FA-314632D55CEE}.RelWithDebInfo|x64.ActiveCfg = Debug|Any CPU
 		{26CBF272-F5E7-C706-D3FA-314632D55CEE}.RelWithDebInfo|x64.Build.0 = Debug|Any CPU
 		{808BC2E4-B22D-3B60-AAEF-63F7109CA8B3}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{808BC2E4-B22D-3B60-AAEF-63F7109CA8B3}.Debug|Any CPU.Build.0 = Debug|x64
 		{808BC2E4-B22D-3B60-AAEF-63F7109CA8B3}.Debug|x64.ActiveCfg = Debug|x64
 		{808BC2E4-B22D-3B60-AAEF-63F7109CA8B3}.Debug|x64.Build.0 = Debug|x64
 		{808BC2E4-B22D-3B60-AAEF-63F7109CA8B3}.MinSizeRel|Any CPU.ActiveCfg = MinSizeRel|x64

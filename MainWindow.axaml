@@ -1,0 +1,10 @@
+<StackPanel Orientation="Horizontal" Margin="8">
+  <TextBlock Text="TXT:"/>
+  <TextBlock Text="{Binding SystemStatus.TextMode}"/>
+  <TextBlock Text=" MIX:" Margin="12,0,0,0"/>
+  <TextBlock Text="{Binding SystemStatus.Mixed}"/>
+  <TextBlock Text=" HGR:" Margin="12,0,0,0"/>
+  <TextBlock Text="{Binding SystemStatus.HiRes}"/>
+  <TextBlock Text=" PG2:" Margin="12,0,0,0"/>
+  <TextBlock Text="{Binding SystemStatus.Page2}"/>
+</StackPanel>

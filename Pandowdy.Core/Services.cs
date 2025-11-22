@@ -14,6 +14,131 @@ public interface IFrameProvider {
     void CommitWritable(); // swap buffers & raise event
 }
 
+public interface ISystemStatusProvider
+{
+    bool State80Store { get; }
+    bool StateRamRd { get; }
+    bool StateRamWrt { get; }
+    bool StateIntCxRom { get; }
+    bool StateAltZp { get; }
+    bool StateSlotC3Rom { get; }
+    bool StatePb0 { get; }
+    bool StatePb1 { get; }
+    bool StatePb2 { get; }
+    bool StateAnn0 { get; }
+    bool StateAnn1 { get; }
+    bool StateAnn2 { get; }
+    bool StateAnn3 { get; }
+    bool StatePage2 { get; }
+    bool StateHiRes { get; }
+    bool StateMixed { get; }
+    bool StateTextMode { get; }
+    bool StateAltCharSet { get; }
+
+    SystemStatusSnapshot Current { get; }
+    event EventHandler<SystemStatusSnapshot>? Changed; // event-style subscription
+    IObservable<SystemStatusSnapshot> Stream { get; } // reactive subscription
+
+    // Mutation hook used by core (bus) to update status snapshot
+    void Mutate(Action<SystemStatusSnapshotBuilder> mutator);
+}
+
+public record SystemStatusSnapshot(
+    bool State80Store,
+    bool StateRamRd,
+    bool StateRamWrt,
+    bool StateIntCxRom, 
+    bool StateAltZp,
+    bool StateSlotC3Rom,
+    bool StatePb0,
+    bool StatePb1,
+    bool StatePb2,
+    bool StateAnn0,
+    bool StateAnn1,
+    bool StateAnn2,
+    bool StateAnn3,
+    bool StatePage2,
+    bool StateHiRes,
+    bool StateMixed,
+    bool StateTextMode,
+    bool StateAltCharSet);
+
+public sealed class SystemStatusProvider : ISystemStatusProvider
+{
+    private SystemStatusSnapshot _current = new(false,false,false,false,false,false,
+        false,false,false,false,false,false,false,false,false,false,true,false);
+
+    private readonly System.Reactive.Subjects.BehaviorSubject<SystemStatusSnapshot> _subject;
+
+    public event EventHandler<SystemStatusSnapshot>? Changed;
+
+    public SystemStatusProvider() { _subject = new System.Reactive.Subjects.BehaviorSubject<SystemStatusSnapshot>(_current); }
+
+    public bool State80Store => _current.State80Store;
+    public bool StateRamRd => _current.StateRamRd;
+    public bool StateRamWrt => _current.StateRamWrt;
+    public bool StateIntCxRom => _current.StateIntCxRom;
+    public bool StateAltZp => _current.StateAltZp;
+    public bool StateSlotC3Rom => _current.StateSlotC3Rom;
+    public bool StatePb0 => _current.StatePb0;
+    public bool StatePb1 => _current.StatePb1;
+    public bool StatePb2 => _current.StatePb2;
+    public bool StateAnn0 => _current.StateAnn0;
+    public bool StateAnn1 => _current.StateAnn1;
+    public bool StateAnn2 => _current.StateAnn2;
+    public bool StateAnn3 => _current.StateAnn3;
+    public bool StatePage2 => _current.StatePage2;
+    public bool StateHiRes => _current.StateHiRes;
+    public bool StateMixed => _current.StateMixed;
+    public bool StateTextMode => _current.StateTextMode;
+    public bool StateAltCharSet => _current.StateAltCharSet;
+    public SystemStatusSnapshot Current => _current;
+    public IObservable<SystemStatusSnapshot> Stream => _subject;
+
+    public void Mutate(Action<SystemStatusSnapshotBuilder> mutator)
+    {
+        var b = new SystemStatusSnapshotBuilder(_current);
+        mutator(b);
+        _current = b.Build();
+        _subject.OnNext(_current);
+        Changed?.Invoke(this, _current);
+    }
+}
+
+public sealed class SystemStatusSnapshotBuilder
+{
+    public bool State80Store, StateRamRd, StateRamWrt, StateIntCxRom, StateAltZp, StateSlotC3Rom,
+        StatePb0, StatePb1, StatePb2, StateAnn0, StateAnn1, StateAnn2, StateAnn3,
+        StatePage2, StateHiRes, StateMixed, StateTextMode, StateAltCharSet;
+
+    public SystemStatusSnapshotBuilder(SystemStatusSnapshot s)
+    {
+        State80Store = s.State80Store;
+        StateRamRd = s.StateRamRd;
+        StateRamWrt = s.StateRamWrt;
+        StateIntCxRom = s.StateIntCxRom;
+        StateAltZp = s.StateAltZp;
+        StateSlotC3Rom = s.StateSlotC3Rom;
+        StatePb0 = s.StatePb0;
+        StatePb1 = s.StatePb1;
+        StatePb2 = s.StatePb2;
+        StateAnn0 = s.StateAnn0;
+        StateAnn1 = s.StateAnn1;
+        StateAnn2 = s.StateAnn2;
+        StateAnn3 = s.StateAnn3;
+        StatePage2 = s.StatePage2;
+        StateHiRes = s.StateHiRes;
+        StateMixed = s.StateMixed;
+        StateTextMode = s.StateTextMode;
+        StateAltCharSet = s.StateAltCharSet;
+    }
+
+    public SystemStatusSnapshot Build() => new(
+        State80Store, StateRamRd, StateRamWrt, StateIntCxRom, StateAltZp, StateSlotC3Rom,
+        StatePb0, StatePb1, StatePb2, StateAnn0, StateAnn1, StateAnn2, StateAnn3,
+        StatePage2, StateHiRes, StateMixed, StateTextMode, StateAltCharSet);
+}
+
 public interface IErrorProvider {
     IObservable<LogEvent> Events { get; }
     void Publish(LogEvent evt);

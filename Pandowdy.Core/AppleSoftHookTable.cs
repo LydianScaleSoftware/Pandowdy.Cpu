@@ -42,7 +42,10 @@ public sealed class AppleSoftHookTable
     public void InitializeDefault()
     {
         if (!IsEmpty)
+        {
             return;
+        }
+
         Add(1, 0xD870, "END");
         Add(1, 0xD766, "FOR");
         Add(1, 0xDCF9, "NEXT");

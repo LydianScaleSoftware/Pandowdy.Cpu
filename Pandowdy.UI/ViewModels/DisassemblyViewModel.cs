@@ -31,7 +31,9 @@ public sealed class DisassemblyViewModel : ReactiveObject, IActivatableViewModel
                     // naive replace; later optimize for partial patch
                     _lines.Clear();
                     foreach (var l in update.Lines)
+                    {
                         _lines.Add(l);
+                    }
                 })
                 .DisposeWith(disposables);
         });

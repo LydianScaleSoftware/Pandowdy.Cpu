@@ -29,11 +29,23 @@ public static class VideoFont
         foreach (var name in candidates)
         {
             using var s = asm.GetManifestResourceStream(name);
-            if (s == null) continue;
-            if (s.Length < 2048) throw new InvalidOperationException($"Video ROM '{name}' unexpected size {s.Length}");
+            if (s == null)
+            {
+                continue;
+            }
+
+            if (s.Length < 2048)
+            {
+                throw new InvalidOperationException($"Video ROM '{name}' unexpected size {s.Length}");
+            }
+
             var buf = new byte[2048];
             int read = s.Read(buf, 0, 2048);
-            if (read != 2048) throw new InvalidOperationException("Incomplete font read");
+            if (read != 2048)
+            {
+                throw new InvalidOperationException("Incomplete font read");
+            }
+
             return buf;
         }
         throw new InvalidOperationException("Enhanced video ROM resource not found for glyph composition.");

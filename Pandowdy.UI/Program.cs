@@ -19,19 +19,22 @@ class Program
         builder.Services.AddSingleton<IErrorProvider, ErrorProvider>();
         builder.Services.AddSingleton<IEmulatorState, EmulatorStateProvider>();
         builder.Services.AddSingleton<IDisassemblyProvider, DisassemblyProvider>();
+        builder.Services.AddSingleton<ISystemStatusProvider, SystemStatusProvider>();
 
         // ViewModels
         builder.Services.AddTransient<EmulatorStateViewModel>();
         builder.Services.AddTransient<ErrorLogViewModel>();
         builder.Services.AddTransient<DisassemblyViewModel>();
         builder.Services.AddTransient<MainWindowViewModel>();
+        builder.Services.AddTransient<SystemStatusViewModel>();
 
         // Machine factory (singleton instance for now)
         builder.Services.AddSingleton(provider =>
         {
             var state = provider.GetRequiredService<IEmulatorState>();
             var frame = provider.GetRequiredService<IFrameProvider>();
-            return new VA2M(state, frame);
+            var sysStatus = provider.GetRequiredService<ISystemStatusProvider>();
+            return new VA2M(state, frame, sysStatus);
         });
 
         var host = builder.Build();

@@ -9,6 +9,7 @@ public sealed class MainWindowViewModel : ReactiveObject
     public EmulatorStateViewModel EmulatorState { get; }
     public ErrorLogViewModel ErrorLog { get; }
     public DisassemblyViewModel Disassembly { get; }
+    public SystemStatusViewModel SystemStatus { get; }
 
     public ReactiveCommand<Unit, Unit> PauseCommand { get; }
     public ReactiveCommand<Unit, Unit> ContinueCommand { get; }
@@ -19,12 +20,14 @@ public sealed class MainWindowViewModel : ReactiveObject
     public MainWindowViewModel(EmulatorStateViewModel emulatorState,
                                ErrorLogViewModel errorLog,
                                DisassemblyViewModel disassembly,
-                               IEmulatorState emuState)
+                               IEmulatorState emuState,
+                               SystemStatusViewModel systemStatus)
     {
         EmulatorState = emulatorState;
         ErrorLog = errorLog;
         Disassembly = disassembly;
         _emuState = emuState;
+        SystemStatus = systemStatus;
 
         PauseCommand = ReactiveCommand.Create(() => _emuState.RequestPause());
         ContinueCommand = ReactiveCommand.Create(() => _emuState.RequestContinue());

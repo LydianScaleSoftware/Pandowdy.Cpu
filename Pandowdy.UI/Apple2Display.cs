@@ -28,7 +28,10 @@ public class Apple2Display : Control
     private byte[]? _lastFrame;
     private DispatcherTimer? _refreshTimer; // ~60Hz UI redraw cadence
 
-    public Bitmap? Bitmap
+    private ISystemStatusProvider? _status;
+    private bool _flagText, _flagMixed, _flagHiRes, _flagPage2;
+
+    public Bitmap? Bitmap       
     {
         get => GetValue(BitmapProperty);
         set => SetValue(BitmapProperty, value);
@@ -48,8 +51,8 @@ public class Apple2Display : Control
     {
         Bitmap = CreateCheckerboardBitmap;
         Focusable = true;
-        GotFocus += (_, __) => InvalidateVisual();
-        LostFocus += (_, __) => InvalidateVisual();
+        GotFocus += (_, __) => { InvalidateVisual(); };
+        LostFocus += (_, __) => { InvalidateVisual(); };
         KeyDown += OnKeyDown;
         KeyUp += OnKeyUp;
         TextInput += OnTextInput;
@@ -82,7 +85,9 @@ public class Apple2Display : Control
     public void AttachFrameProvider(IFrameProvider provider)
     {
         if (_frameProvider != null)
+        {
             _frameProvider.FrameAvailable -= OnFrameAvailable;
+        }
         _frameProvider = provider;
         _frameProvider.FrameAvailable += OnFrameAvailable;
         _lastFrame = _frameProvider.GetFrame();
@@ -96,7 +101,9 @@ public class Apple2Display : Control
     protected override Size MeasureOverride(Size availableSize)
     {
         if (double.IsInfinity(availableSize.Width) || double.IsInfinity(availableSize.Height))
+        {
             return new Size(700, 525); // maintain aspect ratio baseline
+        }
         return availableSize;
     }
 
@@ -153,7 +160,7 @@ public class Apple2Display : Control
                     for (int y = 0; y < _frameProvider.Height; y++)
                     {
                         int outYTop = y * 2;
-                        if (outYTop + 1 >= 384) break;
+                        if (outYTop + 1 >= 384) { break; }
                         int lineOffset = y * 80;
                         RenderMonochromeLine(dst, stridePixels, outYTop, _lastFrame, lineOffset);
                     }
@@ -179,7 +186,11 @@ public class Apple2Display : Control
             {
                 bool on = (bits & (1 << bit)) == 0; // inverted Apple II bit convention
                 int outX = xByte * 7 + bit;
-                if (outX >= 561) break;
+                if (outX >= 561)
+                {
+                    break;
+                }
+
                 uint color = on ? 0xFFFFFFFFu : 0xFF000000u;
                 WritePixel(dst, stridePixels, outX, outYTop, color);
                 WritePixel(dst, stridePixels, outX, outYTop + 1, color);
@@ -189,7 +200,10 @@ public class Apple2Display : Control
 
     private void EnsureBitmapForFrame()
     {
-        if (Bitmap is WriteableBitmap) return;
+        if (Bitmap is WriteableBitmap)
+        {
+            return;
+        }
         Bitmap = new WriteableBitmap(new PixelSize(561, 384), new Vector(96, 96), PixelFormat.Bgra8888);
     }
 
@@ -205,7 +219,10 @@ public class Apple2Display : Control
     private void DrawBitmapScaled(DrawingContext context)
     {
         const double padding = 30;
-        if (Bitmap == null) return;
+        if (Bitmap == null)
+        {
+            return;
+        }
         double availableWidth = Bounds.Width - padding * 2;
         double availableHeight = Bounds.Height - padding * 2;
         double displayAspect = availableWidth / availableHeight;
@@ -239,29 +256,56 @@ public class Apple2Display : Control
     private bool GetCapsLockEnabled()
     {
         var tl = TopLevel.GetTopLevel(this);
-        if (tl is MainWindow mw) return mw.IsCapsLockEnabledForInput;
+        if (tl is MainWindow mw)
+        {
+            return mw.IsCapsLockEnabledForInput;
+        }
         return false;
     }
+
     private bool IsCapsLockEnabled => GetCapsLockEnabled();
 
     private void OnTextInput(object? sender, TextInputEventArgs e)
     {
-        if (_machine == null) return;
-        if (_suppressNextTextInput) { _suppressNextTextInput = false; return; }
-        if (string.IsNullOrEmpty(e.Text)) return;
+        if (_machine == null)
+        {
+            return;
+        }
+        if (_suppressNextTextInput)
+        {
+            _suppressNextTextInput = false;
+            return;
+        }
+        if (string.IsNullOrEmpty(e.Text))
+        {
+            return;
+        }
         foreach (char ch in e.Text)
         {
             char c = ch == '\n' ? '\r' : ch;
-            if (IsCapsLockEnabled && c >= 'a' && c <= 'z') c = (char)(c - 32);
-            if (c <= 0x7F) _machine.InjectKey((byte)((byte)c | 0x80));
+            if (IsCapsLockEnabled && c >= 'a' && c <= 'z')
+            {
+                c = (char)(c - 32);
+            }
+            if (c <= 0x7F)
+            {
+                _machine.InjectKey((byte)((byte)c | 0x80));
+            }
         }
         e.Handled = true;
     }
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
-        if (_machine == null) return;
-        if ((e.KeyModifiers & KeyModifiers.Alt) != 0 || IsFunctionKey(e.Key)) { _suppressNextTextInput = true; return; }
+        if (_machine == null)
+        {
+            return;
+        }
+        if ((e.KeyModifiers & KeyModifiers.Alt) != 0 || IsFunctionKey(e.Key))
+        {
+            _suppressNextTextInput = true;
+            return;
+        }
         if ((e.KeyModifiers & KeyModifiers.Control) != 0 && e.Key >= Key.A && e.Key <= Key.Z)
         {
             byte ctrl = (byte)(e.Key - Key.A + 1);
@@ -291,7 +335,10 @@ public class Apple2Display : Control
 
     private void OnKeyUp(object? sender, KeyEventArgs e)
     {
-        if ((e.Key == Key.LeftAlt || e.Key == Key.RightAlt) || IsFunctionKey(e.Key)) _suppressNextTextInput = false;
+        if ((e.Key == Key.LeftAlt || e.Key == Key.RightAlt) || IsFunctionKey(e.Key))
+        {
+            _suppressNextTextInput = false;
+        }
     }
 }
 

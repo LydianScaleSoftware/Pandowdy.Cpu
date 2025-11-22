@@ -15,9 +15,9 @@ public sealed class VA2M : IDisposable
 
     public IBus Bus { get; }
     public VA2MMemory RamModel { get; }
-    public VA2MMemory AuxRamModel { get; }
+//    public VA2MMemory AuxRamModel { get; }
     public IMappedMemory RamMapped => RamModel;
-    public IMappedMemory AuxRamMapped => AuxRamModel;
+//    public IMappedMemory AuxRamMapped => AuxRamModel;
 
     private readonly CPU _cpu;
     private readonly Stopwatch _throttleSw = Stopwatch.StartNew();
@@ -31,19 +31,18 @@ public sealed class VA2M : IDisposable
 
     private readonly IEmulatorState? _stateSink; // optional DI-provided state publisher
     private readonly IFrameProvider? _frameSink; // optional DI-provided frame publisher
+    private readonly ISystemStatusProvider? _sysStatusSink; // optional DI-provided status publisher
 
-    public VA2M() : this(null, null) { }
+    public VA2M() : this(null, null, null) { }
 
-    public VA2M(IEmulatorState? stateSink, IFrameProvider? frameSink)
+    public VA2M(IEmulatorState? stateSink, IFrameProvider? frameSink, ISystemStatusProvider? statusProvider = null)
     {
         _stateSink = stateSink;
         _frameSink = frameSink;
         TryLoadEmbeddedRom("Pandowdy.Core.Resources.a2e_enh_c-f.rom", 0xC000);
         var mem = new VA2MMemory(0,RamSize);
         RamModel = mem;
-        var auxmem = new VA2MMemory(0, RamSize);
-        AuxRamModel = auxmem;
-        Bus = new VA2MBus(mem,auxmem,ROM);
+        Bus = new VA2MBus(mem, ROM, statusProvider);
         _cpu = new CPU();
         Bus.Connect(_cpu);
         if (_frameSink is not null && Bus is VA2MBus vb)
@@ -56,13 +55,13 @@ public sealed class VA2M : IDisposable
 
     private void OnVBlank(object? sender, EventArgs e)
     {
-        if (_frameSink is null) return;
+        if (_frameSink is null) { return; }
         var buf = _frameSink.BorrowWritable();
         Array.Clear(buf, 0, buf.Length);
         for (int addr = 0x400; addr < 0x800; addr++)
         {
             int off = AddressToOffset(addr);
-            if (off < 0) continue;
+            if (off < 0) { continue; }
             int col = off % 40;
             int row = off / 40;
             byte ch = RamModel.Read((ushort)addr);
@@ -70,14 +69,14 @@ public sealed class VA2M : IDisposable
             for (int r = 0; r < 8; r++)
             {
                 int y = row * 8 + r;
-                if (y >= _frameSink.Height) break;
-                byte fontRow = (byte) (glyph[r]); 
+                if (y >= _frameSink.Height) { break; }
+                byte fontRow = (byte)(glyph[r]);
                 int baseX = col * 2;
                 if (!Use80Cols)
                 {
                     // 40-column mode: expand each bit (MSB first) into two horizontal bits forming 16-bit pattern
                     // Pattern: 0xXABCDEFG becomes 0x0AABBCCD, 0x0DEEFFGG (or 0x0AABBCCD0DEEFFGG as a word)
-                    if (baseX + 1 >= _frameSink.Width) break;
+                    if (baseX + 1 >= _frameSink.Width) { break; }
 
                     byte hi = 0xff;
                     byte lo = 0xff;
@@ -97,7 +96,7 @@ public sealed class VA2M : IDisposable
                 else
                 {
                     // 80-column mode: single 8-bit glyph row per character (use first slot)
-                    if (baseX >= _frameSink.Width) break;
+                    if (baseX >= _frameSink.Width) { break; }
                     buf[y * _frameSink.Width + baseX] = fontRow;
                 }
             }
@@ -107,13 +106,12 @@ public sealed class VA2M : IDisposable
 
     private static int AddressToOffset(int address)
     {
-        if (address < 0x400 || address >= 0x800) return -1;
+        if (address < 0x400 || address >= 0x800) { return -1; }
         address -= 0x400;
         var macroline_x = address % 128;
         var macroline_y = address / 128;
         // Return -1 for screen holes.
-        if (macroline_x >= 120)
-            return -1; 
+        if (macroline_x >= 120) { return -1; }
         int section = macroline_x / 40;
         int row = macroline_y + 8 * section;
         return macroline_x % 40 + 40 * row;
@@ -157,8 +155,7 @@ public sealed class VA2M : IDisposable
         double expectedSec = _throttleCycles / TargetHz;
         double elapsedSec = _throttleSw.Elapsed.TotalSeconds;
         double leadSec = expectedSec - elapsedSec; // >0 means we are ahead (need to wait)
-        if (leadSec <= 0)
-        { return; }
+        if (leadSec <= 0) { return; }
 
         // Sleep for the whole milliseconds part
         int sleepMs = (int) (leadSec * 1000.0);
@@ -203,7 +200,10 @@ public sealed class VA2M : IDisposable
             {
                 try
                 {
-                    if (!await timer.WaitForNextTickAsync(ct).ConfigureAwait(false)) break;
+                    if (!await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
+                    {
+                        break;
+                    }
                 }
                 catch (OperationCanceledException) { break; }
                 double want = cyclesPerTick + carry;
@@ -223,7 +223,10 @@ public sealed class VA2M : IDisposable
                 {
                     Bus.Clock();
                     _throttleCycles++;
-                    if (ct.IsCancellationRequested) break;
+                    if (ct.IsCancellationRequested)
+                    {
+                        break;
+                    }
                 }
                 PublishState();
                 await Task.Yield();
@@ -233,9 +236,9 @@ public sealed class VA2M : IDisposable
 
     private void PublishState()
     {
-        if (_stateSink is null) return;
+        if (_stateSink is null) { return; }
         int lineNum = (int)(Bus.CpuRead(0x75) + (Bus.CpuRead(0x76) << 8));
-        int? basicLine = lineNum < 0xFA00 ? lineNum : null; // treat IMMEDIATE as null
+        int? basicLine = lineNum < 0xFA00 ? lineNum : null;
         var snapshot = new StateSnapshot((ushort)_cpu.PC, (byte)_cpu.SP, Bus.SystemClockCounter, basicLine, true, false);
         _stateSink.Update(snapshot);
     }
@@ -254,7 +257,8 @@ public sealed class VA2M : IDisposable
     /// Inject a keyboard value into the machine as if a key was latched at $C000.
     /// High bit must be set.  Cleared by access of $C010.
     /// </summary>
-    public void InjectKey(byte ascii) => Poke(0xC000, (byte) (ascii | 0x80));
+    
+    public void InjectKey(byte ascii) => Bus.SetKeyValue((byte)(ascii | 0x80));
 
 
     /// <summary>
@@ -265,26 +269,14 @@ public sealed class VA2M : IDisposable
     {
         // Calculate how many bytes fit from baseAddress to end of RAM
         int available = RamSize - baseAddress;
-        if (available <= 0 || image.IsEmpty)
-        { return; }
+        if (available <= 0 || image.IsEmpty) { return; }
         int toCopy = Math.Min(available, image.Length);
 
         // IMemoryModel has WriteBlock with params byte[] - allocate exact-sized array slice
         byte[] buffer = image[..toCopy].ToArray();
         ROM.WriteBlock(baseAddress, buffer);
 
-        /*
-        const byte NormalCharOffset = 0x80;
-        ROM.Write(0xff0a, (byte) 'P' + NormalCharOffset, true);
-        ROM.Write(0xff0b, (byte) 'a' + NormalCharOffset, true);
-        ROM.Write(0xff0c, (byte) 'n' + NormalCharOffset, true);
-        ROM.Write(0xff0d, (byte) 'd' + NormalCharOffset, true);
-        ROM.Write(0xff0e, (byte) 'o' + NormalCharOffset, true);
-        ROM.Write(0xff0f, (byte) 'w' + NormalCharOffset, true);
-        ROM.Write(0xff10, (byte) 'd' + NormalCharOffset, true);
-        ROM.Write(0xff11, (byte) 'y' + NormalCharOffset, true);
-        ROM.Write(0xff12, (byte) '!' + NormalCharOffset, true);
-        */
+
     }
 
     public void Dispose()
