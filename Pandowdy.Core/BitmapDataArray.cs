@@ -1,17 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Pandowdy.Core
 {
-    internal class BitmapDataArray 
+    internal class BitmapDataArray
     {
-        private const int lines = 280;
-        private const int strideCols = 81; // 81 bytes per line to cover 561 pixels (561 / 8 = 70.125, round up to 71, use 81 for alignment)
-        private const int stridePixels = strideCols*8;  
-        private byte[] data = new byte[lines * strideCols];
+        private const int lines = 192; // logical scanlines
+        private const int logicalPixels = 561; // visible pixel width
+        private const int rowBytes = (logicalPixels + 7) >> 3; // packed bytes per row
+        private const int stridePixels = rowBytes * 8; // capacity (allows small overscan past logicalPixels)
+        private readonly byte[] data = new byte[lines * rowBytes];
+
+        static BitmapDataArray()
+        {
+            Debug.Assert(rowBytes == ((logicalPixels + 7) >> 3), "rowBytes round-up calculation mismatch");
+            Debug.Assert(stridePixels >= logicalPixels, "Stride capacity must cover logical pixel width");
+        }
 
         public void Clear()
         {
@@ -22,56 +26,123 @@ namespace Pandowdy.Core
         {
             if (x < 0 || x >= stridePixels)
             {
-                throw new ArgumentOutOfRangeException(nameof(x), $"x must be between 0 and {stridePixels} inclusive.");
+                Debug.Assert(false, $"SetPixel: x {x} outside capacity 0..{stridePixels - 1}");
+                return;
             }
-            if (y < 0 || y >= 280)
+            if (y < 0 || y >= lines)
             {
-                throw new ArgumentOutOfRangeException(nameof(y), "y must be between 0 and 279 inclusive.");
+                Debug.Assert(false, $"SetPixel: y {y} outside capacity 0..{lines - 1}");
+                return;
             }
-            int index = y * stridePixels + (x / 8);
-            byte mask = (byte)(0x80 >> (x % 8));
+            if (x >= logicalPixels)
+            {
+                Debug.Assert(false, $"SetPixel: x {x} in overscan region >= {logicalPixels}");
+                return;
+            }
+            int index = y * rowBytes + (x >> 3);
+            byte mask = (byte)(0x80 >> (x & 7));
             data[index] |= mask;
         }
 
-        public void SetDoublePixel(int x, int y) // Used in 40-col mode to set two adjacent pixels (even and odd)
-        {
-            if (x < 0 || x >= stridePixels/2)
-            {
-                throw new ArgumentOutOfRangeException(nameof(x), $"x must be between 0 and {stridePixels/2} inclusive.");
-            }
-            if (y < 0 || y >= 280)
-            {
-                throw new ArgumentOutOfRangeException(nameof(y), "y must be between 0 and 279 inclusive.");
-            }
-            SetPixel(x/2, y);
-            SetPixel(x/2 + 1, y);
-        }
-
-        public void ClearDoublePixel(int x, int y) // Used in 40-col mode to clear two adjacent pixels (even and odd)
+        public void SetDoublePixel(int x, int y)
         {
             if (x < 0 || x >= stridePixels / 2)
             {
-                throw new ArgumentOutOfRangeException(nameof(x), $"x must be between 0 and {stridePixels / 2} inclusive.");
+                Debug.Assert(false, $"SetDoublePixel: x {x} outside capacity 0..{(stridePixels / 2) - 1}");
+                return;
             }
-            if (y < 0 || y >= 280)
+            if (y < 0 || y >= lines)
             {
-                throw new ArgumentOutOfRangeException(nameof(y), "y must be between 0 and 279 inclusive.");
+                Debug.Assert(false, $"SetDoublePixel: y {y} outside capacity 0..{lines - 1}");
+                return;
             }
-            ClearPixel(x / 2, y);
-            ClearPixel(x / 2 + 1, y);
+            int px = x; // doubled space origin
+            SetPixel(px, y);
+            SetPixel(px + 1, y);
         }
+
+        public void Insert7BitLsbAt(int x, int y, byte value, bool expand = false)
+        {
+            if (x < 0 || x >= stridePixels)
+            {
+                Debug.Assert(false, $"Insert7BitLsbAt: x {x} outside capacity 0..{stridePixels - 1}");
+                return;
+            }
+            if (y < 0 || y >= lines)
+            {
+                Debug.Assert(false, $"Insert7BitLsbAt: y {y} outside capacity 0..{lines - 1}");
+                return;
+            }
+            int px = x;
+            for (int bit = 0; bit < 8; bit++)
+            {
+                bool on = (value & (1 << bit)) != 0;
+                if (expand)
+                {
+                    int p0 = px + (bit * 2);
+                    int p1 = p0 + 1;
+                    if (on)
+                    {
+                        SetPixel(p0, y);
+                        SetPixel(p1, y);
+                    }
+                    else
+                    {
+                        ClearPixel(p0, y);
+                        ClearPixel(p1, y);
+                    }
+                }
+                else
+                {
+                    int p = px + bit;
+                    if (on)
+                    {
+                        SetPixel(p, y);
+                    }
+                    else
+                    {
+                        ClearPixel(p, y);
+                    }
+                }
+            }
+        }
+
+        public void ClearDoublePixel(int x, int y)
+        {
+            if (x < 0 || x >= stridePixels / 2)
+            {
+                Debug.Assert(false, $"ClearDoublePixel: x {x} outside capacity 0..{(stridePixels / 2) - 1}");
+                return;
+            }
+            if (y < 0 || y >= lines)
+            {
+                Debug.Assert(false, $"ClearDoublePixel: y {y} outside capacity 0..{lines - 1}");
+                return;
+            }
+            int px = x;
+            ClearPixel(px, y);
+            ClearPixel(px + 1, y);
+        }
+
         public void ClearPixel(int x, int y)
         {
             if (x < 0 || x >= stridePixels)
             {
-                throw new ArgumentOutOfRangeException(nameof(x), $"x must be between 0 and {stridePixels} inclusive.");
+                Debug.Assert(false, $"ClearPixel: x {x} outside capacity 0..{stridePixels - 1}");
+                return;
             }
-            if (y < 0 || y >= 280)
+            if (y < 0 || y >= lines)
             {
-                throw new ArgumentOutOfRangeException(nameof(y), "y must be between 0 and 279 inclusive.");
+                Debug.Assert(false, $"ClearPixel: y {y} outside capacity 0..{lines - 1}");
+                return;
             }
-            int index = y * stridePixels + (x / 8);
-            byte mask = (byte)(0x80 >> (x % 8));
+            if (x >= logicalPixels)
+            {
+                Debug.Assert(false, $"ClearPixel: x {x} in overscan region >= {logicalPixels}");
+                return;
+            }
+            int index = y * rowBytes + (x >> 3);
+            byte mask = (byte)(0x80 >> (x & 7));
             data[index] &= (byte)~mask;
         }
 
@@ -79,14 +150,18 @@ namespace Pandowdy.Core
         {
             if (x < 0 || x >= stridePixels)
             {
-                throw new ArgumentOutOfRangeException(nameof(x), $"x must be between 0 and {stridePixels} inclusive.");
+                throw new ArgumentOutOfRangeException(nameof(x), $"x must be between 0 and {stridePixels - 1} inclusive.");
             }
-            if (y < 0 || y >= 280)
+            if (y < 0 || y >= lines)
             {
-                throw new ArgumentOutOfRangeException(nameof(y), "y must be between 0 and 279 inclusive.");
+                throw new ArgumentOutOfRangeException(nameof(y), $"y must be between 0 and {lines - 1} inclusive.");
             }
-            int index = y * stridePixels + (x / 8);
-            byte mask = (byte)(0x80 >> (x % 8));
+            if (x >= logicalPixels)
+            {
+                return false;
+            }
+            int index = y * rowBytes + (x >> 3);
+            byte mask = (byte)(0x80 >> (x & 7));
             return (data[index] & mask) != 0;
         }
 
@@ -94,11 +169,11 @@ namespace Pandowdy.Core
         {
             if (x < 0 || x + length > stridePixels)
             {
-                throw new ArgumentOutOfRangeException(nameof(x), $"x must be between 0 and { stridePixels } inclusive.");
+                throw new ArgumentOutOfRangeException(nameof(x), $"Range must fit within 0..{stridePixels - 1}.");
             }
-            if (y < 0 || y >= 280)
+            if (y < 0 || y >= lines)
             {
-                throw new ArgumentOutOfRangeException(nameof(y), "y must be between 0 and 279 inclusive.");
+                throw new ArgumentOutOfRangeException(nameof(y), $"y must be between 0 and {lines - 1} inclusive.");
             }
             Span<bool> span = new bool[length];
             for (int i = 0; i < length; i++)
@@ -112,10 +187,14 @@ namespace Pandowdy.Core
         {
             if (row < 0 || row >= lines)
             {
-                throw new ArgumentOutOfRangeException(nameof(row), "row must be between 0 and 279 inclusive.");
+                throw new ArgumentOutOfRangeException(nameof(row), $"row must be between 0 and {lines - 1} inclusive.");
             }
-            return new ReadOnlySpan<byte>(data, row * stridePixels, strideCols);
+            return new ReadOnlySpan<byte>(data, row * rowBytes, rowBytes);
         }
 
+        public int Width => logicalPixels;
+        public int CapacityWidth => stridePixels;
+        public int Height => lines;
+        public int RowByteCount => rowBytes;
     }
 }
