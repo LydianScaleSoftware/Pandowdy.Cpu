@@ -266,14 +266,13 @@ for (int idx = 0; idx < colors.size(); idx++)
     {
         for (int xPos = 0; xPos < lineData.Length; xPos++)
         {
-            bool[] bits = new bool[4];
+            var bits = new bool[4];
             bits[0] = lineData[xPos + 0];
-            bits[1] = (xPos + 1 < lineData.Length) ? lineData[xPos + 1] : false;
-            bits[2] = (xPos + 2 < lineData.Length) ? lineData[xPos + 2] : false;
-            bits[3] = (xPos + 3 < lineData.Length) ? lineData[xPos + 3] : false;
-            byte phase = (byte)(xPos % 4);
+            bits[1] = (xPos + 1 < lineData.Length) && lineData[xPos + 1];
+            bits[2] = (xPos + 2 < lineData.Length) && lineData[xPos + 2];
+            bits[3] = (xPos + 3 < lineData.Length) && lineData[xPos + 3];
+            var phase = (byte)(xPos % 4);
 
-            bool on = lineData[xPos]; // simplified for full byte
             if (xPos <= stridePixels)
             {
 

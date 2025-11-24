@@ -21,7 +21,7 @@ public sealed class AppleSoftHookTable
         {
             if (lineNum < 0xFA00)
             {
-                Debug.Write($"{lineNum.ToString().PadRight(5)} ");
+                Debug.Write($"{lineNum,-5} ");
             }
             else
             {

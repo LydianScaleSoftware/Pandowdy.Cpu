@@ -60,13 +60,9 @@ public sealed class VA2MBus(VA2MMemory ram,  VA2MMemory ROM, ISystemStatusProvid
         }
     }
 
-
     public void SetKeyValue(byte key)
     {
-     //   if (_currKey == 0)
-        {
-            _currKey = key;
-        }
+        _currKey = key;
     }
 
     public byte CpuRead(ushort address, bool readOnly = false)
