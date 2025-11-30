@@ -69,6 +69,8 @@ public class Apple2Display : Control
     private ISystemStatusProvider? _status;
     private bool _flagText, _flagMixed, _flagHiRes, _flagPage2;
 
+    public bool ShowScanLines { get; set; } = true;
+
     public Bitmap? Bitmap
     {
         get => GetValue(BitmapProperty);
@@ -199,11 +201,11 @@ public class Apple2Display : Control
                         { break; }
                         if (_frameProvider.IsGraphics)
                         {
-                            RenderNtscLine(dst, stridePixels, outYTop, _lastFrame.GetPixelSpan(0, y, BitmapDataArray.Width));
+                            RenderNtscLine(dst, stridePixels, outYTop, _lastFrame.GetPixelSpan(0, y, BitmapDataArray.Width), ShowScanLines);
                         }
                         else
                         {
-                            RenderMonochromeLine(dst, stridePixels, outYTop, _lastFrame.GetPixelSpan(0, y, BitmapDataArray.Width));
+                            RenderMonochromeLine(dst, stridePixels, outYTop, _lastFrame.GetPixelSpan(0, y, BitmapDataArray.Width), ShowScanLines);
                         }
                     }
                 }
@@ -219,7 +221,7 @@ public class Apple2Display : Control
         DrawBitmapScaled(context);
     }
 
-    static private unsafe void RenderMonochromeLine(byte* dst, int stridePixels, int outYTop, ReadOnlySpan<bool> lineData)
+    static private unsafe void RenderMonochromeLine(byte* dst, int stridePixels, int outYTop, ReadOnlySpan<bool> lineData, bool showScanLines)
     {
         //for (int xByte = 0; xByte < 80; xByte++)
         for (int xPos = 0; xPos < lineData.Length; xPos++)
@@ -228,8 +230,9 @@ public class Apple2Display : Control
             if (xPos <= stridePixels)
             {
                 uint color = on ? 0xFFFFFFFFu : 0xFF000000u;
+                uint dimColor = showScanLines ? (((color & 0x00fcfcfc) >> 2) | 0xff000000) : color; // 3/4 brightness when enabled
                 WritePixel(dst, stridePixels, xPos, outYTop, color);
-                WritePixel(dst, stridePixels, xPos, outYTop + 1, color);
+                WritePixel(dst, stridePixels, xPos, outYTop + 1, dimColor);
             }
         }
     }
@@ -262,7 +265,7 @@ for (int idx = 0; idx < colors.size(); idx++)
 }
 }
 */
-    static private unsafe void RenderNtscLine(byte* dst, int stridePixels, int outYTop, ReadOnlySpan<bool> lineData)
+    static private unsafe void RenderNtscLine(byte* dst, int stridePixels, int outYTop, ReadOnlySpan<bool> lineData, bool showScanLines)
     {
         for (int xPos = 0; xPos < lineData.Length; xPos++)
         {
@@ -283,7 +286,9 @@ for (int idx = 0; idx < colors.size(); idx++)
 
                 uint color = GetNTSCColorFromBits(bitval, phase); //on ? 0xFFFF0000u : 0xFF000000u;
                 WritePixel(dst, stridePixels, xPos, outYTop, color);
-                WritePixel(dst, stridePixels, xPos, outYTop + 1, color);
+                uint dimColor = showScanLines ? (((color & 0x00fcfcfc) >> 2) | 0xff000000) : color; // 3/4 brightness when enabled
+
+                WritePixel(dst, stridePixels, xPos, outYTop + 1, dimColor);
             }
         }
     }

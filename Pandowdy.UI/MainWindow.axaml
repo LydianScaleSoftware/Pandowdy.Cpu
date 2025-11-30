@@ -24,6 +24,8 @@
 			<MenuItem Header="_View">
 				<MenuItem Header="_Clear Text" Click="OnClearTextClicked" InputGesture="Alt+L" />
 				<MenuItem Header="_Test Disk Read" Click="OnTestDiskReadClicked" InputGesture="Ctrl+T" />
+				<Separator/>
+				<MenuItem x:Name="ScanLinesMenuItem" Header="_Scan Lines" ToggleType="CheckBox" Click="OnViewScanLinesClicked" InputGesture="Alt+S" />
 			</MenuItem>
 			<MenuItem Header="_Emulator">
 				<MenuItem Header="_Start" Click="OnEmuStartClicked" InputGesture="F5" />
@@ -109,7 +111,7 @@
 			<!-- Apple2TextScreen centered and scaled to fill available space -->
 			<local:Apple2Display x:Name="ScreenDisplay"
 								HorizontalAlignment="Center"
-								VerticalAlignment="Center" MinWidth="600" MinHeight="480"/>
+								VerticalAlignment="Center" MinWidth="600" MinHeight="576"/>
 		
 
 

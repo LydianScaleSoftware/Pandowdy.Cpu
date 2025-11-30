@@ -29,6 +29,7 @@ public partial class MainWindow : Window // reverted base class
     private TextBox? _outputTextBox;
     private MenuItem? _throttleMenuItem;
     private MenuItem? _capsLockMenuItem;
+    private MenuItem? _scanLinesMenuItem;
     private Menu? _mainMenu;
     private Apple2Display? _screen;
     private bool _menuPointerActive; // true while pointer is over the menu bar
@@ -46,6 +47,7 @@ public partial class MainWindow : Window // reverted base class
         _outputTextBox = this.FindControl<TextBox>("OutputTextBox");
         _throttleMenuItem = this.FindControl<MenuItem>("ThrottleMenuItem");
         _capsLockMenuItem = this.FindControl<MenuItem>("CapsLockMenuItem");
+        _scanLinesMenuItem = this.FindControl<MenuItem>("ScanLinesMenuItem");
         _mainMenu = this.FindControl<Menu>("MainMenu");
         mDiskReadTest = new DiskReadTestTemp(mAppHook, AppendText, this);
 
@@ -73,6 +75,11 @@ public partial class MainWindow : Window // reverted base class
         if (_capsLockMenuItem != null)
         {
             _capsLockMenuItem.IsChecked = _capsLockEnabled;
+        }
+
+        if (_scanLinesMenuItem != null && _screen != null)
+        {
+            _scanLinesMenuItem.IsChecked = _screen.ShowScanLines;
         }
 
         // Manual activation of nested SystemStatus view model
@@ -208,6 +215,20 @@ public partial class MainWindow : Window // reverted base class
         }
     }
 
+    private void OnViewScanLinesClicked(object? sender, RoutedEventArgs e)
+    {
+        if (_screen == null)
+        {
+            return;
+        }
+        _screen.ShowScanLines = !_screen.ShowScanLines;
+        if (_scanLinesMenuItem != null)
+        {
+            _scanLinesMenuItem.IsChecked = _screen.ShowScanLines;
+        }
+        _screen.InvalidateVisual();
+    }
+
     private void StopEmulator()
     {
         if (_emuCts == null)
@@ -268,6 +289,9 @@ public partial class MainWindow : Window // reverted base class
                     return true;
                 case Key.L:
                     OnClearTextClicked(this, new RoutedEventArgs());
+                    return true;
+                case Key.S:
+                    OnViewScanLinesClicked(this, new RoutedEventArgs());
                     return true;
                 case Key.F4:
                     Close();

@@ -35,6 +35,8 @@ public interface ISystemStatusProvider
     bool StateTextMode { get; }
     bool StateAltCharSet { get; }
     bool StateFlashOn { get; }
+    byte BSRStatusByte { get; }
+    byte StateBsrWriteCount { get; }
 
     SystemStatusSnapshot Current { get; }
     event EventHandler<SystemStatusSnapshot>? Changed; // event-style subscription
@@ -63,12 +65,15 @@ public record SystemStatusSnapshot(
     bool StateMixed,
     bool StateTextMode,
     bool StateAltCharSet,
-    bool StateFlashOn);
+    bool StateFlashOn,
+    byte BSRStatusByte,
+    byte StateBSRWriteCount
+    );
 
 public sealed class SystemStatusProvider : ISystemStatusProvider
 {
     private SystemStatusSnapshot _current = new(false,false,false,false,false,false,
-        false,false,false,false,false,false,false,false,false,false,true,false, false);
+        false,false,false,false,false,false,false,false,false,false,true,false, false, 0, 0);
 
     private readonly System.Reactive.Subjects.BehaviorSubject<SystemStatusSnapshot> _subject;
 
@@ -95,6 +100,10 @@ public sealed class SystemStatusProvider : ISystemStatusProvider
     public bool StateTextMode => _current.StateTextMode;
     public bool StateAltCharSet => _current.StateAltCharSet;
     public bool StateFlashOn => !_current.StateFlashOn;
+    public byte BSRStatusByte => _current.BSRStatusByte;
+    public byte StateBsrWriteCount => _current.StateBSRWriteCount;
+
+
     public SystemStatusSnapshot Current => _current;
     public IObservable<SystemStatusSnapshot> Stream => _subject;
 
@@ -113,11 +122,12 @@ public sealed class SystemStatusSnapshotBuilder(SystemStatusSnapshot s)
     public bool State80Store = s.State80Store, StateRamRd = s.StateRamRd, StateRamWrt = s.StateRamWrt, StateIntCxRom = s.StateIntCxRom, StateAltZp = s.StateAltZp, StateSlotC3Rom = s.StateSlotC3Rom,
         StatePb0 = s.StatePb0, StatePb1 = s.StatePb1, StatePb2 = s.StatePb2, StateAnn0 = s.StateAnn0, StateAnn1 = s.StateAnn1, StateAnn2 = s.StateAnn2, StateAnn3 = s.StateAnn3_DGR,
         StatePage2 = s.StatePage2, StateHiRes = s.StateHiRes, StateMixed = s.StateMixed, StateTextMode = s.StateTextMode, StateAltCharSet = s.StateAltCharSet, StateFlashOn = s.StateFlashOn;
+    int BSRStatusByte = s.BSRStatusByte, StateBSRWriteCount = s.StateBSRWriteCount;
 
     public SystemStatusSnapshot Build() => new(
         State80Store, StateRamRd, StateRamWrt, StateIntCxRom, StateAltZp, StateSlotC3Rom,
         StatePb0, StatePb1, StatePb2, StateAnn0, StateAnn1, StateAnn2, StateAnn3,
-        StatePage2, StateHiRes, StateMixed, StateTextMode, StateAltCharSet, StateFlashOn);
+        StatePage2, StateHiRes, StateMixed, StateTextMode, StateAltCharSet, StateFlashOn, 0, 0);
 }
 
 public interface IErrorProvider {
