@@ -1,7 +1,8 @@
-using Emulator;
 using System;
 using System.Diagnostics;
+using System.Net.NetworkInformation;
 using System.Threading;
+using Emulator;
 
 namespace Pandowdy.Core;
 
@@ -9,6 +10,7 @@ namespace Pandowdy.Core;
 public interface IAppleIIBus : IBus
 {
     public void SetKeyValue(byte key);
+    public void SetPushButton(int num, bool enabled);
 }
 
 /// <summary>
@@ -67,7 +69,24 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
     }
 
 
-
+    public void SetPushButton(int num, bool pressed)
+    {
+        _status?.Mutate(b =>
+        {
+            switch (num)
+            {
+                case 0:
+                    b.StatePb0 = pressed;
+                    break;
+                case 1:
+                    b.StatePb1 = pressed;
+                    break;
+                case 2:
+                    b.StatePb2 = pressed;
+                    break;
+            }
+        });
+    }
 
 
     void Set80Store(bool enabled)
@@ -88,12 +107,17 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
     }
 
 
-    void SetCxRom(bool enabled)
+    void SetSlotCxRom()
     {
-        _status?.Mutate(b => b.StateIntCxRom = enabled);
-        _memoryPool.SetCxRom(enabled);
+        _status?.Mutate(b => b.StateIntCxRom = false);
+        _memoryPool.SetIntCxRom(false);
     }
 
+    void SetIntCxRom()
+    {
+        _status?.Mutate(b => b.StateIntCxRom = true);
+        _memoryPool.SetIntCxRom(true);
+    }
 
     void SetAltZp(bool enabled)
     {
@@ -158,10 +182,45 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
             });
     }
 
+    void ClearWrtCount()
+    {
+        _status?.Mutate(b => b.StateWriteCount = 0);
+    }
+
+    void IncrementWrtCount()
+    {
+        int count = _status!.StateWriteCount + 1;
+
+        _status?.Mutate(b => b.StateWriteCount = count);
+        if (count >= 2)
+        {
+            count = 2;
+            _status?.Mutate(b => b.StateHighWrite = true);
+            _memoryPool.SetHighWrite(true);
+        }
+    }
+
+    void SetBank1(bool status)
+    {
+        _status?.Mutate(b => b.StateUseBank1 = status);
+        _memoryPool.SetBank1(status);
+    }
+    void SetHighRead(bool status)
+    {
+        _status?.Mutate(b => b.StateHighRead = status);
+        _memoryPool.SetHighRead(status);
+    }
+    void DisableHighWrite()
+    {
+        _status?.Mutate(b => b.StateHighWrite = false);
+        _memoryPool.SetHighWrite(false);
+    }
+
     private byte ReadFromIOSpace(ushort address)
     {
         if (address >= 0xC000 && address <= 0xC00F)
         {
+/*
             if (address == 0xC001)
             {
                 Set80Store(true);
@@ -223,6 +282,7 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
             {
                 SetAltCharSet(true);
             }
+*/
             return _currKey;
         }
 
@@ -377,45 +437,45 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
             return 0xA0; // Placeholder value
         }
 
-        if (address == 0xC058) // ANN 0 OFF
+        if (address == 0xC058) // ANN0
         {
             SetAnnunciator(0, false);
-            return 0xA0; // Placeholder value
+            return (byte) (_status!.StateAnn0 ? 0x80 : 0x00);
         }
-        if (address == 0xC059) // ANN 0 ON
+        if (address == 0xC059)  
         {
             SetAnnunciator(0, true);
-            return 0xA0; // Placeholder value
+            return (byte) (_status!.StateAnn0 ? 0x80 : 0x00);
         }
-        if (address == 0xC05A) // ANN 1 OFF
+        if (address == 0xC05A)  // ANN 1
         {
             SetAnnunciator(1, false);
-            return 0xA0; // Placeholder value
+            return (byte) (_status!.StateAnn1 ? 0x80 : 0x00);
         }
-        if (address == 0xC05B) // ANN 1 ON
+        if (address == 0xC05B)  
         {
             SetAnnunciator(1, true);
-            return 0xA0; // Placeholder value
+            return (byte) (_status!.StateAnn1 ? 0x80 : 0x00);
         }
-        if (address == 0xC05C) // ANN 2 OFF
+        if (address == 0xC05C)  // ANN 2
         {
             SetAnnunciator(2, false);
-            return 0xA0; // Placeholder value
+            return (byte) (_status!.StateAnn2 ? 0x80 : 0x00);
         }
-        if (address == 0xC05D) // ANN 2 ON
+        if (address == 0xC05D)  
         {
             SetAnnunciator(2, true);
-            return 0xA0; // Placeholder value
+            return (byte) (_status!.StateAnn2 ? 0x80 : 0x00);
         }
-        if (address == 0xC05E) // ANN 3 OFF (or DHGR)
+        if (address == 0xC05E) // ANN 3  (or DHGR)
         {
             SetAnnunciator(3, false);
-            return 0xA0; // Placeholder value
+            return (byte) (_status!.StateAnn3_DGR ? 0x80 : 0x00);
         }
-        if (address == 0xC05F) // ANN 3 ON (or DHGR)
+        if (address == 0xC05F)  
         {
             SetAnnunciator(3, true);
-            return 0xA0; // Placeholder value
+            return (byte) (_status!.StateAnn3_DGR ? 0x80 : 0x00);
         }
 
         if (address == 0xC060) // TAPE IN
@@ -460,6 +520,81 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
             return 0x00;
         }
 
+
+
+        if (address == 0xC080 || address == 0xC084)
+        {
+            ClearWrtCount();
+            SetBank1(false);
+            SetHighRead(true);
+            DisableHighWrite();
+        }
+
+        if (address == 0xC081 || address == 0xC085)
+        {
+            SetBank1(false);
+            IncrementWrtCount();
+            SetHighRead(false);
+        }
+
+
+        if (address == 0xC082 || address == 0xC086)
+        {
+            SetBank1(false);
+            ClearWrtCount();
+            SetHighRead(false);
+            DisableHighWrite();
+        }
+
+        if (address == 0xC083 || address == 0xC087)
+        {
+            SetBank1(false);
+            IncrementWrtCount();
+            SetHighRead(true);
+        }
+
+
+        if (address == 0xC088 || address == 0xC08C)
+        {
+            ClearWrtCount();
+            SetBank1(true);
+            SetHighRead(true);
+            DisableHighWrite();
+        }
+
+        if (address == 0xC089 || address == 0xC08D)
+        {
+            SetBank1(true);
+            IncrementWrtCount();
+            SetHighRead(false);
+        }
+
+
+        if (address == 0xC08A || address == 0xC08E)
+        {
+            SetBank1(true);
+            ClearWrtCount();
+            SetHighRead(false);
+            DisableHighWrite();
+        }
+
+        if (address == 0xC08B || address == 0xC08F)
+        {
+            SetBank1(true);
+            IncrementWrtCount();
+            SetHighRead(true);
+        }
+
+        // C080 / C084 -> Bank2, WrtCount = 0, Read = true
+        // C081 / C085 -> Bank2, WrtCount ++, Read = false
+        // C082 / C086 -> Bank2, WrtCount = 0, Read = false;
+        // C083 / C087 -> Bank2, WrtCount ++, Raed = true
+
+        // C088 / C08C -> Bank1, WrtCount = 0, Read = true
+        // C089 / C08D -> Bank1, WrtCount ++, Read = false
+        // C08A / C08E -> Bank1, WrtCount = 0, Read = false
+        // C08B / C08F -> Bank1, WrtCount ++, Read = true
+
         // Todo: Handle other I/O writes here if needed
 
         return 0x67; // Placehold Value
@@ -501,12 +636,12 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
             }
             else if (address == 0xC006)
             {
-                SetCxRom(false);
+                SetSlotCxRom();
                 return;
             }
             else if (address == 0xC007)
             {
-                SetCxRom(true);
+                SetIntCxRom();
                 return;
             }
             else if (address == 0xC008)
@@ -649,6 +784,79 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
             {
                 SetAnnunciator(3, true);
             }
+
+            if (address == 0xC080 || address == 0xC084)
+            {
+                ClearWrtCount();
+                SetBank1(false);
+                SetHighRead(true);
+                DisableHighWrite();
+            }
+
+            if (address == 0xC081 || address == 0xC085)
+            {
+                SetBank1(false);
+                ClearWrtCount();
+                SetHighRead(true);
+            }
+
+
+            if (address == 0xC082 || address == 0xC086)
+            {
+                SetBank1(false);
+                ClearWrtCount();
+                SetHighRead(true);
+                DisableHighWrite();
+            }
+
+            if (address == 0xC083 || address == 0xC087)
+            {
+                SetBank1(false);
+                ClearWrtCount();
+                SetHighRead(true);
+            }
+
+            if (address == 0xC088 || address == 0xC08C)
+            {
+                ClearWrtCount();
+                SetBank1(true);
+                SetHighRead(true);
+                DisableHighWrite();
+            }
+
+            if (address == 0xC089 || address == 0xC08D)
+            {
+                SetBank1(true);
+                ClearWrtCount();
+                SetHighRead(true);
+            }
+
+
+            if (address == 0xC08A || address == 0xC08E)
+            {
+                SetBank1(true);
+                ClearWrtCount();
+                SetHighRead(true);
+                DisableHighWrite();
+            }
+
+            if (address == 0xC08B || address == 0xC08F)
+            {
+                SetBank1(true);
+                ClearWrtCount();
+                SetHighRead(true);
+            }
+
+            // C080 / C084 -> Bank2, WrtCount = 0, Read = true
+            // C081 / C085 -> Bank2, WrtCount = 0, Read = false
+            // C082 / C086 -> Bank2, WrtCount = 0, Read = false;
+            // C083 / C087 -> Bank2, WrtCount = 0, Read = true
+
+            // C088 / C08C -> Bank1, WrtCount = 0, Read = true
+            // C089 / C08D -> Bank1, WrtCount = 0, Read = false
+            // C08A / C08E -> Bank1, WrtCount = 0, Read = false
+            // C08B / C08F -> Bank1, WrtCount = 0, Read = true
+
         }
 
         // Todo: Handle C100-CFFF I/O writes here if needed
@@ -724,9 +932,32 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
     public void Reset()
     {
         ThrowIfDisposed();
+        SetRamRead(false);
+        SetRamWrite(false);
+        SetIntCxRom();
+        SetHires(false);
+        SetMixed(false);
+        SetPage2(false);
+        SetShow80Col(false);
+        SetSlotC3Rom(false);
+        Set80Store(false);
+        SetAltCharSet(false);
+        SetTextMode(true);
+        SetAltZp(false);
+        SetAnnunciator(0, false);
+        SetAnnunciator(1, false);
+        SetAnnunciator(2, false);
+        SetAnnunciator(3, false);
+        SetBank1(false);
+        SetHighRead(false);
+        DisableHighWrite();
+        ClearWrtCount();
+
+
         _cpu!.Reset();
         _systemClock = 0;
         _nextVblankCycle = CyclesPerVBlank;
+
     }
 
     public void Dispose()

@@ -82,6 +82,13 @@ namespace Pandowdy.Core
         private bool _80Store = false;
         private bool _hires = false;
         private bool _page2 = false;
+        private bool _intCxRom = false;
+        private bool _slotC3Rom = false;
+
+        private bool _highWrite = false;
+        private bool _bank1 = false;
+        private bool _highRead = false;
+
 
         // Nullable maps allow unmapped / write-protected regions; instance (was static)
         private readonly Dictionary<Ranges, Memory<byte>?> _readRanges = [];
@@ -141,7 +148,7 @@ namespace Pandowdy.Core
         private readonly Memory<byte> _s6ext;
         private readonly Memory<byte> _s7ext;
 
-        public MemoryPool(int poolSize = 0x27F00, bool randomInit = true)
+        public MemoryPool(int poolSize = 0x27F00, bool randomInit = false)
         {
             _pool = new byte[poolSize];
             if (randomInit)
@@ -377,202 +384,150 @@ namespace Pandowdy.Core
             UpdateMemoryMappings();
         }
 
-        public void SetCxRom(bool _ /*intCxRom*/)
-        {
-            // Temporarily Disabled
-            //    if (intCxRom)
-            //    {
-            //       // TODO
-            //    }
-            //    else
-            //    {
-            //        //TODO
-            //    }
+        public void SetIntCxRom(bool intCxRom)
+        {           
+            _intCxRom = intCxRom;
+            
             UpdateMemoryMappings();
         }
 
-        public void SetSlotC3Rom(bool _ /* intCxRom */ )
+        public void SetSlotC3Rom(bool slotC3Rom)
         {
-            // Temporarily Disabled
-            //    if (slotC3Rom)
-            //    {
-            //        //TODO
-            //    }
-            //    else
-            //    {
-            //        //TODO
-            //    }
+            _slotC3Rom = slotC3Rom;
             UpdateMemoryMappings();
         }
+
+
+        public void SetHighWrite(bool enabled)
+        {
+            _highWrite = enabled;
+            UpdateMemoryMappings();
+        }
+
+
+        public void SetBank1(bool enabled)
+        {
+            _bank1 = enabled;
+            UpdateMemoryMappings();
+        }
+
+        public void SetHighRead(bool enabled)
+        {
+            _highRead = enabled;
+            UpdateMemoryMappings();
+        }
+
 
         public void UpdateMemoryMappings()
         {
             _readRanges[Ranges.Region_0000_01FF] = _altZp ? _a1 : _m1;
             _writeRanges[Ranges.Region_0000_01FF] = _altZp ? _a1 : _m1;
 
-            int matrixval = 0;
-            matrixval |= (_ramRd ? 0x08 : 0x00);
-            matrixval |= (_80Store ? 0x04 : 0x00);
-            matrixval |= (_hires ? 0x02 : 0x00);
-            matrixval |= (_page2 ? 0x01 : 0x00);
 
-            /*
-             * +---------- RamRd/RamWrt
-             * | +-------- 80Store
-             * | | +------ Hires
-             * | | | +---- Page2      0200-/0800-/4000-/6000-    0400-     2000-
-             * | | | |                03ff /1fff /5fff /bfff     07ff      3fff
-             * -------                -------------------------  --------  ------
-             * 0 x x x   (0x00-0x07)  Main                       Main      Main
-             * 1 0 x x   (0x08-0x0B)  Aux                        Aux       Aux
-             * 1 1 0 0   (0x0C)       Aux                        Main      Aux
-             * 1 1 0 1   (0x0D)       Aux                        Aux       Main
-             * 1 1 1 0   (0x0E)       Aux                        Main      Main
-             * 1 1 1 1   (0x0F)       Aux                        Aux       Aux
-             */
 
-            switch (matrixval)
+            _readRanges[Ranges.Region_0200_03FF] = (_ramRd ? _a2 : _m2);
+            _readRanges[Ranges.Region_0800_1FFF] = (_ramRd ? _a4 : _m4);
+            _readRanges[Ranges.Region_4000_5FFF] = (_ramRd ? _a6 : _m6);
+            _readRanges[Ranges.Region_6000_BFFF] = (_ramRd ? _a7 : _m7);
+
+            _writeRanges[Ranges.Region_0200_03FF] = (_ramWrt ? _a2 : _m2);
+            _writeRanges[Ranges.Region_0800_1FFF] = (_ramWrt ? _a4 : _m4);
+            _writeRanges[Ranges.Region_4000_5FFF] = (_ramWrt ? _a6 : _m6);
+            _writeRanges[Ranges.Region_6000_BFFF] = (_ramWrt ? _a7 : _m7);
+
+            if (!_80Store)
             {
-                case int n when (n < 8): // Main RAM RamRd is low, else don't care. 
-                    _readRanges[Ranges.Region_0200_03FF] = _m2;
-                    _readRanges[Ranges.Region_0400_07FF] = _m3;
-                    _readRanges[Ranges.Region_0800_1FFF] = _m4;
-                    _readRanges[Ranges.Region_2000_3FFF] = _m5;
-                    _readRanges[Ranges.Region_4000_5FFF] = _m6;
-                    _readRanges[Ranges.Region_6000_BFFF] = _m7;
-                    break;
-                case int n when (n>=8 && n<0x0c): // Auxiliary RAM RamRd is high and 80Store is low, else don't care.
-                    _readRanges[Ranges.Region_0200_03FF] = _a2;
-                    _readRanges[Ranges.Region_0400_07FF] = _a3;
-                    _readRanges[Ranges.Region_0800_1FFF] = _a4;
-                    _readRanges[Ranges.Region_2000_3FFF] = _a5;
-                    _readRanges[Ranges.Region_4000_5FFF] = _a6;
-                    _readRanges[Ranges.Region_6000_BFFF] = _a7;
-                    break;
-                case 0x0c:  
-                    _readRanges[Ranges.Region_0200_03FF] = _a2;
-                    _readRanges[Ranges.Region_0400_07FF] = _m3;
-                    _readRanges[Ranges.Region_0800_1FFF] = _a4;
-                    _readRanges[Ranges.Region_2000_3FFF] = _a5;
-                    _readRanges[Ranges.Region_4000_5FFF] = _m6;
-                    _readRanges[Ranges.Region_6000_BFFF] = _m7;
-                    break;
-                case 0x0d:
-                    _readRanges[Ranges.Region_0200_03FF] = _a2;
-                    _readRanges[Ranges.Region_0400_07FF] = _a3;
-                    _readRanges[Ranges.Region_0800_1FFF] = _a4;
-                    _readRanges[Ranges.Region_2000_3FFF] = _m5;
-                    _readRanges[Ranges.Region_4000_5FFF] = _m6;
-                    _readRanges[Ranges.Region_6000_BFFF] = _m7;
-                    break;
-                case 0x0e:
-                    _readRanges[Ranges.Region_0200_03FF] = _a2;
-                    _readRanges[Ranges.Region_0400_07FF] = _m3;
-                    _readRanges[Ranges.Region_0800_1FFF] = _a4;
-                    _readRanges[Ranges.Region_2000_3FFF] = _m5;
-                    _readRanges[Ranges.Region_4000_5FFF] = _m6;
-                    _readRanges[Ranges.Region_6000_BFFF] = _m7;
-                    break;
-                case 0x0f:
-                    _readRanges[Ranges.Region_0200_03FF] = _a2;
-                    _readRanges[Ranges.Region_0400_07FF] = _a3;
-                    _readRanges[Ranges.Region_0800_1FFF] = _a4;
-                    _readRanges[Ranges.Region_2000_3FFF] = _a5;
-                    _readRanges[Ranges.Region_4000_5FFF] = _m6;
-                    _readRanges[Ranges.Region_6000_BFFF] = _m7;
-                    break;
-                default:
-                    throw new Exception("Execution should never get here.");
+                _readRanges[Ranges.Region_0400_07FF] = (_ramRd ? _a3 : _m3);
+                _readRanges[Ranges.Region_2000_3FFF] = (_ramRd ? _a5 : _m5);
+                _writeRanges[Ranges.Region_0400_07FF] = (_ramWrt ? _a3 : _m3);
+                _writeRanges[Ranges.Region_2000_3FFF] = (_ramWrt ? _a5 : _m5);
             }
-
-            // Swap out RamRd for RamWrt in matrixval
-            matrixval &= 0x07; // preserve lower 3 bits
-            matrixval |= (_ramWrt ? 0x08 : 0x00);
-
-
-            switch (matrixval)
+            else
             {
-                case int n when (n < 8): // Main RAM RamWrt is low, else don't care. 
-                    _writeRanges[Ranges.Region_0200_03FF] = _m2;
-                    _writeRanges[Ranges.Region_0400_07FF] = _m3;
-                    _writeRanges[Ranges.Region_0800_1FFF] = _m4;
-                    _writeRanges[Ranges.Region_2000_3FFF] = _m5;
-                    _writeRanges[Ranges.Region_4000_5FFF] = _m6;
-                    _writeRanges[Ranges.Region_6000_BFFF] = _m7;
-                    break;
-                case int n when (n >= 8 && n < 0x0c): // Auxiliary RAM RamWrt is high and 80Store is low, else don't care.
-                    _writeRanges[Ranges.Region_0200_03FF] = _a2;
-                    _writeRanges[Ranges.Region_0400_07FF] = _a3;
-                    _writeRanges[Ranges.Region_0800_1FFF] = _a4;
-                    _writeRanges[Ranges.Region_2000_3FFF] = _a5;
-                    _writeRanges[Ranges.Region_4000_5FFF] = _a6;
-                    _writeRanges[Ranges.Region_6000_BFFF] = _a7;
-                    break;
-                case 0x0c:
-                    _writeRanges[Ranges.Region_0200_03FF] = _a2;
-                    _writeRanges[Ranges.Region_0400_07FF] = _m3;
-                    _writeRanges[Ranges.Region_0800_1FFF] = _a4;
-                    _writeRanges[Ranges.Region_2000_3FFF] = _a5;
-                    _writeRanges[Ranges.Region_4000_5FFF] = _m6;
-                    _writeRanges[Ranges.Region_6000_BFFF] = _m7;
-                    break;
-                case 0x0d:
-                    _writeRanges[Ranges.Region_0200_03FF] = _a2;
-                    _writeRanges[Ranges.Region_0400_07FF] = _a3;
-                    _writeRanges[Ranges.Region_0800_1FFF] = _a4;
-                    _writeRanges[Ranges.Region_2000_3FFF] = _m5;
-                    _writeRanges[Ranges.Region_4000_5FFF] = _m6;
-                    _writeRanges[Ranges.Region_6000_BFFF] = _m7;
-                    break;
-                case 0x0e:
-                    _writeRanges[Ranges.Region_0200_03FF] = _a2;
-                    _writeRanges[Ranges.Region_0400_07FF] = _m3;
-                    _writeRanges[Ranges.Region_0800_1FFF] = _a4;
-                    _writeRanges[Ranges.Region_2000_3FFF] = _m5;
-                    _writeRanges[Ranges.Region_4000_5FFF] = _m6;
-                    _writeRanges[Ranges.Region_6000_BFFF] = _m7;
-                    break;
-                case 0x0f:
-                    _writeRanges[Ranges.Region_0200_03FF] = _a2;
-                    _writeRanges[Ranges.Region_0400_07FF] = _a3;
-                    _writeRanges[Ranges.Region_0800_1FFF] = _a4;
-                    _writeRanges[Ranges.Region_2000_3FFF] = _a5;
-                    _writeRanges[Ranges.Region_4000_5FFF] = _m6;
-                    _writeRanges[Ranges.Region_6000_BFFF] = _m7;
-                    break;
-                default:
-                    throw new Exception("Execution should never get here.");
+                _readRanges[Ranges.Region_0400_07FF] = (_page2 ? _a3 : _m3);
+                _writeRanges[Ranges.Region_0400_07FF] = (_page2 ? _a3 : _m3);
+                if (_hires)
+                {
+                    _readRanges[Ranges.Region_2000_3FFF] = (_page2 ? _a5 : _m5);
+                    _writeRanges[Ranges.Region_2000_3FFF] = (_page2 ? _a5 : _m5);
+                }
+                else
+                {
+                    _readRanges[Ranges.Region_2000_3FFF] = (_ramRd ? _a5 : _m5);
+                    _writeRanges[Ranges.Region_2000_3FFF] = (_ramRd ? _a5 : _m5);
+                }
             }
 
 
 
+            // Region_D000_DFFF -> Slot ROM
+
+            // Write:
+            if (_highWrite)
+            {
+                if (_altZp) // Aux a8a/a8b + a9
+                { 
+                    _writeRanges[Ranges.Region_D000_DFFF] = _bank1?_a8a:_a8b;
+                    _writeRanges[Ranges.Region_E000_FFFF] = _a9;
+                }
+                else // Main m8a/m8b + m9
+                {
+                    _writeRanges[Ranges.Region_D000_DFFF] = _bank1?_m8a:_m8b;
+                    _writeRanges[Ranges.Region_E000_FFFF] = _m9;
+                }
+            }
+            else
+            {
+                _writeRanges[Ranges.Region_D000_DFFF] = null;
+                _writeRanges[Ranges.Region_E000_FFFF] = null;
+            }
+
+            // Read:
+            if (_highRead)
+            {
+                if (_altZp) // Aux a8a/a8b + a9
+                {
+                    _readRanges[Ranges.Region_D000_DFFF] = _bank1?_a8a:_a8b;
+                    _readRanges[Ranges.Region_E000_FFFF] = _a9;
+                }
+                else // Main m8a/m8b + m9
+                {
+                    _readRanges[Ranges.Region_D000_DFFF] = _bank1?_m8a:_m8b;
+                    _readRanges[Ranges.Region_E000_FFFF] = _m9;
+                }
+            }
+            else
+            {
+                _readRanges[Ranges.Region_D000_DFFF] = _rom1;
+                _readRanges[Ranges.Region_E000_FFFF] = _rom2;
+            }
+
+
+
+
             /*
-   
-
-                // Region_D000_DFFF -> Slot ROM
-                /// First determine ROM or RAM
-                /// If RAM
-                ///   Determine MAIN or AUX
-                ///   Determine BANK1/BANK2 (and Reading/Writing permissions)
-
-                // Region_E000_FFFF
-                /// Determine if ROM or RAM (Look at READBSR1/READBSR2/WRITEBSR1/WRITEBSR2/OFFBSR1/OFFBSR2)
-                /// If RAM
-                ///   Look at RAMRD/RAMWRT to determine MAIN or AUX
-                ///     Examine READBSR[1/2]/WRITEBSR[1/2]/OFFBSR[1/2] to determine BANK (and Reading/Writing permissions)
-
                 // Region C000_CFFF -> I/O and Internal Slots
                 /// At this point, this is scratch ram and isn't used from the user-facing side.
-
-                // Each region from Region_C100_C1FF to Region_C200_C2FF and Region_C400_C4FF Region_C700_C7FF
-                /// If INTCXROM is set, map to Internal Slot ROM (_int1-_int7)
-                /// Else if there is a card in the slot, map to that card's I/O region
-
-                // Region_C300_C3FF
-                /// IF INTCXROM or SLOTC3ROM is set, map to Internal Slot ROM (_int3)
-                /// Else if there is a card in Slot 3, map to that card's I/O region
-
             */
+
+            // Each region from Region_C100_C1FF to Region_C200_C2FF and Region_C400_C4FF Region_C700_C7FF
+            /// If INTCXROM is set, map to Internal Slot ROM (_int1-_int7)
+            /// Else if there is a card in the slot, map to that card's I/O region
+            _readRanges[Ranges.Region_C100_C1FF] = _intCxRom ? _int1 : _s1;
+            _readRanges[Ranges.Region_C200_C2FF] = _intCxRom ? _int2 : _s2;
+            _readRanges[Ranges.Region_C300_C3FF] = _intCxRom ? _int3 : _s3;
+            _readRanges[Ranges.Region_C400_C4FF] = _intCxRom ? _int4 : _s4;
+            _readRanges[Ranges.Region_C500_C5FF] = _intCxRom ? _int5 : _s5;
+            _readRanges[Ranges.Region_C600_C6FF] = _intCxRom ? _int6 : _s6;
+            _readRanges[Ranges.Region_C700_C7FF] = _intCxRom ? _int7 : _s7;
+            _readRanges[Ranges.Region_C800_CFFF] = _intext; // TODO: This is hardcoded to internal rom right now
+
+
+            // Region_C300_C3FF
+            /// IF INTCXROM or SLOTC3ROM is set, map to Internal Slot ROM (_int3)
+            /// Else if there is a card in Slot 3, map to that card's I/O region
+            _readRanges[Ranges.Region_C300_C3FF] = (_intCxRom || !_slotC3Rom) ? _int3 : _s3;
+
         }
 
         public void InstallApple2ROM(byte[] rom)

@@ -8,8 +8,8 @@
 		mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="480"
 		x:Class="Pandowdy.UI.MainWindow"
 		Title="Pandowdy"
-		Width="800" Height="480"
-		MinWidth="800" MinHeight="480"
+		Width="800" Height="600"
+		MinWidth="800" MinHeight="600"
         Icon="assets/ico/pandowdy.ico"
 		KeyDown="OnWindowKeyDown">
 	<DockPanel>
@@ -31,7 +31,7 @@
 				<MenuItem Header="_Start" Click="OnEmuStartClicked" InputGesture="F5" />
 				<MenuItem Header="S_top" Click="OnEmuStopClicked" InputGesture="Shift+F5" />
 				<Separator/>
-				<MenuItem Header="_Reset" Click="OnEmuResetClicked" InputGesture="F12" />
+				<MenuItem Header="_Reset" Click="OnEmuResetClicked" InputGesture="Ctrl+F12" />
 				<MenuItem Header="Ste_p Once" Click="OnEmuStepOnceClicked" InputGesture="F10" />
 				<Separator/>
 				<MenuItem x:Name="ThrottleMenuItem" Header="_Throttle" ToggleType="CheckBox" Click="OnEmuThrottleClicked" InputGesture="F7" />
@@ -41,7 +41,7 @@
 
 		<Grid DockPanel.Dock="Right" Background="Black" ColumnDefinitions="* Auto">
 			<Border Grid.Column="1" Padding="8" Margin="8" Background="#222" CornerRadius="4">
-				<Grid RowDefinitions="Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto auto Auto"
+				<Grid RowDefinitions="Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto auto auto auto auto auto Auto"
 					  ColumnDefinitions="Auto Auto"
 					  DataContext="{Binding SystemStatus}">
 					<TextBlock Text="80STORE" Grid.Row="0" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
@@ -84,6 +84,18 @@
 					<TextBlock Text="{Binding StateFlashOn}" Grid.Row="18" Grid.Column="1" Foreground="White" />
 					<TextBlock Text="Show 80 Col" Grid.Row="19" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
 					<TextBlock Text="{Binding StateShow80Col}" Grid.Row="19" Grid.Column="1" Foreground="White" />
+
+					<TextBlock Text="High Read" Grid.Row="20" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateHighRead}" Grid.Row="20" Grid.Column="1" Foreground="White" />
+
+					<TextBlock Text="High Write" Grid.Row="21" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateHighWrite}" Grid.Row="21" Grid.Column="1" Foreground="White" />
+
+					<TextBlock Text="Write Count" Grid.Row="22" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateWriteCount}" Grid.Row="22" Grid.Column="1" Foreground="White" />
+
+					<TextBlock Text="Bank 1" Grid.Row="23" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
+					<TextBlock Text="{Binding StateBank1}" Grid.Row="23" Grid.Column="1" Foreground="White" />
 				</Grid>
 			</Border>
 		</Grid>

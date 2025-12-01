@@ -28,10 +28,16 @@ public sealed class SystemStatusViewModel : ReactiveObject
     public bool StateShow80Col { get => _stateShow80Col; private set => this.RaiseAndSetIfChanged(ref _stateShow80Col, value); }
     public bool StateAltCharSet { get => _stateAltCharSet; private set => this.RaiseAndSetIfChanged(ref _stateAltCharSet, value); }
     public bool StateFlashOn { get => _stateFlashOn; private set => this.RaiseAndSetIfChanged(ref _stateFlashOn, value); }
+    public bool StateHighRead {  get => _stateHighRead; private set => this.RaiseAndSetIfChanged(ref _stateHighRead, value); }
+    public bool StateHighWrite {  get => _stateHighWrite; private set => this.RaiseAndSetIfChanged(ref _stateHighWrite, value); }
+    public bool StateBank1 { get => _stateBank1; private set => this.RaiseAndSetIfChanged(ref _stateBank1, value); }
+    public int StateWriteCount {  get => _stateWriteCount; private set => this.RaiseAndSetIfChanged(ref _stateWriteCount, value); }
+
 
     private bool _state80Store, _stateRamRd, _stateRamWrt, _stateIntCxRom, _stateAltZp, _stateSlotC3Rom,
                  _statePb0, _statePb1, _statePb2, _stateAnn0, _stateAnn1, _stateAnn2, _stateAnn3,
-                 _statePage2, _stateHiRes, _stateMixed, _stateTextMode, _stateShow80Col, _stateAltCharSet, _stateFlashOn;
+                 _statePage2, _stateHiRes, _stateMixed, _stateTextMode, _stateShow80Col, _stateAltCharSet, _stateFlashOn, _stateBank1, _stateHighRead, _stateHighWrite;
+    private int _stateWriteCount;
 
     public SystemStatusViewModel(ISystemStatusProvider status)
     {
@@ -64,5 +70,9 @@ public sealed class SystemStatusViewModel : ReactiveObject
         StateShow80Col = s.StateShow80Col;
         StateAltCharSet = s.StateAltCharSet;
         StateFlashOn = s.StateFlashOn;
+        StateWriteCount = s.StateWriteCount;
+        StateBank1 = s.StateUseBank1;
+        StateHighRead = s.StateHighRead;
+        StateHighWrite = s.StateHighWrite;
     }
 }

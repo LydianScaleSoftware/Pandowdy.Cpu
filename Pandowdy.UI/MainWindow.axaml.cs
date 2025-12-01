@@ -300,6 +300,12 @@ public partial class MainWindow : Window // reverted base class
         }
         switch (e.Key)
         {
+            case Key.F1:
+                _machine.SetPushButton(0, true); // pushbutton pressed
+                return true;
+            case Key.F2:
+                _machine.SetPushButton(1, true); // pushbutton 2 pressed
+                return true;
             case Key.F5:
                 OnEmuStartClicked(this, new RoutedEventArgs());
                 return true;
@@ -312,16 +318,49 @@ public partial class MainWindow : Window // reverted base class
             case Key.F10:
                 OnEmuStepOnceClicked(this, new RoutedEventArgs());
                 return true;
-            case Key.F12:
-                OnEmuResetClicked(this, new RoutedEventArgs());
-                return true;
         }
         if (e.Key == Key.F5 && (e.KeyModifiers & KeyModifiers.Shift) != 0)
         {
             OnEmuStopClicked(this, new RoutedEventArgs());
             return true;
         }
+        // Ctrl+F12 now triggers the previous F12 action (Break/Reset); plain F12 ignored.
+        if (e.Key == Key.F12 && (e.KeyModifiers & KeyModifiers.Control) != 0)
+        {
+            OnEmuResetClicked(this, new RoutedEventArgs());
+            return true;
+        }
         return false;
+    }
+
+    protected override void OnKeyUp(KeyEventArgs e)
+    {
+        base.OnKeyUp(e);
+        if (e.Key == Key.F1)
+        {
+            _machine.SetPushButton(0, false); // pushbutton released
+            e.Handled = true;
+        }
+        else if (e.Key == Key.F2)
+        {
+            _machine.SetPushButton(1, false); // pushbutton 2 released
+            e.Handled = true;
+        }
+        else if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+        {
+            _machine.SetPushButton(2, false); // pushbutton 3 (shift) released
+            e.Handled = true;
+        }
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+        if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+        {
+            _machine.SetPushButton(2, true); // pushbutton 3 (shift) pressed
+            // do not mark handled so other shift combos still work
+        }
     }
 
     private bool TryInjectSpecialKey(KeyEventArgs e)

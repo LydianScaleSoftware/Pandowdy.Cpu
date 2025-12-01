@@ -272,22 +272,23 @@ public sealed class VA2M : IDisposable
     
     public void InjectKey(byte ascii) => Bus.SetKeyValue((byte)(ascii | 0x80));
 
+    public void SetPushButton(byte num, bool pressed) => Bus.SetPushButton(num, pressed);
 
-/*    /// <summary>
-    /// Load a ROM image into RAM at the specified base address (for early testing).
-    /// Clips to RAM bounds; partial copy if image overflows.
-    /// </summary>
-    public void LoadRom(ReadOnlySpan<byte> image, ushort baseAddress)
-    {
-        // Calculate how many bytes fit from baseAddress to end of RAM
-        int available = RamSize - baseAddress;
-        if (available <= 0 || image.IsEmpty) { return; }
-        int toCopy = Math.Min(available, image.Length);
+    /*    /// <summary>
+        /// Load a ROM image into RAM at the specified base address (for early testing).
+        /// Clips to RAM bounds; partial copy if image overflows.
+        /// </summary>
+        public void LoadRom(ReadOnlySpan<byte> image, ushort baseAddress)
+        {
+            // Calculate how many bytes fit from baseAddress to end of RAM
+            int available = RamSize - baseAddress;
+            if (available <= 0 || image.IsEmpty) { return; }
+            int toCopy = Math.Min(available, image.Length);
 
-        // IMemoryModel has WriteBlock with params byte[] - allocate exact-sized array slice
-        byte[] buffer = image[..toCopy].ToArray();
-        ROM.WriteBlock(baseAddress, buffer);
-    }*/
+            // IMemoryModel has WriteBlock with params byte[] - allocate exact-sized array slice
+            byte[] buffer = image[..toCopy].ToArray();
+            ROM.WriteBlock(baseAddress, buffer);
+        }*/
 
     public void Dispose()
     {

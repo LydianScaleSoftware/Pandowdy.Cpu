@@ -36,8 +36,10 @@ public interface ISystemStatusProvider
     bool StateShow80Col { get; }
     bool StateAltCharSet { get; }
     bool StateFlashOn { get; }
-    byte BSRStatusByte { get; }
-    byte StateBsrWriteCount { get; }
+    int StateWriteCount { get; }
+    bool StateUseBank1 { get; }
+    bool StateHighRead { get; }
+    bool StateHighWrite { get; }
 
     SystemStatusSnapshot Current { get; }
     event EventHandler<SystemStatusSnapshot>? Changed; // event-style subscription
@@ -68,8 +70,10 @@ public record SystemStatusSnapshot(
     bool StateShow80Col,
     bool StateAltCharSet,
     bool StateFlashOn,
-    byte BSRStatusByte,
-    byte StateBSRWriteCount
+    int StateWriteCount,
+    bool StateUseBank1,
+    bool StateHighRead,
+    bool StateHighWrite
     );
 
 public sealed class SystemStatusProvider : ISystemStatusProvider
@@ -95,8 +99,10 @@ public sealed class SystemStatusProvider : ISystemStatusProvider
         StateShow80Col: false,
         StateAltCharSet: false,
         StateFlashOn: false,
-        BSRStatusByte: 0,
-        StateBSRWriteCount: 0);
+        StateWriteCount: 0,
+        StateUseBank1: false,
+        StateHighRead: false,
+        StateHighWrite: false);
 
     private readonly System.Reactive.Subjects.BehaviorSubject<SystemStatusSnapshot> _subject;
 
@@ -124,8 +130,10 @@ public sealed class SystemStatusProvider : ISystemStatusProvider
     public bool StateShow80Col => _current.StateShow80Col;
     public bool StateAltCharSet => _current.StateAltCharSet;
     public bool StateFlashOn => !_current.StateFlashOn;
-    public byte BSRStatusByte => _current.BSRStatusByte;
-    public byte StateBsrWriteCount => _current.StateBSRWriteCount;
+    public int StateWriteCount => _current.StateWriteCount;
+    public bool StateUseBank1 => _current.StateUseBank1;
+    public bool StateHighRead => _current.StateHighRead;
+    public bool StateHighWrite => _current.StateHighWrite;
 
 
     public SystemStatusSnapshot Current => _current;
@@ -163,13 +171,16 @@ public sealed class SystemStatusSnapshotBuilder(SystemStatusSnapshot s)
     public bool StateShow80Col = s.StateShow80Col;
     public bool StateAltCharSet = s.StateAltCharSet;
     public bool StateFlashOn = s.StateFlashOn;
-    byte BSRStatusByte = s.BSRStatusByte;
-    byte StateBSRWriteCount = s.StateBSRWriteCount;
+    public int StateWriteCount = s.StateWriteCount;
+    public bool StateUseBank1 = s.StateUseBank1;
+    public bool StateHighRead = s.StateHighRead;
+    public bool StateHighWrite = s.StateHighWrite;
+
 
     public SystemStatusSnapshot Build() => new(
         State80Store, StateRamRd, StateRamWrt, StateIntCxRom, StateAltZp, StateSlotC3Rom,
         StatePb0, StatePb1, StatePb2, StateAnn0, StateAnn1, StateAnn2, StateAnn3,
-        StatePage2, StateHiRes, StateMixed, StateTextMode, StateShow80Col, StateAltCharSet, StateFlashOn, BSRStatusByte, StateBSRWriteCount);
+        StatePage2, StateHiRes, StateMixed, StateTextMode, StateShow80Col, StateAltCharSet, StateFlashOn, StateWriteCount, StateUseBank1, StateHighRead, StateHighWrite);
 }
 
 //public interface IErrorProvider {
