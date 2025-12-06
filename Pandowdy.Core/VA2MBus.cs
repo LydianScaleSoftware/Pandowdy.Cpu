@@ -21,11 +21,12 @@ public interface IAppleIIBus : IBus
 /// VBlank event is raised on the emulator thread; subscribers on the UI thread MUST marshal via dispatcher.
 /// After disposal, no further events are raised and Clock() becomes a no-op.
 /// </summary>
-public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusProvider = null) : IAppleIIBus, IDisposable
+public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusProvider = null, ISoftSwitchResponder? responder = null) : IAppleIIBus, IDisposable
 {
     private readonly ISystemStatusProvider? _status = statusProvider;
 
     private readonly MemoryPool _memoryPool = mempool;
+    private readonly ISoftSwitchResponder _switches = responder ?? mempool;
     private int lastPc = 0;
     private AppleSoftHookTable? _hookTable;
     private CPU? _cpu;
@@ -45,6 +46,27 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
     // 2.1 Hz flash timer (approx every 476 ms)
     private Timer? _flashTimer;
     private static readonly TimeSpan FlashPeriod = TimeSpan.FromMilliseconds(476);
+
+    public static readonly ushort IOSTART = 0xC000;
+    public static readonly ushort IOEND  = 0xC0FF;
+
+    public static readonly ushort SET80STORE_ = 0xC000;
+    public static readonly ushort CLR80STORE_ = 0xC001;
+    public static readonly ushort RDMAINRAM_ = 0xC002;
+    public static readonly ushort RDCARDRAM_ = 0xC003;
+    public static readonly ushort WRMAINRAM_ = 0xC004;
+    public static readonly ushort WRCARDRAM_ = 0xC005;
+    public static readonly ushort SLOTCXROM_ = 0xC006;
+    public static readonly ushort INTCXROM_ = 0xC007;
+    public static readonly ushort STDZP_ = 0xC008;
+    public static readonly ushort ALTZP_ = 0xC009;
+    public static readonly ushort INTC3ROM_ = 0xC00A;
+    public static readonly ushort SLOTC3ROM_ = 0xC00B;
+    public static readonly ushort CLR80VID_ = 0xC00C;
+    public static readonly ushort SET80VID_ = 0xC00D;
+    public static readonly ushort CLRALTCHAR_ = 0xC00E;
+    public static readonly ushort SETALTCHAR_ = 0xC00F;
+
 
     public void Connect(CPU cpu)
     {
@@ -93,43 +115,43 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
     void Set80Store(bool enabled)
     {
         _status!.Mutate(b => b.State80Store = enabled);
-        _memoryPool.Set80Store(enabled);
+        _switches.Set80Store(enabled);
     }
 
     void SetRamRead(bool enabled)
     {
         _status!.Mutate(b => b.StateRamRd = enabled);
-        _memoryPool.SetRamRd(enabled);
+        _switches.SetRamRd(enabled);
     }
     void SetRamWrite(bool enabled)
     {
         _status!.Mutate(b => b.StateRamWrt = enabled);
-        _memoryPool.SetRamWrt(enabled);
+        _switches.SetRamWrt(enabled);
     }
 
 
     void SetSlotCxRom()
     {
         _status!.Mutate(b => b.StateIntCxRom = false);
-        _memoryPool.SetIntCxRom(false);
+        _switches.SetIntCxRom(false);
     }
 
     void SetIntCxRom()
     {
         _status!.Mutate(b => b.StateIntCxRom = true);
-        _memoryPool.SetIntCxRom(true);
+        _switches.SetIntCxRom(true);
     }
 
     void SetAltZp(bool enabled)
     {
         _status!.Mutate(b => b.StateAltZp = enabled);
-        _memoryPool.SetAltZp(enabled);
+        _switches.SetAltZp(enabled);
     }
 
     void SetSlotC3Rom(bool enabled)
     {
         _status!.Mutate(b => b.StateSlotC3Rom = enabled);
-        _memoryPool.SetSlotC3Rom(enabled);
+        _switches.SetSlotC3Rom(enabled);
     }
 
     void SetShow80Col(bool enabled)
@@ -155,11 +177,13 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
     void SetPage2(bool enabled)
     {
         _status!.Mutate(b => b.StatePage2 = enabled);
+        _switches.SetPage2(enabled);
     }
 
     void SetHires(bool enabled)
     {
         _status!.Mutate(b => b.StateHiRes = enabled);
+        _switches.SetHiRes(enabled);
     }
 
     void SetAnnunciator(int num, bool enabled) { 
@@ -197,93 +221,30 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
         {
             count = 2;
             _status!.Mutate(b => b.StateHighWrite = true);
-            _memoryPool.SetHighWrite(true);
+            _switches.SetHighWrite(true);
         }
     }
 
     void SetBank1(bool status)
     {
         _status!.Mutate(b => b.StateUseBank1 = status);
-        _memoryPool.SetBank1(status);
+        _switches.SetBank1(status);
     }
     void SetHighRead(bool status)
     {
         _status!.Mutate(b => b.StateHighRead = status);
-        _memoryPool.SetHighRead(status);
+        _switches.SetHighRead(status);
     }
     void DisableHighWrite()
     {
         _status!.Mutate(b => b.StateHighWrite = false);
-        _memoryPool.SetHighWrite(false);
+        _switches.SetHighWrite(false);
     }
 
     private byte ReadFromIOSpace(ushort address)
     {
-        if (address >= 0xC000 && address <= 0xC00F)
+        if (address >= SET80STORE_ && address <= SETALTCHAR_)
         {
-/*
-            if (address == 0xC001)
-            {
-                Set80Store(true);
-            }
-
-            if (address == 0xc002)
-            {
-                SetRamRead(false);
-            }
-            if (address == 0xC003)
-            {
-                SetRamRead(true);
-            }
-            if (address == 0xC004)
-            {
-                SetRamWrite(false);
-            }
-            if (address == 0xC005)
-            {
-                SetRamWrite(true);
-            }
-            if (address == 0xC006)
-            {
-                SetCxRom(false);
-            }
-            if (address == 0xC007)
-            {
-                SetCxRom(true);
-            }
-            if (address == 0xC008)
-            {
-                SetAltZp(false);
-            }
-            if (address == 0xC009)
-            {
-                SetAltZp(true);
-            }
-            if (address == 0xC00A)
-            {
-                SetSlotC3Rom(false);
-            }
-            if (address == 0xC00B)
-            {
-                SetSlotC3Rom(true);
-            }
-            if (address == 0xC00C)
-            {
-                SetShow80Col(false);
-            }
-            if (address == 0xC00D)
-            {
-                SetShow80Col(true);
-            }
-            if (address == 0xC00E)
-            {
-                SetAltCharSet(false);
-            }
-            if (address == 0xC00F)
-            {
-                SetAltCharSet(true);
-            }
-*/
             return _currKey;
         }
 
@@ -605,81 +566,81 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
     {
 
 
-        if (_status != null && address >= 0xC000 && address <= 0xC0FF)
+        if (_status != null && address >= IOSTART && address <= IOEND)
         {
-            if (address == 0xC000)
+            if (address == SET80STORE_)
             {
       //          Debug.WriteLine("80Store Off");
                 Set80Store(false);
                 return;
             }
-            else if (address == 0xC001)
+            else if (address == CLR80STORE_)
             {
    //             Debug.WriteLine("80Store On");
                 Set80Store(true);
                 return;
             }
-            else if (address == 0xC002)
+            else if (address == RDMAINRAM_)
             {
                 SetRamRead(false);
                 return;
             }
-            else if (address == 0xC003)
+            else if (address == RDCARDRAM_)
             {
                 SetRamRead(true);
                 return;
             }
-            else if (address == 0xC004)
+            else if (address == WRMAINRAM_)
             {
                 SetRamWrite(false);
                 return;
             }
-            else if (address == 0xC005)
+            else if (address == WRCARDRAM_)
             {
                 SetRamWrite(true);
                 return;
             }
-            else if (address == 0xC006)
+            else if (address == SLOTCXROM_)
             {
                 SetSlotCxRom();
                 return;
             }
-            else if (address == 0xC007)
+            else if (address == INTCXROM_)
             {
                 SetIntCxRom();
                 return;
             }
-            else if (address == 0xC008)
+            else if (address == STDZP_)
             {
                 SetAltZp(false);
                 return;
             }
-            else if (address == 0xC009)
+            else if (address == ALTZP_)
             {
                 SetAltZp(true);
                 return;
             }
-            else if (address == 0xC00A)
+            else if (address == INTC3ROM_)
             {
                 SetSlotC3Rom(false);
                 return;
             }
-            else if (address == 0xC00B)
+            else if (address == SLOTC3ROM_)
             {
                 SetSlotC3Rom(true);
                 return;
             }
-            else if (address == 0xC00C)
+            else if (address == CLR80VID_)
             {
                 SetShow80Col(false);
                 return;
             }
-            else if (address == 0xC00D)
+            else if (address == SET80VID_)
             {
                 SetShow80Col(true);
                 return;
             }
-            else if (address == 0xC00E)
+            else if (address == CLRALTCHAR_)
             {
                 SetAltCharSet(false);
                 return;
@@ -696,8 +657,8 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
             {
                 _currKey &= 0x7f; // Clear high byte;
 
-                //var keyval = auxram.Read(0xC000);
-                //ram.Write(0xC000, (byte)(keyval & 0x7F));
+                //var keyval = auxram.Read(SET80STORE_);
+                //ram.Write(SET80STORE_, (byte)(keyval & 0x7F));
                 return;
             }
 
@@ -794,6 +755,7 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
                 SetAnnunciator(3, true);
             }
 
+
             if (address == 0xC080 || address == 0xC084)
             {
                 ClearWrtCount();
@@ -806,7 +768,7 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
             {
                 SetBank1(false);
                 ClearWrtCount();
-                SetHighRead(true);
+                SetHighRead(false);
             }
 
 
@@ -814,7 +776,7 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
             {
                 SetBank1(false);
                 ClearWrtCount();
-                SetHighRead(true);
+                SetHighRead(false);
                 DisableHighWrite();
             }
 
@@ -824,6 +786,7 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
                 ClearWrtCount();
                 SetHighRead(true);
             }
+
 
             if (address == 0xC088 || address == 0xC08C)
             {
@@ -837,7 +800,7 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
             {
                 SetBank1(true);
                 ClearWrtCount();
-                SetHighRead(true);
+                SetHighRead(false);
             }
 
 
@@ -845,7 +808,7 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
             {
                 SetBank1(true);
                 ClearWrtCount();
-                SetHighRead(true);
+                SetHighRead(false);
                 DisableHighWrite();
             }
 
@@ -876,7 +839,7 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
     {
         ThrowIfDisposed();
 
-        if (address >= 0xC000 && address < 0xC100)
+        if (address >= IOSTART && address <= IOEND)
         {
             return ReadFromIOSpace(address);
         }
@@ -897,7 +860,7 @@ public sealed class VA2MBus(MemoryPool mempool, ISystemStatusProvider? statusPro
     {
         ThrowIfDisposed();
 
-        if (address >= 0xC000 && address < 0xC100)
+        if (address >= IOSTART && address <= IOEND)
         {
             WriteToIOSpace(address, data);
             return;

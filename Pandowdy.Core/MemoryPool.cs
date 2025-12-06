@@ -4,7 +4,22 @@ using Emulator;
 
 namespace Pandowdy.Core
 {
-    public sealed class MemoryPool : IMemory, IMappedMemory
+    public interface ISoftSwitchResponder
+    {
+        void SetRamRd(bool ramRd);
+        void SetRamWrt(bool ramWrt);
+        void SetAltZp(bool altZp);
+        void Set80Store(bool store80);
+        void SetHiRes(bool hires);
+        void SetPage2(bool page2);
+        void SetIntCxRom(bool intCxRom);
+        void SetSlotC3Rom(bool slotC3Rom);
+        void SetHighWrite(bool enabled);
+        void SetBank1(bool enabled);
+        void SetHighRead(bool enabled);
+    }
+
+    public sealed class MemoryPool : IMemory, IMappedMemory, ISoftSwitchResponder
     {
         //Methods from IMemory:
         public System.Int32 Size { get => 0x10000;  } // 64k addressable space
