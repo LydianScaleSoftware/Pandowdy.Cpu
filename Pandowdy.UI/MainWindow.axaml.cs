@@ -14,10 +14,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using static DiskArc.Defs;
 using Pandowdy.UI.ViewModels; // ensure ViewModel type is visible
+using System.Text.Json;
 
 namespace Pandowdy.UI;
 
-public partial class MainWindow : Window // reverted base class
+public partial class MainWindow : Window  
 {
     private readonly AppHook mAppHook = new(new SimpleMessageLog());
     private DiskReadTestTemp? mDiskReadTest;
@@ -38,6 +39,8 @@ public partial class MainWindow : Window // reverted base class
 
     private bool _capsLockEnabled = true; // default ON
     public bool IsCapsLockEnabledForInput => _capsLockEnabled; // expose to Apple2TextScreen
+    private Rect _lastNormalBounds;
+    private PixelPoint _lastNormalPosition;
 
     public MainWindow()
     {
@@ -90,6 +93,28 @@ public partial class MainWindow : Window // reverted base class
         {
             // Activation no longer required after direct subscription change.
         }
+
+        RestoreWindowGeometryFromConfig();
+
+        // Track last normal bounds for saving/restoring unmaximized geometry
+        _lastNormalBounds = Bounds;
+        _lastNormalPosition = Position;
+        this.GetObservable(Window.WindowStateProperty).Subscribe(state =>
+        {
+            if (state == WindowState.Normal)
+            {
+                _lastNormalBounds = Bounds;
+                _lastNormalPosition = Position;
+            }
+        });
+        this.GetObservable(Window.BoundsProperty).Subscribe(_ =>
+        {
+            if (WindowState == WindowState.Normal)
+            {
+                _lastNormalBounds = Bounds;
+                _lastNormalPosition = Position;
+            }
+        });
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
@@ -105,6 +130,7 @@ public partial class MainWindow : Window // reverted base class
             {
                 // Request screen refresh; other synced tasks can also hook here
                 _screen.RequestRefresh();
+                _machine.GenerateStatusData();
             });
         }
         Dispatcher.UIThread.Post(() => OnEmuStartClicked(this, new RoutedEventArgs()));
@@ -112,6 +138,7 @@ public partial class MainWindow : Window // reverted base class
 
     protected override void OnClosed(EventArgs e)
     {
+        SaveWindowGeometryToConfig();
         _refreshSub?.Dispose();
         _refreshSub = null;
         _refreshTicker?.Stop();
@@ -488,4 +515,59 @@ public partial class MainWindow : Window // reverted base class
         }
     }
     private void OnClearTextClicked(object? sender, RoutedEventArgs e) => ClearText();
+
+    private sealed record WindowGeometry(int Left, int Top, int Width, int Height, int WindowState, int ScreenIndex,
+        int NormalLeft, int NormalTop, int NormalWidth, int NormalHeight, int OffsetX, int OffsetY);
+    private sealed class WindowSizeConfig
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
+    }
+
+    private static string GetConfigPath()
+    {
+        var baseDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var dir = Path.Combine(baseDir, "LydianScaleSoftware", "Pandowdy");
+        Directory.CreateDirectory(dir);
+        return Path.Combine(dir, "window.json");
+    }
+
+    private void RestoreWindowGeometryFromConfig()
+    {
+        try
+        {
+            var path = GetConfigPath();
+            if (!File.Exists(path))
+            {
+                return;
+            }
+            var json = File.ReadAllText(path);
+            var data = JsonSerializer.Deserialize<WindowSizeConfig>(json);
+            if (data == null)
+            {
+                return;
+            }
+            if (data.Width > 0 && data.Height > 0)
+            {
+                Width = data.Width;
+                Height = data.Height;
+            }
+        }
+        catch { }
+    }
+
+    private void SaveWindowGeometryToConfig()
+    {
+        try
+        {
+            var data = new WindowSizeConfig
+            {
+                Width = (int)Width,
+                Height = (int)Height
+            };
+            var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(GetConfigPath(), json);
+        }
+        catch { }
+    }
 }

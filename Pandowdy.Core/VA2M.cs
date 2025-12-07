@@ -307,6 +307,97 @@ public sealed class VA2M : IDisposable
         Enqueue(() => Bus.SetPushButton(num, pressed));
     }
 
+    public void GenerateStatusData()
+    {
+        Enqueue(() => BuildStatusData());
+    }
+
+    private void BuildStatusData()
+    {
+        // Access switches via concrete bus type
+      
+        var switches = (Bus as VA2MBus)?.Switches;
+        var data = switches!.GetSwitchList();
+
+        _sysStatusSink?.Mutate(s =>
+        {
+            // for each item in data, use a switch statement to set the corresponding property
+            foreach (var item in data)
+            {
+                switch (item.id)
+                {
+                    case SoftSwitches.SoftSwitchId.Store80:
+                        s.State80Store = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.RamRd:
+                        s.StateRamRd = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.RamWrt:
+                        s.StateRamWrt = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.IntCxRom:
+                        s.StateIntCxRom = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.AltZp:
+                        s.StateAltZp = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.SlotC3Rom:
+                        s.StateSlotC3Rom = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.Vid80:
+                        s.StateShow80Col = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.AltChar:
+                        s.StateAltCharSet = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.Text:
+                        s.StateTextMode = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.Mixed:
+                        s.StateMixed = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.Page2:
+                        s.StatePage2 = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.HiRes:
+                        s.StateHiRes = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.An0:
+                        s.StateAnn0 = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.An1:
+                        s.StateAnn1 = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.An2:
+                        s.StateAnn2 = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.An3:
+                        s.StateAnn3 = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.Bank1:
+                        s.StateUseBank1 = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.HighRead:
+                        s.StateHighRead = item.value;
+                        break;
+                    case SoftSwitches.SoftSwitchId.HighWrite:
+                        s.StateHighWrite = item.value;
+                        break;
+                    //prewrite
+                }
+            }
+
+            s.StatePb0 = (Bus as VA2MBus)!.GetPushButton(0);
+            s.StatePb1 = (Bus as VA2MBus)!.GetPushButton(1);
+            s.StatePb2 = (Bus as VA2MBus)!.GetPushButton(2);
+
+            //public bool StateFlashOn = s.StateFlashOn;
+            //public int StateWriteCount = s.StateWriteCount;
+
+        });
+
+    }
+
     /*    /// <summary>
         /// Load a ROM image into RAM at the specified base address (for early testing).
         /// Clips to RAM bounds; partial copy if image overflows.
