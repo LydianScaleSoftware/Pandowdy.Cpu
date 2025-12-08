@@ -248,6 +248,12 @@ namespace Pandowdy.Core
             SetDefaultWriteRanges();
         }
 
+        public void ResetRanges()
+        {
+            SetDefaultReadRanges();
+            SetDefaultWriteRanges();
+        }
+
         private void SetDefaultReadRanges()
         {
             _readRanges[Ranges.Region_0000_01FF] = _m1;
@@ -553,16 +559,19 @@ namespace Pandowdy.Core
                 /// At this point, this is scratch ram and isn't used from the user-facing side.
             */
 
+            // This will take the place of the card mechanism for now.
+            bool[] hasCard = [false, false, false, false, false, false, false, false]; // Slots 0-7 (0 -> unused)
+
             // Each region from Region_C100_C1FF to Region_C200_C2FF and Region_C400_C4FF Region_C700_C7FF
             /// If INTCXROM is set, map to Internal Slot ROM (_int1-_int7)
-            /// Else if there is a card in the slot, map to that card's I/O region
-            _readRanges[Ranges.Region_C100_C1FF] = _intCxRom ? _int1 : _s1;
-            _readRanges[Ranges.Region_C200_C2FF] = _intCxRom ? _int2 : _s2;
-            _readRanges[Ranges.Region_C300_C3FF] = _intCxRom ? _int3 : _s3;
-            _readRanges[Ranges.Region_C400_C4FF] = _intCxRom ? _int4 : _s4;
-            _readRanges[Ranges.Region_C500_C5FF] = _intCxRom ? _int5 : _s5;
-            _readRanges[Ranges.Region_C600_C6FF] = _intCxRom ? _int6 : _s6;
-            _readRanges[Ranges.Region_C700_C7FF] = _intCxRom ? _int7 : _s7;
+            /// Else if there is a card in the slot, map to that card's I/O region.  If there's no card, just default back to the slot rom.
+            _readRanges[Ranges.Region_C100_C1FF] = _intCxRom ? _int1 : (hasCard[1] ? _s1 : _int1);
+            _readRanges[Ranges.Region_C200_C2FF] = _intCxRom ? _int2 : (hasCard[2] ? _s2 : _int2);
+            _readRanges[Ranges.Region_C300_C3FF] = _intCxRom ? _int3 : (hasCard[3] ? _s3 : _int3);
+            _readRanges[Ranges.Region_C400_C4FF] = _intCxRom ? _int4 : (hasCard[4] ? _s4 : _int4);
+            _readRanges[Ranges.Region_C500_C5FF] = _intCxRom ? _int5 : (hasCard[5] ? _s5 : _int5);
+            _readRanges[Ranges.Region_C600_C6FF] = _intCxRom ? _int6 : (hasCard[6] ? _s6 : _int6);
+            _readRanges[Ranges.Region_C700_C7FF] = _intCxRom ? _int7 : (hasCard[7] ? _s7 : _int7);
             _readRanges[Ranges.Region_C800_CFFF] = _intext; // TODO: This is hardcoded to internal rom right now
 
 

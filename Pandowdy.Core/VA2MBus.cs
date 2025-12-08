@@ -31,6 +31,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     private CPU? _cpu;
     private ulong _systemClock;
     private SoftSwitches _softSwitches = new();
+    private bool _isInVBlankBlackout = false;
 
     public IMemory RAM => _memoryPool;
 
@@ -44,7 +45,9 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     // Cycle-based VBlank (1,023,000 Hz / 60 ? 17050; using 17063 from spec for Apple II NTSC)
     private const ulong CyclesPerVBlank = 17063; // adjust if more precise timing required
 
+    private const int VBlankBlackoutCycles = 4550;
     private ulong _nextVblankCycle = CyclesPerVBlank;
+    private long _VblankBlackoutCounter = VBlankBlackoutCycles;
 
     public event EventHandler? VBlank;
 
@@ -53,8 +56,10 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
 
     private static readonly TimeSpan FlashPeriod = TimeSpan.FromMilliseconds(476);
 
-    public const ushort IOSTART = 0xC000;
-    public const ushort IOEND = 0xC0FF;
+    public const ushort IO_AREA_START = 0xC000;
+    public const ushort IO_AREA_END = 0xCFFF;
+    public const ushort SYSTEM_IO_START = 0xC000;
+    public const ushort SYSTEM_UI_END = 0xC0FF;
 
     public const ushort KBD_ = 0xC000;
     public const ushort SET80STORE_ = 0xC000;
@@ -147,6 +152,21 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     public const ushort B1_RD_RAM_WRT_RAM_ = 0xC08B;
     public const ushort B1_RD_RAM_WRT_RAM_ALT_ = 0xC08F;
 
+    public const ushort SLOT1_IO_SPACE = 0xC090;
+    public const ushort SLOT1_IO_SPACE_END = 0xC09F;
+    public const ushort SLOT2_IO_SPACE = 0xC0A0;
+    public const ushort SLOT2_IO_SPACE_END = 0xC0AF;
+    public const ushort SLOT3_IO_SPACE = 0xC0B0;
+    public const ushort SLOT3_IO_SPACE_END = 0xC0BF;
+    public const ushort SLOT4_IO_SPACE = 0xC0C0;
+    public const ushort SLOT4_IO_SPACE_END = 0xC0CF;
+    public const ushort SLOT5_IO_SPACE = 0xC0D0;
+    public const ushort SLOT5_IO_SPACE_END = 0xC0DF;
+    public const ushort SLOT6_IO_SPACE = 0xC0E0;
+    public const ushort SLOT6_IO_SPACE_END = 0xC0EF;
+    public const ushort SLOT7_IO_SPACE = 0xC0F0;
+    public const ushort SLOT7_IO_SPACE_END = 0xC0FF;
+    
     public SoftSwitches Switches => _softSwitches;
 
     public VA2MBus(MemoryPool mempool, ISoftSwitchResponder? responder = null)
@@ -247,17 +267,20 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         if (address >= TAPEOUT_ && address <= END_TAPEOUT_RD_) // TAPEOUT
         {
             // NOT IMPLEMENTED YET
+            Debug.WriteLine($"TAPEOUT read not implemented yet (Read from {address:X4})");
             return 0;
         }
 
         if (address >= SPKR_ && address <= END_SPKR_RD_) // SPKR
         {
             // NOT IMPLEMENTED YET
+            Debug.WriteLine($"SPKR read not implemented yet (Read from {address:X4})");
             return 0;
         }
 
         if (address >= STROBE_ && address <= END_STROBE_RD_) // STROBE
         {
+            Debug.WriteLine($"STROBE read not implemented yet (Read from {address:X4})");
             // NOT IMPLEMENTED YET
             return 0;
         }
@@ -298,8 +321,9 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
                 return BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Store80), _currKey);
 
             case RD_VERTBLANK_:
-                // Vert Blanking Status => 1 = Drawing (not implemented)
-                return _currKey;
+                // counter counts down at start of frame, hits neg after vblank blackout is over.
+                byte inVBlank = (byte) ((_VblankBlackoutCounter > 0) ? 0x80 : 0x00); 
+                return (byte) (inVBlank | _currKey & 0x7f);
 
             case RD_TEXT_:
                 return BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Text), _currKey);
@@ -417,8 +441,8 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
             {
                 // C080 / C084 -> Bank2, WrtCount = 0, Read = true
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.PreWrite, false);
-                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, true);
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.HighWrite, false);
+                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, true);
             }
 
             if (address == B2_RD_ROM_WRT_RAM_ || address == B2_RD_ROM_WRT_RAM_ALT_)
@@ -432,8 +456,8 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
             {
                 // C082 / C086 -> Bank2, WrtCount = 0, Read = false;
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.PreWrite, false);
-                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, false);
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.HighWrite, false);
+                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, false);
             }
 
             if (address == B2_RD_RAM_WRT_RAM_ || address == B2_RD_RAM_WRT_RAM_ALT_)
@@ -443,8 +467,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, true);
             }
         }
-
-        if (address >= B1_RD_RAM_NO_WRT_ && address <= B1_RD_RAM_WRT_RAM_ALT_)
+        else if (address >= B1_RD_RAM_NO_WRT_ && address <= B1_RD_RAM_WRT_RAM_ALT_)
         {
             _softSwitches.Set(SoftSwitches.SoftSwitchId.Bank1, true);
 
@@ -452,8 +475,8 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
             {
                 // C088 / C08C -> Bank1, WrtCount = 0, Read = true
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.PreWrite, false);
-                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, true);
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.HighWrite, false);
+                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, true);
             }
 
             if (address == B1_RD_ROM_WRT_RAM_ || address == B1_RD_ROM_WRT_RAM_ALT_)
@@ -467,8 +490,8 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
             {
                 // C08A / C08E -> Bank1, WrtCount = 0, Read = false
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.PreWrite, false);
-                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, false);
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.HighWrite, false);
+                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, false);
             }
 
             if (address == B1_RD_RAM_WRT_RAM_ || address == B1_RD_RAM_WRT_RAM_ALT_)
@@ -478,8 +501,12 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, true);
             }
         }
+        else
+        {
+                Debug.WriteLine($"Read from to unhandled IO Space: {address:X4}");
+        }
 
-        return 0x67; // Placeholder Value
+            return 0xA0; // Placeholder Value
     }
 
     private void WriteToIOSpace(ushort address, byte _ /*data*/)
@@ -548,9 +575,21 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         {
             _softSwitches.Set(SoftSwitches.SoftSwitchId.AltChar, true);
         }
-        else if (address == KEYSTRB_)
+        else if (address >= KEYSTRB_ && address <= KEYSTRB_ + 0x1F)
         {
             _currKey &= 0x7f; // Clear high byte;
+        }
+        else if (address >= TAPEOUT_ && address <= TAPEOUT_ + 0x0F)
+        {
+            Debug.WriteLine($"TAPEOUT not implemented yet (Write to {address:X4})");
+        }
+        else if (address >= SPKR_ && address <= KEYSTRB_ + 0x0F)
+        {
+            Debug.WriteLine($"SPKR not implemented yet (Write to {address:X4})");
+        }
+        else if (address >= STROBE_ && address <= STROBE_ + 0x0F)
+        {
+            Debug.WriteLine($"STROBE not implemented yet (Write to {address:X4})");
         }
         else if (address == CLRTXT_)
         {
@@ -624,21 +663,21 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
             {
                 // C080 / C084 -> Bank2, WrtCount = 0, Read = true
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.PreWrite, false);
-                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, true);
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.HighWrite, false);
+                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, true);
             }
-            else if (address == B2_RD_ROM_WRT_RAM_ || address == B2_RD_ROM_WRT_RAM_)
+            else if (address == B2_RD_ROM_WRT_RAM_ || address == B2_RD_ROM_WRT_RAM_ALT_)
             {
                 // C081 / C085 -> Bank2, WrtCount = 0, Read = false
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.PreWrite, false);
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, false);
-            } 
+            }
             else if (address == B2_RD_ROM_NO_WRT_ || address == B2_RD_ROM_NO_WRT_ALT_)
             {
                 // C082 / C086 -> Bank2, WrtCount = 0, Read = false;
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.PreWrite, false);
-                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, false);
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.HighWrite, false);
+                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, false);
             }
             else if (address == B2_RD_RAM_WRT_RAM_ || address == B2_RD_RAM_WRT_RAM_ALT_)
             {
@@ -655,8 +694,8 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
             {
                 // C088 / C08C -> Bank1, WrtCount = 0, Read = true
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.PreWrite, false);
-                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, true);
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.HighWrite, false);
+                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, true);
             }
             else if (address == B1_RD_ROM_WRT_RAM_ || address == B1_RD_ROM_WRT_RAM_ALT_)
             {
@@ -668,8 +707,8 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
             {
                 // C08A / C08E -> Bank1, WrtCount = 0, Read = false
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.PreWrite, false);
-                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, false);
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.HighWrite, false);
+                _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, false);
             }
             else if (address == B1_RD_RAM_WRT_RAM_ || address == B1_RD_RAM_WRT_RAM_ALT_)
             {
@@ -678,23 +717,22 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.HighRead, true);
             }
         }
+        else
+        {
+            Debug.WriteLine($"Write to unhandled IO Space: {address:X4}");
+        }
     }
 
     public byte CpuRead(ushort address, bool readOnly = false)
     {
         ThrowIfDisposed();
 
-        if (address >= IOSTART && address <= IOEND)
+        if (address >= SYSTEM_IO_START && address <= SLOT7_IO_SPACE_END)
         {
             return ReadFromIOSpace(address);
         }
         else
         {
-            //if (address >= 0xC100 && address < 0xD000)
-            //{
-            //    Debug.WriteLine($"Read from {address:X4}");
-            //}
-
             return _memoryPool.Read(address);
         }
     }
@@ -703,7 +741,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     {
         ThrowIfDisposed();
 
-        if (address >= IOSTART && address <= IOEND)
+        if (address >= SYSTEM_IO_START && address <= SLOT7_IO_SPACE_END)
         {
             WriteToIOSpace(address, data);
         }
@@ -733,34 +771,48 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
                 hook(-1, lineNum, spcs);
             }
 
-            #region LegacyTrace_DoNotRemove
-
-            // (Preserved commented instrumentation)
-
-            #endregion LegacyTrace_DoNotRemove
         }
         lastPc = currPc;
 
         _cpu!.Clock();
         _systemClock++;
+        _VblankBlackoutCounter--;
 
         if (_systemClock >= _nextVblankCycle)
         {
             // Catch up if emulator ran fast (unthrottled batches)
             do
-            { _nextVblankCycle += CyclesPerVBlank; } while (_systemClock >= _nextVblankCycle);
+            { 
+                _nextVblankCycle += CyclesPerVBlank;
+                _VblankBlackoutCounter = VBlankBlackoutCycles;
+
+            } while (_systemClock >= _nextVblankCycle);
+
             if (!_disposed)
             {
                 VBlank?.Invoke(this, EventArgs.Empty);
             }
+
+            
         }
     }
 
     public void Reset()
     {
         ThrowIfDisposed();
+        _memoryPool.ResetRanges();
         _softSwitches.ResetAllSwitches();
+        _cpu!.Reset();
+        _systemClock = 0;
+        _nextVblankCycle = CyclesPerVBlank;
+    }
 
+    public void UserReset()
+    {
+        ThrowIfDisposed();
+
+        _memoryPool.ResetRanges();
+        _softSwitches.ResetAllSwitches();
         _cpu!.Reset();
         _systemClock = 0;
         _nextVblankCycle = CyclesPerVBlank;

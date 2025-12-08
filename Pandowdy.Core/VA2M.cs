@@ -208,9 +208,25 @@ public sealed class VA2M : IDisposable
     /// </summary>
     public void Reset()
     {
-        Bus.Reset();
-        _throttleCycles = 0;
-        _throttleSw.Restart();
+        //Enqueue(() =>
+        {
+            Bus.Reset();
+            _throttleCycles = 0;
+            _throttleSw.Restart();
+        }
+        //);
+    }
+
+    public void UserReset()
+    {
+       // Enqueue(() =>
+        {
+            Debug.WriteLine("Calling UserReset() in VA2M");
+            (Bus as VA2MBus)!.UserReset();
+            //_throttleCycles = 0;
+            //_throttleSw.Restart();
+        }
+   //     );
     }
 
     /// <summary>
@@ -255,7 +271,7 @@ public sealed class VA2M : IDisposable
             {
                 const int FastBatch = 10_000;
                 // Execute queued commands on emulator thread before fast batch
-                ProcessPending();
+                    ProcessPending();
                 for (int i = 0; i < FastBatch; i++)
                 {
                     Bus.Clock();

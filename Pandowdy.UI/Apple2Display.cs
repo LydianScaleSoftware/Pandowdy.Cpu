@@ -227,33 +227,6 @@ public class Apple2Display : Control
     }
 
 
-    /*
-
-void HiresScreenWidget::drawNtscLine(QPainter &painter, int lineNum, const QBitArray& data) const {
-QList<QColor> colors;
-colors.resize(data.size() + 3);
-
-for (int idx = 0; idx < data.size(); idx++) {
-    QBitArray tmp(4);
-    tmp[0]=data.at(idx+0);
-    if (idx < data.size()-1) tmp[1]=data.at(idx+1); else tmp[1] = false;
-    if (idx < data.size()-2) tmp[2]=data.at(idx+2); else tmp[2] = false;
-    if (idx < data.size()-3) tmp[3]=data.at(idx+3); else tmp[3] = false;
-    const auto color = getColorFromBits(tmp, idx % 4);
-    colors[idx]   = color;
-    colors[idx + 1] = color;
-    colors[idx + 2] = color;
-    colors[idx + 3] = color;
-}
-
-for (int idx = 0; idx < colors.size(); idx++)
-{
-    painter.setPen(colors.at(idx));
-    painter.setBrush(colors.at(idx));
-    painter.drawPoint(idx,lineNum);
-}
-}
-*/
     static private unsafe void RenderNtscLine(byte* dst, int stridePixels, int outYTop, ReadOnlySpan<bool> lineData, bool showScanLines)
     {
         for (int xPos = 0; xPos < lineData.Length; xPos++)

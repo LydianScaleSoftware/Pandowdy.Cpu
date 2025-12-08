@@ -228,7 +228,7 @@ public partial class MainWindow : Window
     }
 
     private void OnEmuStopClicked(object? sender, RoutedEventArgs e) => StopEmulator();
-    private void OnEmuResetClicked(object? sender, RoutedEventArgs e) => _machine.Reset();
+    private void OnEmuResetClicked(object? sender, RoutedEventArgs e) => _machine.UserReset();
 
     private void OnEmuStepOnceClicked(object? sender, RoutedEventArgs e)
     {
