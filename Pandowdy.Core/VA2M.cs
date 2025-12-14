@@ -59,7 +59,6 @@ public sealed class VA2M : IDisposable
             {
                 try
                 {
-                    Debug.WriteLine("Toggling StateFlashOn");
                     _sysStatusSink?.Mutate(s => s.StateFlashOn = !s.StateFlashOn);
                 }
                 catch { }
