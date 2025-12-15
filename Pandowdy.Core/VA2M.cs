@@ -33,7 +33,7 @@ public sealed class VA2M : IDisposable
 
     // Flash timer to toggle StateFlashOn at ~2.1 Hz
     private Timer? _flashTimer;
-    private static readonly TimeSpan FlashPeriod = TimeSpan.FromMilliseconds(350);
+    private static readonly TimeSpan FlashPeriod = TimeSpan.FromMilliseconds(1000/2.1);
 
     public VA2M() : this(null, null, null) { }
 
@@ -43,9 +43,8 @@ public sealed class VA2M : IDisposable
         _frameSink = frameSink;
         _sysStatusSink = statusProvider;
         TryLoadEmbeddedRom("Pandowdy.Core.Resources.a2e_enh_c-f.rom");
-        //var mem = new VA2MMemory(0,RamSize);
         
-        Bus = new VA2MBus(MemoryPool/*, statusProvider*/);
+        Bus = new VA2MBus(MemoryPool);
         _cpu = new CPU();
         Bus.Connect(_cpu);
         if (_frameSink is not null && Bus is VA2MBus vb)
@@ -82,7 +81,7 @@ public sealed class VA2M : IDisposable
     {
         while (_pending.TryDequeue(out var act))
         {
-            try { act(); } catch { }
+            try { act(); } catch { Debug.WriteLine($"Exception during ProcessPending()"); }
         }
     }
 
@@ -101,11 +100,11 @@ public sealed class VA2M : IDisposable
             for (int col = 0; col < 40; col++)
             {
                 int addr = GetAddressForXY(col, row, text, hires, mixed, page2);
-                if (addr >= 0x400 && addr <= 0xBFF)
+                if (addr >= 0x400 && addr <= 0xBFF) // Text/GR Pages 1/2
                 {
                     RenderTextOrGRCell(addr, row, col, text, mixed, text80col, gr80col, buf);
                 }
-                else if (addr >= 0x2000 && addr <= 0x5fff)
+                else if (addr >= 0x2000 && addr <= 0x5fff) // HGR Pages 1/2
                 {
                     RenderHiresCell(addr, row, col, gr80col, buf);
                 }
