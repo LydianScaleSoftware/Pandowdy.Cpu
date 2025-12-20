@@ -231,6 +231,9 @@ public class Apple2Display : Control
 
         private unsafe void RenderNtscLine(byte* dst, int stridePixels, int outYTop, ReadOnlySpan<bool> lineData, bool showScanLines)
     {
+        bool neg1 = false;
+        bool neg2 = false;
+        bool neg3 = false;
         for (int xPos = -3; xPos < lineData.Length; xPos++)
         {
             var bits = new bool[4];
@@ -238,9 +241,6 @@ public class Apple2Display : Control
             bits[1] = xPos + 1 >= 0 && (xPos + 1 < lineData.Length) && lineData[xPos + 1];
             bits[2] = xPos + 2 >= 0 && (xPos + 2 < lineData.Length) && lineData[xPos + 2];
             bits[3] = xPos + 3 >= 0 && (xPos + 3 < lineData.Length) && lineData[xPos + 3];
-            bool neg1 = false;
-            bool neg2 = false;
-            bool neg3 = false;
             var phase = (byte)(xPos % 4);
 
             if (xPos <= stridePixels)

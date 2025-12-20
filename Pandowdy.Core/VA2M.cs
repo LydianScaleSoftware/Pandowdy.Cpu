@@ -1,21 +1,13 @@
-using System;
-using System.IO;
 using System.Reflection;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using Emulator;
-using System.Reflection.Metadata.Ecma335;
 using System.Collections.Concurrent;
-using System.Diagnostics.Tracing;
 
 namespace Pandowdy.Core;
 
 public sealed class VA2M : IDisposable
 {
     public MemoryPool MemoryPool { get; private set; } = new MemoryPool();
-
- //   public const int RamSize = 64 * 1024;
 
     public IAppleIIBus Bus { get; }
 
@@ -34,8 +26,9 @@ public sealed class VA2M : IDisposable
     // Flash timer to toggle StateFlashOn at ~2.1 Hz
     private Timer? _flashTimer;
     private static readonly TimeSpan FlashPeriod = TimeSpan.FromMilliseconds(1000/2.1);
+    private int _pendingFlashToggle; // 0/1 flag set by timer, consumed on VBlank
 
-    public VA2M() : this(null, null, null) { }
+  //  public VA2M() : this(null, null, null) { }
 
     public VA2M(IEmulatorState? stateSink, IFrameProvider? frameSink, ISystemStatusProvider? statusProvider = null)
     {
@@ -58,7 +51,7 @@ public sealed class VA2M : IDisposable
             {
                 try
                 {
-                    _sysStatusSink?.Mutate(s => s.StateFlashOn = !s.StateFlashOn);
+                    System.Threading.Interlocked.Exchange(ref _pendingFlashToggle, 1);
                 }
                 catch { }
             }, null, FlashPeriod, FlashPeriod);
@@ -279,6 +272,11 @@ public sealed class VA2M : IDisposable
     private void OnVBlank(object? sender, EventArgs e)
     {
         if (_frameSink is null) { return; }
+        // Apply pending flash toggle at frame boundary for consistent rendering
+        if (System.Threading.Interlocked.Exchange(ref _pendingFlashToggle, 0) != 0)
+        {
+            _sysStatusSink?.Mutate(s => s.StateFlashOn = !s.StateFlashOn);
+        }
         var buf = _frameSink.BorrowWritable();
         buf.Clear();
 
@@ -289,19 +287,6 @@ public sealed class VA2M : IDisposable
         _frameSink.CommitWritable();
     }
 
-
-    private static (int,int)? AddressToOffset(int address)
-    {
-        if (address < 0x400 || address >= 0x800) { return null; }
-        address -= 0x400;
-        var macroline_x = address % 128;
-        var macroline_y = address / 128;
-        // Return -1 for screen holes.
-        if (macroline_x >= 120) { return null; }
-        int section = macroline_x / 40;
-        int row = macroline_y + 8 * section;
-        return (macroline_x % 40, row);
-    }
 
     private void TryLoadEmbeddedRom(string resourceName)
     {
