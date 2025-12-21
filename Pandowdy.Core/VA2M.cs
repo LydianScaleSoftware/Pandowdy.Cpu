@@ -1,5 +1,7 @@
 using System.Reflection;
 using System.Diagnostics;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using Emulator;
 using System.Collections.Concurrent;
 
@@ -422,7 +424,11 @@ public sealed class VA2M : IDisposable
                     }
                 }
                 PublishState();
-                await Task.Yield();
+                try
+                {
+                    await Task.Delay(0, ct);
+                }
+                catch (OperationCanceledException) { break; }
             }
         }
     }
@@ -460,8 +466,8 @@ public sealed class VA2M : IDisposable
         Enqueue(() => BuildStatusData());
     }
 
-    private static readonly System.Collections.Generic.IReadOnlyDictionary<SoftSwitches.SoftSwitchId, System.Action<SystemStatusSnapshotBuilder, bool>> _switchSetters
-        = new System.Collections.Generic.Dictionary<SoftSwitches.SoftSwitchId, System.Action<SystemStatusSnapshotBuilder, bool>>
+    private static readonly ImmutableDictionary<SoftSwitches.SoftSwitchId, System.Action<SystemStatusSnapshotBuilder, bool>> _switchSetters
+        = new Dictionary<SoftSwitches.SoftSwitchId, System.Action<SystemStatusSnapshotBuilder, bool>>
         {
             { SoftSwitches.SoftSwitchId.Store80, (b,v) => b.State80Store = v },
             { SoftSwitches.SoftSwitchId.RamRd, (b,v) => b.StateRamRd = v },
@@ -482,7 +488,7 @@ public sealed class VA2M : IDisposable
             { SoftSwitches.SoftSwitchId.Bank1, (b,v) => b.StateUseBank1 = v },
             { SoftSwitches.SoftSwitchId.HighRead, (b,v) => b.StateHighRead = v },
             { SoftSwitches.SoftSwitchId.HighWrite, (b,v) => b.StateHighWrite = v },
-        };
+        }.ToImmutableDictionary();
 
     private void BuildStatusData()
     {
@@ -491,11 +497,11 @@ public sealed class VA2M : IDisposable
 
         _sysStatusSink?.Mutate(b =>
         {
-            foreach (var item in data)
+            foreach (var (id, value, count) in data)
             {
-                if (_switchSetters.TryGetValue(item.id, out var setter))
+                if (_switchSetters.TryGetValue(id, out var setter))
                 {
-                    setter(b, item.value);
+                    setter(b, value);
                 }
             }
 

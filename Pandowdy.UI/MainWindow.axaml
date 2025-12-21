@@ -11,35 +11,39 @@
 		Width="800" Height="600"
 		MinWidth="800" MinHeight="600"
         Icon="assets/ico/pandowdy.ico"
-		KeyDown="OnWindowKeyDown">
+		KeyDown="OnMainWindowKeyDown">
 	<DockPanel>
-		<Menu x:Name="MainMenu" DockPanel.Dock="Top">
+		<Menu x:Name="MainMenu" DockPanel.Dock="Top" DataContext="{Binding}">
 			<MenuItem Header="_File">
 				<MenuItem Header="_Quit" Click="OnQuitClicked" InputGesture="Alt+F4" />
 			</MenuItem>
+			<!--
 			<MenuItem Header="_Edit">
 				<MenuItem Header="Select _All" Click="OnSelectAllClicked" InputGesture="Alt+A" />
 				<MenuItem Header="_Copy" Click="OnCopyClicked" InputGesture="Alt+Ctrl+C" />
 			</MenuItem>
+			-->
 			<MenuItem Header="_View">
+				<!--
 				<MenuItem Header="_Clear Text" Click="OnClearTextClicked" InputGesture="Alt+L" />
 				<MenuItem Header="_Test Disk Read" Click="OnTestDiskReadClicked" InputGesture="Ctrl+T" />
 				<Separator/>
-				<MenuItem x:Name="ScanLinesMenuItem" Header="_Scan Lines" ToggleType="CheckBox" Click="OnViewScanLinesClicked" InputGesture="Alt+S" />
-				<MenuItem x:Name="MonochromeMenuItem" Header="_Monochrome" ToggleType="CheckBox" Click="OnMonochromeClicked" InputGesture="Alt+M" />
-				<MenuItem x:Name="MonoMixedMenuItem" Header="_Monochrome Mixed Text" ToggleType="CheckBox" Click="OnMonoMixedClicked" InputGesture="Alt+X" />
-				<MenuItem x:Name="DecreaseContrastMenuItem" Header="_Decrease Color Fringing" ToggleType="CheckBox" Click="OnDecreaseContrastClicked" InputGesture="Alt+D"/>
+				-->
+				<MenuItem x:Name="ScanLinesMenuItem" Header="_Scan Lines" ToggleType="CheckBox" IsChecked="{Binding ShowScanLines}" Command="{Binding ToggleScanLines}" InputGesture="Alt+S" />
+				<MenuItem x:Name="MonochromeMenuItem" Header="_Monochrome" ToggleType="CheckBox" IsChecked="{Binding ForceMonochrome}" Command="{Binding ToggleMonochrome}" InputGesture="Alt+M" />
+				<MenuItem x:Name="MonoMixedMenuItem" Header="_Monochrome Mixed Text" ToggleType="CheckBox" IsChecked="{Binding MonoMixed}" Command="{Binding ToggleMonoMixed}" InputGesture="Alt+X" />
+				<MenuItem x:Name="DecreaseContrastMenuItem" Header="_Decrease Color Fringing" ToggleType="CheckBox" IsChecked="{Binding DecreaseContrast}" Command="{Binding ToggleDecreaseContrast}" InputGesture="Alt+D"/>
 
 			</MenuItem>
 			<MenuItem Header="_Emulator">
-				<MenuItem Header="_Start" Click="OnEmuStartClicked" InputGesture="F5" />
-				<MenuItem Header="S_top" Click="OnEmuStopClicked" InputGesture="Shift+F5" />
+				<MenuItem Header="_Start" Command="{Binding StartEmu}" InputGesture="F5" />
+				<MenuItem Header="S_top" Command="{Binding StopEmu}" InputGesture="Shift+F5" />
 				<Separator/>
-				<MenuItem Header="_Reset" Click="OnEmuResetClicked" InputGesture="Ctrl+F12" />
-				<MenuItem Header="Ste_p Once" Click="OnEmuStepOnceClicked" InputGesture="F10" />
+				<MenuItem Header="_Reset" Command="{Binding ResetEmu}" InputGesture="Ctrl+F12" />
+				<MenuItem Header="Ste_p Once" Command="{Binding StepOnce}" InputGesture="F10" />
 				<Separator/>
-				<MenuItem x:Name="ThrottleMenuItem" Header="_Throttle" ToggleType="CheckBox" Click="OnEmuThrottleClicked" InputGesture="F7" />
-				<MenuItem x:Name="CapsLockMenuItem" Header="Caps _Lock" ToggleType="CheckBox" Click="OnEmuCapsLockClicked" InputGesture="F6" />
+				<MenuItem x:Name="ThrottleMenuItem" Header="_Throttle" ToggleType="CheckBox" IsChecked="{Binding ThrottleEnabled}" Command="{Binding ToggleThrottle}" InputGesture="F7" />
+				<MenuItem x:Name="CapsLockMenuItem" Header="Caps _Lock" ToggleType="CheckBox" IsChecked="{Binding CapsLockEnabled}" Command="{Binding ToggleCapsLock}" InputGesture="F6" />
 			</MenuItem>
 		</Menu>
 
@@ -106,9 +110,10 @@
 			</Border>
 		</Grid>
 
+				<!--
 		<Grid DockPanel.Dock="Bottom" Background="Blue" ColumnDefinitions="* Auto">
 
-				<!-- TODO: Hide this when Apple2TextScreen is ready; restore for text output later -->
+				
 		<ScrollViewer HorizontalScrollBarVisibility="Auto"
 					  VerticalScrollBarVisibility="Auto"
 					  IsVisible="True">
@@ -125,19 +130,21 @@
 					 LineHeight="14"
 					 SelectionBrush="DarkGreen"
 					 SelectionForegroundBrush="black" />
-		</ScrollViewer>
+		</ScrollViewer> 
 		</Grid>
+		-->
 		
 			<!-- Apple2TextScreen centered and scaled to fill available space -->
 			<local:Apple2Display x:Name="ScreenDisplay"
-								HorizontalAlignment="Center"
-								VerticalAlignment="Center" MinWidth="600" MinHeight="576"/>
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center" MinWidth="600" MinHeight="576"/>
 		
 
 
 	</DockPanel>
 
 	<Window.Styles>
+		<!--
 		<Style Selector="TextBox#OutputTextBox">
 			<Setter Property="Template">
 				<ControlTemplate>
@@ -159,5 +166,6 @@
 				</ControlTemplate>
 			</Setter>
 		</Style>
+		-->
 	</Window.Styles>
 </Window>

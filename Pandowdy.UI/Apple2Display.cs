@@ -271,7 +271,7 @@ public class Apple2Display : Control
 
                 uint color = GetNTSCColorFromBits(bitval, phase);
 
-                byte alpha = 0x00; // (byte) (bits[0] ? 0xff: (UseNonLumaContrastMask? ReducedFringeValue:BrightFringeValue));
+                byte alpha;// = 0x00; // (byte) (bits[0] ? 0xff: (UseNonLumaContrastMask? ReducedFringeValue:BrightFringeValue));
                 byte[] alphas = [0xff, 0xc0, 0x90, 0x70, 0x50];
                 if (UseNonLumaContrastMask) 
                 { 

@@ -176,8 +176,8 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         _softSwitches.AddResponder(responder ?? mempool);
     }
 
-    private readonly System.Collections.Generic.Dictionary<ushort, System.Func<byte>> _ioReadHandlers = new();
-    private readonly System.Collections.Generic.Dictionary<ushort, System.Action<byte>> _ioWriteHandlers = new();
+    private readonly System.Collections.Generic.Dictionary<ushort, System.Func<byte>> _ioReadHandlers = [];
+    private readonly System.Collections.Generic.Dictionary<ushort, System.Action<byte>> _ioWriteHandlers = [];
 
     private void InitIoReadHandlers()
     {

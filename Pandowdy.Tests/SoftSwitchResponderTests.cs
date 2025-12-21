@@ -195,8 +195,8 @@ namespace Pandowdy.Tests
             var stub = new StubSoftSwitchResponder();
             var bus = CreateBus(stub, /*out var _status,*/ out _);
 
-            Assert.False(bus == null);
-
+            Assert.NotNull(bus);
+            
             // Status provider defaults
             //Assert.False(status.State80Store);
             //Assert.False(status.StateRamRd);
