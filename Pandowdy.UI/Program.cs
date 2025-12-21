@@ -15,18 +15,16 @@ class Program
     public static void Main(string[] args)
     {
         var builder = new HostApplicationBuilder(args);
-        builder.Services.AddLogging(l => l.AddDebug());
-        builder.Services.AddSingleton<IFrameProvider, FrameProvider>();
         //builder.Services.AddSingleton<IErrorProvider, ErrorProvider>();
+        //builder.Services.AddLogging(l => l.AddDebug());
+        builder.Services.AddSingleton<IFrameProvider, FrameProvider>();
         builder.Services.AddSingleton<IEmulatorState, EmulatorStateProvider>();
         builder.Services.AddSingleton<IRefreshTicker, AvaloniaRefreshTicker>();
-        //builder.Services.AddSingleton<IDisassemblyProvider, DisassemblyProvider>();
         builder.Services.AddSingleton<ISystemStatusProvider, SystemStatusProvider>();
 
         // ViewModels
-        builder.Services.AddTransient<EmulatorStateViewModel>();
         //builder.Services.AddTransient<ErrorLogViewModel>();
-        //builder.Services.AddTransient<DisassemblyViewModel>();
+        builder.Services.AddTransient<EmulatorStateViewModel>();
         builder.Services.AddTransient<MainWindowViewModel>();
         builder.Services.AddTransient<SystemStatusViewModel>();
 
