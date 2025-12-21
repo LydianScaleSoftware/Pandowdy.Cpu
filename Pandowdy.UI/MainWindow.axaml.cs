@@ -5,20 +5,15 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.Markup.Xaml;
 using CommonUtil;
-using DiskArc;
 using Pandowdy.Core;
-using Pandowdy.UI;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-//using static DiskArc.Defs;
 using Pandowdy.UI.ViewModels; // ensure ViewModel type is visible
 using System.Text.Json;
-//using System.Diagnostics;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
-//using System.Reactive.Disposables;
 using System.Reactive.Linq;
 
 namespace Pandowdy.UI;
@@ -29,50 +24,52 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     private DiskReadTestTemp? mDiskReadTest;
     private string mLastDiskPath = "E:\\develop\\Pandowdy";
 
-    private VA2M _machine; // acquired from DI
+    private VA2M? _machine; // injected later via InjectDependencies
     private CancellationTokenSource? _emuCts;
     private Task? _emuTask;
-    //private TextBox? _outputTextBox;
-
 
     private Menu? _mainMenu;
     private Apple2Display? _screen;
-    private IRefreshTicker? _refreshTicker;
+    private IRefreshTicker? _refreshTicker; // injected later
     private IDisposable? _refreshSub;
     private bool _menuPointerActive; // true while pointer is over the menu bar
+    private bool _depsInjected; // guard to ensure dependencies injected once
 
     private bool _capsLockEnabled = true; // default ON
     public bool IsCapsLockEnabledForInput => _capsLockEnabled; // expose to Apple2TextScreen
-    private Rect _lastNormalBounds;
-    private PixelPoint _lastNormalPosition;
 
+
+    // Parameterless ctor for XAML loader; no heavy work here. Ideally dependencies should be injected here, but 
+    // Avalonia needs a parameterless Ctor.  It's icky, but the lesser of evils. I don't want to use a Service Locator
+    // inside the class, so there's an InjectDependencies() that must be called right after the Ctor.
     public MainWindow()
     {
         InitializeComponent();
-
-        var app = (App?)Application.Current;
-        var services = app!.Services;
-        ViewModel = services.GetService(typeof(MainWindowViewModel)) as MainWindowViewModel;
-        _machine = (VA2M)services.GetService(typeof(VA2M))!;
-        _refreshTicker = (IRefreshTicker?)services.GetService(typeof(IRefreshTicker));
-
-    //    _outputTextBox = this.FindControl<TextBox>("OutputTextBox");
-
-
         _mainMenu = this.FindControl<Menu>("MainMenu");
-        //mDiskReadTest = new DiskReadTestTemp(mAppHook, AppendText, this);
-
         if (_mainMenu != null)
         {
             _mainMenu.PointerEntered += (_, __) => _menuPointerActive = true;
             _mainMenu.PointerExited += (_, __) => _menuPointerActive = false;
         }
-
         _screen = this.FindControl<Apple2Display>("ScreenDisplay");
+        // Defer attaching machine/frame until InjectDependencies, which should be called next.
+    }
+
+    public void InjectDependencies(MainWindowViewModel viewModel, VA2M machine, IFrameProvider frameProvider, IRefreshTicker refreshTicker)
+    {
+        if (_depsInjected)
+        {
+            throw new InvalidOperationException("Dependencies already injected.");
+        }
+        _depsInjected = true;
+        ViewModel = viewModel;
+        DataContext = viewModel;
+        _machine = machine;
+        _refreshTicker = refreshTicker;
+
         if (_screen != null)
         {
             _screen.AttachMachine(_machine);
-            var frameProvider = (IFrameProvider)services.GetService(typeof(IFrameProvider))!;
             _screen.AttachFrameProvider(frameProvider);
             _screen.Focus();
         }
@@ -83,7 +80,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             if (vm != null)
             {
                 var s1 = vm.WhenAnyValue(x => x.ThrottleEnabled)
-                    .Subscribe(v => _machine.ThrottleEnabled = v);
+                    .Subscribe(v => { if (_machine != null) _machine.ThrottleEnabled = v; });
                 disposables.Add(s1);
                 var s2 = vm.WhenAnyValue(x => x.CapsLockEnabled)
                     .ObserveOn(RxApp.MainThreadScheduler)
@@ -150,26 +147,6 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         });
 
         RestoreSettingsFromConfigFile();
-
-        // Track last normal bounds for saving/restoring unmaximized geometry
-        _lastNormalBounds = Bounds;
-        _lastNormalPosition = Position;
-        this.GetObservable(Window.WindowStateProperty).Subscribe(state =>
-        {
-            if (state == WindowState.Normal)
-            {
-                _lastNormalBounds = Bounds;
-                _lastNormalPosition = Position;
-            }
-        });
-        this.GetObservable(Window.BoundsProperty).Subscribe(_ =>
-        {
-            if (WindowState == WindowState.Normal)
-            {
-                _lastNormalBounds = Bounds;
-                _lastNormalPosition = Position;
-            }
-        });
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
@@ -177,6 +154,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
+        if (!_depsInjected) { return; }
         _screen?.Focus();
         if (_refreshTicker != null && _screen != null)
         {
@@ -187,7 +165,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                 {
                     // Request screen refresh; other synced tasks can also hook here
                     _screen.RequestRefresh();
-                    _machine.GenerateStatusData();
+                    _machine!.GenerateStatusData();
                 });
         }
         Dispatcher.UIThread.Post(() => OnEmuStartClicked(this, new RoutedEventArgs()));
@@ -256,6 +234,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
     private async void OnEmuStartClicked(object? sender, RoutedEventArgs e)
     {
+        if (!_depsInjected || _machine is null) { return; }
         if (_emuCts != null)
         {
             return;
@@ -272,6 +251,10 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             catch (OperationCanceledException)
             {
             }
+            catch (Exception)
+            {
+                // swallow or log
+            }
         });
         _ = _emuTask.ContinueWith(t =>
         {
@@ -285,11 +268,11 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     }
 
     private void OnEmuStopClicked(object? sender, RoutedEventArgs e) => StopEmulator();
-    private void OnEmuResetClicked(object? sender, RoutedEventArgs e) => _machine.UserReset();
+    private void OnEmuResetClicked(object? sender, RoutedEventArgs e) { if (_depsInjected) _machine?.UserReset(); }
 
     private void OnEmuStepOnceClicked(object? sender, RoutedEventArgs e)
     {
-        if (_emuCts != null)
+        if (!_depsInjected || _emuCts != null || _machine is null)
         {
             return;
         }
@@ -360,34 +343,6 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     }
 
     private void OnQuitClicked(object? sender, RoutedEventArgs e) => Close();
-    
-    //private void OnSelectAllClicked(object? sender, RoutedEventArgs e)
-    //{
-    //    if (_outputTextBox != null)
-    //    {
-    //        _outputTextBox.SelectAll();
-    //        _outputTextBox.Focus();
-    //    }
-    //}
-    //private async void OnTestDiskReadClicked(object? sender, RoutedEventArgs e)
-    //{
-    //    ClearText();
-    //    mLastDiskPath = await mDiskReadTest!.HandleDiskRead(mLastDiskPath);
-    //}
-    //private void OnCopyClicked(object? sender, RoutedEventArgs e)
-    //{
-    //    if (_outputTextBox != null && !string.IsNullOrEmpty(_outputTextBox.SelectedText))
-    //    {
-    //        var clipboard = TopLevel.GetTopLevel(_outputTextBox)?.Clipboard;
-    //        clipboard?.SetTextAsync(_outputTextBox.SelectedText);
-    //    }
-    //    else if (_outputTextBox != null && !string.IsNullOrEmpty(_outputTextBox.Text))
-    //    {
-    //        var clipboard = TopLevel.GetTopLevel(_outputTextBox)?.Clipboard;
-    //        clipboard?.SetTextAsync(_outputTextBox.Text);
-    //    }
-    //}
-    //private void OnClearTextClicked(object? sender, RoutedEventArgs e) => ClearText();
 
     private static string GetConfigPath()
     {
@@ -407,41 +362,6 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         public bool? ForceMonochrome { get; set; }
         public bool? ThrottleEnabled { get; set; }
     }
-
-    //public void AppendText(string text)
-    //{
-    //    Dispatcher.UIThread.Post(() =>
-    //    {
-    //        if (_outputTextBox != null)
-    //        {
-    //            _outputTextBox.Text += text;
-    //            _outputTextBox.CaretIndex = _outputTextBox.Text?.Length ?? 0;
-    //        }
-    //    });
-    //}
-
-    //public void SetText(string text)
-    //{
-    //    Dispatcher.UIThread.Post(() =>
-    //    {
-    //        if (_outputTextBox != null)
-    //        {
-    //            _outputTextBox.Text = text;
-    //            _outputTextBox.CaretIndex = _outputTextBox.Text?.Length ?? 0;
-    //        }
-    //    });
-    //}
-
-    //public void ClearText()
-    //{
-    //    Dispatcher.UIThread.Post(() =>
-    //    {
-    //        if (_outputTextBox != null)
-    //        {
-    //            _outputTextBox.Text = string.Empty;
-    //        }
-    //    });
-    //}
 
     private void OnMainWindowKeyDown(object? sender, KeyEventArgs e)
     {
@@ -474,17 +394,17 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         base.OnKeyUp(e);
         if (e.Key == Key.F1)
         {
-            _machine.SetPushButton(0, false); // pushbutton released
+            _machine?.SetPushButton(0, false); // pushbutton released
             e.Handled = true;
         }
         else if (e.Key == Key.F2)
         {
-            _machine.SetPushButton(1, false); // pushbutton 2 released
+            _machine?.SetPushButton(1, false); // pushbutton 2 released
             e.Handled = true;
         }
         else if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
         {
-            _machine.SetPushButton(2, false); // pushbutton 3 (shift) released
+            _machine?.SetPushButton(2, false); // pushbutton 3 (shift) released
             e.Handled = true;
         }
     }
@@ -494,7 +414,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         base.OnKeyDown(e);
         if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
         {
-            _machine.SetPushButton(2, true); // pushbutton 3 (shift) pressed
+            _machine?.SetPushButton(2, true); // pushbutton 3 (shift) pressed
             // do not mark handled so other shift combos still work
         }
     }
@@ -505,14 +425,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         {
             switch (e.Key)
             {
-                //case Key.A:
-                //    OnSelectAllClicked(this, new RoutedEventArgs());
-                //    return true;
-                //case Key.L:
-                //    OnClearTextClicked(this, new RoutedEventArgs());
-                //    return true;
                 case Key.S:
-                    // screen toggled via VM binding
                     ViewModel?.ToggleScanLines.Execute().Subscribe();
                     return true;
                 case Key.M:
@@ -532,10 +445,10 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         switch (e.Key)
         {
             case Key.F1:
-                _machine.SetPushButton(0, true); // pushbutton pressed
+                _machine?.SetPushButton(0, true); // pushbutton pressed
                 return true;
             case Key.F2:
-                _machine.SetPushButton(1, true); // pushbutton 2 pressed
+                _machine?.SetPushButton(1, true); // pushbutton 2 pressed
                 return true;
             case Key.F5:
                 ViewModel?.StartEmu.Execute().Subscribe();
@@ -557,11 +470,10 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         }
         if ((e.KeyModifiers & KeyModifiers.Control) != 0 && (e.KeyModifiers & KeyModifiers.Shift) != 0 && e.Key == Key.D2)
         {
-            _machine.InjectKey(0x00);
+            _machine?.InjectKey(0x00);
             e.Handled = true;
             return true;
         }
-        // Ctrl+F12 triggers reset
         if (e.Key == Key.F12 && (e.KeyModifiers & KeyModifiers.Control) != 0)
         {
             ViewModel?.ResetEmu.Execute().Subscribe();
@@ -575,7 +487,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         if ((e.KeyModifiers & KeyModifiers.Control) != 0 && e.Key >= Key.A && e.Key <= Key.Z)
         {
             byte ctrl = (byte)(e.Key - Key.A + 1);
-            _machine.InjectKey((byte)(ctrl | 0x80));
+            _machine?.InjectKey((byte)(ctrl | 0x80));
             e.Handled = true;
             return true;
         }
@@ -594,7 +506,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         };
         if (ascii.HasValue)
         {
-            _machine.InjectKey((byte)(ascii.Value | 0x80));
+            _machine?.InjectKey((byte)(ascii.Value | 0x80));
             e.Handled = true;
             return true;
         }
