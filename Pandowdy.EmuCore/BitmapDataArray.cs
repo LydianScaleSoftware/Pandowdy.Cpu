@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Pandowdy.Core
+namespace Pandowdy.EmuCore
 {
     public class BitmapDataArray
     {

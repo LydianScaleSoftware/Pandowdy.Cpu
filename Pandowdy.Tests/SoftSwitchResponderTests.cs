@@ -1,4 +1,4 @@
-using Pandowdy.Core;
+using Pandowdy.EmuCore;
 using Emulator;
 using Xunit;
 

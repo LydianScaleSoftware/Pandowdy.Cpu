@@ -5,7 +5,7 @@ using System.Threading;
 using Emulator;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace Pandowdy.Core;
+namespace Pandowdy.EmuCore;
 
 public interface IAppleIIBus : IBus
 {

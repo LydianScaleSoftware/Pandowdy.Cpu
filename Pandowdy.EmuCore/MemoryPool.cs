@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Emulator;
 
-namespace Pandowdy.Core
+namespace Pandowdy.EmuCore
 {
     public interface ISoftSwitchResponder
     {

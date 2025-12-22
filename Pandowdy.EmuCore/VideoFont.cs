@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace Pandowdy.Core;
+namespace Pandowdy.EmuCore;
 
 /// <summary>
 /// Core-side Apple II Enhanced Video font access for glyph composition.

@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Pandowdy.Core
+namespace Pandowdy.EmuCore
 {
     // Basic stub representing a single soft switch
 

@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 using Emulator;
 using System.Collections.Concurrent;
 
-namespace Pandowdy.Core;
+namespace Pandowdy.EmuCore;
 
 public sealed class VA2M : IDisposable
 {

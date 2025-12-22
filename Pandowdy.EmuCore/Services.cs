@@ -1,4 +1,4 @@
-namespace Pandowdy.Core;
+namespace Pandowdy.EmuCore;
 
 // Placeholder service interfaces & simple stub implementations.
 // Incremental behavior will be added later without breaking existing UI.

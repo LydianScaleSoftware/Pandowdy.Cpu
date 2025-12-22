@@ -1,6 +1,6 @@
 using System;
 
-namespace Pandowdy.Core;
+namespace Pandowdy.EmuCore;
 
 /// <summary>
 /// Event arguments for mapped memory notifications used by non-UI consumers.

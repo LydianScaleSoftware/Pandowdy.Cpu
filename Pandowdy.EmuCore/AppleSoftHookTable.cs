@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Pandowdy.Core;
+namespace Pandowdy.EmuCore;
 
 /// <summary>
 /// Holds AppleSoft ROM hook actions for high-level BASIC debugging.
