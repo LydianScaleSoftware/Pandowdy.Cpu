@@ -1,15 +1,11 @@
 ﻿using System;
-using System.IO;
-using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.Threading;
-using ReactiveUI;
+
 using Pandowdy.EmuCore;
 
 namespace Pandowdy.UI;
