@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using Emulator;
+using System.Threading;
 
 namespace Pandowdy.EmuCore
 {
@@ -30,7 +31,7 @@ namespace Pandowdy.EmuCore
         void SetPreWrite(bool enabled);
     }
 
-    public sealed class MemoryPool : IMemory, IMappedMemory, ISoftSwitchResponder
+    public sealed class MemoryPool : IMemory, IMappedMemory, ISoftSwitchResponder, IDisposable
     {
         //Methods from IMemory:
         public System.Int32 Size { get => 0x10000;  } // 64k addressable space
@@ -308,35 +309,51 @@ namespace Pandowdy.EmuCore
 
         private byte ReadFromRegion(Ranges region, int address)
         {
-            _readRanges.TryGetValue(region, out var mem);
-            if (!mem.HasValue)
-            { return 0; }
-            var m = mem.Value;
-            int baseAddr = (int) region;
-            int offset = address - baseAddr;
-            if ((uint) offset >= m.Length)
-            { return 0; }
-            return m.Span[offset];
+            _mappingLock.EnterReadLock();
+            try
+            {
+                _readRanges.TryGetValue(region, out var mem);
+                if (!mem.HasValue)
+                { return 0; }
+                var m = mem.Value;
+                int baseAddr = (int) region;
+                int offset = address - baseAddr;
+                if ((uint) offset >= m.Length)
+                { return 0; }
+                return m.Span[offset];
+            }
+            finally
+            {
+                _mappingLock.ExitReadLock();
+            }
         }
 
         private bool WriteToRegion(Ranges region, int address, byte value)
         {
-            _writeRanges.TryGetValue(region, out var mem);
-            if (!mem.HasValue)
+            _mappingLock.EnterReadLock();
+            try
             {
-                return false;
-            }
+                _writeRanges.TryGetValue(region, out var mem);
+                if (!mem.HasValue)
+                {
+                    return false;
+                }
 
-            var m = mem.Value;
-            int baseAddr = (int) region;
-            int offset = address - baseAddr;
-            if ((uint) offset >= m.Length)
+                var m = mem.Value;
+                int baseAddr = (int) region;
+                int offset = address - baseAddr;
+                if ((uint) offset >= m.Length)
+                {
+                    return false;
+                }
+
+                m.Span[offset] = value;
+                return true;
+            }
+            finally
             {
-                return false;
+                _mappingLock.ExitReadLock();
             }
-
-            m.Span[offset] = value;
-            return true;
         }
 
         public byte ReadMapped(ushort address) => address switch
@@ -480,118 +497,114 @@ namespace Pandowdy.EmuCore
 
         public void UpdateMemoryMappings()
         {
-            _readRanges[Ranges.Region_0000_01FF] = _altZp ? _a1 : _m1;
-            _writeRanges[Ranges.Region_0000_01FF] = _altZp ? _a1 : _m1;
-
-
-
-            _readRanges[Ranges.Region_0200_03FF] = (_ramRd ? _a2 : _m2);
-            _readRanges[Ranges.Region_0800_1FFF] = (_ramRd ? _a4 : _m4);
-            _readRanges[Ranges.Region_4000_5FFF] = (_ramRd ? _a6 : _m6);
-            _readRanges[Ranges.Region_6000_BFFF] = (_ramRd ? _a7 : _m7);
-
-            _writeRanges[Ranges.Region_0200_03FF] = (_ramWrt ? _a2 : _m2);
-            _writeRanges[Ranges.Region_0800_1FFF] = (_ramWrt ? _a4 : _m4);
-            _writeRanges[Ranges.Region_4000_5FFF] = (_ramWrt ? _a6 : _m6);
-            _writeRanges[Ranges.Region_6000_BFFF] = (_ramWrt ? _a7 : _m7);
-
-            if (!_80Store)
+            _mappingLock.EnterWriteLock();
+            try
             {
-                _readRanges[Ranges.Region_0400_07FF] = (_ramRd ? _a3 : _m3);
-                _readRanges[Ranges.Region_2000_3FFF] = (_ramRd ? _a5 : _m5);
-                _writeRanges[Ranges.Region_0400_07FF] = (_ramWrt ? _a3 : _m3);
-                _writeRanges[Ranges.Region_2000_3FFF] = (_ramWrt ? _a5 : _m5);
-            }
-            else
-            {
-                _readRanges[Ranges.Region_0400_07FF] = (_page2 ? _a3 : _m3);
-                _writeRanges[Ranges.Region_0400_07FF] = (_page2 ? _a3 : _m3);
-                if (_hires)
+                _readRanges[Ranges.Region_0000_01FF] = _altZp ? _a1 : _m1;
+                _writeRanges[Ranges.Region_0000_01FF] = _altZp ? _a1 : _m1;
+
+                _readRanges[Ranges.Region_0200_03FF] = (_ramRd ? _a2 : _m2);
+                _readRanges[Ranges.Region_0800_1FFF] = (_ramRd ? _a4 : _m4);
+                _readRanges[Ranges.Region_4000_5FFF] = (_ramRd ? _a6 : _m6);
+                _readRanges[Ranges.Region_6000_BFFF] = (_ramRd ? _a7 : _m7);
+
+                _writeRanges[Ranges.Region_0200_03FF] = (_ramWrt ? _a2 : _m2);
+                _writeRanges[Ranges.Region_0800_1FFF] = (_ramWrt ? _a4 : _m4);
+                _writeRanges[Ranges.Region_4000_5FFF] = (_ramWrt ? _a6 : _m6);
+                _writeRanges[Ranges.Region_6000_BFFF] = (_ramWrt ? _a7 : _m7);
+
+                if (!_80Store)
                 {
-                    _readRanges[Ranges.Region_2000_3FFF] = (_page2 ? _a5 : _m5);
-                    _writeRanges[Ranges.Region_2000_3FFF] = (_page2 ? _a5 : _m5);
+                    _readRanges[Ranges.Region_0400_07FF] = (_ramRd ? _a3 : _m3);
+                    _readRanges[Ranges.Region_2000_3FFF] = (_ramRd ? _a5 : _m5);
+                    _writeRanges[Ranges.Region_0400_07FF] = (_ramWrt ? _a3 : _m3);
+                    _writeRanges[Ranges.Region_2000_3FFF] = (_ramWrt ? _a5 : _m5);
                 }
                 else
                 {
-                    _readRanges[Ranges.Region_2000_3FFF] = (_ramRd ? _a5 : _m5);
-                    _writeRanges[Ranges.Region_2000_3FFF] = (_ramWrt ? _a5 : _m5);
+                    _readRanges[Ranges.Region_0400_07FF] = (_page2 ? _a3 : _m3);
+                    _writeRanges[Ranges.Region_0400_07FF] = (_page2 ? _a3 : _m3);
+                    if (_hires)
+                    {
+                        _readRanges[Ranges.Region_2000_3FFF] = (_page2 ? _a5 : _m5);
+                        _writeRanges[Ranges.Region_2000_3FFF] = (_page2 ? _a5 : _m5);
+                    }
+                    else
+                    {
+                        _readRanges[Ranges.Region_2000_3FFF] = (_ramRd ? _a5 : _m5);
+                        _writeRanges[Ranges.Region_2000_3FFF] = (_ramWrt ? _a5 : _m5);
+                    }
                 }
-            }
 
-            // Region_D000_DFFF -> Slot ROM
-
-            // Write:
-            if (_highWrite)
-            {
- //               Debug.WriteLine("Setting _HighWrite");
-                if (_altZp) // Aux a8a/a8b + a9
-                { 
-                    _writeRanges[Ranges.Region_D000_DFFF] = _bank1?_a8a:_a8b;
-                    _writeRanges[Ranges.Region_E000_FFFF] = _a9;
-                }
-                else // Main m8a/m8b + m9
+                // Region_D000_DFFF -> Slot ROM
+                // Write:
+                if (_highWrite)
                 {
-                    _writeRanges[Ranges.Region_D000_DFFF] = _bank1?_m8a:_m8b;
-                    _writeRanges[Ranges.Region_E000_FFFF] = _m9;
+                    if (_altZp) // Aux a8a/a8b + a9
+                    { 
+                        _writeRanges[Ranges.Region_D000_DFFF] = _bank1?_a8a:_a8b;
+                        _writeRanges[Ranges.Region_E000_FFFF] = _a9;
+                    }
+                    else // Main m8a/m8b + m9
+                    {
+                        _writeRanges[Ranges.Region_D000_DFFF] = _bank1?_m8a:_m8b;
+                        _writeRanges[Ranges.Region_E000_FFFF] = _m9;
+                    }
                 }
-            }
-            else
-            {
-   //             Debug.WriteLine("Clearing _HighWrite");
-                _writeRanges[Ranges.Region_D000_DFFF] = null;
-                _writeRanges[Ranges.Region_E000_FFFF] = null;
-            }
-
-            // Read:
-            if (_highRead)
-            {
-    //            Debug.WriteLine("Setting _HighRead");
-
-                if (_altZp) // Aux a8a/a8b + a9
+                else
                 {
-                    _readRanges[Ranges.Region_D000_DFFF] = _bank1?_a8a:_a8b;
-                    _readRanges[Ranges.Region_E000_FFFF] = _a9;
+                    _writeRanges[Ranges.Region_D000_DFFF] = null;
+                    _writeRanges[Ranges.Region_E000_FFFF] = null;
                 }
-                else // Main m8a/m8b + m9
+
+                // Read:
+                if (_highRead)
                 {
-                    _readRanges[Ranges.Region_D000_DFFF] = _bank1?_m8a:_m8b;
-                    _readRanges[Ranges.Region_E000_FFFF] = _m9;
+                    if (_altZp) // Aux a8a/a8b + a9
+                    {
+                        _readRanges[Ranges.Region_D000_DFFF] = _bank1?_a8a:_a8b;
+                        _readRanges[Ranges.Region_E000_FFFF] = _a9;
+                    }
+                    else // Main m8a/m8b + m9
+                    {
+                        _readRanges[Ranges.Region_D000_DFFF] = _bank1?_m8a:_m8b;
+                        _readRanges[Ranges.Region_E000_FFFF] = _m9;
+                    }
                 }
+                else
+                {
+                    _readRanges[Ranges.Region_D000_DFFF] = _rom1;
+                    _readRanges[Ranges.Region_E000_FFFF] = _rom2;
+                }
+
+                // This will take the place of the card mechanism for now.
+                bool[] hasCard = [false, true, true, true, true, true, true, true]; // Slots 0-7 (0 -> unused)
+
+                _readRanges[Ranges.Region_C100_C1FF] = _intCxRom ? _int1 : (hasCard[1] ? _s1 : _int1);
+                _readRanges[Ranges.Region_C200_C2FF] = _intCxRom ? _int2 : (hasCard[2] ? _s2 : _int2);
+                _readRanges[Ranges.Region_C300_C3FF] = _intCxRom ? _int3 : (hasCard[3] ? _s3 : _int3);
+                _readRanges[Ranges.Region_C400_C4FF] = _intCxRom ? _int4 : (hasCard[4] ? _s4 : _int4);
+                _readRanges[Ranges.Region_C500_C5FF] = _intCxRom ? _int5 : (hasCard[5] ? _s5 : _int5);
+                _readRanges[Ranges.Region_C600_C6FF] = _intCxRom ? _int6 : (hasCard[6] ? _s6 : _int6);
+                _readRanges[Ranges.Region_C700_C7FF] = _intCxRom ? _int7 : (hasCard[7] ? _s7 : _int7);
+                _readRanges[Ranges.Region_C800_CFFF] = _intext; // TODO: This is hardcoded to internal rom right now
+
+                // Region_C300_C3FF
+                _readRanges[Ranges.Region_C300_C3FF] = (_intCxRom || !_slotC3Rom) ? _int3 : _s3;
             }
-            else
+            finally
             {
-    //            Debug.WriteLine("Clearing _HighRead");
-
-                _readRanges[Ranges.Region_D000_DFFF] = _rom1;
-                _readRanges[Ranges.Region_E000_FFFF] = _rom2;
+                _mappingLock.ExitWriteLock();
             }
+        }
 
-            /*
-                // Region C000_CFFF -> I/O and Internal Slots
-                /// At this point, this is scratch ram and isn't used from the user-facing side.
-            */
+        // Thread synchronization for memory mapping updates
+        private readonly ReaderWriterLockSlim _mappingLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
-            // This will take the place of the card mechanism for now.
-            bool[] hasCard = [false, true, true, true, true, true, true, true]; // Slots 0-7 (0 -> unused)
-
-            // Each region from Region_C100_C1FF to Region_C200_C2FF and Region_C400_C4FF Region_C700_C7FF
-            /// If INTCXROM is set, map to Internal Slot ROM (_int1-_int7)
-            /// Else if there is a card in the slot, map to that card's I/O region.  If there's no card, just default back to the slot rom.
-            _readRanges[Ranges.Region_C100_C1FF] = _intCxRom ? _int1 : (hasCard[1] ? _s1 : _int1);
-            _readRanges[Ranges.Region_C200_C2FF] = _intCxRom ? _int2 : (hasCard[2] ? _s2 : _int2);
-            _readRanges[Ranges.Region_C300_C3FF] = _intCxRom ? _int3 : (hasCard[3] ? _s3 : _int3);
-            _readRanges[Ranges.Region_C400_C4FF] = _intCxRom ? _int4 : (hasCard[4] ? _s4 : _int4);
-            _readRanges[Ranges.Region_C500_C5FF] = _intCxRom ? _int5 : (hasCard[5] ? _s5 : _int5);
-            _readRanges[Ranges.Region_C600_C6FF] = _intCxRom ? _int6 : (hasCard[6] ? _s6 : _int6);
-            _readRanges[Ranges.Region_C700_C7FF] = _intCxRom ? _int7 : (hasCard[7] ? _s7 : _int7);
-            _readRanges[Ranges.Region_C800_CFFF] = _intext; // TODO: This is hardcoded to internal rom right now
-
-
-            // Region_C300_C3FF
-            /// IF INTCXROM or SLOTC3ROM is set, map to Internal Slot ROM (_int3)
-            /// Else if there is a card in Slot 3, map to that card's I/O region
-            _readRanges[Ranges.Region_C300_C3FF] = (_intCxRom || !_slotC3Rom) ? _int3 : _s3;
-
+        public void Dispose()
+        {
+            // Dispose logic if needed
+            _mappingLock?.Dispose();
         }
 
         public void InstallApple2ROM(byte[] rom)

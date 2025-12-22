@@ -95,7 +95,8 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                         if (_screen != null)
                         {
                             _screen.ShowScanLines = v;
-                            _screen.InvalidateVisual();
+                            _screen.RequestRefresh();
+                            // Invalidation handled by reactive pipeline
                         }
                     });
                 disposables.Add(s3);
@@ -106,7 +107,8 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                         if (_screen != null)
                         {
                             _screen.ForceMono = v;
-                            _screen.InvalidateVisual();
+                            _screen.RequestRefresh();
+                            // Invalidation handled by reactive pipeline
                         }
                     });
                 disposables.Add(s4);
@@ -117,7 +119,8 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                         if (_screen != null)
                         {
                             _screen.UseNonLumaContrastMask = v;
-                            _screen.InvalidateVisual();
+                            _screen.RequestRefresh();
+                            // Invalidation handled by reactive pipeline
                         }
                     });
                 disposables.Add(s5);
@@ -128,7 +131,8 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                         if (_screen != null)
                         {
                             _screen.DefringeMixedText = v;
-                            _screen.InvalidateVisual();
+                            _screen.RequestRefresh();
+                            // Invalidation handled by reactive pipeline
                         }
                     });
                 disposables.Add(s6);
@@ -162,7 +166,8 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Subscribe(_ =>
                 {
-                    // Request screen refresh; other synced tasks can also hook here
+                    // Signal screen that it's OK to render at 60Hz
+                    // Actual invalidation only happens if properties changed
                     _screen.RequestRefresh();
                 });
         }

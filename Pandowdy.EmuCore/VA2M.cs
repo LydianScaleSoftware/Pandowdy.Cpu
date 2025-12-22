@@ -530,8 +530,23 @@ public sealed class VA2M : IDisposable
 
     public void Dispose()
     {
+        // Dispose flash timer
         _flashTimer?.Dispose();
         _flashTimer = null;
+        
+        // Clear pending queue
+        while (_pending.TryDequeue(out _)) { }
+        
+        // Dispose bus (which handles VBlank event cleanup)
+        if (Bus is IDisposable disposableBus)
+        {
+            disposableBus.Dispose();
+        }
+        
+        // Dispose memory pool
+        MemoryPool?.Dispose();
+        
+        // Note: _cpu doesn't implement IDisposable in legacy 6502.NET library
     }
 
 
