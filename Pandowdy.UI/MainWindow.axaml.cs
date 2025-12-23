@@ -55,7 +55,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
     // Parameterless ctor for XAML loader; no heavy work here. Ideally dependencies should be injected here, but 
     // Avalonia needs a parameterless Ctor.  It's icky, but the lesser of evils. I don't want to use a Service Locator
-    // inside the class, so there's an InjectDependencies() that must be called right after the Ctor.
+    // inside the class, so there's an Initialize() method that must be called right after the Ctor.
     public MainWindow()
     {
         InitializeComponent();
@@ -67,7 +67,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         }
         _screen = this.FindControl<Apple2Display>("ScreenDisplay");
         _softSwitchStatusPanel = this.FindControl<SoftSwitchStatusPanel>("SoftSwitchStatusPanel");
-        // Defer attaching machine/frame until InjectDependencies, which should be called next.
+        // Defer attaching machine/frame until Initialize, which should be called next.
     }
 
     private void UpdateSoftSwitchStatusVisibility()
@@ -78,7 +78,11 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         }
     }
 
-    public void InjectDependencies(MainWindowViewModel viewModel, VA2M machine, IFrameProvider frameProvider, IRefreshTicker refreshTicker)
+    /// <summary>
+    /// Initializes the MainWindow with all required dependencies.
+    /// Must be called immediately after construction (handled by MainWindowFactory).
+    /// </summary>
+    public void Initialize(MainWindowViewModel viewModel, VA2M machine, IFrameProvider frameProvider, IRefreshTicker refreshTicker)
     {
         if (_depsInjected)
         {

@@ -75,6 +75,9 @@ namespace Pandowdy
                         var sysStatus = provider.GetRequiredService<ISystemStatusProvider>();
                         return new VA2M(state, frame, sysStatus);
                     });
+                    
+                    // MainWindow factory - encapsulates creation and initialization
+                    services.AddSingleton<IMainWindowFactory, MainWindowFactory>();
                 });
         }
 

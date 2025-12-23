@@ -21,13 +21,14 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var services = DesktopServiceProvider.Current;
-            var vm = services.GetService(typeof(MainWindowViewModel)) as MainWindowViewModel;
-            var machine = services.GetService(typeof(VA2M)) as VA2M;
-            var frameProvider = services.GetService(typeof(IFrameProvider)) as IFrameProvider;
-            var ticker = services.GetService(typeof(IRefreshTicker)) as IRefreshTicker;
-            var mainWindow = new MainWindow();
-            mainWindow.InjectDependencies(vm!, machine!, frameProvider!, ticker!);
-            desktop.MainWindow = mainWindow;
+            var factory = services.GetService(typeof(IMainWindowFactory)) as IMainWindowFactory;
+            
+            if (factory == null)
+            {
+                throw new InvalidOperationException("IMainWindowFactory not registered in DI container.");
+            }
+            
+            desktop.MainWindow = factory.Create();
         }
 
         base.OnFrameworkInitializationCompleted();
