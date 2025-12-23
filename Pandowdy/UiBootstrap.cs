@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Hosting;
-using Pandowdy.UI;
 
 namespace Pandowdy
 {

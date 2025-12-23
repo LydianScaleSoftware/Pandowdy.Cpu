@@ -7,6 +7,8 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <!-- Enable unsafe code for direct bitmap pixel manipulation -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <HotReloadEnabled>true</HotReloadEnabled>
+
   </PropertyGroup>
 
   <ItemGroup>

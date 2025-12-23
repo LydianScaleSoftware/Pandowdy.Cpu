@@ -17,18 +17,9 @@
 			<MenuItem Header="_File">
 				<MenuItem Header="_Quit" Click="OnQuitClicked" InputGesture="Alt+F4" />
 			</MenuItem>
-			<!--
-			<MenuItem Header="_Edit">
-				<MenuItem Header="Select _All" Click="OnSelectAllClicked" InputGesture="Alt+A" />
-				<MenuItem Header="_Copy" Click="OnCopyClicked" InputGesture="Alt+Ctrl+C" />
-			</MenuItem>
-			-->
+
 			<MenuItem Header="_View">
-				<!--
-				<MenuItem Header="_Clear Text" Click="OnClearTextClicked" InputGesture="Alt+L" />
-				<MenuItem Header="_Test Disk Read" Click="OnTestDiskReadClicked" InputGesture="Ctrl+T" />
-				<Separator/>
-				-->
+
 				<MenuItem x:Name="ScanLinesMenuItem" Header="_Scan Lines" ToggleType="CheckBox" IsChecked="{Binding ShowScanLines}" Command="{Binding ToggleScanLines}" InputGesture="Alt+S" />
 				<MenuItem x:Name="MonochromeMenuItem" Header="_Monochrome" ToggleType="CheckBox" IsChecked="{Binding ForceMonochrome}" Command="{Binding ToggleMonochrome}" InputGesture="Alt+M" />
 				<MenuItem x:Name="MonoMixedMenuItem" Header="_Monochrome Mixed Text" ToggleType="CheckBox" IsChecked="{Binding MonoMixed}" Command="{Binding ToggleMonoMixed}" InputGesture="Alt+X" />
@@ -48,7 +39,7 @@
 		</Menu>
 
 		<!-- Right-side status panel sized to content only -->
-		<Grid DockPanel.Dock="Right" Background="Black" ColumnDefinitions="Auto">
+		<Grid DockPanel.Dock="Right" ColumnDefinitions="Auto">
 			<Border Padding="8" Margin="8" Background="#222" CornerRadius="4">
 				<Grid RowDefinitions="Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto auto auto auto auto auto Auto"
 					  ColumnDefinitions="Auto Auto"
@@ -111,10 +102,27 @@
 			</Border>
 		</Grid>
 
-		<!-- Apple2Display centered and fills remaining space -->
-		<local:Apple2Display x:Name="ScreenDisplay"
-						HorizontalAlignment="Center"
-						VerticalAlignment="Center" MinWidth="600" MinHeight="576"/>
+		<!-- Apple2Display centered with black background, padding, margin, and rounded corners -->
+<Border Background="#D4C5A9" 
+        Margin="10" 
+        Padding="10" 
+        CornerRadius="6"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch">
+	<Border Background="#222" 
+        Margin="14" 
+        Padding="10" 
+        CornerRadius="6"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch">
+    <local:Apple2Display x:Name="ScreenDisplay"  
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center" 
+						
+                         MinWidth="600" 
+                         MinHeight="576"/>
+</Border>
+		</Border>
 
 	</DockPanel>
 
