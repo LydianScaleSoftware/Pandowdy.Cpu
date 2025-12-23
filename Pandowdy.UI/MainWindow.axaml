@@ -104,25 +104,27 @@
 
 		<!-- Apple2Display centered with black background, padding, margin, and rounded corners -->
 <Border Background="#D4C5A9" 
-        Margin="10" 
-        Padding="10" 
+        Padding="16"
         CornerRadius="6"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch">
-	<Border Background="#222" 
-        Margin="14" 
-        Padding="10" 
-        CornerRadius="6"
-        HorizontalAlignment="Stretch"
-        VerticalAlignment="Stretch">
-    <local:Apple2Display x:Name="ScreenDisplay"  
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center" 
-						
-                         MinWidth="600" 
-                         MinHeight="576"/>
+    <Border Background="#222" 
+            Padding="24"
+            CornerRadius="6"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch">
+        <Border Background="#000" 
+                Padding="10"
+                CornerRadius="6"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+            <local:Apple2Display x:Name="ScreenDisplay"  
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center" 
+                              />
+        </Border>
+    </Border>
 </Border>
-		</Border>
 
 	</DockPanel>
 
