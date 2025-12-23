@@ -1,61 +1,9 @@
+using Pandowdy.EmuCore.Interfaces;
+
 namespace Pandowdy.EmuCore;
 
-// Placeholder service interfaces & simple stub implementations.
-// Incremental behavior will be added later without breaking existing UI.
-
-public interface IFrameProvider {
-    int Width { get; } // 80 row bytes per scanline
-    int Height { get; } // 192 scanlines (24 rows * 8)
-    bool IsGraphics { get; set; } // true if in graphics mode
-    bool IsMixed { get; set;  } // true if in mixed text/graphics mode
-    event EventHandler? FrameAvailable; // raised after new frame committed
-    BitmapDataArray GetFrame(); // returns current front buffer (length = Width*Height)
-    BitmapDataArray BorrowWritable(); // returns back buffer for composition
-    void CommitWritable(); // swap buffers & raise event
-}
-
-// Refresh ticker abstraction for 60 Hz UI-driven updates
-public interface IRefreshTicker
-{
-    IObservable<DateTime> Stream { get; }
-    void Start();
-    void Stop();
-}
-
-public interface ISystemStatusProvider
-{
-    bool State80Store { get; }
-    bool StateRamRd { get; }
-    bool StateRamWrt { get; }
-    bool StateIntCxRom { get; }
-    bool StateAltZp { get; }
-    bool StateSlotC3Rom { get; }
-    bool StatePb0 { get; }
-    bool StatePb1 { get; }
-    bool StatePb2 { get; }
-    bool StateAnn0 { get; }
-    bool StateAnn1 { get; }
-    bool StateAnn2 { get; }
-    bool StateAnn3_DGR { get; }
-    bool StatePage2 { get; }
-    bool StateHiRes { get; }
-    bool StateMixed { get; }
-    bool StateTextMode { get; }
-    bool StateShow80Col { get; }
-    bool StateAltCharSet { get; }
-    bool StateFlashOn { get; }
-    bool StatePrewrite { get; }
-    bool StateUseBank1 { get; }
-    bool StateHighRead { get; }
-    bool StateHighWrite { get; }
-
-    SystemStatusSnapshot Current { get; }
-    event EventHandler<SystemStatusSnapshot>? Changed; // event-style subscription
-    IObservable<SystemStatusSnapshot> Stream { get; } // reactive subscription
-
-    // Mutation hook used by core (bus) to update status snapshot
-    void Mutate(Action<SystemStatusSnapshotBuilder> mutator);
-}
+// Service implementations and supporting record types.
+// Interfaces have been moved to Pandowdy.EmuCore.Interfaces namespace.
 
 public record SystemStatusSnapshot(
     bool State80Store,
@@ -143,7 +91,6 @@ public sealed class SystemStatusProvider : ISystemStatusProvider, ISoftSwitchRes
     public bool StateHighRead => _current.StateHighRead;
     public bool StateHighWrite => _current.StateHighWrite;
 
-
     public SystemStatusSnapshot Current => _current;
     public IObservable<SystemStatusSnapshot> Stream => _subject;
 
@@ -201,7 +148,7 @@ public sealed class SystemStatusSnapshotBuilder(SystemStatusSnapshot s)
     public bool StateShow80Col = s.StateShow80Col;
     public bool StateAltCharSet = s.StateAltCharSet;
     public bool StateFlashOn = s.StateFlashOn;
-    public bool StatePrewrite= s.StatePrewrite;
+    public bool StatePrewrite = s.StatePrewrite;
     public bool StateUseBank1 = s.StateUseBank1;
     public bool StateHighRead = s.StateHighRead;
     public bool StateHighWrite = s.StateHighWrite;
@@ -212,17 +159,6 @@ public sealed class SystemStatusSnapshotBuilder(SystemStatusSnapshot s)
         StatePb0, StatePb1, StatePb2, StateAnn0, StateAnn1, StateAnn2, StateAnn3,
         StatePage2, StateHiRes, StateMixed, StateTextMode, StateShow80Col, StateAltCharSet, StateFlashOn, StatePrewrite, StateUseBank1, StateHighRead, StateHighWrite);
 }
-
-public interface IEmulatorState {
-    IObservable<StateSnapshot> Stream { get; }
-    StateSnapshot GetCurrent();
-    void Update(StateSnapshot snapshot);
-    void RequestPause();
-    void RequestContinue();
-    void RequestStep();
-}
-
-
 
 public record StateSnapshot(ushort PC, byte SP, ulong Cycles, int? LineNumber, bool IsRunning, bool IsPaused);
 
@@ -244,8 +180,6 @@ public sealed class FrameProvider : IFrameProvider {
     }
 }
 
-
-
 public sealed class EmulatorStateProvider : IEmulatorState {
     private readonly System.Reactive.Subjects.BehaviorSubject<StateSnapshot> _subject = new(new StateSnapshot(0,0,0,null,false,false));
     public IObservable<StateSnapshot> Stream => _subject;
@@ -255,6 +189,8 @@ public sealed class EmulatorStateProvider : IEmulatorState {
     public void RequestContinue() { /* placeholder */ }
     public void RequestStep() { /* placeholder */ }
 }
+
+
 
 
 

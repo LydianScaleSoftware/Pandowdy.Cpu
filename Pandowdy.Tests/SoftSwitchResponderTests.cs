@@ -1,4 +1,5 @@
 using Pandowdy.EmuCore;
+using Pandowdy.EmuCore.Interfaces;
 using Emulator;
 using Xunit;
 

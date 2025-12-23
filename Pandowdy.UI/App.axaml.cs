@@ -7,6 +7,8 @@ using ReactiveUI.Avalonia;
 using System;
 using Pandowdy.UI.ViewModels;
 using Pandowdy.EmuCore;
+using Pandowdy.EmuCore.Interfaces;
+
 
 namespace Pandowdy.UI;
 

@@ -1,5 +1,5 @@
 using ReactiveUI;
-using Pandowdy.EmuCore;
+using Pandowdy.EmuCore.Interfaces;
 using System.Reactive;
 
 namespace Pandowdy.UI.ViewModels;

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Numerics;
 using System.Security.Cryptography.X509Certificates;
+using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore
 {

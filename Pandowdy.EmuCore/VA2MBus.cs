@@ -3,16 +3,10 @@ using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Threading;
 using Emulator;
+using Pandowdy.EmuCore.Interfaces;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Pandowdy.EmuCore;
-
-public interface IAppleIIBus : IBus
-{
-    public void SetKeyValue(byte key);
-
-    public void SetPushButton(int num, bool enabled);
-}
 
 /// <summary>
 /// VA2M-specific Bus that owns the CPU connection and routes reads/writes to VA2MMemory.

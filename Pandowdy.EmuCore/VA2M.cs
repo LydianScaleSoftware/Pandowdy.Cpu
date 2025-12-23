@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Emulator;
 using System.Collections.Concurrent;
+using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore;
 

@@ -4,7 +4,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Reactive.Linq;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -14,6 +13,7 @@ using ReactiveUI;
 using ReactiveUI.Avalonia;
 using Pandowdy.UI.ViewModels;
 using Pandowdy.EmuCore;
+using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.UI;
 

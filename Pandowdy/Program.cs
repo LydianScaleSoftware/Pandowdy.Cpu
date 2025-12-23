@@ -8,6 +8,10 @@ using Microsoft.Extensions.Logging;
 using Pandowdy.UI;
 using Pandowdy.EmuCore;
 using Pandowdy.UI.ViewModels;
+using IFrameProvider = Pandowdy.EmuCore.Interfaces.IFrameProvider;
+using IEmulatorState = Pandowdy.EmuCore.Interfaces.IEmulatorState;
+using ISystemStatusProvider = Pandowdy.EmuCore.Interfaces.ISystemStatusProvider;
+using IRefreshTicker = Pandowdy.EmuCore.Interfaces.IRefreshTicker;
 
 namespace Pandowdy
 {

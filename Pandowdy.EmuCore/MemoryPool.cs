@@ -2,35 +2,10 @@
 using System.Diagnostics;
 using Emulator;
 using System.Threading;
+using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore
 {
-    public interface ISoftSwitchResponder
-    {
-        void Set80Store(bool store80);
-        void SetRamRd(bool ramRd);
-        void SetRamWrt(bool ramWrt);
-        void SetIntCxRom(bool intCxRom);
-        void SetAltZp(bool altZp);
-        void SetSlotC3Rom(bool slotC3Rom);
-        void Set80Vid(bool vid);
-        void SetAltChar(bool altChar);
-        void SetText(bool text);
-        void SetMixed(bool mixed);
-        void SetPage2(bool page2);
-        void SetHiRes(bool hires);
-        void SetAn0(bool an0);
-        void SetAn1(bool an1);
-        void SetAn2(bool an2);
-        void SetAn3(bool an3);
-
-
-        void SetBank1(bool enabled);
-        void SetHighWrite(bool enabled);
-        void SetHighRead(bool enabled);
-        void SetPreWrite(bool enabled);
-    }
-
     public sealed class MemoryPool : IMemory, IMappedMemory, ISoftSwitchResponder, IDisposable
     {
         //Methods from IMemory:
