@@ -39,69 +39,10 @@
 			</MenuItem>
 		</Menu>
 
-		<!-- Right-side status panel sized to content only -->
-		<Grid  x:Name="SoftSwitchStatusPanel" DockPanel.Dock="Right" ColumnDefinitions="Auto">
-			<Border Padding="8" Margin="8" Background="#222" CornerRadius="4">
-				<Grid RowDefinitions="Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto auto auto auto auto auto Auto"
-					  ColumnDefinitions="Auto Auto"
-					  DataContext="{Binding SystemStatus}">
-					<TextBlock Text="80STORE" Grid.Row="0" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding State80Store}" Grid.Row="0" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="RAMRD" Grid.Row="1" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateRamRd}" Grid.Row="1" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="RAMWRT" Grid.Row="2" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateRamWrt}" Grid.Row="2" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="INTCXROM" Grid.Row="3" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateIntCxRom}" Grid.Row="3" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="ALTZP" Grid.Row="4" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateAltZp}" Grid.Row="4" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="SLOT C3" Grid.Row="5" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateSlotC3Rom}" Grid.Row="5" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="PB0" Grid.Row="6" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StatePb0}" Grid.Row="6" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="PB1" Grid.Row="7" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StatePb1}" Grid.Row="7" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="PB2" Grid.Row="8" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StatePb2}" Grid.Row="8" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="ANN0" Grid.Row="9" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateAnn0}" Grid.Row="9" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="ANN1" Grid.Row="10" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateAnn1}" Grid.Row="10" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="ANN2" Grid.Row="11" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateAnn2}" Grid.Row="11" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="ANN3/DGR" Grid.Row="12" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateAnn3}" Grid.Row="12" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="PAGE2" Grid.Row="13" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StatePage2}" Grid.Row="13" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="HIRES" Grid.Row="14" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateHiRes}" Grid.Row="14" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="MIXED" Grid.Row="15" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateMixed}" Grid.Row="15" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="TEXT" Grid.Row="16" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateTextMode}" Grid.Row="16" Grid.Column="1" Foreground="White" />
-					<TextBlock Text="ALTCHAR" Grid.Row="17" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateAltCharSet}" Grid.Row="17" Grid.Column="1" Foreground="White" />
-
-					<TextBlock Text="Show 80 Col" Grid.Row="18" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateShow80Col}" Grid.Row="18" Grid.Column="1" Foreground="White" />
-
-					<TextBlock Text="Bank 1" Grid.Row="19" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateBank1}" Grid.Row="19" Grid.Column="1" Foreground="White" />
-
-					<TextBlock Text="High Read" Grid.Row="20" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateHighRead}" Grid.Row="20" Grid.Column="1" Foreground="White" />
-
-					<TextBlock Text="High Write" Grid.Row="21" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateHighWrite}" Grid.Row="21" Grid.Column="1" Foreground="White" />
-
-					<TextBlock Text="PreWrite" Grid.Row="22" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StatePrewrite}" Grid.Row="22" Grid.Column="1" Foreground="White" />
-
-					<TextBlock Text="FLASH ON" Grid.Row="23" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-					<TextBlock Text="{Binding StateFlashOn}" Grid.Row="23" Grid.Column="1" Foreground="White" />
-				</Grid>
-			</Border>
-		</Grid>
+		<!-- Right-side status panel -->
+		<local:SoftSwitchStatusPanel x:Name="SoftSwitchStatusPanel" 
+									 DockPanel.Dock="Right"
+									 DataContext="{Binding SystemStatus}" />
 
 		<!-- Apple2Display centered with black background, padding, margin, and rounded corners -->
 <Border Background="#D4C5A9" 

@@ -29,7 +29,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
     private Menu? _mainMenu;
     private Apple2Display? _screen;
-    private Grid? _softSwitchStatusPanel;
+    private SoftSwitchStatusPanel? _softSwitchStatusPanel;
     private IRefreshTicker? _refreshTicker; // injected later
     private IDisposable? _refreshSub;
     private bool _menuPointerActive; // true while pointer is over the menu bar
@@ -66,7 +66,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             _mainMenu.PointerExited += (_, __) => _menuPointerActive = false;
         }
         _screen = this.FindControl<Apple2Display>("ScreenDisplay");
-        _softSwitchStatusPanel = this.FindControl<Grid>("SoftSwitchStatusPanel");
+        _softSwitchStatusPanel = this.FindControl<SoftSwitchStatusPanel>("SoftSwitchStatusPanel");
         // Defer attaching machine/frame until InjectDependencies, which should be called next.
     }
 
