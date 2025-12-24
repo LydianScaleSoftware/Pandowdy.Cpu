@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using System;
 using Pandowdy.UI;
+using Pandowdy.UI.Interfaces;
 using Pandowdy.UI.ViewModels;
 using Pandowdy.EmuCore;
 using Pandowdy.EmuCore.Interfaces;

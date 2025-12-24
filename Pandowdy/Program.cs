@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Pandowdy.UI;
+using Pandowdy.UI.Interfaces;
 using Pandowdy.EmuCore;
 using Pandowdy.UI.ViewModels;
 using IFrameProvider = Pandowdy.EmuCore.Interfaces.IFrameProvider;

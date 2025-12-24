@@ -1,5 +1,6 @@
 using System;
 using Pandowdy.UI.ViewModels;
+using Pandowdy.UI.Interfaces;
 using Pandowdy.EmuCore;
 using Pandowdy.EmuCore.Interfaces;
 

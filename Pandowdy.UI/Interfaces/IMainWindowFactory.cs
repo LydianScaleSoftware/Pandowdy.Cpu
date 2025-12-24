@@ -1,4 +1,4 @@
-namespace Pandowdy.UI;
+namespace Pandowdy.UI.Interfaces;
 
 /// <summary>
 /// Factory for creating and initializing MainWindow instances with proper dependency injection.
