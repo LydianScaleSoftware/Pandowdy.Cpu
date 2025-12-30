@@ -17,10 +17,8 @@ namespace Pandowdy.EmuCore;
 /// </summary>
 public sealed class VA2MBus : IAppleIIBus, IDisposable
 {
-    //private readonly ISystemStatusProvider? _status;
-
     private readonly MemoryPool _memoryPool;
-    private ICpu _cpu;
+    private readonly ICpu _cpu;
     
     public ICpu Cpu { get => _cpu; }
 

@@ -11,16 +11,16 @@ namespace Pandowdy.EmuCore;
 
 public partial class VA2M : IDisposable
 {
-    public MemoryPool _memoryPool { get; }//private set; } = new MemoryPool();
+    public MemoryPool MemoryPool { get; }//private set; } = new MemoryPool();
 
-    public IAppleIIBus _bus { get; }
+    public IAppleIIBus Bus { get; }
 
  //   private readonly ICpu _cpu;
     private readonly Stopwatch _throttleSw = Stopwatch.StartNew();
     private long _throttleCycles;
     public bool ThrottleEnabled { get; set; } = true;
     public double TargetHz { get; set; } = 1_023_000d;
-    public ulong SystemClock => _bus.SystemClockCounter;
+    public ulong SystemClock => Bus.SystemClockCounter;
 
 
     private readonly IEmulatorState _stateSink; 
@@ -45,29 +45,28 @@ public partial class VA2M : IDisposable
         _stateSink = stateSink;
         _frameSink = frameSink;
         _sysStatusSink = statusProvider;
-        _bus = bus;
-        _memoryPool = memoryPool;
+        Bus = bus;
+        MemoryPool = memoryPool;
         TryLoadEmbeddedRom("Pandowdy.EmuCore.Resources.a2e_enh_c-f.rom");
         
    //     _cpu = new CPUAdapter(new CPU());
     //   Bus = new VA2MBus(MemoryPool, _sysStatusSink as ISoftSwitchResponder, _cpu);
         //Bus.Connect(_cpu);
-        if (_bus is VA2MBus vb)
+        if (Bus is VA2MBus vb)
         {
             vb.VBlank += OnVBlank;
         }
         // Start flash timer if status provider available
-        if (_flashTimer == null)
+    
+        _flashTimer = new Timer(_ =>
         {
-            _flashTimer = new Timer(_ =>
+            try
             {
-                try
-                {
-                    Interlocked.Exchange(ref _pendingFlashToggle, 1);
-                }
-                catch { }
-            }, null, FlashPeriod, FlashPeriod);
-        }
+                Interlocked.Exchange(ref _pendingFlashToggle, 1);
+            }
+            catch { }
+        }, null, FlashPeriod, FlashPeriod);
+       
     }
 
     
@@ -116,7 +115,7 @@ public partial class VA2M : IDisposable
         {
             using var ms = new MemoryStream();
             s.CopyTo(ms);
-            _memoryPool.InstallApple2ROM(ms.ToArray());
+            MemoryPool.InstallApple2ROM(ms.ToArray());
         }
     }
 
@@ -128,7 +127,7 @@ public partial class VA2M : IDisposable
     {
         // Execute commands enqueued from other threads
         ProcessPending();
-        _bus.Clock();
+        Bus.Clock();
         _throttleCycles++;
         if (ThrottleEnabled)
         {
@@ -166,7 +165,7 @@ public partial class VA2M : IDisposable
     {
         //Enqueue(() =>
         {
-            _bus.Reset();
+            Bus.Reset();
             _throttleCycles = 0;
             _throttleSw.Restart();
         }
@@ -178,7 +177,7 @@ public partial class VA2M : IDisposable
        // Enqueue(() =>
         {
             Debug.WriteLine("Calling UserReset() in VA2M");
-            (_bus as VA2MBus)!.UserReset();
+            (Bus as VA2MBus)!.UserReset();
             //_throttleCycles = 0;
             //_throttleSw.Restart();
         }
@@ -218,7 +217,7 @@ public partial class VA2M : IDisposable
                 carry = want - cycles;
                 for (int i = 0; i < cycles; i++)
                 {
-                    _bus.Clock();
+                    Bus.Clock();
                     _throttleCycles++;
                 }
                 PublishState();
@@ -230,7 +229,7 @@ public partial class VA2M : IDisposable
                     ProcessPending();
                 for (int i = 0; i < FastBatch; i++)
                 {
-                    _bus.Clock();
+                    Bus.Clock();
                     _throttleCycles++;
                     if (ct.IsCancellationRequested)
                     {
@@ -249,9 +248,9 @@ public partial class VA2M : IDisposable
 
     private void PublishState()
     {
-        int lineNum = (int)(_bus.CpuRead(0x75) + (_bus.CpuRead(0x76) << 8));
+        int lineNum = (int)(Bus.CpuRead(0x75) + (Bus.CpuRead(0x76) << 8));
         int? basicLine = lineNum < 0xFA00 ? lineNum : null;
-        var snapshot = new StateSnapshot((ushort) _bus.Cpu.PC, (byte)_bus.Cpu.SP, _bus.SystemClockCounter, basicLine, true, false);
+        var snapshot = new StateSnapshot((ushort) Bus.Cpu.PC, (byte)Bus.Cpu.SP, Bus.SystemClockCounter, basicLine, true, false);
         _stateSink.Update(snapshot);
     }
 
@@ -266,12 +265,12 @@ public partial class VA2M : IDisposable
     {
         // Enqueue to run on emulator thread
         byte val = (byte)(ascii | 0x80);
-        Enqueue(() => _bus.SetKeyValue(val));
+        Enqueue(() => Bus.SetKeyValue(val));
     }
 
     public void SetPushButton(byte num, bool pressed)
     {
-        Enqueue(() => _bus.SetPushButton(num, pressed));
+        Enqueue(() => Bus.SetPushButton(num, pressed));
     }
 
     public void GenerateStatusData()
@@ -305,7 +304,7 @@ public partial class VA2M : IDisposable
 
     private void BuildStatusData()
     {
-        var switches = (_bus as VA2MBus)?.Switches;
+        var switches = (Bus as VA2MBus)?.Switches;
         var data = switches!.GetSwitchList();
 
         _sysStatusSink.Mutate(b =>
@@ -318,28 +317,13 @@ public partial class VA2M : IDisposable
                 }
             }
 
-            var vb = _bus as VA2MBus;
+            var vb = Bus as VA2MBus;
             b.StatePb0 = vb!.GetPushButton(0);
             b.StatePb1 = vb!.GetPushButton(1);
             b.StatePb2 = vb!.GetPushButton(2);
         });
     }
 
-    /*    /// <summary>
-        /// Load a ROM image into RAM at the specified base address (for early testing).
-        /// Clips to RAM bounds; partial copy if image overflows.
-        /// </summary>
-        public void LoadRom(ReadOnlySpan<byte> image, ushort baseAddress)
-        {
-            // Calculate how many bytes fit from baseAddress to end of RAM
-            int available = RamSize - baseAddress;
-            if (available <= 0 || image.IsEmpty) { return; }
-            int toCopy = Math.Min(available, image.Length);
-
-            // IMemoryModel has WriteBlock with params byte[] - allocate exact-sized array slice
-            byte[] buffer = image[..toCopy].ToArray();
-            ROM.WriteBlock(baseAddress, buffer);
-        }*/
 
     public void Dispose()
     {
@@ -351,7 +335,7 @@ public partial class VA2M : IDisposable
         while (_pending.TryDequeue(out _)) { }
         
         // Dispose bus (which handles VBlank event cleanup)
-        if (_bus is IDisposable disposableBus)
+        if (Bus is IDisposable disposableBus)
         {
             disposableBus.Dispose();
         }
@@ -360,6 +344,9 @@ public partial class VA2M : IDisposable
       //  MemoryPool?.Dispose();
         
         // Note: _cpu doesn't implement IDisposable in legacy 6502.NET library
+        
+        // Suppress finalization as per CA1816
+        GC.SuppressFinalize(this);
     }
 
 
