@@ -82,7 +82,7 @@ namespace Pandowdy
                 });
         }
 
-        private static Task InitializeCoreAsync(IServiceProvider services)
+        private static Task InitializeCoreAsync(IServiceProvider _)
         {
             return Task.CompletedTask;
         }

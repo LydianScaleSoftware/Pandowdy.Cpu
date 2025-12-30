@@ -39,9 +39,9 @@ namespace Pandowdy.Tests
         {
             //status = new SystemStatusProvider();
             mem = new MemoryPool();
-            var bus = new VA2MBus(mem, /*status,*/ stub);
-            var cpu = new CPU();
-            bus.Connect(cpu);
+            ICpu cpu = new CPUAdapter(new Emulator.CPU());
+            var bus = new VA2MBus(mem, /*status,*/ stub, cpu);
+            //bus.Connect(cpu);
             return bus;
         }
 

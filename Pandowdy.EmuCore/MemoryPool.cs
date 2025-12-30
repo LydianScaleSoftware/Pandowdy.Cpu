@@ -6,7 +6,7 @@ using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore
 {
-    public sealed class MemoryPool : IMemory, IMappedMemory, ISoftSwitchResponder, IDisposable
+    public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPoolReader, ISoftSwitchResponder, IDisposable
     {
         //Methods from IMemory:
         public System.Int32 Size { get => 0x10000;  } // 64k addressable space
@@ -41,16 +41,19 @@ namespace Pandowdy.EmuCore
             set => WriteMapped(address, value);
         }
 
-        //Methods from IMappedMemory:
+        //Methods from IMemoryAccessNotifier:
 
 
         public event EventHandler<MemoryAccessEventArgs>? MemoryWritten;
 
         public event EventHandler<MemoryAccessEventArgs>? MemoryBlockWritten;
 
-        
-        
-        // MemoryPool Internal implementation:
+
+        //Methods from IDirectMemoryPoolReader:
+
+        public byte ReadRawMain(int address) => _pool[(address & 0xffff)]; // $C000-$CFFF returns $D000-$DFFF Bank 1
+        public byte ReadRawAux(int address) => _pool[(address & 0xffff) | 0x10000]; // $C000-$CFFF returns $D000-$DFFF Bank 1
+
 
 
         private readonly byte[] _pool; // backing store
@@ -275,8 +278,7 @@ namespace Pandowdy.EmuCore
             _writeRanges[Ranges.Region_E000_FFFF] = null;
         }
 
-        public byte ReadRawMain(int address) => _pool[(address & 0xffff)]; // $C000-$CFFF returns $D000-$DFFF Bank 1
-        public byte ReadRawAux(int address) => _pool[(address & 0xffff) | 0x10000]; // $C000-$CFFF returns $D000-$DFFF Bank 1
+
 
         public byte ReadPool(int address) => _pool[address];
 
@@ -574,7 +576,7 @@ namespace Pandowdy.EmuCore
         }
 
         // Thread synchronization for memory mapping updates
-        private readonly ReaderWriterLockSlim _mappingLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+        private readonly ReaderWriterLockSlim _mappingLock = new(LockRecursionPolicy.NoRecursion);
 
         public void Dispose()
         {

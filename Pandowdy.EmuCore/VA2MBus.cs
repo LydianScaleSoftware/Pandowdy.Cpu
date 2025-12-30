@@ -20,9 +20,10 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     //private readonly ISystemStatusProvider? _status;
 
     private readonly MemoryPool _memoryPool;
-    private int lastPc = 0;
-    private AppleSoftHookTable? _hookTable;
-    private CPU? _cpu;
+    private ICpu? _cpu;
+
+  //  private int lastPc = 0;
+  //  private AppleSoftHookTable? _hookTable;
     private ulong _systemClock;
     private SoftSwitches _softSwitches = new();
 //    private bool _isInVBlankBlackout = false;
@@ -163,9 +164,12 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     
     public SoftSwitches Switches => _softSwitches;
 
-    public VA2MBus(MemoryPool mempool, ISoftSwitchResponder? responder = null)
+    public VA2MBus(MemoryPool mempool, ISoftSwitchResponder responder, ICpu cpu)
     {
         _memoryPool = mempool;
+        _cpu = cpu;
+        InitIoReadHandlers();
+        InitIoWriteHandlers();
 
         // Always add the MemoryPool as a responder (it needs to update memory mappings)
         _softSwitches.AddResponder(mempool);
@@ -360,15 +364,16 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         }
     }
 
-    public void Connect(CPU cpu)
+    public void Connect(Emulator.CPU _)
     {
-        ThrowIfDisposed();
-        _cpu = cpu;
-        _cpu.Connect(this);
-        _hookTable ??= new AppleSoftHookTable();
-        _hookTable.InitializeDefault();
-        InitIoReadHandlers();
-        InitIoWriteHandlers();
+        throw new NotSupportedException("This should not be called. Connect is deprecated.");
+    ////    ThrowIfDisposed();
+    //    //_cpu = cpu;
+    //    //_cpu.Connect(this);
+    ////    _hookTable ??= new AppleSoftHookTable();
+    ////    _hookTable.InitializeDefault();
+    //    //InitIoReadHandlers();
+    //    //InitIoWriteHandlers();
     }
 
     public void SetKeyValue(byte key)
@@ -546,24 +551,24 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
             return;
         }
 
-        var currPc = _cpu!.PC;
-        if (lastPc != currPc)
-        {
-            var hook = _hookTable?.Get((ushort) currPc);
-            if (hook != null)
-            {
-                var lineNum = this.CpuRead(0x75) + (this.CpuRead(0x76) * 256);
-                string ln = lineNum < 0xFA00 ? lineNum.ToString() : "IMM";
-                var sp = _cpu!.SP;
-                var spcs = 0xFF - sp;
-                hook(-1, lineNum, spcs);
-            }
+        //var currPc = _cpu!.PC;
+        //if (lastPc != currPc)
+        //{
+        //    var hook = _hookTable?.Get((ushort) currPc);
+        //    if (hook != null)
+        //    {
+        //        var lineNum = this.CpuRead(0x75) + (this.CpuRead(0x76) * 256);
+        //        string ln = lineNum < 0xFA00 ? lineNum.ToString() : "IMM";
+        //        var sp = _cpu!.SP;
+        //        var spcs = 0xFF - sp;
+        //        hook(-1, lineNum, spcs);
+        //    }
 
-        }
-        lastPc = currPc;
+        //}
+        //lastPc = currPc;
 
         // Execute a single CPU cycle
-        _cpu!.Clock();
+        _cpu!.Clock(this);
         _systemClock++;
         _VblankBlackoutCounter--;
 
@@ -589,7 +594,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         ThrowIfDisposed();
         _memoryPool.ResetRanges();
         _softSwitches.ResetAllSwitches();
-        _cpu!.Reset();
+        _cpu!.Reset(this);
         _systemClock = 0;
         _nextVblankCycle = CyclesPerVBlank;
     }
@@ -600,7 +605,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
 
         _softSwitches.ResetAllSwitches();
         _memoryPool.ResetRanges();
-        _cpu!.Reset();
+        _cpu!.Reset(this);
         _systemClock = 0;
         _nextVblankCycle = CyclesPerVBlank;
     }
@@ -615,7 +620,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         _disposed = true;
         VBlank = null;
         _cpu = null;
-        _hookTable = null;
+        //_hookTable = null;
         _flashTimer?.Dispose();
         _flashTimer = null;
     }

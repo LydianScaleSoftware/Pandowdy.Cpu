@@ -8,13 +8,13 @@ using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore;
 
-public sealed class VA2M : IDisposable
+public partial class VA2M : IDisposable
 {
     public MemoryPool MemoryPool { get; private set; } = new MemoryPool();
 
     public IAppleIIBus Bus { get; }
 
-    private readonly CPU _cpu;
+    private readonly ICpu _cpu;
     private readonly Stopwatch _throttleSw = Stopwatch.StartNew();
     private long _throttleCycles;
     public bool ThrottleEnabled { get; set; } = true;
@@ -22,39 +22,42 @@ public sealed class VA2M : IDisposable
     public ulong SystemClock => Bus.SystemClockCounter;
 
 
-    private readonly IEmulatorState? _stateSink; // optional DI-provided state publisher
-    private readonly IFrameProvider? _frameSink; // optional DI-provided frame publisher
-    private readonly ISystemStatusProvider? _sysStatusSink; // optional DI-provided status publisher
+    private readonly IEmulatorState _stateSink; 
+    private readonly IFrameProvider _frameSink; 
+    private readonly ISystemStatusProvider _sysStatusSink; 
 
     // Flash timer to toggle StateFlashOn at ~2.1 Hz
     private Timer? _flashTimer;
     private static readonly TimeSpan FlashPeriod = TimeSpan.FromMilliseconds(1000/2.1);
     private int _pendingFlashToggle; // 0/1 flag set by timer, consumed on VBlank
 
-  //  public VA2M() : this(null, null, null) { }
-
-    public VA2M(IEmulatorState? stateSink, IFrameProvider? frameSink, ISystemStatusProvider? statusProvider = null)
+    public VA2M(IEmulatorState stateSink, IFrameProvider frameSink, ISystemStatusProvider statusProvider )
     {
+        ArgumentNullException.ThrowIfNull(stateSink);
+        ArgumentNullException.ThrowIfNull(frameSink);
+        ArgumentNullException.ThrowIfNull(statusProvider);
+
+
         _stateSink = stateSink;
         _frameSink = frameSink;
         _sysStatusSink = statusProvider;
         TryLoadEmbeddedRom("Pandowdy.EmuCore.Resources.a2e_enh_c-f.rom");
         
-        Bus = new VA2MBus(MemoryPool, _sysStatusSink as ISoftSwitchResponder);
-        _cpu = new CPU();
-        Bus.Connect(_cpu);
-        if (_frameSink is not null && Bus is VA2MBus vb)
+        _cpu = new CPUAdapter(new CPU());
+        Bus = new VA2MBus(MemoryPool, _sysStatusSink as ISoftSwitchResponder, _cpu);
+        //Bus.Connect(_cpu);
+        if (Bus is VA2MBus vb)
         {
             vb.VBlank += OnVBlank;
         }
         // Start flash timer if status provider available
-        if (_sysStatusSink != null && _flashTimer == null)
+        if (_flashTimer == null)
         {
             _flashTimer = new Timer(_ =>
             {
                 try
                 {
-                    System.Threading.Interlocked.Exchange(ref _pendingFlashToggle, 1);
+                    Interlocked.Exchange(ref _pendingFlashToggle, 1);
                 }
                 catch { }
             }, null, FlashPeriod, FlashPeriod);
@@ -81,231 +84,34 @@ public sealed class VA2M : IDisposable
         }
     }
 
-
-    private void RenderScreen(BitmapDataArray buf)
-    {
-        bool text = _sysStatusSink!.StateTextMode;
-        bool hires = _sysStatusSink!.StateHiRes;
-        bool mixed = _sysStatusSink!.StateMixed;
-        bool page2 = _sysStatusSink!.StatePage2;
-        bool text80col = _sysStatusSink!.StateShow80Col;
-        bool gr80col = text80col && !_sysStatusSink!.StateAnn3_DGR;
-
-        for (int row = 0; row < 24; row++)
-        {
-            for (int col = 0; col < 40; col++)
-            {
-                int addr = GetAddressForXY(col, row, text, hires, mixed, page2);
-                if (addr >= 0x400 && addr <= 0xBFF) // Text/GR Pages 1/2
-                {
-                    RenderTextOrGRCell(addr, row, col, text, mixed, text80col, gr80col, buf);
-                }
-                else if (addr >= 0x2000 && addr <= 0x5fff) // HGR Pages 1/2
-                {
-                    RenderHiresCell(addr, row, col, gr80col, buf);
-                }
-            }
-        }
-    }
-
-    private void RenderTextOrGRCell(int address, int row, int col, bool text, bool mixed, bool text80, bool gr80, BitmapDataArray buf)
-    {
-        if (text || (mixed && row >= 20))
-        {
-            RenderTextCell(address, row, col, text80, buf);
-        }
-        else
-        {
-            RenderGrCell(address, row, col, gr80, buf);
-        }
-    }
-
-
-    private void RenderHiresCell(int address, int row, int col, bool gr80, BitmapDataArray buf)
-    {
-        // Render either 7 or 14 pixels, based on the state of gr80
-        
-        if (!gr80)
-        {
-            for (int r = 0; r < 8; r++)
-            {
-                ushort byteAddress = (ushort) (address + (r * 0x400));
-                byte value = MemoryPool.Read(byteAddress);
-                int buffY = row * 8 + r;
-                bool prevShift = false;
-                if (col != 0 && (MemoryPool.Read((ushort) (byteAddress-1)) & 0x80) == 0x80)
-                {
-                    prevShift = true;
-                }
-                buf.InsertHgrByteAt(col * 2 * 7, buffY, value, prevShift);
-            }
-        }
-
-        // if 80-col
-        //    iterate through the 8 columns in the cell
-        //       look up the aux and main values at that address
-        //       write aux/main into buffer unexpanded
-    }
-
-    private void RenderTextCell(int address, int row, int col, bool text80, BitmapDataArray buf)
-    {
-        bool flashOn = _sysStatusSink!.StateFlashOn;
-        bool altChar = _sysStatusSink!.StateAltCharSet;
-        
-        byte ch = MemoryPool.Read((ushort) address);
-        var glyph = VideoFont.Glyph(ch, flashOn, altChar); // returns span of 8 rows
-
-        if (!text80)
-        {
-
-            for (int r = 0; r < 8; r++)  // 8 rows per glyph
-            {
-                int buffY = row * 8 + r;
-                byte fontRow = (byte) ~glyph[r]; // invert bits (was glyph ^ 0xff intent)
-                                                 //  fontRow = (byte)((y / 8) % 16 * 0x11);
-
-                buf.Insert7BitLsbAt(col * 2 * 7, buffY, fontRow, true);
-
-            }
-        }
-        else
-        {
-            byte ch1 = MemoryPool.ReadRawAux((ushort) address);
-            var glyph1 = VideoFont.Glyph(ch1, flashOn, altChar); // returns span of 8 rows
-
-            for (int r = 0; r < 8; r++)  // 8 rows per glyph
-            {
-                int y = row * 8 + r;
-                byte fontRow1 = (byte) ~glyph1[r];  
-                byte fontRow2 = (byte) ~glyph[r];
-                int baseX = col * 2;
-                {
-                    buf.Insert7BitLsbAt(baseX * 7, y, fontRow1, false);
-                    buf.Insert7BitLsbAt(baseX * 7 + 7, y, fontRow2, false);
-                }
-            }
-        }
-    }
-
-    private void RenderGrCell(int address, int row, int col, bool gr80, BitmapDataArray buf)
-    {
-        // Render either 1 40-column or 2 80-column cells depending on the state of the 80-showflag and ann3 (dgr)
-        // if 40 colunns
-        if (!gr80)
-        {
-            byte value = MemoryPool.Read((ushort) address);
-
-            for (int glyphRow = 0; glyphRow < 8; glyphRow++)
-            {
-                int y = row * 8 + glyphRow;
-
-                byte grcolor = (byte) (value & 0x0f);
-                if (glyphRow >= 4)
-                {
-                    grcolor = (byte) (value >> 4);
-                }
-
-                var (a1, a2, a3, a4) = MakeGrColor(grcolor);
-                if (col % 2 == 0) // Even -- Use A1 & A2
-                {
-                    buf.SetByteAt(col * 14, y, (byte) a1);
-                    buf.SetByteAt((col * 14 + 7), y, (byte) a2);
-                }
-                else // Odd -- Use A3 & A4
-                {
-                    buf.SetByteAt((col * 14), y, (byte) a3);
-                    buf.SetByteAt((col * 14 + 7), y, (byte) a4);
-                }
-            }
-        }
-        // if 80 columns
-        //    get the aux and main memory values at the address
-        //       determine if we're in the top or bottom nybble of each
-        //       get the proper colors for aux and main and their 4 mem values
-        //       depending on whether we're even or odd columns draw 0/1 for aux/main values or 2/3 for aux/main into the proper buffer bytes
-    }
-
-
-
-    private static (byte, byte, byte, byte) MakeGrColor(byte val)
-    {
-        int x = (val & 0x7f) * 0x11111111;
-
-        byte a = (byte) ((x >> 0) & 0x7f);
-        byte b = (byte) ((x >> 3) & 0x7f);
-        byte c = (byte) ((x >> 6) & 0x7f);
-        byte d = (byte) ((x >> 9) & 0x7f);
-
-        return (a, b, c, d);
-    }
-
-
-
-    // this is using 0-based X/Y
-    private static int GetAddressForXY(int x, int y, bool text, bool hires, bool mixed, bool page2, int cellRowOffset = 0)
-    {
-        const int TextPage1Start = 0x0400;
-        const int TextPage2Start = 0x0800;
-        const int HiresPage1Start = 0x2000;
-        const int HiresPage2Start = 0x4000;
-
-        int retval = -1;
-
-        //Todo: Note:  Page2 might have issues if 80-column mode is also on.  Revisit that later.
-
-        if (x >= 0 && x < 40 && y >= 0 && y < 24)
-        {
-
-            if (text || (!text && !hires) || (mixed && y > 20))
-            {
-                int startAddr = page2 ? TextPage2Start : TextPage1Start;
-
-                // Every 128 bytes is 40 columns at row x, then 40 columns at row x+8, then 40 columns at row x+16.  So row 0 starts at StartAddr, row 1 = startAddress+128, row 2 = startAddress+256, etc. This is normalized to (row % 8) * 128 to start with, then if row >= 8, add 40, if row >= 16 add another 40.
-                retval = startAddr + (y % 8) * 128 + (y / 8) * 40 + x;
-            }
-            else // We're either HiRes full screen or HiRes Mixed with y <= 20
-            {
-                int startAddr = page2 ? HiresPage2Start : HiresPage1Start;
-
-                retval = startAddr + (y % 8) * 128 + (y / 8) * 40 + (cellRowOffset * 0x400) + x;
-            }
-        }
-        return retval;
-    }
     private void OnVBlank(object? sender, EventArgs e)
     {
-        if (_frameSink is null) { return; }
         // Apply pending flash toggle at frame boundary for consistent rendering
         if (System.Threading.Interlocked.Exchange(ref _pendingFlashToggle, 0) != 0)
         {
-            _sysStatusSink?.Mutate(s => s.StateFlashOn = !s.StateFlashOn);
+            _sysStatusSink.Mutate(s => s.StateFlashOn = !s.StateFlashOn);
         }
         var buf = _frameSink.BorrowWritable();
         buf.Clear();
 
         RenderScreen(buf);
 
-        _frameSink.IsGraphics = !_sysStatusSink!.StateTextMode;
-        _frameSink.IsMixed = _sysStatusSink!.StateMixed;
+        _frameSink.IsGraphics = !_sysStatusSink.StateTextMode;
+        _frameSink.IsMixed = _sysStatusSink.StateMixed;
         _frameSink.CommitWritable();
     }
 
 
     private void TryLoadEmbeddedRom(string resourceName)
     {
-        // Temporarily disable exceptions for missing resources. Don't want it to silently catch.
-        //    try
+        var asm = Assembly.GetExecutingAssembly();
+        using Stream? s = asm.GetManifestResourceStream(resourceName);
+        if (s != null)
         {
-            var asm = Assembly.GetExecutingAssembly();
-            using Stream? s = asm.GetManifestResourceStream(resourceName);
-            if (s != null)
-            {
-                using var ms = new MemoryStream();
-                s.CopyTo(ms);
-                MemoryPool.InstallApple2ROM(ms.ToArray());
-            }
+            using var ms = new MemoryStream();
+            s.CopyTo(ms);
+            MemoryPool.InstallApple2ROM(ms.ToArray());
         }
-   //     catch { }
     }
 
     /// <summary>
@@ -324,6 +130,7 @@ public sealed class VA2M : IDisposable
         }
         PublishState();
     }
+
 
     private void ThrottleOneCycle()
     {
@@ -436,7 +243,6 @@ public sealed class VA2M : IDisposable
 
     private void PublishState()
     {
-        if (_stateSink is null) { return; }
         int lineNum = (int)(Bus.CpuRead(0x75) + (Bus.CpuRead(0x76) << 8));
         int? basicLine = lineNum < 0xFA00 ? lineNum : null;
         var snapshot = new StateSnapshot((ushort)_cpu.PC, (byte)_cpu.SP, Bus.SystemClockCounter, basicLine, true, false);
@@ -496,7 +302,7 @@ public sealed class VA2M : IDisposable
         var switches = (Bus as VA2MBus)?.Switches;
         var data = switches!.GetSwitchList();
 
-        _sysStatusSink?.Mutate(b =>
+        _sysStatusSink.Mutate(b =>
         {
             foreach (var (id, value, count) in data)
             {

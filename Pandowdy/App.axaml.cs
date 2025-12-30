@@ -22,13 +22,12 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var services = DesktopServiceProvider.Current;
-            var factory = services.GetService(typeof(IMainWindowFactory)) as IMainWindowFactory;
-            
-            if (factory == null)
+
+            if (services.GetService(typeof(IMainWindowFactory)) is not IMainWindowFactory factory)
             {
                 throw new InvalidOperationException("IMainWindowFactory not registered in DI container.");
             }
-            
+
             desktop.MainWindow = factory.Create();
         }
 

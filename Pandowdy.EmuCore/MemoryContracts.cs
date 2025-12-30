@@ -12,13 +12,3 @@ public sealed class MemoryAccessEventArgs : EventArgs
     public int Length { get; init; }
 }
 
-/// <summary>
-/// Abstraction for a memory source that raises notifications when it is modified.
-/// </summary>
-public interface IMappedMemory
-{
-    event EventHandler<MemoryAccessEventArgs> MemoryWritten;
-    event EventHandler<MemoryAccessEventArgs> MemoryBlockWritten;
-
-    byte Read(ushort address);
-}
