@@ -4,7 +4,7 @@ using Pandowdy.EmuCore.Services;
 using System.Reactive.Subjects;
 using Xunit;
 
-namespace Pandowdy.Tests;
+namespace Pandowdy.Tests.Services;
 
 /// <summary>
 /// Comprehensive tests for FrameGenerator and RenderContext.

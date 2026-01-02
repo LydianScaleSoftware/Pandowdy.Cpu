@@ -2,7 +2,7 @@ using Pandowdy.EmuCore;
 using Pandowdy.EmuCore.Services;
 using Xunit;
 
-namespace Pandowdy.Tests;
+namespace Pandowdy.Tests.Services;
 
 /// <summary>
 /// Tests for FrameProvider - manages double-buffered frame rendering for Apple II display.

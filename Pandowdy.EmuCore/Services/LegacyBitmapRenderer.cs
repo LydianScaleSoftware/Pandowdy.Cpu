@@ -1,6 +1,6 @@
-﻿using Pandowdy.EmuCore.Interfaces;
+using Pandowdy.EmuCore.Interfaces;
 
-namespace Pandowdy.EmuCore
+namespace Pandowdy.EmuCore.Services
 {
     public class LegacyBitmapRenderer : IDisplayBitmapRenderer
     {

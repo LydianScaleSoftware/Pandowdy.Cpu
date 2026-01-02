@@ -1,8 +1,8 @@
-﻿using System.Reflection;
+using System.Reflection;
 
 using Pandowdy.EmuCore.Interfaces;
 
-namespace Pandowdy.EmuCore
+namespace Pandowdy.EmuCore.Services
 {
     public class CharacterRomProvider : ICharacterRomProvider
     {
