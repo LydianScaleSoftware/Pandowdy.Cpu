@@ -168,6 +168,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     public VA2MBus(MemoryPool mempool, ISystemStatusProvider responder, ICpu cpu)
     {
         ArgumentNullException.ThrowIfNull(responder);
+        ArgumentNullException.ThrowIfNull(responder);
         ArgumentNullException.ThrowIfNull(cpu);
         _memoryPool = mempool;
         _cpu = cpu;

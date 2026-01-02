@@ -9,7 +9,7 @@ public interface IFrameProvider
     /// <summary>
     /// Width of the frame in bytes (80 columns for Apple II).
     /// </summary>
-    int Width { get; }
+    int CharWidth { get; }
     
     /// <summary>
     /// Height of the frame in scanlines (192 for Apple II).

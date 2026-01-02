@@ -72,7 +72,7 @@ namespace Pandowdy
                     services.AddSingleton<ICharacterRomProvider, CharacterRomProvider>();
                     services.AddSingleton<IDisplayBitmapRenderer, LegacyBitmapRenderer>();
 
-                    services.AddSingleton<IVideoSubsystem, VideoSubsystem>();
+                    services.AddSingleton<IFrameGenerator, FrameGenerator>();
 
 
                     // SystemStatusProvider implements both ISystemStatusProvider and ISoftSwitchResponder

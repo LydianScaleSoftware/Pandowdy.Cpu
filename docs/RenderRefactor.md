@@ -962,31 +962,33 @@ public void MasterRenderer_CompositesCorrectly_WhenInTextMode()
 ## Implementation Checklist
 
 ### Phase 1: Infrastructure
-- [ ] Create `Pandowdy.EmuCore/Rendering` directory
-- [ ] Implement `MultiPlaneFrameBuffer.cs`
-- [ ] Implement `RenderContext.cs`
-- [ ] Implement `IRenderer.cs` interface
-- [ ] Update `IFrameProvider.cs` interface
-- [ ] Create `IDebugFrameProvider.cs` interface
+- [NA] Create `Pandowdy.EmuCore/Rendering` directory - Not necessary
+- [X] Implement `MultiPlaneFrameBuffer.cs`
+- [X] Implement `RenderContext.cs` (This is in VideoSubsystem.cs)
+- [X] Implement `IRenderer.cs` interface (This is called IDisplayBitmapRenderer.cs)
+- [X] Update `IFrameProvider.cs` interface
+- [NA] Create `IDebugFrameProvider.cs` interface - Not necessary
 
 ### Phase 2: Renderers
+- [X] Implement `LegacyBitmapRenderer.cs` to transition old rendering code to new paradigm
 - [ ] Implement `TextModeRenderer.cs`
 - [ ] Implement `LoResRenderer.cs`
-- [ ] Implement `HiResRenderer.cs` (with page parameter)
-- [ ] Extract character ROM loading logic
-- [ ] Extract color palette constants
+- [ ] Implement `HiResRenderer.cs` 
+- [ ] Implenent other renderers as needed.
+- [X] Extract character ROM loading logic
+- [?] Extract color palette constants - TBD
 
 ### Phase 3: Compositor
-- [ ] Implement `MasterRenderer.cs`
+- [ ] Implement `MasterRenderer.cs` - This will be called MainRenderer not MasterRenderer
 - [ ] Implement `CompositeActiveDisplay()` logic
 - [ ] Implement `CompositeMixedMode()` logic
 - [ ] Add soft switch state handling
 
 ### Phase 4: Integration
-- [ ] Update `FrameProvider.cs` to own `MultiPlaneFrameBuffer`
-- [ ] Update `VA2M.OnVBlank()` to use new rendering system
-- [ ] Update DI registration in `Program.cs`
-- [ ] Remove old `VA2M.Render.cs` (after migration)
+- [X] Update `FrameProvider.cs` to own `MultiPlaneFrameBuffer` - Frame provider doesn't own. It's DI.
+- [X] Update `VA2M.OnVBlank()` to use new rendering system - Done
+- [X] Update DI registration in `Program.cs` - Ongoing as needed
+- [X] Remove old `VA2M.Render.cs` (after migration) - Code is commented out. Will remove file later.
 
 ### Phase 5: Testing
 - [ ] Unit tests for each renderer

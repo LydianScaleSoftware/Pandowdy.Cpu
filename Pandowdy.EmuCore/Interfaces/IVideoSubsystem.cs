@@ -1,7 +1,6 @@
-﻿
-namespace Pandowdy.EmuCore.Interfaces
+﻿namespace Pandowdy.EmuCore.Interfaces
 {
-    public interface IVideoSubsystem
+    public interface IFrameGenerator
     {
         public RenderContext AllocateRenderContext();
         public void RenderFrame(RenderContext context);

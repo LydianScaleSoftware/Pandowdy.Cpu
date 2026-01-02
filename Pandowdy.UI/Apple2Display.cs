@@ -72,7 +72,7 @@ public class Apple2Display : Control
     private const double SourceHeight = 384;
     private const double SourceAspect = SourceWidth / SourceHeight;
 
-    private int _activeBitPlane = 10;
+    private int _activeBitPlane = 0;
 
     public int ActiveBitPlane
     {
@@ -176,7 +176,7 @@ public class Apple2Display : Control
     public override void Render(DrawingContext context)
     {
         base.Render(context);
-        if (_frameProvider != null && _lastFrame != null && _frameProvider.Width == 80 && _frameProvider.Height == 192)
+        if (_frameProvider != null && _lastFrame != null && _frameProvider.CharWidth == 80 && _frameProvider.Height == 192)
         {
             EnsureBitmapForFrame();
             if (Bitmap is WriteableBitmap wb)

@@ -7,9 +7,9 @@ using Pandowdy.EmuCore.Services;
 
 namespace Pandowdy.EmuCore;
 
-public partial class VA2M : IDisposable
+public class VA2M : IDisposable
 {
-    public MemoryPool MemoryPool { get; }//private set; } = new MemoryPool();
+    public MemoryPool MemoryPool { get; }
 
     public IAppleIIBus Bus { get; }
 
@@ -24,28 +24,28 @@ public partial class VA2M : IDisposable
     private readonly IEmulatorState _stateSink; 
     private readonly IFrameProvider _frameSink; 
     private readonly ISystemStatusProvider _sysStatusSink;
-    private readonly IVideoSubsystem _videoSubsystem;
+    private readonly IFrameGenerator _frameGenerator;
 
     // Flash timer to toggle StateFlashOn at ~2.1 Hz
     private Timer? _flashTimer;
     private static readonly TimeSpan FlashPeriod = TimeSpan.FromMilliseconds(1000/2.1);
     private int _pendingFlashToggle; // 0/1 flag set by timer, consumed on VBlank
 
-    public VA2M(IEmulatorState stateSink, IFrameProvider frameSink, ISystemStatusProvider statusProvider, IAppleIIBus bus, MemoryPool memoryPool, IVideoSubsystem videoSubsystem )
+    public VA2M(IEmulatorState stateSink, IFrameProvider frameSink, ISystemStatusProvider statusProvider, IAppleIIBus bus, MemoryPool memoryPool, IFrameGenerator frameGenerator )
     {
         ArgumentNullException.ThrowIfNull(stateSink);
         ArgumentNullException.ThrowIfNull(frameSink);
         ArgumentNullException.ThrowIfNull(statusProvider);
         ArgumentNullException.ThrowIfNull(bus);
         ArgumentNullException.ThrowIfNull(memoryPool);
-        ArgumentNullException.ThrowIfNull(videoSubsystem);
+        ArgumentNullException.ThrowIfNull(frameGenerator);
 
 
 
         _stateSink = stateSink;
         _frameSink = frameSink;
         _sysStatusSink = statusProvider;
-        _videoSubsystem = videoSubsystem;
+        _frameGenerator = frameGenerator;
         Bus = bus;
         MemoryPool = memoryPool;
         TryLoadEmbeddedRom("Pandowdy.EmuCore.Resources.a2e_enh_c-f.rom");
@@ -98,8 +98,9 @@ public partial class VA2M : IDisposable
             _sysStatusSink.Mutate(s => s.StateFlashOn = !s.StateFlashOn);
         }
 
-        var renderContext = _videoSubsystem.AllocateRenderContext();
-        _videoSubsystem.RenderFrame(renderContext);
+
+        var renderContext = _frameGenerator.AllocateRenderContext();
+        _frameGenerator.RenderFrame(renderContext);
 
     }
 

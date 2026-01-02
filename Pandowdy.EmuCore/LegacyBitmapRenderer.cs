@@ -4,6 +4,7 @@ namespace Pandowdy.EmuCore
 {
     public class LegacyBitmapRenderer : IDisplayBitmapRenderer
     {
+        private const int _bitplane = 0; // Active display bitplane
         
         ICharacterRomProvider _charRomProvider;
 

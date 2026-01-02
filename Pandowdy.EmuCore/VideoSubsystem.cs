@@ -1,5 +1,4 @@
-﻿
-using Pandowdy.EmuCore.Interfaces;
+﻿using Pandowdy.EmuCore.Interfaces;
 
 
 namespace Pandowdy.EmuCore
@@ -21,14 +20,19 @@ namespace Pandowdy.EmuCore
         public readonly void ClearBuffer() { FrameBuffer.Clear(); }
     }
 
-    public class VideoSubsystem : IVideoSubsystem
+    /// <summary>
+    /// Generates Apple II video frames by coordinating bitmap rendering,
+    /// memory access, and system status. Produces annotated frames for
+    /// downstream consumers (e.g., NTSC post-processing, GUI display).
+    /// </summary>
+    public class FrameGenerator : IFrameGenerator
     {
         private IFrameProvider _frameProvider;
         private IDirectMemoryPoolReader _memReader;
         private ISystemStatusProvider _statusProvider;
         private IDisplayBitmapRenderer _renderer;
 
-        public VideoSubsystem(IFrameProvider frameProvider, IDirectMemoryPoolReader memReader, ISystemStatusProvider statusProvider, IDisplayBitmapRenderer renderer)
+        public FrameGenerator(IFrameProvider frameProvider, IDirectMemoryPoolReader memReader, ISystemStatusProvider statusProvider, IDisplayBitmapRenderer renderer)
         {
             ArgumentNullException.ThrowIfNull(frameProvider);
             ArgumentNullException.ThrowIfNull(memReader);
@@ -58,8 +62,11 @@ namespace Pandowdy.EmuCore
             //    Call Renderer
             _renderer.Render(context);
 
+            // Annotate frame with display mode metadata for downstream consumers
+            // (e.g., NTSC renderer) so they don't need ISystemStatusProvider reference
             _frameProvider.IsGraphics = !_statusProvider.StateTextMode;
             _frameProvider.IsMixed = _statusProvider.StateMixed;
+
             _frameProvider.CommitWritable();
 
         }
