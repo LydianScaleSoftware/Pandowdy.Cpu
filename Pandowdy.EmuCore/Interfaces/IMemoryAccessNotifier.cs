@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Pandowdy.EmuCore.Interfaces
+﻿namespace Pandowdy.EmuCore.Interfaces
 {
     /// <summary>
     /// Abstraction for a memory source that raises notifications when it is modified.
