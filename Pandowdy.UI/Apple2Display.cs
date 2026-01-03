@@ -176,7 +176,7 @@ public class Apple2Display : Control
     public override void Render(DrawingContext context)
     {
         base.Render(context);
-        if (_frameProvider != null && _lastFrame != null && _frameProvider.CharWidth == 80 && _frameProvider.Height == 192)
+        if (_frameProvider != null && _lastFrame != null && _frameProvider.Width == 560 && _frameProvider.Height == 192)
         {
             EnsureBitmapForFrame();
             if (Bitmap is WriteableBitmap wb)

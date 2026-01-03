@@ -1,8 +1,6 @@
 using System;
 using ReactiveUI;
-using Pandowdy.EmuCore;
 using Pandowdy.EmuCore.Interfaces;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 
 namespace Pandowdy.UI.ViewModels;

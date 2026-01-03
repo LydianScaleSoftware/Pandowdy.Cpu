@@ -12,6 +12,7 @@ using Avalonia.Threading;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 using Pandowdy.UI.ViewModels;
+using Pandowdy.UI.Interfaces;
 using Pandowdy.EmuCore;
 using Pandowdy.EmuCore.Interfaces;
 

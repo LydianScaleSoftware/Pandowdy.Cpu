@@ -1,7 +1,7 @@
 using System;
 using System.Reactive.Linq;
 using Avalonia.Threading;
-using Pandowdy.EmuCore.Interfaces;
+using Pandowdy.UI.Interfaces;
 
 namespace Pandowdy.UI;
 

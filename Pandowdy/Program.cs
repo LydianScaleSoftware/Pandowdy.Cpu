@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Avalonia;
 using ReactiveUI.Avalonia;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,10 +7,6 @@ using Pandowdy.UI;
 using Pandowdy.UI.Interfaces;
 using Pandowdy.EmuCore;
 using Pandowdy.UI.ViewModels;
-using IFrameProvider = Pandowdy.EmuCore.Interfaces.IFrameProvider;
-using IEmulatorState = Pandowdy.EmuCore.Interfaces.IEmulatorState;
-using ISystemStatusProvider = Pandowdy.EmuCore.Interfaces.ISystemStatusProvider;
-using IRefreshTicker = Pandowdy.EmuCore.Interfaces.IRefreshTicker;
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.EmuCore.Services;
 

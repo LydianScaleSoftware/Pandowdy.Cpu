@@ -1,5 +1,5 @@
 using Avalonia.Headless.XUnit;
-using Pandowdy.EmuCore.Interfaces;
+using Pandowdy.UI.Interfaces;
 using System.Reactive.Linq;
 
 namespace Pandowdy.UI.Tests.Services;

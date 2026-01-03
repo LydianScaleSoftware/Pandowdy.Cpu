@@ -1,48 +1,136 @@
 namespace Pandowdy.EmuCore.Interfaces;
 
 /// <summary>
-/// Provides access to the emulator's frame buffer for rendering.
-/// Supports double-buffering with front/back buffer swap.
+/// Provides access to the emulator's frame buffer for rendering with double-buffering support.
 /// </summary>
+/// <remarks>
+/// This interface manages the frame buffers used for rendering Apple IIe video output.
+/// It implements a double-buffering pattern where:
+/// <list type="bullet">
+/// <item>The <strong>back buffer</strong> is used for composing the next frame (writing)</item>
+/// <item>The <strong>front buffer</strong> is used for display (reading)</item>
+/// <item>Buffers are swapped atomically when the frame is complete</item>
+/// </list>
+/// This prevents tearing and ensures smooth animation by keeping the display buffer stable
+/// while the next frame is being rendered. The <see cref="FrameAvailable"/> event notifies
+/// consumers (typically the UI layer) when a new frame is ready for display.
+/// </remarks>
 public interface IFrameProvider
 {
+
     /// <summary>
-    /// Width of the frame in bytes (80 columns for Apple II).
+    /// Gets the width of the frame in pixels.
     /// </summary>
-    int CharWidth { get; }
-    
+    /// <value>
+    /// The frame width in pixels. For Apple IIe standard modes, this is typically 560 pixels
+    /// (280 pixels doubled for HGR, individual for DHGR, 14 (or 7) pixels per
+    /// character × 40 (or 80) columns). 
+    /// </value>
+    /// <remarks>
+    /// Currently, this value is determined by the default implementation of
+    /// <see cref="BitmapDataArray"/>. In a future refactoring, the frame provider may
+    /// dictate dimensions at creation time to support additional graphics modes.
+    /// The pixel width represents the final rendered output width, which may include
+    /// horizontal doubling to achieve proper aspect ratio on square-pixel displays.
+    /// </remarks>
+    int Width { get; }
+
     /// <summary>
-    /// Height of the frame in scanlines (192 for Apple II).
+    /// Gets the height of the frame in scanlines.
     /// </summary>
+    /// <value>
+    /// The frame height in scanlines. For Apple IIe, this is 192 scanlines (24 text rows
+    /// × 8 scanlines per row).
+    /// </value>
     int Height { get; }
     
     /// <summary>
-    /// True if in graphics mode.
+    /// Gets or sets whether the emulator is in graphics mode (as opposed to text mode).
     /// </summary>
+    /// <value>
+    /// True if displaying graphics (lo-res or hi-res); false if displaying text mode.
+    /// </value>
+    /// <remarks>
+    /// This property reflects the state of the TEXT soft switch. When false (text mode),
+    /// the display shows 40-column or 80-column text. When true (graphics mode), the
+    /// display shows lo-res (40×48 color blocks) or hi-res (280×192 pixels) graphics.
+    /// The primary purpose of this flag is to give the UI renderer a hint to use NTSC
+    /// color generation and fringing when applicable.
+    /// </remarks>
     bool IsGraphics { get; set; }
     
     /// <summary>
-    /// True if in mixed text/graphics mode.
+    /// Gets or sets whether the emulator is in mixed text/graphics mode.
     /// </summary>
+    /// <value>
+    /// True if displaying mixed mode (graphics on top 20 rows, text on bottom 4 rows);
+    /// false if displaying pure text or pure graphics.
+    /// </value>
+    /// <remarks>
+    /// This property reflects the state of the MIXED soft switch. When true, the top
+    /// 160 scanlines display graphics content and the bottom 32 scanlines (4 text rows)
+    /// display text. This mode is commonly used in Apple II games to show graphics with
+    /// a text status line at the bottom.
+    /// The primary purpose of this flag is to give the UI renderer a hint that the bottom
+    /// 4 lines of the display are text and can optionally be excluded from NTSC color generation
+    /// to reduce fringing of the text.
+    /// </remarks>
     bool IsMixed { get; set; }
     
     /// <summary>
     /// Raised after a new frame has been committed and is available for display.
     /// </summary>
+    /// <remarks>
+    /// This event is fired by <see cref="CommitWritable"/> after the front and back buffers
+    /// have been swapped. Subscribers (typically the UI layer) should respond by reading
+    /// the front buffer via <see cref="GetFrame"/> and updating the display. This event
+    /// is typically raised at the video refresh rate (approximately 60 Hz for Apple IIe).
+    /// </remarks>
     event EventHandler? FrameAvailable;
     
     /// <summary>
-    /// Gets the current front buffer for reading/displaying.
+    /// Gets the current front buffer for reading and displaying.
     /// </summary>
+    /// <returns>
+    /// A <see cref="BitmapDataArray"/> containing the most recently committed frame,
+    /// ready for display. This buffer is stable and will not change until the next
+    /// call to <see cref="CommitWritable"/>.
+    /// </returns>
+    /// <remarks>
+    /// This method is typically called by the UI layer in response to the
+    /// <see cref="FrameAvailable"/> event to retrieve the completed frame for display.
+    /// The returned buffer should be treated as read-only to prevent race conditions
+    /// with the rendering thread.
+    /// </remarks>
     BitmapDataArray GetFrame();
     
     /// <summary>
-    /// Gets the back buffer for writing/composing the next frame.
+    /// Gets the back buffer for writing and composing the next frame.
     /// </summary>
+    /// <returns>
+    /// A <see cref="BitmapDataArray"/> that can be written to for composing the next frame.
+    /// This buffer is not visible to the display until <see cref="CommitWritable"/> is called.
+    /// </returns>
+    /// <remarks>
+    /// This method is typically called by the rendering subsystem at the start of each
+    /// frame generation cycle. The caller should render the complete frame into this buffer,
+    /// then call <see cref="CommitWritable"/> to make it visible. The term "Borrow" indicates
+    /// that the caller has temporary exclusive access to this buffer for rendering purposes.
+    /// </remarks>
     BitmapDataArray BorrowWritable();
     
     /// <summary>
-    /// Swaps front and back buffers and raises the FrameAvailable event.
+    /// Swaps the front and back buffers and raises the <see cref="FrameAvailable"/> event.
     /// </summary>
+    /// <remarks>
+    /// This method atomically swaps the front and back buffers, making the newly rendered
+    /// frame visible while providing the previous front buffer as the new back buffer for
+    /// the next frame. After the swap, the <see cref="FrameAvailable"/> event is raised to
+    /// notify the UI layer that a new frame is ready for display.
+    /// <para>
+    /// This method should be called by the rendering subsystem after completing a frame
+    /// (typically once per VBlank period, approximately 60 times per second for Apple IIe).
+    /// </para>
+    /// </remarks>
     void CommitWritable();
 }

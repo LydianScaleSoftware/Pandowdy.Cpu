@@ -15,21 +15,12 @@ public class FrameProviderTests
         var provider = new FrameProvider();
 
         // Assert - Dimensions should match BitmapDataArray
-        Assert.Equal(80, provider.CharWidth);           // 560 / 7 = 80 chars
-        Assert.Equal(560, provider.PixelWidth);         // BitmapDataArray.Width
+        
+        Assert.Equal(560, provider.Width);         // BitmapDataArray.Width
         Assert.Equal(192, provider.Height);              // BitmapDataArray.Height
     }
 
-    [Fact]
-    public void CharWidth_CalculatedFromPixelWidth()
-    {
-        // Arrange & Act
-        var provider = new FrameProvider();
 
-        // Assert - CharWidth should be PixelWidth / 7
-        Assert.Equal(provider.PixelWidth / 7, provider.CharWidth);
-        Assert.Equal(560 / 7, provider.CharWidth);
-    }
 
     [Fact]
     public void Constructor_VerifiesGeometry()
@@ -38,9 +29,8 @@ public class FrameProviderTests
         var provider = new FrameProvider();
 
         // Assert - If we get here, geometry validation passed
-        Assert.Equal(560, provider.PixelWidth);
+        Assert.Equal(560, provider.Width);
         Assert.Equal(192, provider.Height);
-        Assert.Equal(80, provider.CharWidth);
         
         // Note: Constructor throws InvalidOperationException if:
         // - Front/back buffer dimensions don't match

@@ -122,7 +122,7 @@ public class TestFrameProvider : IFrameProvider
     private BitmapDataArray _frame = new();
     private int _commitCount = 0;
 
-    public int CharWidth => 80;
+    public int Width => 560;
     public int Height => 192;
     public bool IsGraphics { get; set; }
     public bool IsMixed { get; set; }

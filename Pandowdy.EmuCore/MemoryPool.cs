@@ -11,7 +11,6 @@ namespace Pandowdy.EmuCore
     {
         public ushort Address { get; init; }
         public byte? Value { get; init; }
-        public int Length { get; init; }
     }
 
 
@@ -23,24 +22,7 @@ namespace Pandowdy.EmuCore
         public byte Read(ushort address) => ReadMapped(address);
         public void Write (ushort address, byte value) => WriteMapped(address, value);
 
-        //public byte[] ReadBlock(ushort address, int length)
-        //{
-        //    byte[] buffer = new byte[length];
-        //    for (int i = 0; i < length; i++)
-        //    {
-        //        buffer[i] = ReadMapped((ushort)(address + i));
-        //    }
-        //    return buffer;
-        //}
 
-        //public void WriteBlock(ushort offset, params byte[] data)
-        //{
-        //    for (int i = 0; i < data.Length; i++)
-        //    {
-        //        WriteMapped((ushort)(offset + i), data[i]);
-        //    }
-        //    MemoryBlockWritten?.Invoke(this, new MemoryAccessEventArgs { Address = offset, Value = null, Length = data.Length });
-        //}
 
     //    public byte[] DataArray() { throw new Exception("Not implemented"); }
 
@@ -55,7 +37,7 @@ namespace Pandowdy.EmuCore
 
         public event EventHandler<MemoryAccessEventArgs>? MemoryWritten;
 
-        public event EventHandler<MemoryAccessEventArgs>? MemoryBlockWritten;
+        public event EventHandler<MemoryAccessEventArgs>? MemoryRead;
 
 
         //Methods from IDirectMemoryPoolReader:
@@ -393,7 +375,7 @@ namespace Pandowdy.EmuCore
             {
            //     Debug.WriteLine($"Write to unmapped address {address:X4} ignored."); return;
             }
-            MemoryWritten?.Invoke(this, new MemoryAccessEventArgs { Address = address, Value = value, Length = 1 });
+            MemoryWritten?.Invoke(this, new MemoryAccessEventArgs { Address = address, Value = value});
 
         }
 

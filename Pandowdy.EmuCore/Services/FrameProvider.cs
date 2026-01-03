@@ -11,8 +11,7 @@ namespace Pandowdy.EmuCore.Services
         private BitmapDataArray _front;
         private BitmapDataArray _back;
 
-        public int CharWidth { get; }
-        public int PixelWidth { get; }
+        public int Width { get; }
         public int Height { get; }
         
         public event EventHandler? FrameAvailable;
@@ -49,15 +48,14 @@ namespace Pandowdy.EmuCore.Services
             int pixelWidth = frontWidth;
             int height = frontHeight;
 
-            CharWidth = pixelWidth / 7;
-            PixelWidth = pixelWidth;
+            Width = pixelWidth;
             Height = height;
 
             // Verify Apple II standard dimensions
-            if (CharWidth != 80)
+            if (Width != 560)
             {
                 throw new InvalidOperationException(
-                    $"Expected Apple II standard width of 80 characters, but got {CharWidth}");
+                    $"Expected Apple II standard width of 560 pixels, but got {Width}");
             }
             
             if (Height != 192)

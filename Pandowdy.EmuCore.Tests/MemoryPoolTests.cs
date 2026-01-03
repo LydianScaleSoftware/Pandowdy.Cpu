@@ -1091,14 +1091,12 @@ public class MemoryPoolTests
         var eventArgs = new MemoryAccessEventArgs
         {
             Address = 0x1234,
-            Value = 0x42,
-            Length = 1
+            Value = 0x42
         };
 
         // Assert
         Assert.Equal(0x1234, eventArgs.Address);
         Assert.Equal((byte)0x42, eventArgs.Value);
-        Assert.Equal(1, eventArgs.Length);
     }
 
     [Fact]
@@ -1108,14 +1106,12 @@ public class MemoryPoolTests
         var eventArgs = new MemoryAccessEventArgs
         {
             Address = 0x2000,
-            Value = null,
-            Length = 256
+            Value = null
         };
 
         // Assert
         Assert.Equal(0x2000, eventArgs.Address);
         Assert.Null(eventArgs.Value);
-        Assert.Equal(256, eventArgs.Length);
     }
 
     [Fact]
@@ -1126,14 +1122,12 @@ public class MemoryPoolTests
         bool eventRaised = false;
         ushort capturedAddress = 0;
         byte? capturedValue = null;
-        int capturedLength = 0;
 
         pool.MemoryWritten += (sender, args) =>
         {
             eventRaised = true;
             capturedAddress = args.Address;
             capturedValue = args.Value;
-            capturedLength = args.Length;
         };
 
         // Act
@@ -1143,7 +1137,6 @@ public class MemoryPoolTests
         Assert.True(eventRaised);
         Assert.Equal(0x1000, capturedAddress);
         Assert.Equal((byte)0x42, capturedValue);
-        Assert.Equal(1, capturedLength);
     }
 
     [Fact]

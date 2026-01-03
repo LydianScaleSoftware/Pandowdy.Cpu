@@ -21,8 +21,7 @@ public class FrameGeneratorTests
         private readonly BitmapDataArray _backBuffer = new();
         private readonly BitmapDataArray _frontBuffer = new();
         
-        public int CharWidth => 80;
-        public int PixelWidth => 560;
+        public int Width => 560;
         public int Height => 192;
         public bool IsGraphics { get; set; }
         public bool IsMixed { get; set; }
