@@ -1,6 +1,6 @@
 using Pandowdy.EmuCore.Services;
 
-namespace Pandowdy.EmuCore.Tests;
+namespace Pandowdy.EmuCore.Tests.IntegrationTests;
 
 /// <summary>
 /// Integration tests for rendering components - verifies that BitField16,

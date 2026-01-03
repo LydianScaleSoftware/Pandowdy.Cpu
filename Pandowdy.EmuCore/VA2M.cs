@@ -1,3 +1,71 @@
+//------------------------------------------------------------------------------
+// VA2M.cs
+//
+// ⚠️ PLANNED FOR REFACTORING - SEE _docs_/VA2MBus-Refactoring-Notes.md ⚠️
+//
+// "Virtual Apple II Machinator" - Main emulator orchestrator that coordinates
+// the CPU, bus, memory, and timing systems to emulate an Apple IIe computer.
+//
+// CURRENT RESPONSIBILITIES:
+// VA2M serves as the top-level controller for the emulator, managing:
+//
+// 1. **Emulator Lifecycle:**
+//    - Construction and dependency injection
+//    - Resource loading (embedded ROM)
+//    - Disposal and cleanup
+//
+// 2. **Execution Control:**
+//    - Clock() - Single-cycle execution for simple loops
+//    - RunAsync() - Async batched execution for continuous operation
+//    - Throttling to maintain ~1.023 MHz Apple IIe speed
+//
+// 3. **Reset Handling:**
+//    - Reset() - Full system reset (power cycle)
+//    - UserReset() - Warm reset (Ctrl+Reset)
+//
+// 4. **External Input:**
+//    - Keyboard input injection
+//    - Pushbutton state management
+//    - Cross-thread command queueing
+//
+// 5. **State Publishing:**
+//    - Emulator state snapshots (PC, SP, cycles, BASIC line)
+//    - System status snapshots (soft switches, buttons)
+//    - Frame rendering coordination
+//
+// 6. **Timing & Synchronization:**
+//    - Cycle-accurate throttling (Sleep + SpinWait)
+//    - Flash timer (~2.1 Hz for cursor/mode indicators)
+//    - VBlank event handling for frame rendering
+//
+// DESIGN PATTERN: Façade + Coordinator
+// VA2M acts as a façade over the emulator subsystems (Bus, Memory, CPU) and
+// coordinates their interactions. It handles cross-thread communication via
+// a command queue pattern, allowing UI/external threads to safely interact
+// with the single-threaded emulator core.
+//
+// THREADING MODEL:
+// - **Emulator Thread:** Runs Clock() or RunAsync() loop
+// - **External Threads:** Enqueue commands via InjectKey(), SetPushButton(), etc.
+// - **Flash Timer Thread:** Toggles flash state at ~2.1 Hz
+// - **Synchronization:** Commands are processed at frame boundaries (ProcessPending)
+//
+// THROTTLING MECHANISM:
+// Two-phase throttling for accurate timing:
+// 1. Sleep for whole milliseconds (OS scheduler)
+// 2. SpinWait for sub-millisecond precision (busy wait)
+// This achieves ~1.023 MHz accuracy while being efficient.
+//
+// FUTURE REFACTORING:
+// This class will be refactored alongside VA2MBus to:
+// - Separate timing/throttling into dedicated service
+// - Move input handling to input manager
+// - Extract state publishing to dedicated provider
+// - Simplify to pure coordinator role
+//
+// See: Pandowdy.EmuCore/_docs_/VA2MBus-Refactoring-Notes.md
+//------------------------------------------------------------------------------
+
 using System.Reflection;
 using System.Diagnostics;
 using System.Collections.Immutable;
@@ -7,30 +75,154 @@ using Pandowdy.EmuCore.Services;
 
 namespace Pandowdy.EmuCore;
 
+/// <summary>
+/// Main Apple IIe emulator orchestrator coordinating CPU, bus, memory, and timing.
+/// </summary>
+/// <remarks>
+/// <para>
+/// <strong>⚠️ PLANNED FOR REFACTORING:</strong> This class will be refactored to separate
+/// concerns (timing, input, state publishing) into dedicated services. See
+/// Pandowdy.EmuCore/_docs_/VA2MBus-Refactoring-Notes.md for planned architecture.
+/// </para>
+/// <para>
+/// <strong>Name Origin:</strong> "VA2M" = "Virtual Apple II Machinator" - the machine
+/// orchestrator that brings together all emulator subsystems.
+/// </para>
+/// <para>
+/// <strong>Threading Model:</strong>
+/// <list type="bullet">
+/// <item><strong>Emulator Thread:</strong> Single-threaded CPU execution (Clock/RunAsync loop)</item>
+/// <item><strong>External Threads:</strong> UI/input threads enqueue commands via InjectKey(), etc.</item>
+/// <item><strong>Flash Timer:</strong> Separate timer thread toggles cursor at ~2.1 Hz</item>
+/// <item><strong>Synchronization:</strong> Commands processed at frame boundaries (thread-safe)</item>
+/// </list>
+/// </para>
+/// <para>
+/// <strong>Execution Modes:</strong>
+/// <list type="bullet">
+/// <item><strong>Clock():</strong> Single-cycle execution, useful for debugging/stepping</item>
+/// <item><strong>RunAsync():</strong> Continuous batched execution, normal operation mode</item>
+/// </list>
+/// </para>
+/// </remarks>
 public class VA2M : IDisposable
 {
+    /// <summary>
+    /// Gets the memory pool managing the 128KB Apple IIe memory space.
+    /// </summary>
     public MemoryPool MemoryPool { get; }
 
+    /// <summary>
+    /// Gets the system bus coordinating CPU, memory, and I/O access.
+    /// </summary>
     public IAppleIIBus Bus { get; }
 
  //   private readonly ICpu _cpu;
+    
+    /// <summary>
+    /// Stopwatch for throttling the emulator to match Apple IIe speed.
+    /// </summary>
     private readonly Stopwatch _throttleSw = Stopwatch.StartNew();
+    
+    /// <summary>
+    /// Count of CPU cycles executed for throttling calculations.
+    /// </summary>
     private long _throttleCycles;
+    
+    /// <summary>
+    /// Gets or sets whether throttling is enabled to maintain Apple IIe speed.
+    /// </summary>
+    /// <remarks>
+    /// When true, the emulator runs at ~1.023 MHz (Apple IIe speed).
+    /// When false, runs as fast as possible (useful for loading programs, debugging).
+    /// </remarks>
     public bool ThrottleEnabled { get; set; } = true;
+    
+    /// <summary>
+    /// Gets or sets the target CPU frequency in Hz.
+    /// </summary>
+    /// <remarks>
+    /// Default is 1,023,000 Hz (1.023 MHz), the Apple IIe's clock speed.
+    /// Can be adjusted for testing or to match different Apple II models.
+    /// </remarks>
     public double TargetHz { get; set; } = 1_023_000d;
+    
+    /// <summary>
+    /// Gets the total number of CPU cycles executed since last reset.
+    /// </summary>
     public ulong SystemClock => Bus.SystemClockCounter;
 
 
+    /// <summary>
+    /// Emulator state sink for publishing CPU state snapshots.
+    /// </summary>
     private readonly IEmulatorState _stateSink; 
+    
+    /// <summary>
+    /// Frame provider sink for publishing rendered video frames.
+    /// </summary>
     private readonly IFrameProvider _frameSink; 
+    
+    /// <summary>
+    /// System status sink for publishing soft switch states.
+    /// </summary>
     private readonly ISystemStatusProvider _sysStatusSink;
+    
+    /// <summary>
+    /// Frame generator for rendering Apple IIe video output.
+    /// </summary>
     private readonly IFrameGenerator _frameGenerator;
 
-    // Flash timer to toggle StateFlashOn at ~2.1 Hz
+    /// <summary>
+    /// Flash timer that toggles StateFlashOn at ~2.1 Hz (Apple IIe cursor blink rate).
+    /// </summary>
     private Timer? _flashTimer;
+    
+    /// <summary>
+    /// Flash period matching Apple IIe cursor blink rate (~2.1 Hz = 476ms period).
+    /// </summary>
     private static readonly TimeSpan FlashPeriod = TimeSpan.FromMilliseconds(1000/2.1);
+    
+    /// <summary>
+    /// Interlocked flag set by flash timer, consumed at VBlank to toggle flash state.
+    /// </summary>
+    /// <remarks>
+    /// Using interlocked exchange ensures thread-safe communication between
+    /// the flash timer thread and the emulator thread. Toggle is applied at
+    /// frame boundaries to prevent flicker.
+    /// </remarks>
     private int _pendingFlashToggle; // 0/1 flag set by timer, consumed on VBlank
 
+    /// <summary>
+    /// Initializes a new instance of the VA2M emulator.
+    /// </summary>
+    /// <param name="stateSink">State provider for publishing emulator state snapshots.</param>
+    /// <param name="frameSink">Frame provider for publishing rendered video frames.</param>
+    /// <param name="statusProvider">System status provider for soft switch states.</param>
+    /// <param name="bus">System bus coordinating CPU, memory, and I/O.</param>
+    /// <param name="memoryPool">Memory pool managing 128KB Apple IIe memory.</param>
+    /// <param name="frameGenerator">Frame generator for rendering video output.</param>
+    /// <exception cref="ArgumentNullException">Thrown if any parameter is null.</exception>
+    /// <remarks>
+    /// <para>
+    /// <strong>Initialization Sequence:</strong>
+    /// <list type="number">
+    /// <item>Store dependency references (all required)</item>
+    /// <item>Load embedded Apple IIe ROM from resources</item>
+    /// <item>Subscribe to VBlank event from bus (if VA2MBus)</item>
+    /// <item>Start flash timer for cursor blinking</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>ROM Loading:</strong> The Apple IIe Enhanced ROM (16KB) is embedded
+    /// as a resource and automatically loaded during construction. This ROM contains
+    /// the Monitor, Applesoft BASIC, and peripheral firmware.
+    /// </para>
+    /// <para>
+    /// <strong>VBlank Event:</strong> If the bus is a VA2MBus, the OnVBlank handler
+    /// is registered to trigger frame rendering and flash state updates at ~60 Hz.
+    /// </para>
+    /// </remarks>
     public VA2M(IEmulatorState stateSink, IFrameProvider frameSink, ISystemStatusProvider statusProvider, IAppleIIBus bus, MemoryPool memoryPool, IFrameGenerator frameGenerator )
     {
         ArgumentNullException.ThrowIfNull(stateSink);
@@ -71,9 +263,40 @@ public class VA2M : IDisposable
     }
 
     
-    // Queue for cross-thread emulator actions
+    /// <summary>
+    /// Thread-safe queue for cross-thread command execution on the emulator thread.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>Purpose:</strong> Allows external threads (UI, input handlers) to safely
+    /// interact with the single-threaded emulator core. Commands are enqueued and executed
+    /// at the next frame boundary.
+    /// </para>
+    /// <para>
+    /// <strong>Thread Safety:</strong> ConcurrentQueue provides lock-free thread-safe
+    /// enqueueing. Commands are dequeued and executed only on the emulator thread.
+    /// </para>
+    /// <para>
+    /// <strong>Example:</strong>
+    /// <code>
+    /// // From UI thread:
+    /// va2m.InjectKey(0x41);  // Enqueues keyboard 'A'
+    /// 
+    /// // On emulator thread:
+    /// ProcessPending();  // Dequeues and executes InjectKey command
+    /// </code>
+    /// </para>
+    /// </remarks>
     private readonly ConcurrentQueue<Action> _pending = new();
 
+    /// <summary>
+    /// Enqueues an action to be executed on the emulator thread at the next opportunity.
+    /// </summary>
+    /// <param name="action">Action to execute. Null actions are ignored.</param>
+    /// <remarks>
+    /// Thread-safe. Can be called from any thread. Action will be executed during
+    /// the next ProcessPending() call on the emulator thread.
+    /// </remarks>
     private void Enqueue(Action action)
     {
         if (action != null)
@@ -82,6 +305,23 @@ public class VA2M : IDisposable
         }
     }
 
+    /// <summary>
+    /// Processes all pending actions enqueued from external threads.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>When Called:</strong>
+    /// <list type="bullet">
+    /// <item>Before each CPU clock cycle in RunAsync()</item>
+    /// <item>Before each Clock() call</item>
+    /// <item>At frame boundaries (VBlank)</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Exception Handling:</strong> Exceptions in actions are caught and logged
+    /// to prevent one bad command from crashing the emulator.
+    /// </para>
+    /// </remarks>
     private void ProcessPending()
     {
         while (_pending.TryDequeue(out var act))
@@ -90,6 +330,30 @@ public class VA2M : IDisposable
         }
     }
 
+    /// <summary>
+    /// Handles VBlank event from the bus, triggering frame rendering and flash toggle.
+    /// </summary>
+    /// <param name="sender">Event sender (typically VA2MBus).</param>
+    /// <param name="e">Event arguments (unused).</param>
+    /// <remarks>
+    /// <para>
+    /// <strong>VBlank Timing:</strong> Fires every 17,030 cycles (~60 Hz), matching the
+    /// Apple IIe's vertical blanking interval. During VBlank, the video scanner is not
+    /// drawing visible scanlines.
+    /// </para>
+    /// <para>
+    /// <strong>Operations Performed:</strong>
+    /// <list type="number">
+    /// <item>Toggle flash state if timer has set the flag (cursor blinking)</item>
+    /// <item>Allocate a new render context from the frame generator</item>
+    /// <item>Render the current frame</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Thread Context:</strong> Called on the emulator thread (VBlank is raised
+    /// during Bus.Clock() execution).
+    /// </para>
+    /// </remarks>
     private void OnVBlank(object? sender, EventArgs e)
     {
         // Apply pending flash toggle at frame boundary for consistent rendering
@@ -105,6 +369,31 @@ public class VA2M : IDisposable
     }
 
 
+    /// <summary>
+    /// Loads an embedded ROM resource into memory.
+    /// </summary>
+    /// <param name="resourceName">Fully-qualified resource name (e.g., "Pandowdy.EmuCore.Resources.a2e_enh_c-f.rom").</param>
+    /// <remarks>
+    /// <para>
+    /// <strong>ROM Source:</strong> The Apple IIe Enhanced ROM is embedded in the assembly
+    /// as a resource during build. This eliminates the need for external ROM files.
+    /// </para>
+    /// <para>
+    /// <strong>ROM Contents (16KB):</strong>
+    /// <list type="bullet">
+    /// <item>$C000-$C0FF: I/O space firmware</item>
+    /// <item>$C100-$C7FF: Internal peripheral ROM (7 x 256 bytes)</item>
+    /// <item>$C800-$CFFF: Extended internal ROM (2KB)</item>
+    /// <item>$D000-$DFFF: Monitor ROM (4KB)</item>
+    /// <item>$E000-$FFFF: Applesoft BASIC ROM + reset vector (8KB)</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Error Handling:</strong> If the resource is not found, the ROM is not loaded
+    /// and the emulator will not function correctly (reset vector missing). This is a
+    /// fatal configuration error that should be caught during development.
+    /// </para>
+    /// </remarks>
     private void TryLoadEmbeddedRom(string resourceName)
     {
         var asm = Assembly.GetExecutingAssembly();

@@ -257,6 +257,7 @@ public class TestFrameGenerator : IFrameGenerator
     {
         _renderCallCount++;
         _lastContext = context;
+        context.Invalidate();
     }
 
     // Test helpers

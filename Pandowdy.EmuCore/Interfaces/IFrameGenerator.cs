@@ -60,6 +60,7 @@ namespace Pandowdy.EmuCore.Interfaces
         /// <param name="context">
         /// The <see cref="RenderContext"/> containing the frame buffer, memory access,
         /// and system status. Typically obtained from <see cref="AllocateRenderContext"/>.
+        /// As a reference type, the context's invalidation state is shared across all references.
         /// </param>
         /// <remarks>
         /// This method invokes the configured renderer (typically <see cref="IDisplayBitmapRenderer"/>)
@@ -70,6 +71,7 @@ namespace Pandowdy.EmuCore.Interfaces
         /// <item>Reads video memory from the appropriate pages (main/auxiliary, page 1/2)</item>
         /// <item>Applies character ROM lookups for text modes or color generation for graphics modes</item>
         /// <item>Writes the resulting pixels to the context's frame buffer</item>
+        /// <item>Invalidates the context to prevent reuse (implementation detail)</item>
         /// </list>
         /// <para>
         /// This method should complete quickly (ideally under 16ms for 60 fps) to maintain
@@ -78,8 +80,10 @@ namespace Pandowdy.EmuCore.Interfaces
         /// scanline caching, etc.).
         /// </para>
         /// <para>
-        /// After this method completes, the frame buffer in the context contains the
-        /// rendered frame ready for display or further processing (scaling, filtering, etc.).
+        /// <strong>Context Lifetime:</strong> After this method completes, the provided context
+        /// is invalidated and cannot be reused. Attempting to access properties or call methods
+        /// on the context after this method returns will throw <see cref="InvalidOperationException"/>.
+        /// Allocate a new context for each frame via <see cref="AllocateRenderContext"/>.
         /// </para>
         /// </remarks>
         void RenderFrame(RenderContext context);

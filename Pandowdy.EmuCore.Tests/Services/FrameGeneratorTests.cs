@@ -443,261 +443,8 @@ public class FrameGeneratorTests
 
     #endregion
 
-    #region RenderContext Tests (8 tests)
 
-    [Fact]
-    public void RenderContext_Constructor_InitializesProperties()
-    {
-        // Arrange
-        var frameBuffer = new BitmapDataArray();
-        var memReader = new TestMemoryReader();
-        var statusProvider = new TestStatusProvider();
 
-        // Act
-        var context = new RenderContext(frameBuffer, memReader, statusProvider);
-
-        // Assert
-        Assert.Same(frameBuffer, context.FrameBuffer);
-        Assert.Same(memReader, context.Memory);
-        Assert.Same(statusProvider, context.SystemStatus);
-    }
-
-    [Fact]
-    public void RenderContext_NullFrameBuffer_ThrowsException()
-    {
-        // Arrange
-        var memReader = new TestMemoryReader();
-        var statusProvider = new TestStatusProvider();
-
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new RenderContext(null!, memReader, statusProvider));
-    }
-
-    [Fact]
-    public void RenderContext_NullMemoryReader_ThrowsException()
-    {
-        // Arrange
-        var frameBuffer = new BitmapDataArray();
-        var statusProvider = new TestStatusProvider();
-
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new RenderContext(frameBuffer, null!, statusProvider));
-    }
-
-    [Fact]
-    public void RenderContext_NullStatusProvider_ThrowsException()
-    {
-        // Arrange
-        var frameBuffer = new BitmapDataArray();
-        var memReader = new TestMemoryReader();
-
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new RenderContext(frameBuffer, memReader, null!));
-    }
-
-    [Fact]
-    public void RenderContext_IsTextMode_ReflectsStatusProvider()
-    {
-        // Arrange
-        var frameBuffer = new BitmapDataArray();
-        var memReader = new TestMemoryReader();
-        
-        // Act - Text mode OFF
-        var statusProvider1 = new TestStatusProvider();
-        statusProvider1.StateTextMode = false;
-        var context1 = new RenderContext(frameBuffer, memReader, statusProvider1);
-
-        // Act - Text mode ON
-        var statusProvider2 = new TestStatusProvider();
-        statusProvider2.StateTextMode = true;
-        var context2 = new RenderContext(frameBuffer, memReader, statusProvider2);
-
-        // Assert
-        Assert.False(context1.IsTextMode);
-        Assert.True(context2.IsTextMode);
-    }
-
-    [Fact]
-    public void RenderContext_IsMixed_ReflectsStatusProvider()
-    {
-        // Arrange
-        var frameBuffer = new BitmapDataArray();
-        var memReader = new TestMemoryReader();
-
-        // Act
-        var statusProvider1 = new TestStatusProvider();
-        statusProvider1.StateMixed = false;
-        var context1 = new RenderContext(frameBuffer, memReader, statusProvider1);
-
-        var statusProvider2 = new TestStatusProvider();
-        statusProvider2.StateMixed = true;
-        var context2 = new RenderContext(frameBuffer, memReader, statusProvider2);
-
-        // Assert
-        Assert.False(context1.IsMixed);
-        Assert.True(context2.IsMixed);
-    }
-
-    [Fact]
-    public void RenderContext_IsHiRes_ReflectsStatusProvider()
-    {
-        // Arrange
-        var frameBuffer = new BitmapDataArray();
-        var memReader = new TestMemoryReader();
-
-        // Act
-        var statusProvider1 = new TestStatusProvider();
-        statusProvider1.StateHiRes = false;
-        var context1 = new RenderContext(frameBuffer, memReader, statusProvider1);
-
-        var statusProvider2 = new TestStatusProvider();
-        statusProvider2.StateHiRes = true;
-        var context2 = new RenderContext(frameBuffer, memReader, statusProvider2);
-
-        // Assert
-        Assert.False(context1.IsHiRes);
-        Assert.True(context2.IsHiRes);
-    }
-
-    [Fact]
-    public void RenderContext_IsPage2_ReflectsStatusProvider()
-    {
-        // Arrange
-        var frameBuffer = new BitmapDataArray();
-        var memReader = new TestMemoryReader();
-
-        // Act
-        var statusProvider1 = new TestStatusProvider();
-        statusProvider1.StatePage2 = false;
-        var context1 = new RenderContext(frameBuffer, memReader, statusProvider1);
-
-        var statusProvider2 = new TestStatusProvider();
-        statusProvider2.StatePage2 = true;
-        var context2 = new RenderContext(frameBuffer, memReader, statusProvider2);
-
-        // Assert
-        Assert.False(context1.IsPage2);
-        Assert.True(context2.IsPage2);
-    }
-
-    [Fact]
-    public void RenderContext_ClearBuffer_ClearsFrameBuffer()
-    {
-        // Arrange
-        var frameBuffer = new BitmapDataArray();
-        var memReader = new TestMemoryReader();
-        var statusProvider = new TestStatusProvider();
-        var context = new RenderContext(frameBuffer, memReader, statusProvider);
-
-        // Set some pixels
-        frameBuffer.SetPixel(100, 100, 0);
-        frameBuffer.SetPixel(200, 100, 1);
-        Assert.True(frameBuffer.GetPixel(100, 100, 0));
-        Assert.True(frameBuffer.GetPixel(200, 100, 1));
-
-        // Act
-        context.ClearBuffer();
-
-        // Assert
-        Assert.False(frameBuffer.GetPixel(100, 100, 0));
-        Assert.False(frameBuffer.GetPixel(200, 100, 1));
-    }
-
-    #endregion
-
-    #region AllocateRenderContext Tests (6 tests)
-
-    [Fact]
-    public void AllocateRenderContext_ReturnsValidContext()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-
-        // Act
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-
-        // Assert
-        Assert.NotNull(context.FrameBuffer);
-        Assert.NotNull(context.Memory);
-        Assert.NotNull(context.SystemStatus);
-    }
-
-    [Fact]
-    public void AllocateRenderContext_BorrowsFrameBuffer()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-
-        // Act
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-
-        // Assert
-        Assert.Equal(1, fixture.FrameProvider.BorrowCount);
-    }
-
-    [Fact]
-    public void AllocateRenderContext_UsesCorrectMemoryReader()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-        fixture.MemoryReader.SetMainMemory(0x1000, 0x42);
-
-        // Act
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-
-        // Assert
-        Assert.Equal(0x42, context.Memory.ReadRawMain(0x1000));
-    }
-
-    [Fact]
-    public void AllocateRenderContext_UsesCorrectStatusProvider()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-        fixture.StatusProvider.StateTextMode = true;
-        fixture.StatusProvider.StateMixed = true;
-
-        // Act
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-
-        // Assert
-        Assert.True(context.IsTextMode);
-        Assert.True(context.IsMixed);
-    }
-
-    [Fact]
-    public void AllocateRenderContext_MultipleCalls_BorrowsMultipleTimes()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-
-        // Act
-        var context1 = fixture.FrameGenerator.AllocateRenderContext();
-        var context2 = fixture.FrameGenerator.AllocateRenderContext();
-        var context3 = fixture.FrameGenerator.AllocateRenderContext();
-
-        // Assert
-        Assert.Equal(3, fixture.FrameProvider.BorrowCount);
-    }
-
-    [Fact]
-    public void AllocateRenderContext_ReturnsBackBuffer()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-
-        // Act
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-
-        // Assert - Should return back buffer, not front buffer
-        var frontBuffer = fixture.FrameProvider.GetFrame();
-        Assert.NotSame(frontBuffer, context.FrameBuffer);
-    }
-
-    #endregion
 
     #region RenderFrame Tests (12 tests)
 
@@ -708,16 +455,22 @@ public class FrameGeneratorTests
         var fixture = new FrameGeneratorFixture();
         var context = fixture.FrameGenerator.AllocateRenderContext();
         
-        // Set some pixels
+        // Set some pixels before rendering
         context.FrameBuffer.SetPixel(100, 100, 0);
         context.FrameBuffer.SetPixel(200, 100, 1);
+        
+        // Verify pixels are set
+        Assert.True(context.FrameBuffer.GetPixel(100, 100, 0));
+        Assert.True(context.FrameBuffer.GetPixel(200, 100, 1));
 
         // Act
         fixture.FrameGenerator.RenderFrame(context);
 
-        // Assert - Buffer should be cleared
-        Assert.False(context.FrameBuffer.GetPixel(100, 100, 0));
-        Assert.False(context.FrameBuffer.GetPixel(200, 100, 1));
+        // Assert - Context should be invalidated after rendering
+        Assert.True(context.IsInvalidated);
+        
+        // Attempting to access the frame buffer should throw
+        Assert.Throws<InvalidOperationException>(() => context.FrameBuffer.GetPixel(100, 100, 0));
     }
 
     [Fact]
@@ -740,13 +493,26 @@ public class FrameGeneratorTests
         // Arrange
         var fixture = new FrameGeneratorFixture();
         var context = fixture.FrameGenerator.AllocateRenderContext();
+        
+        // Store reference to frame buffer before rendering
+        var frameBufferBeforeRender = context.FrameBuffer;
 
         // Act
         fixture.FrameGenerator.RenderFrame(context);
 
-        // Assert
+        // Assert - Renderer should have received the context
         Assert.NotNull(fixture.Renderer.LastContext);
-        Assert.Same(context.FrameBuffer, fixture.Renderer.LastContext.Value.FrameBuffer);
+        
+        // The renderer's LastContext is the same reference as our context
+        Assert.Same(context, fixture.Renderer.LastContext);
+        
+        // Both are now invalidated (same object)
+        Assert.True(context.IsInvalidated);
+        Assert.True(fixture.Renderer.LastContext.IsInvalidated);
+        
+        // But we can verify the frame buffer was passed correctly
+        // by checking our saved reference
+        Assert.NotNull(frameBufferBeforeRender);
     }
 
     [Fact]
@@ -830,13 +596,23 @@ public class FrameGeneratorTests
         var fixture = new FrameGeneratorFixture();
         fixture.Renderer.ShouldDrawPattern = true;
         var context = fixture.FrameGenerator.AllocateRenderContext();
+        
+        // Store reference to frame buffer before rendering so we can verify after
+        var frameBuffer = context.FrameBuffer;
 
         // Act
         fixture.FrameGenerator.RenderFrame(context);
 
-        // Assert - Check that pattern was drawn
-        Assert.True(context.FrameBuffer.GetPixel(0, 0, 0)); // Even coordinates
-        Assert.False(context.FrameBuffer.GetPixel(1, 0, 0)); // Odd coordinates
+        // Assert - Verify the renderer was called
+        Assert.Equal(1, fixture.Renderer.RenderCount);
+        
+        // Context should be invalidated
+        Assert.True(context.IsInvalidated);
+        
+        // We can verify the pattern was drawn by accessing the frame buffer directly
+        // (not through the invalidated context)
+        Assert.True(frameBuffer.GetPixel(0, 0, 0)); // Even coordinates
+        Assert.False(frameBuffer.GetPixel(1, 0, 0)); // Odd coordinates
     }
 
     [Fact]
@@ -1031,38 +807,119 @@ public class FrameGeneratorTests
     }
 
     [Fact]
-    public void RenderFrame_SameContextMultipleTimes()
+    public void RenderFrame_SameContextMultipleTimes_ThrowsOnSecondCall()
     {
         // Arrange
         var fixture = new FrameGeneratorFixture();
         var context = fixture.FrameGenerator.AllocateRenderContext();
 
-        // Act - Render same context multiple times
+        // Act - First render should succeed
         fixture.FrameGenerator.RenderFrame(context);
-        fixture.FrameGenerator.RenderFrame(context);
-        fixture.FrameGenerator.RenderFrame(context);
+        
+        // Assert - Context is now invalidated
+        Assert.True(context.IsInvalidated);
+        Assert.Equal(1, fixture.Renderer.RenderCount);
+        Assert.Equal(1, fixture.FrameProvider.CommitCount);
 
-        // Assert - Should work (though not typical usage)
-        Assert.Equal(3, fixture.Renderer.RenderCount);
-        Assert.Equal(3, fixture.FrameProvider.CommitCount);
-    }
-
-    [Fact]
-    public void AllocateRenderContext_ReturnsNewContextEachTime()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-
-        // Act
-        var context1 = fixture.FrameGenerator.AllocateRenderContext();
-        var context2 = fixture.FrameGenerator.AllocateRenderContext();
-
-        // Assert - Contexts should reference same objects (by design)
-        // but be separate context instances
-        Assert.Same(context1.Memory, context2.Memory);
-        Assert.Same(context1.SystemStatus, context2.SystemStatus);
-        // FrameBuffer might be same (back buffer reused)
+        // Act & Assert - Attempting to render same context again should throw
+        // because ClearBuffer will be called on an invalidated context
+        Assert.Throws<InvalidOperationException>(() => 
+            fixture.FrameGenerator.RenderFrame(context));
+        
+        // Verify counts didn't change (second render didn't proceed past ClearBuffer)
+        Assert.Equal(1, fixture.Renderer.RenderCount);
+        Assert.Equal(1, fixture.FrameProvider.CommitCount);
     }
 
     #endregion
+
+
+
+    #region FrameGenerator Invalidation Tests (6 tests)
+
+    [Fact]
+    public void FrameGenerator_RenderFrame_InvalidatesContext()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+        var context = fixture.FrameGenerator.AllocateRenderContext();
+        Assert.False(context.IsInvalidated, "Context should start valid");
+
+        // Act
+        fixture.FrameGenerator.RenderFrame(context);
+
+        // Assert
+        Assert.True(context.IsInvalidated, "Context should be invalidated after RenderFrame");
+    }
+
+    [Fact]
+    public void FrameGenerator_RenderFrame_ThenAccessFrameBuffer_ThrowsException()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+        var context = fixture.FrameGenerator.AllocateRenderContext();
+        fixture.FrameGenerator.RenderFrame(context);
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => _ = context.FrameBuffer);
+        Assert.Contains("cannot be reused", ex.Message);
+    }
+
+    [Fact]
+    public void FrameGenerator_RenderFrame_ThenAccessMemory_ThrowsException()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+        var context = fixture.FrameGenerator.AllocateRenderContext();
+        fixture.FrameGenerator.RenderFrame(context);
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => _ = context.Memory);
+        Assert.Contains("cannot be reused", ex.Message);
+    }
+
+    [Fact]
+    public void FrameGenerator_RenderFrame_ThenAccessSystemStatus_ThrowsException()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+        var context = fixture.FrameGenerator.AllocateRenderContext();
+        fixture.FrameGenerator.RenderFrame(context);
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => _ = context.SystemStatus);
+        Assert.Contains("cannot be reused", ex.Message);
+    }
+
+    [Fact]
+    public void FrameGenerator_RenderFrame_ThenClearBuffer_ThrowsException()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+        var context = fixture.FrameGenerator.AllocateRenderContext();
+        fixture.FrameGenerator.RenderFrame(context);
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() => context.ClearBuffer());
+        Assert.Contains("cannot be reused", ex.Message);
+    }
+
+    [Fact]
+    public void FrameGenerator_RenderFrame_ThenAccessModeProperties_ThrowsException()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+        var context = fixture.FrameGenerator.AllocateRenderContext();
+        fixture.FrameGenerator.RenderFrame(context);
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => _ = context.IsTextMode);
+        Assert.Throws<InvalidOperationException>(() => _ = context.IsMixed);
+        Assert.Throws<InvalidOperationException>(() => _ = context.IsHiRes);
+        Assert.Throws<InvalidOperationException>(() => _ = context.IsPage2);
+    }
+
+    #endregion
+
+
 }

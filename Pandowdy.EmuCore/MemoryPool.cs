@@ -1,31 +1,209 @@
+//------------------------------------------------------------------------------
+// MemoryPool.cs
+//
+// ⚠️ PERFORMANCE-OPTIMIZED IMPLEMENTATION - PLANNED FOR REFACTORING ⚠️
+//
+// This class implements Apple IIe memory management using a slice-based approach
+// where all memory regions are allocated from a single backing pool and mapped
+// dynamically based on soft switch states. While this provides excellent
+// performance, it trades clarity for speed.
+//
+// DESIGN RATIONALE:
+// The Apple IIe's 128KB memory space (64KB main + 64KB auxiliary) plus ROM and
+// I/O regions are all carved from a single byte[] pool. Memory accesses are
+// mapped to slices via switch expressions, eliminating allocation overhead and
+// providing cache-friendly sequential access patterns.
+//
+// PERFORMANCE BENEFITS:
+// - Single allocation (no GC pressure from multiple arrays)
+// - Cache-friendly contiguous memory layout
+// - Fast slice-based remapping (just pointer arithmetic)
+// - Lock-based thread safety for mapping updates
+//
+// CLARITY TRADE-OFFS:
+// - Complex slice management (40+ Memory<byte> fields)
+// - Non-obvious address mapping logic
+// - Harder to understand Apple IIe memory model at first glance
+// - Tight coupling between soft switches and memory layout
+//
+// FUTURE REFACTORING:
+// The planned refactoring will prioritize clarity:
+// - Explicit memory region classes (MainRAM, AuxiliaryRAM, ROM, etc.)
+// - Clear separation between physical memory and address space mapping
+// - Strategy pattern for soft switch-based mapping rules
+// - Better abstraction of Apple IIe memory architecture
+//
+// For now, this implementation works well and is thoroughly tested. The
+// refactoring will improve maintainability without sacrificing performance.
+//------------------------------------------------------------------------------
+
 using Emulator;
 using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore
 {
-
     /// <summary>
-    /// Event arguments for mapped memory notifications used by non-UI consumers.
+    /// Event arguments for memory access notifications to non-UI consumers.
     /// </summary>
+    /// <remarks>
+    /// Used to notify observers (debuggers, trace logs, etc.) when memory is read or written.
+    /// The <see cref="Value"/> is null for read notifications, non-null for write notifications.
+    /// </remarks>
     public sealed class MemoryAccessEventArgs : EventArgs
     {
+        /// <summary>
+        /// Gets the 16-bit address that was accessed ($0000-$FFFF).
+        /// </summary>
         public ushort Address { get; init; }
+        
+        /// <summary>
+        /// Gets the byte value that was written, or null if this was a read operation.
+        /// </summary>
         public byte? Value { get; init; }
     }
 
-
+    /// <summary>
+    /// Manages Apple IIe memory (128KB RAM + ROM/I/O) using a slice-based pool architecture.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>⚠️ PERFORMANCE-OPTIMIZED DESIGN:</strong> This class uses a single backing
+    /// array with memory slices to implement the Apple IIe's complex memory architecture.
+    /// While fast, this design trades clarity for performance and will be refactored to
+    /// improve maintainability in the future.
+    /// </para>
+    /// <para>
+    /// <strong>Apple IIe Memory Architecture:</strong> The Apple IIe has 128KB of RAM
+    /// (64KB main + 64KB auxiliary) plus 16KB of ROM and 4KB of I/O space. Memory is
+    /// accessed through a 16-bit address space ($0000-$FFFF), but the actual physical
+    /// memory accessed depends on soft switch settings.
+    /// </para>
+    /// <para>
+    /// <strong>Memory Layout:</strong>
+    /// <code>
+    /// Pool Layout (163,072 bytes total):
+    /// 
+    /// Main Memory (64KB):
+    ///   $0000-$01FF: _m1  (512B)  - Zero Page + Stack
+    ///   $0200-$03FF: _m2  (512B)  - Input Buffer
+    ///   $0400-$07FF: _m3  (1KB)   - Text Page 1
+    ///   $0800-$1FFF: _m4  (6KB)   - Main RAM
+    ///   $2000-$3FFF: _m5  (8KB)   - Hi-Res Page 1
+    ///   $4000-$5FFF: _m6  (8KB)   - Hi-Res Page 2
+    ///   $6000-$BFFF: _m7  (24KB)  - Main RAM
+    ///   $C000-$CFFF: _m8a (4KB)   - Language Card Bank 1
+    ///   $D000-$DFFF: _m8b (4KB)   - Language Card Bank 2
+    ///   $E000-$FFFF: _m9  (8KB)   - Language Card High
+    /// 
+    /// Auxiliary Memory (64KB):
+    ///   $0000-$01FF: _a1  (512B)  - Aux Zero Page + Stack
+    ///   $0200-$03FF: _a2  (512B)  - Aux Input Buffer
+    ///   $0400-$07FF: _a3  (1KB)   - Aux Text Page 1
+    ///   $0800-$1FFF: _a4  (6KB)   - Aux RAM
+    ///   $2000-$3FFF: _a5  (8KB)   - Aux Hi-Res Page 1
+    ///   $4000-$5FFF: _a6  (8KB)   - Aux Hi-Res Page 2
+    ///   $6000-$BFFF: _a7  (24KB)  - Aux RAM
+    ///   $C000-$CFFF: _a8a (4KB)   - Aux Language Card Bank 1
+    ///   $D000-$DFFF: _a8b (4KB)   - Aux Language Card Bank 2
+    ///   $E000-$FFFF: _a9  (8KB)   - Aux Language Card High
+    /// 
+    /// ROM/I/O (16KB + 4KB):
+    ///   $C000-$C0FF: _io      (256B) - I/O Space
+    ///   $C100-$C7FF: _int1-7  (7×256B) - Internal ROM (per slot)
+    ///   $C800-$CFFF: _intext  (2KB)  - Extended Internal ROM
+    ///   $D000-$DFFF: _rom1    (4KB)  - Monitor ROM Bank 1
+    ///   $E000-$FFFF: _rom2    (8KB)  - Monitor ROM Bank 2 + Reset Vector
+    /// 
+    /// Slot ROMs (7 × 256B + 7 × 2KB extensions):
+    ///   $C100-$C7FF: _s1-7    (7×256B) - Slot ROM (1 page per slot)
+    ///   $C800-$CFFF: _s1ext-7 (7×2KB)  - Slot ROM extensions
+    /// </code>
+    /// </para>
+    /// <para>
+    /// <strong>Soft Switch Mapping:</strong> The Apple IIe uses soft switches to control
+    /// which physical memory is mapped into the 64KB address space:
+    /// <list type="bullet">
+    /// <item><strong>RAMRD/RAMWRT:</strong> Select main vs auxiliary RAM for reads/writes</item>
+    /// <item><strong>ALTZP:</strong> Select main vs auxiliary zero page and stack</item>
+    /// <item><strong>80STORE:</strong> Page 2 selection for text/hi-res pages</item>
+    /// <item><strong>HIRES:</strong> Hi-res page selection when 80STORE is active</item>
+    /// <item><strong>PAGE2:</strong> Select page 1 vs page 2 for video</item>
+    /// <item><strong>INTCXROM:</strong> Internal ROM vs slot ROMs ($C100-$C7FF)</item>
+    /// <item><strong>SLOTC3ROM:</strong> Slot 3 ROM vs internal ROM</item>
+    /// <item><strong>Language Card:</strong> Bank switching for $D000-$FFFF</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Slice-Based Performance:</strong> All memory regions are sliced from a single
+    /// backing array. Mapping updates change which slices are active for each address range,
+    /// providing fast remapping without copying data. Read/write operations use switch
+    /// expressions for efficient address-to-slice lookup.
+    /// </para>
+    /// <para>
+    /// <strong>Thread Safety:</strong> Memory mapping updates (soft switch changes) use a
+    /// <see cref="ReaderWriterLockSlim"/> to allow concurrent reads while serializing
+    /// mapping updates. This is important since the bus is accessed from the CPU thread
+    /// while soft switches may be toggled from UI or I/O operations.
+    /// </para>
+    /// <para>
+    /// <strong>Future Refactoring:</strong> This class will be refactored to improve clarity:
+    /// <list type="bullet">
+    /// <item>Explicit memory region classes instead of generic slices</item>
+    /// <item>Strategy pattern for soft switch mapping rules</item>
+    /// <item>Better separation between physical memory and address space</item>
+    /// <item>Clearer documentation of Apple IIe memory model</item>
+    /// </list>
+    /// The refactoring will maintain performance while improving maintainability.
+    /// </para>
+    /// </remarks>
     public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPoolReader, ISoftSwitchResponder, IDisposable
     {
         //Methods from IMemory:
+        
+        /// <summary>
+        /// Gets the size of the addressable memory space (always 64KB for 6502).
+        /// </summary>
+        /// <value>65,536 bytes ($0000-$FFFF).</value>
+        /// <remarks>
+        /// The 6502 has a 16-bit address bus, providing 64KB of address space. The actual
+        /// physical memory may be larger (128KB main+aux + ROM), but it's accessed through
+        /// this 64KB window via soft switch-controlled bank switching.
+        /// </remarks>
         public System.Int32 Size { get => 0x10000;  } // 64k addressable space
 
+        /// <summary>
+        /// Reads a byte from the specified address in the mapped memory space.
+        /// </summary>
+        /// <param name="address">16-bit address to read from ($0000-$FFFF).</param>
+        /// <returns>Byte value at the mapped physical location for this address.</returns>
+        /// <remarks>
+        /// The physical memory accessed depends on current soft switch states (RAMRD, ALTZP,
+        /// etc.). This method delegates to <see cref="ReadMapped"/> which performs the
+        /// region-based lookup.
+        /// </remarks>
         public byte Read(ushort address) => ReadMapped(address);
+        
+        /// <summary>
+        /// Writes a byte to the specified address in the mapped memory space.
+        /// </summary>
+        /// <param name="address">16-bit address to write to ($0000-$FFFF).</param>
+        /// <param name="value">Byte value to write.</param>
+        /// <remarks>
+        /// The physical memory accessed depends on current soft switch states (RAMWRT, ALTZP,
+        /// etc.). Write-protected regions (ROM, unmapped I/O) are silently ignored. This method
+        /// delegates to <see cref="WriteMapped"/>.
+        /// </remarks>
         public void Write (ushort address, byte value) => WriteMapped(address, value);
 
-
-
-    //    public byte[] DataArray() { throw new Exception("Not implemented"); }
-
+        /// <summary>
+        /// Gets or sets a byte at the specified address (indexer syntax).
+        /// </summary>
+        /// <param name="address">16-bit address ($0000-$FFFF).</param>
+        /// <returns>Byte value at the mapped physical location.</returns>
+        /// <remarks>
+        /// Provides array-like syntax for memory access: <c>memory[0x1000] = 0x42;</c>
+        /// Delegates to <see cref="ReadMapped"/> and <see cref="WriteMapped"/>.
+        /// </remarks>
         public byte this[ushort address]
         {
             get => ReadMapped(address);
@@ -34,22 +212,124 @@ namespace Pandowdy.EmuCore
 
         //Methods from IMemoryAccessNotifier:
 
-
+        /// <summary>
+        /// Event raised when memory is written to.
+        /// </summary>
+        /// <remarks>
+        /// Consumers (debuggers, trace logs, memory viewers) can subscribe to this event
+        /// to monitor memory writes. The event includes the address and value written.
+        /// Only fires for successful writes (not write-protected regions).
+        /// </remarks>
         public event EventHandler<MemoryAccessEventArgs>? MemoryWritten;
 
+        /// <summary>
+        /// Event raised when memory is read from.
+        /// </summary>
+        /// <remarks>
+        /// Currently not implemented (no reads trigger this event). Reserved for future
+        /// use by debuggers or profilers that need to track memory access patterns.
+        /// </remarks>
         public event EventHandler<MemoryAccessEventArgs>? MemoryRead;
 
 
         //Methods from IDirectMemoryPoolReader:
 
-        public byte ReadRawMain(int address) => _pool[(address & 0xffff)]; // $C000-$CFFF returns $D000-$DFFF Bank 1
-        public byte ReadRawAux(int address) => _pool[(address & 0xffff) | 0x10000]; // $C000-$CFFF returns $D000-$DFFF Bank 1
+        /// <summary>
+        /// Reads directly from the main memory bank, bypassing soft switch mapping.
+        /// </summary>
+        /// <param name="address">Physical address in the pool (0-65535 for main bank).</param>
+        /// <returns>Byte value at the physical location.</returns>
+        /// <remarks>
+        /// <para>
+        /// <strong>Direct Access:</strong> This method bypasses the soft switch mapping system
+        /// and reads directly from the physical main memory bank. Used by debuggers, memory
+        /// viewers, and video renderers that need to see actual RAM contents regardless of
+        /// current bank switching.
+        /// </para>
+        /// <para>
+        /// <strong>Example:</strong> The video renderer needs to read from hi-res page 2 even
+        /// if PAGE2 is off, so it uses this method instead of the normal <see cref="Read"/> method.
+        /// </para>
+        /// </remarks>
+        public byte ReadRawMain(int address) => _pool[(address & 0xffff)];
+        
+        /// <summary>
+        /// Reads directly from the auxiliary memory bank, bypassing soft switch mapping.
+        /// </summary>
+        /// <param name="address">Physical address in the pool (0-65535 for aux bank).</param>
+        /// <returns>Byte value at the physical location.</returns>
+        /// <remarks>
+        /// <para>
+        /// <strong>Direct Access:</strong> Reads from the auxiliary 64KB bank (offset 0x10000
+        /// in the pool). Used for 80-column display, double hi-res graphics, and debugging.
+        /// </para>
+        /// <para>
+        /// <strong>Example:</strong> 80-column text mode interleaves main and auxiliary memory
+        /// for each character position, so the renderer uses this method to access aux memory
+        /// directly.
+        /// </para>
+        /// </remarks>
+        public byte ReadRawAux(int address) => _pool[(address & 0xffff) | 0x10000];
 
 
 
-        private readonly byte[] _pool; // backing store
+        /// <summary>
+        /// The backing store - single contiguous byte array containing all memory regions.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <strong>Size:</strong> 163,072 bytes (0x27F00):
+        /// <list type="bullet">
+        /// <item>Main RAM: 64KB (offset 0x00000)</item>
+        /// <item>Auxiliary RAM: 64KB (offset 0x10000)</item>
+        /// <item>ROM/I/O: 16KB + 4KB (offset 0x20000)</item>
+        /// <item>Slot ROMs: ~19KB (offset 0x24000)</item>
+        /// </list>
+        /// </para>
+        /// <para>
+        /// <strong>Performance:</strong> Single allocation eliminates GC pressure and provides
+        /// cache-friendly memory layout. All Memory&lt;byte&gt; slices reference this array.
+        /// </para>
+        /// </remarks>
+        private readonly byte[] _pool;
+        
+        /// <summary>
+        /// Gets the backing store array (for advanced/debugging use).
+        /// </summary>
+        /// <remarks>
+        /// Exposes the raw pool for scenarios that need direct memory access (save states,
+        /// memory dumps, advanced debugging). Use with caution - modifying the pool directly
+        /// bypasses all soft switch logic and mapping.
+        /// </remarks>
         public byte[] Pool => _pool;
 
+        /// <summary>
+        /// Memory address ranges used for region-based mapping.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <strong>Purpose:</strong> The Apple IIe's 64KB address space is divided into
+        /// regions based on how soft switches affect them. Each range has independent
+        /// mapping rules.
+        /// </para>
+        /// <para>
+        /// <strong>Region Boundaries:</strong>
+        /// <list type="bullet">
+        /// <item>$0000-$01FF: Zero page + Stack (ALTZP controls)</item>
+        /// <item>$0200-$03FF: Input buffer (RAMRD/RAMWRT control)</item>
+        /// <item>$0400-$07FF: Text page 1 (80STORE + PAGE2 control)</item>
+        /// <item>$0800-$1FFF: Main low RAM (RAMRD/RAMWRT control)</item>
+        /// <item>$2000-$3FFF: Hi-res page 1 (80STORE + HIRES + PAGE2 control)</item>
+        /// <item>$4000-$5FFF: Hi-res page 2 (RAMRD/RAMWRT control)</item>
+        /// <item>$6000-$BFFF: Main high RAM (RAMRD/RAMWRT control)</item>
+        /// <item>$C000-$C0FF: I/O space (always I/O)</item>
+        /// <item>$C100-$C7FF: Slot ROMs (INTCXROM + SLOTC3ROM control, per-slot)</item>
+        /// <item>$C800-$CFFF: Extended ROM (slot-selected or internal)</item>
+        /// <item>$D000-$DFFF: Language card bank (bank switching)</item>
+        /// <item>$E000-$FFFF: Language card high + reset vector (bank switching)</item>
+        /// </list>
+        /// </para>
+        /// </remarks>
         public enum Ranges
         {
             Region_0000_01FF = 0,
@@ -73,18 +353,127 @@ namespace Pandowdy.EmuCore
         }
 
 
+        // Soft switch state (Apple IIe memory management)
+        
+        /// <summary>
+        /// RAMRD soft switch - controls auxiliary memory selection for reads.
+        /// </summary>
+        /// <remarks>
+        /// When true, reads from most address ranges access auxiliary memory instead of main
+        /// memory. Exceptions: Zero page (controlled by ALTZP) and regions affected by 80STORE.
+        /// </remarks>
         private bool _ramRd = false;
+        
+        /// <summary>
+        /// RAMWRT soft switch - controls auxiliary memory selection for writes.
+        /// </summary>
+        /// <remarks>
+        /// When true, writes to most address ranges go to auxiliary memory instead of main
+        /// memory. Exceptions: Zero page (controlled by ALTZP) and regions affected by 80STORE.
+        /// </remarks>
         private bool _ramWrt = false;
+        
+        /// <summary>
+        /// ALTZP soft switch - controls auxiliary zero page and stack selection.
+        /// </summary>
+        /// <remarks>
+        /// When true, $0000-$01FF (zero page + stack) access auxiliary memory. This is
+        /// independent of RAMRD/RAMWRT and affects both reads and writes. Critical for
+        /// programs that use auxiliary memory as their primary memory space.
+        /// </remarks>
         private bool _altZp = false;
+        
+        /// <summary>
+        /// 80STORE soft switch - enables page 2 selection for text and hi-res pages.
+        /// </summary>
+        /// <remarks>
+        /// When true, PAGE2 controls which physical memory is accessed for text page 1
+        /// ($0400-$07FF) and optionally hi-res page 1 ($2000-$3FFF, if HIRES is true).
+        /// Used for 80-column text mode where main and aux memory are interleaved.
+        /// </remarks>
         private bool _80Store = false;
+        
+        /// <summary>
+        /// HIRES soft switch - enables hi-res graphics mode.
+        /// </summary>
+        /// <remarks>
+        /// When true AND 80STORE is true, PAGE2 controls which memory is accessed for
+        /// $2000-$3FFF. Used for double hi-res graphics where main and aux memory provide
+        /// 16 colors instead of 6.
+        /// </remarks>
         private bool _hires = false;
+        
+        /// <summary>
+        /// PAGE2 soft switch - selects page 2 for video display and memory access.
+        /// </summary>
+        /// <remarks>
+        /// Primary effect is video display (show page 1 vs page 2). When 80STORE is enabled,
+        /// also controls which memory bank is accessed for text and hi-res pages. PAGE2=false
+        /// uses main memory, PAGE2=true uses auxiliary memory.
+        /// </remarks>
         private bool _page2 = false;
+        
+        /// <summary>
+        /// INTCXROM soft switch - enables internal ROM in $C100-$C7FF range.
+        /// </summary>
+        /// <remarks>
+        /// When true, $C100-$C7FF accesses internal ROM (peripheral diagnostics, etc.)
+        /// instead of slot ROMs. When false, each slot's ROM is accessible in its 256-byte
+        /// region. Exception: SLOTC3ROM can override for slot 3.
+        /// </remarks>
         private bool _intCxRom = false;
+        
+        /// <summary>
+        /// SLOTC3ROM soft switch - enables slot 3 ROM even when INTCXROM is set.
+        /// </summary>
+        /// <remarks>
+        /// When true, slot 3 ROM ($C300-$C3FF) is accessible even if INTCXROM is true.
+        /// Allows the 80-column firmware to remain accessible while using internal ROM
+        /// for other slots. When false, INTCXROM controls all slots uniformly.
+        /// </remarks>
         private bool _slotC3Rom = false;
 
+        // Language Card soft switches (bank switching for $D000-$FFFF)
+        
+        /// <summary>
+        /// Language Card write enable - allows writes to $D000-$FFFF.
+        /// </summary>
+        /// <remarks>
+        /// When false, $D000-$FFFF is write-protected (ROM behavior). When true, writes go
+        /// to RAM (main or auxiliary depending on ALTZP). The Language Card required two
+        /// sequential accesses to enable writes (PREWRITE then HIGHWRITE) to prevent
+        /// accidental ROM overwrites.
+        /// </remarks>
         private bool _highWrite = false;
+        
+        /// <summary>
+        /// Language Card bank selection - selects bank 1 vs bank 2 for $D000-$DFFF.
+        /// </summary>
+        /// <remarks>
+        /// The Language Card has two 4KB banks for $D000-$DFFF. Bank 1 is typically used
+        /// for the main program, bank 2 for alternate code or data. $E000-$FFFF always
+        /// accesses the same 8KB region regardless of bank selection.
+        /// </remarks>
         private bool _bank1 = false;
+        
+        /// <summary>
+        /// Language Card read enable - reads from RAM instead of ROM for $D000-$FFFF.
+        /// </summary>
+        /// <remarks>
+        /// When false, $D000-$FFFF reads from ROM (monitor, reset vector). When true, reads
+        /// from RAM (main or auxiliary depending on ALTZP), allowing programs to use the
+        /// Language Card's 16KB RAM space.
+        /// </remarks>
         private bool _highRead = false;
+        
+        /// <summary>
+        /// Language Card pre-write state - first step in enabling writes.
+        /// </summary>
+        /// <remarks>
+        /// The Language Card requires two sequential accesses to soft switch addresses to
+        /// enable writes. This prevents accidental writes to ROM by requiring intentional
+        /// access patterns. PREWRITE tracks the first access; HIGHWRITE is set on the second.
+        /// </remarks>
         private bool _preWrite = false;
 
 
@@ -92,6 +481,7 @@ namespace Pandowdy.EmuCore
         private readonly Dictionary<Ranges, Memory<byte>?> _readRanges = [];
 
         private readonly Dictionary<Ranges, Memory<byte>?> _writeRanges = [];
+
 
         // Region slices (instance readonly; previously static)
         private readonly Memory<byte> _m1;
