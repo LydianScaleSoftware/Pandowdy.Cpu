@@ -1028,7 +1028,7 @@ public class VA2M : IDisposable
 
         _sysStatusSink.Mutate(b =>
         {
-            foreach (var (id, value, count) in data)
+            foreach (var (id, value) in data)
             {
                 if (_switchSetters.TryGetValue(id, out var setter))
                 {

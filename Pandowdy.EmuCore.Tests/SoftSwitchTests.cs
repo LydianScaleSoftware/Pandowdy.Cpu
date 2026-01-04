@@ -4,379 +4,17 @@ namespace Pandowdy.EmuCore.Tests;
 
 /// <summary>
 /// Comprehensive tests for SoftSwitch-related classes:
-/// - CountableVariable<T>: Generic change-tracking value wrapper
-/// - CountableBool: Boolean specialization with Set/Clear/Toggle
-/// - SoftSwitch: Named soft switch implementation
+/// - SoftSwitch: Named boolean soft switch with Set/Get/Toggle operations
 /// - SoftSwitches: Collection manager for all Apple II soft switches
 /// 
-/// These classes track changes to soft switch states for debugging
-/// and provide responder notifications for state changes.
+/// These classes manage soft switch states and provide responder
+/// notifications for state changes.
 /// </summary>
 public class SoftSwitchTests
 {
-    #region CountableVariable<T> Tests (12 tests)
 
-    [Fact]
-    public void CountableVariable_Constructor_InitializesWithValue()
-    {
-        // Arrange & Act
-        var variable = new CountableVariable<int>(42);
-
-        // Assert
-        Assert.Equal(42, variable.Value);
-        Assert.Equal(0, variable.Count);
-    }
-
-    [Fact]
-    public void CountableVariable_SetValue_IncrementsCount()
-    {
-        // Arrange
-        var variable = new CountableVariable<int>(0)
-        {
-            // Act
-            Value = 10
-        };
-
-        // Assert
-        Assert.Equal(10, variable.Value);
-        Assert.Equal(1, variable.Count);
-    }
-
-    [Fact]
-    public void CountableVariable_SetSameValue_DoesNotIncrementCount()
-    {
-        // Arrange
-        var variable = new CountableVariable<int>(42)
-        {
-            // Act
-            Value = 42
-        };
-        variable.Value = 42;
-        variable.Value = 42;
-
-        // Assert
-        Assert.Equal(42, variable.Value);
-        Assert.Equal(0, variable.Count); // No changes
-    }
-
-    [Fact]
-    public void CountableVariable_MultipleChanges_TracksCount()
-    {
-        // Arrange
-        var variable = new CountableVariable<string>("initial")
-        {
-            // Act
-            Value = "first"
-        };
-        variable.Value = "second";
-        variable.Value = "third";
-
-        // Assert
-        Assert.Equal("third", variable.Value);
-        Assert.Equal(3, variable.Count);
-    }
-
-    [Fact]
-    public void CountableVariable_ResetCount_ClearsCount()
-    {
-        // Arrange
-        var variable = new CountableVariable<int>(0)
-        {
-            Value = 1
-        };
-        variable.Value = 2;
-        variable.Value = 3;
-        Assert.Equal(3, variable.Count);
-
-        // Act
-        variable.ResetCount();
-
-        // Assert
-        Assert.Equal(3, variable.Value); // Value unchanged
-        Assert.Equal(0, variable.Count);  // Count reset
-    }
-
-    [Fact]
-    public void CountableVariable_ToString_ReturnsValueAndCount()
-    {
-        // Arrange
-        var variable = new CountableVariable<int>(42)
-        {
-            Value = 99
-        };
-
-        // Act
-        var result = variable.ToString();
-
-        // Assert
-        Assert.Contains("99", result);
-        Assert.Contains("(1)", result);
-    }
-
-    [Fact]
-    public void CountableVariable_ToString_WithNullValue_HandlesNull()
-    {
-        // Arrange
-        var variable = new CountableVariable<string?>(null);
-
-        // Act
-        var result = variable.ToString();
-
-        // Assert
-        Assert.Contains("null", result);
-        Assert.Contains("(0)", result);
-    }
-
-    [Fact]
-    public void CountableVariable_ToDebugString_ReturnsDetails()
-    {
-        // Arrange
-        var variable = new CountableVariable<int>(10)
-        {
-            Value = 20
-        };
-        variable.Value = 30;
-
-        // Act
-        var result = CountableVariable<int>.ToDebugString(variable);
-
-        // Assert
-        Assert.Contains("Value: 30", result);
-        Assert.Contains("ChangeCount: 2", result);
-    }
-
-    [Theory]
-    [InlineData(0, 1, 1)]
-    [InlineData(0, 0, 0)]
-    [InlineData(100, 200, 1)]
-    [InlineData(100, 100, 0)]
-    public void CountableVariable_ChangeTracking_WorksCorrectly(int initial, int newValue, int expectedCount)
-    {
-        // Arrange
-        var variable = new CountableVariable<int>(initial)
-        {
-            // Act
-            Value = newValue
-        };
-
-        // Assert
-        Assert.Equal(expectedCount, variable.Count);
-    }
-
-    [Fact]
-    public void CountableVariable_WithComplexType_TracksChanges()
-    {
-        // Arrange
-        var variable = new CountableVariable<List<int>>(new List<int> { 1, 2, 3 })
-        {
-            // Act
-            Value = new List<int> { 4, 5, 6 }
-        };
-        variable.Value = new List<int> { 7, 8, 9 };
-
-        // Assert
-        Assert.Equal(2, variable.Count);
-        Assert.Equal(new List<int> { 7, 8, 9 }, variable.Value);
-    }
-
-    [Fact]
-    public void CountableVariable_RapidChanges_TracksAll()
-    {
-        // Arrange
-        var variable = new CountableVariable<int>(0);
-
-        // Act
-        for (int i = 1; i <= 100; i++)
-        {
-            variable.Value = i;
-        }
-
-        // Assert
-        Assert.Equal(100, variable.Value);
-        Assert.Equal(100, variable.Count);
-    }
-
-    [Fact]
-    public void CountableVariable_AlternatingValues_TracksCorrectly()
-    {
-        // Arrange
-        var variable = new CountableVariable<bool>(false);
-
-        // Act
-        for (int i = 0; i < 10; i++)
-        {
-            variable.Value = !variable.Value;
-        }
-
-        // Assert
-        Assert.False(variable.Value); // Should be false after 10 toggles
-        Assert.Equal(10, variable.Count);
-    }
-
-    #endregion
-
-    #region CountableBool Tests (10 tests)
-
-    [Fact]
-    public void CountableBool_Constructor_InitializesToFalse()
-    {
-        // Arrange & Act
-        var countableBool = new CountableBool();
-
-        // Assert
-        Assert.False(countableBool.Value);
-        Assert.Equal(0, countableBool.Count);
-    }
-
-    [Fact]
-    public void CountableBool_Set_SetsToTrue()
-    {
-        // Arrange
-        var countableBool = new CountableBool();
-
-        // Act
-        countableBool.Set();
-
-        // Assert
-        Assert.True(countableBool.Value);
-        Assert.Equal(1, countableBool.Count);
-    }
-
-    [Fact]
-    public void CountableBool_Clear_SetsToFalse()
-    {
-        // Arrange
-        var countableBool = new CountableBool();
-        countableBool.Set();
-
-        // Act
-        countableBool.Clear();
-
-        // Assert
-        Assert.False(countableBool.Value);
-        Assert.Equal(2, countableBool.Count); // Set + Clear
-    }
-
-    [Fact]
-    public void CountableBool_Toggle_FlipsValue()
-    {
-        // Arrange
-        var countableBool = new CountableBool();
-        Assert.False(countableBool.Value);
-
-        // Act
-        countableBool.Toggle();
-
-        // Assert
-        Assert.True(countableBool.Value);
-        Assert.Equal(1, countableBool.Count);
-    }
-
-    [Fact]
-    public void CountableBool_MultipleToggles_AlternatesValue()
-    {
-        // Arrange
-        var countableBool = new CountableBool();
-
-        // Act
-        countableBool.Toggle(); // true
-        countableBool.Toggle(); // false
-        countableBool.Toggle(); // true
-
-        // Assert
-        Assert.True(countableBool.Value);
-        Assert.Equal(3, countableBool.Count);
-    }
-
-    [Fact]
-    public void CountableBool_SetWhenAlreadyTrue_DoesNotIncrementCount()
-    {
-        // Arrange
-        var countableBool = new CountableBool();
-        countableBool.Set();
-        Assert.Equal(1, countableBool.Count);
-
-        // Act
-        countableBool.Set();
-        countableBool.Set();
-
-        // Assert
-        Assert.True(countableBool.Value);
-        Assert.Equal(1, countableBool.Count); // No additional changes
-    }
-
-    [Fact]
-    public void CountableBool_ClearWhenAlreadyFalse_DoesNotIncrementCount()
-    {
-        // Arrange
-        var countableBool = new CountableBool();
-        Assert.Equal(0, countableBool.Count);
-
-        // Act
-        countableBool.Clear();
-        countableBool.Clear();
-
-        // Assert
-        Assert.False(countableBool.Value);
-        Assert.Equal(0, countableBool.Count); // No changes
-    }
-
-    [Fact]
-    public void CountableBool_SetClearPattern_TracksCorrectly()
-    {
-        // Arrange
-        var countableBool = new CountableBool();
-
-        // Act
-        countableBool.Set();   // true, count = 1
-        countableBool.Clear(); // false, count = 2
-        countableBool.Set();   // true, count = 3
-        countableBool.Clear(); // false, count = 4
-
-        // Assert
-        Assert.False(countableBool.Value);
-        Assert.Equal(4, countableBool.Count);
-    }
-
-    [Fact]
-    public void CountableBool_ResetCount_PreservesValue()
-    {
-        // Arrange
-        var countableBool = new CountableBool();
-        countableBool.Set();
-        countableBool.Toggle();
-        Assert.Equal(2, countableBool.Count);
-
-        // Act
-        countableBool.ResetCount();
-
-        // Assert
-        Assert.False(countableBool.Value); // Value unchanged
-        Assert.Equal(0, countableBool.Count);
-    }
-
-    [Fact]
-    public void CountableBool_ComplexSequence_TracksAllChanges()
-    {
-        // Arrange
-        var countableBool = new CountableBool();
-
-        // Act
-        countableBool.Set();      // true, count = 1
-        countableBool.Set();      // true (no change), count = 1
-        countableBool.Toggle();   // false, count = 2
-        countableBool.Toggle();   // true, count = 3
-        countableBool.Clear();    // false, count = 4
-        countableBool.Set();      // true, count = 5
-
-        // Assert
-        Assert.True(countableBool.Value);
-        Assert.Equal(5, countableBool.Count);
-    }
-
-    #endregion
-
-    #region SoftSwitch Tests (8 tests)
+    
+    #region SoftSwitch Tests (9 tests)
 
     [Fact]
     public void SoftSwitch_Constructor_InitializesWithName()
@@ -387,7 +25,6 @@ public class SoftSwitchTests
         // Assert
         Assert.Equal("TEST", softSwitch.Name);
         Assert.False(softSwitch.Value);
-        Assert.Equal(0, softSwitch.Count);
     }
 
     [Fact]
@@ -402,22 +39,18 @@ public class SoftSwitchTests
 
         // Assert
         Assert.True(softSwitch.Value);
-        Assert.Equal(1, softSwitch.Count);
     }
 
     [Fact]
-    public void SoftSwitch_ToString_IncludesNameAndValue()
+    public void SoftSwitch_NameProperty_IsReadable()
     {
         // Arrange
         var softSwitch = new SoftSwitch("80STORE");
         softSwitch.Set();
 
-        // Act
-        var result = softSwitch.ToString();
-
-        // Assert
-        Assert.Contains("80STORE", result);
-        Assert.Contains("True", result);
+        // Act & Assert - Verify name is accessible
+        Assert.Equal("80STORE", softSwitch.Name);
+        Assert.True(softSwitch.Value);
     }
 
     [Fact]
@@ -428,12 +61,10 @@ public class SoftSwitchTests
 
         // Act
         softSwitch.Set();
-        softSwitch.Clear();
         softSwitch.Toggle();
 
-        // Assert
-        Assert.True(softSwitch.Value);
-        Assert.Equal(3, softSwitch.Count);
+        // Assert - After Set() and Toggle(), should be False
+        Assert.False(softSwitch.Value);
     }
 
     [Fact]
@@ -462,7 +93,6 @@ public class SoftSwitchTests
 
         // Assert
         Assert.All(switches, sw => Assert.False(sw.Value));
-        Assert.All(switches, sw => Assert.Equal(0, sw.Count));
     }
 
     [Fact]
@@ -479,24 +109,21 @@ public class SoftSwitchTests
 
         // Assert
         Assert.True(softSwitch.Value);
-        Assert.Equal(3, softSwitch.Count);
     }
 
     [Fact]
-    public void SoftSwitch_ResetCount_WorksLikeBase()
+    public void SoftSwitch_ToString_IncludesNameAndValue()
     {
         // Arrange
-        var softSwitch = new SoftSwitch("PAGE2");
-        softSwitch.Toggle();
-        softSwitch.Toggle();
-        softSwitch.Toggle();
+        var softSwitch = new SoftSwitch("80STORE");
+        softSwitch.Set();
 
         // Act
-        softSwitch.ResetCount();
+        var result = softSwitch.ToString();
 
         // Assert
-        Assert.True(softSwitch.Value);
-        Assert.Equal(0, softSwitch.Count);
+        Assert.Contains("80STORE", result);
+        Assert.Contains("True", result);
     }
 
     #endregion
@@ -592,10 +219,10 @@ public class SoftSwitchTests
         switches.Set(SoftSwitches.SoftSwitchId.HiRes, true);
 
         // Act
-        switches.ResetAllSwitches(resetCounts: false);
+        switches.ResetAllSwitches();
 
         // Assert
-        var list = switches.GetSwitchList();
+        var _ = switches.GetSwitchList();
         // All should be false except IntCxRom (which defaults to true)
         Assert.False(switches.Get(SoftSwitches.SoftSwitchId.Text));
         Assert.False(switches.Get(SoftSwitches.SoftSwitchId.Mixed));
@@ -610,48 +237,15 @@ public class SoftSwitchTests
         var switches = new SoftSwitches();
 
         // Act
-        switches.ResetAllSwitches(resetCounts: false);
+        switches.ResetAllSwitches();
 
         // Assert
         Assert.True(switches.Get(SoftSwitches.SoftSwitchId.IntCxRom));
     }
 
-    [Fact]
-    public void SoftSwitches_ResetAllSwitches_WithResetCounts_ClearsCounts()
-    {
-        // Arrange
-        var switches = new SoftSwitches();
-        switches.Set(SoftSwitches.SoftSwitchId.Page2, true);
-        switches.Set(SoftSwitches.SoftSwitchId.Page2, false);
-        
-        var listBefore = switches.GetSwitchList();
-        var page2Before = listBefore.Find(x => x.id == SoftSwitches.SoftSwitchId.Page2);
-        Assert.True(page2Before.count > 0);
+    
 
-        // Act
-        switches.ResetAllSwitches(resetCounts: true);
 
-        // Assert
-        var listAfter = switches.GetSwitchList();
-        Assert.All(listAfter, item => Assert.Equal(0, item.count));
-    }
-
-    [Fact]
-    public void SoftSwitches_ResetSwitchUsageCounts_ClearsAllCounts()
-    {
-        // Arrange
-        var switches = new SoftSwitches();
-        switches.Set(SoftSwitches.SoftSwitchId.An0, true);
-        switches.Set(SoftSwitches.SoftSwitchId.An1, true);
-        switches.Set(SoftSwitches.SoftSwitchId.An2, true);
-
-        // Act
-        switches.ResetSwitchUsageCounts();
-
-        // Assert
-        var list = switches.GetSwitchList();
-        Assert.All(list, item => Assert.Equal(0, item.count));
-    }
 
     [Fact]
     public void SoftSwitches_GetSwitchList_ReturnsAllSwitches()
@@ -669,22 +263,7 @@ public class SoftSwitchTests
         Assert.Contains(list, item => item.id == SoftSwitches.SoftSwitchId.IntCxRom);
     }
 
-    [Fact]
-    public void SoftSwitches_GetSwitchList_IncludesCount()
-    {
-        // Arrange
-        var switches = new SoftSwitches();
-        switches.Set(SoftSwitches.SoftSwitchId.AltZp, true);
-        switches.Set(SoftSwitches.SoftSwitchId.AltZp, false);
-        switches.Set(SoftSwitches.SoftSwitchId.AltZp, true);
 
-        // Act
-        var list = switches.GetSwitchList();
-        var altZp = list.Find(x => x.id == SoftSwitches.SoftSwitchId.AltZp);
-
-        // Assert
-        Assert.Equal(3, altZp.count);
-    }
 
     [Fact]
     public void SoftSwitches_AddResponder_StoresResponder()
@@ -802,7 +381,7 @@ public class SoftSwitchTests
         responder.Reset(); // Clear initial constructor notifications
 
         // Act
-        switches.ResetAllSwitches(resetCounts: false);
+        switches.ResetAllSwitches();
 
         // Assert - All switches should trigger responder
         Assert.True(responder.Store80CallCount > 0);

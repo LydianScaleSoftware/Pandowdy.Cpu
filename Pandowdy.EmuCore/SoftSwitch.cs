@@ -18,18 +18,10 @@
 // DESIGN PATTERN: Observable + Command Pattern
 // This implementation uses two complementary patterns:
 //
-// 1. **CountableVariable/CountableBool:**
-///    Tracks value changes with a counter. Useful for debugging soft switch
-///    activity and detecting unexpected state changes.
-///
-/// 2. **Responder Pattern:**
+/// **Responder Pattern:**
 ///    Components (MemoryPool, video renderer) register as ISoftSwitchResponder
 ///    and receive notifications when switches change. This decouples the soft
 ///    switch management from the components that react to switch changes.
-///
-// CHANGE TRACKING RATIONALE:
-// The change-counting mechanism (CountableVariable) is built in anticipation
-// of several debugging and profiling scenarios:
 //
 // **Current Use:**
 /// - DumpSoftSwitchStatus() shows which switches are active and how often they change
@@ -83,7 +75,7 @@ namespace Pandowdy.EmuCore
     /// useful for debugging and performance analysis.
     /// </para>
     /// </remarks>
-    public sealed class SoftSwitch(string name) // : CountableBool
+    public sealed class SoftSwitch(string name)  
     {
         /// <summary>
         /// Gets the human-readable name of this soft switch (e.g., "80STORE", "RAMRD", "TEXT").
@@ -93,11 +85,6 @@ namespace Pandowdy.EmuCore
 
         public bool Value { get; set; }
 
-        public int Count { get => 0;  }
-
-        public void ResetCount() { }
-
-        public void Clear() { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(bool val = true) { Value = val; }
@@ -111,7 +98,7 @@ namespace Pandowdy.EmuCore
         /// Returns a string representation of the soft switch showing its name and current state.
         /// </summary>
         /// <returns>A string in the format "SwitchName: True/False".</returns>
-       // public override string ToString() => $"{Name}: {base.Value}";
+        public override string ToString() => $"{Name}: {Value}";
     }
 
     /// <summary>
@@ -329,7 +316,7 @@ namespace Pandowdy.EmuCore
                     Debug.Write("    ");
                 }
                 string status = kvp.Value.Value ? "On" : "Off";
-                Debug.WriteLine($"{kvp.Value.Name}: {status} (Changes: {kvp.Value.Count})");
+                Debug.WriteLine($"{kvp.Value.Name}: {status}");
             }
 
         }
@@ -351,8 +338,6 @@ namespace Pandowdy.EmuCore
         /// <summary>
         /// Resets all soft switches to their default power-on state.
         /// </summary>
-        /// <param name="resetCounts">If true, also resets the change counters for all switches to zero.
-        /// Default is false, which preserves change count history.</param>
         /// <remarks>
         /// <para>
         /// Default state: All switches off except INTCXROM which is on (matching Apple IIe power-on).
@@ -362,21 +347,13 @@ namespace Pandowdy.EmuCore
         /// and video modes are properly initialized.
         /// </para>
         /// </remarks>
-        public void ResetAllSwitches(bool resetCounts = false)
+        public void ResetAllSwitches()
         {
             foreach (var kvp in _switches)
             {
-
                 kvp.Value.Value = (kvp.Key==SoftSwitchId.IntCxRom);
-                if (resetCounts)
-                {
-                    kvp.Value.ResetCount();
-                }
                 TriggerResponder(kvp.Key, kvp.Value.Value);
             }
-            
-
-            
         }
 
         /// <summary>
@@ -415,17 +392,17 @@ namespace Pandowdy.EmuCore
         /// <summary>
         /// Returns a snapshot of all switches with their current state and change counts.
         /// </summary>
-        /// <returns>A list of tuples containing switch ID, current value, and change count for each switch.</returns>
+        /// <returns>A list of tuples containing switch ID and current valuefor each switch.</returns>
         /// <remarks>
         /// Useful for diagnostics, save state serialization, and UI display of switch status.
         /// The change count indicates how many times each switch has toggled since reset.
         /// </remarks>
-        public List<(SoftSwitchId id, bool value, int count)> GetSwitchList()
+        public List<(SoftSwitchId id, bool value)> GetSwitchList()
         {
-            var result = new List<(SoftSwitchId id, bool value, int count)>();
+            var result = new List<(SoftSwitchId id, bool value)>();
             foreach (var kvp in _switches)
             {
-                result.Add((kvp.Key, kvp.Value.Value, kvp.Value.Count));
+                result.Add((kvp.Key, kvp.Value.Value));
             }
             return result;
         }
@@ -527,21 +504,6 @@ namespace Pandowdy.EmuCore
                         responder.SetPreWrite(value);
                         break;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Resets the change counters for all switches to zero without affecting their current states.
-        /// </summary>
-        /// <remarks>
-        /// Useful for starting a fresh profiling session or benchmarking a specific code sequence
-        /// to measure switch activity patterns. The switch states (on/off) remain unchanged.
-        /// </remarks>
-        public void ResetSwitchUsageCounts()
-        {
-            foreach (var kvp in _switches)
-            {
-                kvp.Value.ResetCount();
             }
         }
     }
