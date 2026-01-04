@@ -370,7 +370,19 @@ public interface ISystemStatusProvider
     /// </para>
     /// </remarks>
     event EventHandler<SystemStatusSnapshot>? Changed;
-    
+
+
+    /// <summary>
+    /// Event raised when any soft switch affecting memory mapping changes.
+    /// </summary>
+    /// <remarks>
+    /// Fires only when RAMRD, RAMWRT, ALTZP, 80STORE, HIRES, PAGE2, INTCXROM,
+    /// SLOTC3ROM, HIGHWRITE, BANK1, or HIGHREAD change. Provides the full
+    /// <see cref="SystemStatusSnapshot"/> for convenience.
+    /// </remarks>
+    public event EventHandler<SystemStatusSnapshot>? MemoryMappingChanged;
+
+
     /// <summary>
     /// Gets an observable stream of system status snapshots.
     /// </summary>

@@ -84,6 +84,7 @@ namespace Pandowdy.EmuCore.Tests
 
 #pragma warning disable CS0067 // Event is never used - test stub doesn't need to raise events
             public event EventHandler<SystemStatusSnapshot>? Changed;
+            public event EventHandler<SystemStatusSnapshot>? MemoryMappingChanged;
 #pragma warning restore CS0067
             public SystemStatusSnapshot Current { get => null!; }
             public IObservable<SystemStatusSnapshot> Stream { get => null!; }

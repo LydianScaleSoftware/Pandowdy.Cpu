@@ -278,6 +278,7 @@ public class FrameGeneratorTests
 
         public SystemStatusSnapshot Current => _current;
         public event EventHandler<SystemStatusSnapshot>? Changed;
+        public event EventHandler<SystemStatusSnapshot>? MemoryMappingChanged;
         public IObservable<SystemStatusSnapshot> Stream => _subject;
 
         public void Mutate(Action<SystemStatusSnapshotBuilder> mutator)

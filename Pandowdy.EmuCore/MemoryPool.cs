@@ -468,17 +468,7 @@ namespace Pandowdy.EmuCore
         /// </remarks>
         private bool _highRead = false;
         
-        /// <summary>
-        /// Language Card pre-write state - first step in enabling writes.
-        /// </summary>
-        /// <remarks>
-        /// The Language Card requires two sequential accesses to soft switch addresses to
-        /// enable writes. This prevents accidental writes to ROM by requiring intentional
-        /// access patterns. PREWRITE tracks the first access; HIGHWRITE is set on the second.
-        /// </remarks>
-        private bool _preWrite = false;
-
-
+   
         // Nullable maps allow unmapped / write-protected regions; instance (was static)
         private readonly Dictionary<Ranges, Memory<byte>?> _readRanges = [];
 
@@ -848,12 +838,8 @@ namespace Pandowdy.EmuCore
         public void SetAn3(bool _) {  /* NA - display only */ }
         public void Set80Vid(bool _) {  /* NA - display only */ }
         public void SetAltChar(bool _) {  /* NA - display only */ }
-        
-        public void SetPreWrite(bool enabled)
-        {
-            _preWrite = enabled;
-            UpdateMemoryMappings();
-        }
+        public void SetPreWrite(bool _) {  /* NA */ }
+
 
         public void UpdateMemoryMappings()
         {

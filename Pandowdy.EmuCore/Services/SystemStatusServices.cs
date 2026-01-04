@@ -147,6 +147,9 @@ public sealed class SystemStatusProvider : ISystemStatusProvider, ISoftSwitchRes
     /// <inheritdoc />
     public event EventHandler<SystemStatusSnapshot>? Changed;
 
+    /// <inheritdoc />
+    public event EventHandler<SystemStatusSnapshot>? MemoryMappingChanged;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SystemStatusProvider"/> class.
     /// </summary>
@@ -273,6 +276,9 @@ public sealed class SystemStatusProvider : ISystemStatusProvider, ISoftSwitchRes
     /// </remarks>
     public void Mutate(Action<SystemStatusSnapshotBuilder> mutator)
     {
+        // Capture old snapshot
+        var oldSnapshot = _current;
+
         // Create builder from current snapshot
         var b = new SystemStatusSnapshotBuilder(_current);
         
@@ -285,6 +291,22 @@ public sealed class SystemStatusProvider : ISystemStatusProvider, ISoftSwitchRes
         // Notify observers (Rx.NET stream first, then .NET events)
         _subject.OnNext(_current);
         Changed?.Invoke(this, _current);
+
+        // Check if any of the 11 memory-affecting switches changed
+        if (oldSnapshot.StateRamRd != _current.StateRamRd ||
+            oldSnapshot.StateRamWrt != _current.StateRamWrt ||
+            oldSnapshot.StateAltZp != _current.StateAltZp ||
+            oldSnapshot.State80Store != _current.State80Store ||
+            oldSnapshot.StateHiRes != _current.StateHiRes ||
+            oldSnapshot.StatePage2 != _current.StatePage2 ||
+            oldSnapshot.StateIntCxRom != _current.StateIntCxRom ||
+            oldSnapshot.StateSlotC3Rom != _current.StateSlotC3Rom ||
+            oldSnapshot.StateHighWrite != _current.StateHighWrite ||
+            oldSnapshot.StateUseBank1 != _current.StateUseBank1 ||
+            oldSnapshot.StateHighRead != _current.StateHighRead)
+        {
+            MemoryMappingChanged?.Invoke(this, _current);
+        }
     }
 
     #region ISoftSwitchResponder - Soft switch update interface

@@ -61,6 +61,7 @@ public class LanguageCardTests
         // Event and Stream (not used in tests, but required by interface)
 #pragma warning disable CS0067 // Event is never used - required by interface but not needed for LanguageCard tests
         public event EventHandler<SystemStatusSnapshot>? Changed;
+        public event EventHandler<SystemStatusSnapshot>? MemoryMappingChanged;
 #pragma warning restore CS0067
         public IObservable<SystemStatusSnapshot> Stream => 
             throw new NotImplementedException("Stream not needed for LanguageCard tests");

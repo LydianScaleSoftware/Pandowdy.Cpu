@@ -787,4 +787,432 @@ public class SystemStatusProviderTests
     }
 
     #endregion
+
+    #region MemoryMappingChanged Event Tests
+
+    [Fact]
+    public void MemoryMappingChanged_FiresWhenRamRdChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+        SystemStatusSnapshot? capturedSnapshot = null;
+
+        provider.MemoryMappingChanged += (sender, snapshot) =>
+        {
+            eventRaised = true;
+            capturedSnapshot = snapshot;
+        };
+
+        // Act
+        provider.SetRamRd(true);
+
+        // Assert
+        Assert.True(eventRaised, "MemoryMappingChanged should fire when RAMRD changes");
+        Assert.NotNull(capturedSnapshot);
+        Assert.True(capturedSnapshot.StateRamRd);
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_FiresWhenRamWrtChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetRamWrt(true);
+
+        // Assert
+        Assert.True(eventRaised, "MemoryMappingChanged should fire when RAMWRT changes");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_FiresWhenAltZpChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetAltZp(true);
+
+        // Assert
+        Assert.True(eventRaised, "MemoryMappingChanged should fire when ALTZP changes");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_FiresWhen80StoreChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.Set80Store(true);
+
+        // Assert
+        Assert.True(eventRaised, "MemoryMappingChanged should fire when 80STORE changes");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_FiresWhenHiResChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetHiRes(true);
+
+        // Assert
+        Assert.True(eventRaised, "MemoryMappingChanged should fire when HIRES changes");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_FiresWhenPage2Changes()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetPage2(true);
+
+        // Assert
+        Assert.True(eventRaised, "MemoryMappingChanged should fire when PAGE2 changes");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_FiresWhenIntCxRomChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetIntCxRom(false); // Default is true, change to false
+
+        // Assert
+        Assert.True(eventRaised, "MemoryMappingChanged should fire when INTCXROM changes");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_FiresWhenSlotC3RomChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetSlotC3Rom(true);
+
+        // Assert
+        Assert.True(eventRaised, "MemoryMappingChanged should fire when SLOTC3ROM changes");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_FiresWhenHighWriteChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetHighWrite(true);
+
+        // Assert
+        Assert.True(eventRaised, "MemoryMappingChanged should fire when HIGHWRITE changes");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_FiresWhenBank1Changes()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetBank1(true);
+
+        // Assert
+        Assert.True(eventRaised, "MemoryMappingChanged should fire when BANK1 changes");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_FiresWhenHighReadChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetHighRead(true);
+
+        // Assert
+        Assert.True(eventRaised, "MemoryMappingChanged should fire when HIGHREAD changes");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_DoesNotFireWhenTextChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetText(false);
+
+        // Assert
+        Assert.False(eventRaised, "MemoryMappingChanged should NOT fire for TEXT (display-only)");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_DoesNotFireWhenMixedChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetMixed(true);
+
+        // Assert
+        Assert.False(eventRaised, "MemoryMappingChanged should NOT fire for MIXED (display-only)");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_DoesNotFireWhenAltCharChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetAltChar(true);
+
+        // Assert
+        Assert.False(eventRaised, "MemoryMappingChanged should NOT fire for ALTCHAR (display-only)");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_DoesNotFireWhen80VidChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.Set80Vid(true);
+
+        // Assert
+        Assert.False(eventRaised, "MemoryMappingChanged should NOT fire for 80VID (display-only)");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_DoesNotFireWhenAnnunciatorChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetAn0(true);
+        provider.SetAn1(true);
+        provider.SetAn2(true);
+        provider.SetAn3(true);
+
+        // Assert
+        Assert.False(eventRaised, "MemoryMappingChanged should NOT fire for annunciators");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_DoesNotFireWhenPreWriteChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetPreWrite(true);
+
+        // Assert
+        Assert.False(eventRaised, "MemoryMappingChanged should NOT fire for PREWRITE (intermediate state)");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_FiresOnceForMultipleMemorySwitches()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventCount = 0;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventCount++;
+
+        // Act - Change multiple memory-affecting switches
+        provider.SetRamRd(true);
+        provider.SetRamWrt(true);
+        provider.SetAltZp(true);
+
+        // Assert
+        Assert.Equal(3, eventCount);
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_IncludesFullSnapshot()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        provider.SetText(false); // Set a non-memory switch first
+        provider.SetRamRd(true); // Set a memory switch
+        
+        SystemStatusSnapshot? capturedSnapshot = null;
+        provider.MemoryMappingChanged += (sender, snapshot) => capturedSnapshot = snapshot;
+
+        // Act
+        provider.SetHighRead(true);
+
+        // Assert
+        Assert.NotNull(capturedSnapshot);
+        Assert.True(capturedSnapshot.StateHighRead, "Should have the changed memory switch");
+        Assert.True(capturedSnapshot.StateRamRd, "Should have previous memory switch");
+        Assert.False(capturedSnapshot.StateTextMode, "Should have non-memory switch too");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_BothEventsFireForMemorySwitch()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var changedFired = false;
+        var memoryMappingChangedFired = false;
+
+        provider.Changed += (sender, snapshot) => changedFired = true;
+        provider.MemoryMappingChanged += (sender, snapshot) => memoryMappingChangedFired = true;
+
+        // Act
+        provider.SetRamRd(true);
+
+        // Assert
+        Assert.True(changedFired, "Changed event should fire for memory switches");
+        Assert.True(memoryMappingChangedFired, "MemoryMappingChanged should also fire for memory switches");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_OnlyChangedFiresForDisplaySwitch()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var changedFired = false;
+        var memoryMappingChangedFired = false;
+
+        provider.Changed += (sender, snapshot) => changedFired = true;
+        provider.MemoryMappingChanged += (sender, snapshot) => memoryMappingChangedFired = true;
+
+        // Act
+        provider.SetText(false);
+
+        // Assert
+        Assert.True(changedFired, "Changed event should fire for display switches");
+        Assert.False(memoryMappingChangedFired, "MemoryMappingChanged should NOT fire for display switches");
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_MixedMutate_OnlyFiresIfMemorySwitchChanges()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        var eventCount = 0;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventCount++;
+
+        // Act 1 - Change only display switches
+        provider.Mutate(b =>
+        {
+            b.StateTextMode = false;
+            b.StateMixed = true;
+        });
+
+        // Assert 1
+        Assert.Equal(0, eventCount);
+
+        // Act 2 - Change both display and memory switches
+        provider.Mutate(b =>
+        {
+            b.StateHiRes = true;  // Display
+            b.StateRamRd = true;  // Memory
+        });
+
+        // Assert 2
+        Assert.Equal(1, eventCount);
+    }
+
+    [Fact]
+    public void MemoryMappingChanged_IncludesCorrectSender()
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        object? capturedSender = null;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => capturedSender = sender;
+
+        // Act
+        provider.SetRamRd(true);
+
+        // Assert
+        Assert.Same(provider, capturedSender);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void MemoryMappingChanged_FiresOnToggle(bool newValue)
+    {
+        // Arrange
+        var provider = new SystemStatusProvider();
+        provider.SetRamRd(!newValue); // Set opposite first
+        var eventRaised = false;
+
+        provider.MemoryMappingChanged += (sender, snapshot) => eventRaised = true;
+
+        // Act
+        provider.SetRamRd(newValue);
+
+        // Assert
+        Assert.True(eventRaised);
+    }
+
+    #endregion
 }
