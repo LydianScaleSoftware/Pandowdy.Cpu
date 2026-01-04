@@ -372,14 +372,16 @@ public class VA2M : IDisposable
     /// <summary>
     /// Loads an embedded ROM resource into memory.
     /// </summary>
-    /// <param name="resourceName">Fully-qualified resource name (e.g., "Pandowdy.EmuCore.Resources.a2e_enh_c-f.rom").</param>
+    /// <param name="resourceName">
+    /// Resource identifier with "res:" prefix (e.g., "res:Pandowdy.EmuCore.Resources.a2e_enh_c-f.rom").
+    /// </param>
     /// <remarks>
     /// <para>
     /// <strong>ROM Source:</strong> The Apple IIe Enhanced ROM is embedded in the assembly
     /// as a resource during build. This eliminates the need for external ROM files.
     /// </para>
     /// <para>
-    /// <strong>ROM Contents (16KB):</strong>
+    /// <strong>ROM Contents (16KB - but only 12KB used for $D000-$FFFF):</strong>
     /// <list type="bullet">
     /// <item>$C000-$C0FF: I/O space firmware</item>
     /// <item>$C100-$C7FF: Internal peripheral ROM (7 x 256 bytes)</item>
@@ -389,15 +391,22 @@ public class VA2M : IDisposable
     /// </list>
     /// </para>
     /// <para>
-    /// <strong>Error Handling:</strong> If the resource is not found, the ROM is not loaded
-    /// and the emulator will not function correctly (reset vector missing). This is a
-    /// fatal configuration error that should be caught during development.
+    /// <strong>Note:</strong> This method is now deprecated. Use SystemRomProvider
+    /// with "res:" prefix directly instead. Kept for backward compatibility.
     /// </para>
     /// </remarks>
+    //[Obsolete("Use SystemRomProvider with 'res:' prefix instead")]
     private void TryLoadEmbeddedRom(string resourceName)
     {
+        // Legacy method - now delegates to SystemRomProvider's resource loading
+        // by constructing a resource identifier
+        if (!resourceName.StartsWith("res:", StringComparison.OrdinalIgnoreCase))
+        {
+            resourceName = "res:" + resourceName;
+        }
+
         var asm = Assembly.GetExecutingAssembly();
-        using Stream? s = asm.GetManifestResourceStream(resourceName);
+        using Stream? s = asm.GetManifestResourceStream(resourceName[4..]);
         if (s != null)
         {
             using var ms = new MemoryStream();
@@ -810,7 +819,7 @@ public class VA2M : IDisposable
     /// <remarks>
     /// <para>
     /// <strong>Purpose:</strong> Triggers creation of a comprehensive system status snapshot
-    /// that includes all soft switches (memory mapping, video modes, ROM selection, annunciators)
+    /// that includes all soft switches (memory mapping, video modes, ROM, annunciators)
     /// and pushbutton states.
     /// </para>
     /// <para>
