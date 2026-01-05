@@ -1,6 +1,7 @@
 using System;
 using Pandowdy.UI.ViewModels;
 using Pandowdy.UI.Interfaces;
+using Pandowdy.UI.Helpers;
 using Pandowdy.EmuCore;
 using Pandowdy.EmuCore.Interfaces;
 
@@ -109,7 +110,7 @@ public sealed class MainWindowFactory(
     /// </summary>
     /// <returns>
     /// A fully initialized MainWindow ready to be shown. All dependencies are injected,
-    /// reactive subscriptions are set up, and settings are restored from configuration file.
+    /// reactive subscriptions are set up, position/size restored, and settings loaded.
     /// </returns>
     /// <remarks>
     /// <para>
@@ -122,8 +123,18 @@ public sealed class MainWindowFactory(
     /// <list type="number">
     /// <item>Call MainWindow parameterless constructor (XAML loading, minimal setup)</item>
     /// <item>Call window.Initialize() with all dependencies (complete setup)</item>
+    /// <item>Restore window position/size BEFORE showing (Windows 11 compatibility)</item>
     /// <item>Return fully-initialized window</item>
     /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Windows 11 Position Restore:</strong> Window position and size are restored
+    /// BEFORE the window is shown. This significantly improves the chance that Windows 11
+    /// will respect the saved position instead of applying its own "smart" placement algorithm.
+    /// </para>
+    /// <para>
+    /// <strong>Multi-Monitor Support:</strong> Validates that saved positions are still on-screen.
+    /// If the monitor was disconnected or position is invalid, falls back to centered on primary.
     /// </para>
     /// <para>
     /// <strong>What's Initialized:</strong>
@@ -131,8 +142,9 @@ public sealed class MainWindowFactory(
     /// <item>ViewModel and DataContext set</item>
     /// <item>Machine and frame provider attached to Apple2Display</item>
     /// <item>SoftSwitchStatusPanel initialized with its view model</item>
-    /// <item>ReactiveUI subscriptions set up (6 property subscriptions + 4 command bridges)</item>
-    /// <item>Window settings restored from configuration file</item>
+    /// <item>ReactiveUI subscriptions set up (7 property subscriptions + 4 command bridges)</item>
+    /// <item>Window position/size restored from saved settings</item>
+    /// <item>Display settings restored from configuration file</item>
     /// </list>
     /// </para>
     /// <para>
@@ -145,7 +157,7 @@ public sealed class MainWindowFactory(
     /// <code>
     /// var factory = serviceProvider.GetRequiredService&lt;IMainWindowFactory&gt;();
     /// var window = factory.Create();
-    /// window.Show(); // Window is ready to show immediately
+    /// window.Show(); // Window is ready to show at saved position
     /// </code>
     /// </para>
     /// </remarks>
@@ -157,6 +169,29 @@ public sealed class MainWindowFactory(
     {
         var window = new MainWindow();
         window.Initialize(_viewModel, _machine, _frameProvider, _refreshTicker);
+        
+        // Restore window position/size BEFORE showing (Windows 11 best practice)
+        // This gives Windows 11 less opportunity to override our saved position
+        var settings = WindowSettingsHelper.Load();
+        
+        // For maximized windows: set position/size first (as restore bounds), THEN maximize in OnOpened
+        // For normal windows: just set position/size normally
+        if (settings != null && settings.IsMaximized)
+        {
+            // Set the normal bounds - these become "restore bounds" for when user un-maximizes
+            window.Position = new Avalonia.PixelPoint(settings.Left, settings.Top);
+            window.Width = settings.Width;
+            window.Height = settings.Height;
+            // Don't set WindowState here - let OnOpened do it after window is shown
+            // Store a flag so OnOpened knows to maximize
+            window.Tag = "ShouldMaximize";
+        }
+        else
+        {
+            // Normal (non-maximized) restore
+            WindowSettingsHelper.Restore(window, settings);
+        }
+        
         return window;
     }
 }

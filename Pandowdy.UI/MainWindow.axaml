@@ -10,6 +10,7 @@
 		Title="Pandowdy"
 		Width="800" Height="600"
 		MinWidth="800" MinHeight="600"
+        WindowStartupLocation="Manual"
         Icon="assets/ico/pandowdy.ico"
 		KeyDown="OnMainWindowKeyDown">
 	<DockPanel>

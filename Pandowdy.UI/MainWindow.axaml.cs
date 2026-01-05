@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Reactive.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -13,6 +14,7 @@ using ReactiveUI;
 using ReactiveUI.Avalonia;
 using Pandowdy.UI.ViewModels;
 using Pandowdy.UI.Interfaces;
+using Pandowdy.UI.Helpers;
 using Pandowdy.EmuCore;
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.UI._hold_;
@@ -134,6 +136,35 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// </summary>
     private bool _capsLockEnabled = true;
 
+    /// <summary>
+    /// Saved "normal" (non-maximized) window bounds for proper restoration.
+    /// Updated whenever window size/position changes while not maximized.
+    /// </summary>
+    private (int Left, int Top, int Width, int Height)? _normalBounds;
+
+    /// <summary>
+    /// Tracks the previous WindowState to detect state transitions.
+    /// Used to prevent capturing maximized dimensions as "normal" bounds.
+    /// </summary>
+    private WindowState _previousWindowState = WindowState.Normal;
+
+    /// <summary>
+    /// Circular buffer of recent window position/size changes with timestamps.
+    /// Used to find the last "real" user-set bounds before maximize.
+    /// </summary>
+    private readonly System.Collections.Generic.Queue<(int Left, int Top, int Width, int Height, DateTime Timestamp)> _sizeHistory = new();
+
+    /// <summary>
+    /// Maximum number of size history entries to keep.
+    /// </summary>
+    private const int MaxSizeHistoryCount = 5;
+
+    /// <summary>
+    /// Time threshold for considering a size change "recent" (milliseconds).
+    /// Sizes older than this before maximize are considered valid user-set sizes.
+    /// </summary>
+    private const int SizeHistoryThresholdMs = 500;
+
     #endregion
 
     #region Public Properties
@@ -201,8 +232,102 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             mainMenu.PointerExited += (_, __) => _menuPointerActive = false;
         }
         
+        // Track window size changes to save "normal" bounds (for maximized restoration)
+        this.PropertyChanged += OnWindowPropertyChanged;
+        
         // No FindControl calls needed - controls are available via x:Name fields (with fallback)
         // Defer attaching machine/frame until Initialize, which should be called next.
+    }
+
+    /// <summary>
+    /// Handles window property changes to track normal (non-maximized) bounds.
+    /// </summary>
+    private void OnWindowPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        // Track window state changes FIRST
+        if (e.Property == WindowStateProperty)
+        {
+            var oldState = _previousWindowState;
+            var newState = WindowState;
+            System.Diagnostics.Debug.WriteLine($"[MainWindow] WindowState changed: {oldState} → {newState}");
+            
+            _previousWindowState = newState;
+            
+            // If transitioning TO Maximized, find the last valid user-set size from history
+            if (oldState == WindowState.Normal && newState == WindowState.Maximized)
+            {
+                var now = DateTime.UtcNow;
+                var threshold = TimeSpan.FromMilliseconds(SizeHistoryThresholdMs);
+                
+                // Walk backwards through history to find a size that's old enough to be a real user action
+                (int Left, int Top, int Width, int Height)? validBounds = null;
+                var historyArray = _sizeHistory.ToArray();
+                
+                for (int i = historyArray.Length - 1; i >= 0; i--)
+                {
+                    var entry = historyArray[i];
+                    var age = now - entry.Timestamp;
+                    
+                    System.Diagnostics.Debug.WriteLine($"[MainWindow] History[{i}]: {entry.Width}x{entry.Height} at ({entry.Left},{entry.Top}) age={age.TotalMilliseconds:F0}ms");
+                    
+                    // Find the first entry that's older than our threshold
+                    if (age >= threshold)
+                    {
+                        validBounds = (entry.Left, entry.Top, entry.Width, entry.Height);
+                        System.Diagnostics.Debug.WriteLine($"[MainWindow] Found valid pre-maximize bounds: {entry.Width}x{entry.Height} at ({entry.Left},{entry.Top})");
+                        break;
+                    }
+                }
+                
+                // If we found a valid historical size, use it; otherwise fall back to current
+                if (validBounds.HasValue)
+                {
+                    _normalBounds = validBounds.Value;
+                    System.Diagnostics.Debug.WriteLine($"[MainWindow] Captured normal bounds from history: {_normalBounds.Value.Width}x{_normalBounds.Value.Height} at ({_normalBounds.Value.Left},{_normalBounds.Value.Top})");
+                }
+                else if (_sizeHistory.Count > 0)
+                {
+                    // Fall back to oldest entry in history if all are too recent
+                    var oldest = historyArray[0];
+                    _normalBounds = (oldest.Left, oldest.Top, oldest.Width, oldest.Height);
+                    System.Diagnostics.Debug.WriteLine($"[MainWindow] Using oldest history entry: {_normalBounds.Value.Width}x{_normalBounds.Value.Height} at ({_normalBounds.Value.Left},{_normalBounds.Value.Top})");
+                }
+                else
+                {
+                    // Last resort: use current bounds (shouldn't happen if history is working)
+                    _normalBounds = (Position.X, Position.Y, (int)Width, (int)Height);
+                    System.Diagnostics.Debug.WriteLine($"[MainWindow] Fallback to current bounds: {_normalBounds.Value.Width}x{_normalBounds.Value.Height} at ({_normalBounds.Value.Left},{_normalBounds.Value.Top})");
+                }
+            }
+            return;
+        }
+        
+        // Track size changes in history ONLY when in Normal state
+        if ((e.Property == WidthProperty || e.Property == HeightProperty))
+        {
+            // Only track when window is Normal (not maximized/minimized)
+            if (WindowState == WindowState.Normal && _previousWindowState == WindowState.Normal)
+            {
+                var newLeft = Position.X;
+                var newTop = Position.Y;
+                var newWidth = (int)Width;
+                var newHeight = (int)Height;
+                var now = DateTime.UtcNow;
+                
+                // Add to circular buffer
+                _sizeHistory.Enqueue((newLeft, newTop, newWidth, newHeight, now));
+                
+                // Keep buffer size limited
+                while (_sizeHistory.Count > MaxSizeHistoryCount)
+                {
+                    _sizeHistory.Dequeue();
+                }
+                
+                // Also update _normalBounds directly for non-maximize scenarios
+                _normalBounds = (newLeft, newTop, newWidth, newHeight);
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] Added to history: {newWidth}x{newHeight} at ({newLeft},{newTop}) (history size={_sizeHistory.Count})");
+            }
+        }
     }
 
     /// <summary>
@@ -439,7 +564,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
     #endregion
 
-    #region Window Lifecycle Events
+    #region WindowLifecycle Events
 
     /// <summary>
     /// Called when the window is opened and visible.
@@ -449,11 +574,17 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// <para>
     /// <strong>Startup Sequence:</strong>
     /// <list type="number">
+    /// <item>Apply Windows 11 position fallback (reapply position after 100ms delay)</item>
     /// <item>Set keyboard focus to Apple2Display control</item>
     /// <item>Start the 60 Hz refresh ticker</item>
     /// <item>Subscribe to refresh stream and trigger display updates</item>
     /// <item>Post command to start emulator (begins emulation automatically)</item>
     /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Windows 11 Workaround:</strong> Even though we set position before Show() in
+    /// MainWindowFactory, Windows 11 sometimes overrides it. This fallback reapplies the position
+    /// 100ms after the window opens, which usually succeeds where the initial attempt failed.
     /// </para>
     /// <para>
     /// <strong>Refresh Ticker:</strong> Subscribes to 60 Hz timing signal and calls
@@ -469,6 +600,18 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     {
         base.OnOpened(e);
         if (!_depsInjected) { return; }
+        
+        // If MainWindowFactory flagged this window to be maximized, do it now
+        // (after the window is shown, so restore bounds are properly set)
+        if (Tag is string tag && tag == "ShouldMaximize")
+        {
+            WindowState = WindowState.Maximized;
+            Tag = null; // Clear the flag
+        }
+        
+        // Windows 11 workaround: Reapply saved position after a short delay
+        // This gives Windows 11 time to do its "smart" placement, then we override it with our saved position
+        ApplyWindows11PositionFallback();
         
         var screenDisplay = ScreenDisplay ?? this.FindControl<Apple2Display>("ScreenDisplay");
         screenDisplay?.Focus();
@@ -488,19 +631,160 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     }
 
     /// <summary>
-    /// Called when the window is closing.
+    /// Applies Windows 11 position fallback by reapplying saved position after a delay.
     /// </summary>
-    /// <param name="e">Event arguments.</param>
+    /// <remarks>
+    /// <para>
+    /// <strong>Why This Works:</strong> Windows 11 has a window placement algorithm that runs
+    /// after the window is shown. By waiting 100ms and then reapplying the position, we give
+    /// Windows time to do its thing, then override it with our saved position.
+    /// </para>
+    /// <para>
+    /// <strong>Platform Detection:</strong> Only applies on Windows 11+ (build 22000+).
+    /// Other platforms don't need this workaround.
+    /// </para>
+    /// </remarks>
+    private void ApplyWindows11PositionFallback()
+    {
+        // Only needed on Windows 11 (build 22000+)
+        if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
+        {
+            return;
+        }
+
+        Task.Delay(100).ContinueWith(_ =>
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    var settings = WindowSettingsHelper.Load();
+                    if (settings != null && WindowStartupLocation == WindowStartupLocation.Manual)
+                    {
+                        // Don't apply fallback if window is maximized - the restore bounds are already set
+                        if (settings.IsMaximized)
+                        {
+                            return;
+                        }
+                        
+                        // Reapply position - often succeeds where the initial attempt failed
+                        Position = new Avalonia.PixelPoint(settings.Left, settings.Top);
+                        
+                        // Only reapply size if not maximized
+                        if (!settings.IsMaximized)
+                        {
+                            Width = settings.Width;
+                            Height = settings.Height;
+                        }
+                    }
+                }
+                catch
+                {
+                    // Silently ignore - fallback is best-effort
+                }
+            });
+        });
+    }
+
+    /// <summary>
+    /// Called when the window is closing (before disposal).
+    /// </summary>
+    /// <param name="e">Cancel event arguments (can cancel close).</param>
     /// <remarks>
     /// <para>
     /// <strong>Shutdown Sequence:</strong>
     /// <list type="number">
-    /// <item>Save window settings to configuration file</item>
+    /// <item>Save window position/size to configuration file</item>
+    /// <item>Save display settings to configuration file</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Important:</strong> Settings are saved in OnClosing (not OnClosed) because
+    /// by the time OnClosed fires, the window's platform implementation has been disposed
+    /// and we can't access Position, Width, Height, or Screens properties.
+    /// </para>
+    /// <para>
+    /// <strong>Settings Persistence:</strong> Saves both window geometry (position/size) and
+    /// display settings (scanlines, colors, etc.) to separate configuration files for cleaner
+    /// organization and independent loading. Uses tracked "normal" bounds if window is maximized
+    /// to ensure proper restoration.
+    /// </para>
+    /// </remarks>
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        base.OnClosing(e);
+        
+        System.Diagnostics.Debug.WriteLine($"[MainWindow.OnClosing] WindowState={WindowState}, _normalBounds.HasValue={_normalBounds.HasValue}");
+        System.Diagnostics.Debug.WriteLine($"[MainWindow.OnClosing] Current size: {(int)Width}x{(int)Height} at ({Position.X},{Position.Y})");
+        
+        // Save window position/size (use normal bounds if maximized)
+        if (WindowState == WindowState.Maximized && _normalBounds.HasValue)
+        {
+            System.Diagnostics.Debug.WriteLine("[MainWindow.OnClosing] Using maximized save path with normal bounds");
+            
+            // Create a temporary settings object with normal bounds
+            var settings = new Models.WindowSettings
+            {
+                Left = _normalBounds.Value.Left,
+                Top = _normalBounds.Value.Top,
+                Width = _normalBounds.Value.Width,
+                Height = _normalBounds.Value.Height,
+                IsMaximized = true,
+                MonitorName = Screens.ScreenFromWindow(this)?.DisplayName,
+                MonitorBounds = Screens.ScreenFromWindow(this) != null 
+                    ? $"{Screens.ScreenFromWindow(this)!.Bounds.X},{Screens.ScreenFromWindow(this)!.Bounds.Y},{Screens.ScreenFromWindow(this)!.Bounds.Width},{Screens.ScreenFromWindow(this)!.Bounds.Height}"
+                    : null
+            };
+            
+            // Save with normal bounds
+            try
+            {
+                var json = System.Text.Json.JsonSerializer.Serialize(settings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                var path = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "LydianScaleSoftware", "Pandowdy", "window-settings.json");
+                var dir = System.IO.Path.GetDirectoryName(path);
+                if (dir != null)
+                {
+                    Directory.CreateDirectory(dir);
+                }
+                File.WriteAllText(path, json);
+                System.Diagnostics.Debug.WriteLine($"[MainWindow.OnClosing] Maximized save completed to: {path}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[MainWindow.OnClosing] Maximized save failed: {ex.Message}");
+                // Silently ignore - settings loss is non-fatal
+            }
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine("[MainWindow.OnClosing] Using normal save path (WindowSettingsHelper)");
+            // Normal save for non-maximized windows
+            WindowSettingsHelper.Save(this);
+        }
+        
+        // Save display settings (scanlines, colors, etc.)
+        SaveSettingsToConfigFile();
+    }
+
+    /// <summary>
+    /// Called when the window is closed (after disposal).
+    /// </summary>
+    /// <param name="e">Event arguments.</param>
+    /// <remarks>
+    /// <para>
+    /// <strong>Cleanup Sequence:</strong>
+    /// <list type="number">
     /// <item>Dispose refresh ticker subscription</item>
     /// <item>Stop refresh ticker</item>
     /// <item>Stop emulator thread (cancel token)</item>
     /// <item>Call base.OnClosed()</item>
     /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Note:</strong> Settings are saved in OnClosing, not here, because by this point
+    /// the window's platform implementation has been disposed and we can't access window properties.
     /// </para>
     /// <para>
     /// <strong>Clean Shutdown:</strong> Ensures all background threads and subscriptions are
@@ -509,7 +793,6 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// </remarks>
     protected override void OnClosed(EventArgs e)
     {
-        SaveSettingsToConfigFile();
         _refreshSub?.Dispose();
         _refreshSub = null;
         _refreshTicker?.Stop();
@@ -767,13 +1050,12 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     #region Settings Persistence
 
     /// <summary>
-    /// Restores window settings from the configuration file.
+    /// Restores display settings from the configuration file.
     /// </summary>
     /// <remarks>
     /// <para>
     /// <strong>Settings Restored:</strong>
     /// <list type="bullet">
-    /// <item>Window Width and Height</item>
     /// <item>ShowScanLines (CRT scanline effect)</item>
     /// <item>MonoMixed (mixed mode text defring)</item>
     /// <item>ForceMonochrome (color vs monochrome)</item>
@@ -781,6 +1063,10 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// <item>ThrottleEnabled (CPU speed control, defaults to true)</item>
     /// <item>ShowSoftSwitchStatus (panel visibility, defaults to true)</item>
     /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Note:</strong> Window position and size are now handled by WindowSettingsHelper
+    /// and stored in a separate file (window-settings.json).
     /// </para>
     /// <para>
     /// <strong>File Location:</strong> %AppData%\LydianScaleSoftware\Pandowdy\settings.json
@@ -805,11 +1091,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             {
                 return;
             }
-            if (data.Width > 0 && data.Height > 0)
-            {
-                Width = data.Width;
-                Height = data.Height;
-            }
+            // Note: Width and Height are now handled by WindowSettingsHelper
             if (ViewModel != null)
             {
                 if (data.ShowScanLines.HasValue) { ViewModel.ShowScanLines = data.ShowScanLines.Value; }
@@ -824,17 +1106,20 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     }
 
     /// <summary>
-    /// Saves window settings to the configuration file.
+    /// Saves display settings to the configuration file.
     /// </summary>
     /// <remarks>
     /// <para>
     /// <strong>Settings Saved:</strong>
     /// <list type="bullet">
-    /// <item>Window Width and Height</item>
     /// <item>ShowScanLines, MonoMixed, ForceMonochrome, DecreaseContrast</item>
     /// <item>ThrottleEnabled</item>
     /// <item>ShowSoftSwitchStatus</item>
     /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Note:</strong> Window position and size are now handled by WindowSettingsHelper
+    /// and stored in a separate file (window-settings.json).
     /// </para>
     /// <para>
     /// <strong>Format:</strong> JSON with indentation for human readability.
@@ -854,8 +1139,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         {
             var data = new SettingsConfig
             {
-                Width = (int)Width,
-                Height = (int)Height,
+                // Note: Width/Height now handled by WindowSettingsHelper
                 ShowScanLines = ViewModel?.ShowScanLines,
                 MonoMixed = ViewModel?.MonoMixed,
                 DecreaseContrast = ViewModel?.DecreaseContrast,
@@ -888,17 +1172,19 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     }
 
     /// <summary>
-    /// Data transfer object for persisting window settings to JSON.
+    /// Data transfer object for persisting display settings to JSON.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// All properties are nullable to distinguish between "not set" and explicit false values.
+    /// </para>
+    /// <para>
+    /// <strong>Note:</strong> Window position and size are stored separately in window-settings.json
+    /// via WindowSettingsHelper for cleaner organization and to support multi-monitor tracking.
+    /// </para>
     /// </remarks>
     private sealed class SettingsConfig
     {
-        /// <summary>Gets or sets the window width in pixels.</summary>
-        public int Width { get; set; }
-        /// <summary>Gets or sets the window height in pixels.</summary>
-        public int Height { get; set; }
         /// <summary>Gets or sets whether to show CRT scanlines.</summary>
         public bool? ShowScanLines { get; set; }
         /// <summary>Gets or sets whether to use monochrome in mixed mode text.</summary>
