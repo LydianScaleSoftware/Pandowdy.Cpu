@@ -143,7 +143,9 @@ public static class WindowSettingsHelper
 
             System.Diagnostics.Debug.WriteLine($"[WindowSettingsHelper] Saving: {settings.Width}x{settings.Height} at ({settings.Left},{settings.Top}) Maximized={settings.IsMaximized}");
 
+#pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
             var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+#pragma warning restore CA1869
             var path = GetConfigPath();
             
             System.Diagnostics.Debug.WriteLine($"[WindowSettingsHelper] Saving to: {path}");

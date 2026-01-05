@@ -9,7 +9,6 @@ using Pandowdy.EmuCore;
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.UI.ViewModels;
 using Pandowdy.EmuCore.Services;
-using Emulator;
 
 namespace Pandowdy
 {
@@ -56,7 +55,7 @@ namespace Pandowdy
 
                     // EmuCore
                     services.AddSingleton<MemoryPool>();
-                   // services.AddSingleton<IMemory>(sp => sp.GetRequiredService<MemoryPool>());
+
                     services.AddSingleton<IDirectMemoryPoolReader>(sp => sp.GetRequiredService<MemoryPool>());
 
                     services.AddSingleton<ICpu, CPUAdapter>();

@@ -29,6 +29,30 @@ public class LanguageCardTests
         }
     }
 
+    private class MockSystemRomProvider(int size) : ISystemRomProvider
+    {
+#pragma warning disable CA1859 // Use concrete types for improved performance
+        private readonly IMemory _memory = new MemoryBlock(size);
+#pragma warning restore CA1859
+
+        public int Size => _memory.Size;
+
+        public byte this[ushort address]
+        {
+            get => _memory[address];
+            set => _memory[address] = value;
+        }
+
+        public byte Read(ushort address) => _memory[address];
+
+        public void Write(ushort address, byte value) => _memory[address] = value;
+
+        public void LoadRomFile(string filename)
+        {
+            throw new NotImplementedException("LoadRomFile not needed for tests");
+        }
+    }
+
     private class MockSystemStatusProvider : ISystemStatusProvider
     {
         public bool StateHighRead { get; set; }
@@ -75,7 +99,7 @@ public class LanguageCardTests
     {
         public ISystemRam MainRam { get; }
         public ISystemRam AuxRam { get; }
-        public IMemory SystemRom { get; }
+        public ISystemRomProvider SystemRom { get; }
         public MockFloatingBusProvider FloatingBus { get; }
         public MockSystemStatusProvider Status { get; }
 
@@ -83,7 +107,7 @@ public class LanguageCardTests
         {
             MainRam = new MemoryBlock(0x4000); // 16KB
             AuxRam = new MemoryBlock(0x4000);  // 16KB
-            SystemRom = new MemoryBlock(0x4000); // 16KB ($C000-$FFFF)
+            SystemRom = new MockSystemRomProvider(0x4000); // 16KB ($C000-$FFFF)
             FloatingBus = new MockFloatingBusProvider();
             Status = new MockSystemStatusProvider();
         }
@@ -198,7 +222,7 @@ public class LanguageCardTests
     {
         // Arrange
         var fixture = new TestFixture();
-        var wrongSizeRom = new MemoryBlock(0x3000); // 12KB instead of 16KB
+        var wrongSizeRom = new MockSystemRomProvider(0x3000); // 12KB instead of 16KB
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() =>

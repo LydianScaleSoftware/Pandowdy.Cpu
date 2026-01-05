@@ -37,8 +37,6 @@
 // refactoring will improve maintainability without sacrificing performance.
 //------------------------------------------------------------------------------
 
-using System.ComponentModel;
-using System.Diagnostics;
 using Emulator;
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.EmuCore.Services;
@@ -355,7 +353,7 @@ namespace Pandowdy.EmuCore
             Region_C800_CFFF = 0xC800,
             Region_D000_DFFF = 0xD000,
             Region_E000_FFFF = 0xE000,
-            Region_NA = 0xFFFFFF
+            Region_LangCard = 0xFFFFFF
         }
 
 
@@ -367,16 +365,13 @@ namespace Pandowdy.EmuCore
 
         // Region slices (instance readonly; previously static)
         private readonly Memory<byte> _m1;
-
         private readonly Memory<byte> _m2;
         private readonly Memory<byte> _m3;
         private readonly Memory<byte> _m4;
         private readonly Memory<byte> _m5;
         private readonly Memory<byte> _m6;
         private readonly Memory<byte> _m7;
-        //private readonly Memory<byte> _m8a;
-        //private readonly Memory<byte> _m8b;
-        //private readonly Memory<byte> _m9;
+
 
         private readonly Memory<byte> _a1;
         private readonly Memory<byte> _a2;
@@ -385,9 +380,7 @@ namespace Pandowdy.EmuCore
         private readonly Memory<byte> _a5;
         private readonly Memory<byte> _a6;
         private readonly Memory<byte> _a7;
-        //private readonly Memory<byte> _a8a;
-        //private readonly Memory<byte> _a8b;
-        //private readonly Memory<byte> _a9;
+
 
         private readonly Memory<byte> _io;
 
@@ -399,8 +392,7 @@ namespace Pandowdy.EmuCore
         private readonly Memory<byte> _int6;
         private readonly Memory<byte> _int7;
         private readonly Memory<byte> _intext;
-        //private readonly Memory<byte> _rom1;
-        //private readonly Memory<byte> _rom2;
+
 
         private readonly Memory<byte> _s1;
         private readonly Memory<byte> _s2;
@@ -418,14 +410,20 @@ namespace Pandowdy.EmuCore
         private readonly Memory<byte> _s6ext;
         private readonly Memory<byte> _s7ext;
 
-        ISystemStatusProvider _status;
+        private const int RequiredRamSize = 0xC000; // 48KB
 
-        ILanguageCard _langCard;
+
+        private ISystemStatusProvider _status;
+
+        private ILanguageCard _langCard;
+
+
 
         public MemoryPool(ISystemStatusProvider status, ILanguageCard langCard, int poolSize = 0x27F00, bool randomInit = false)
         {
             ArgumentNullException.ThrowIfNull(status);
             ArgumentNullException.ThrowIfNull(langCard);
+
             _status = status;
             _langCard = langCard;
 
@@ -455,9 +453,7 @@ namespace Pandowdy.EmuCore
             _m5 = _pool.AsMemory(0x2000, 0x2000); // Default
             _m6 = _pool.AsMemory(0x4000, 0x2000); // Default
             _m7 = _pool.AsMemory(0x6000, 0x6000); // Default
-           // _m8a = _pool.AsMemory(0xC000, 0x1000);
-            //_m8b = _pool.AsMemory(0xD000, 0x1000);
-            //_m9 = _pool.AsMemory(0xE000, 0x2000);
+
 
             _a1 = _pool.AsMemory(0x10000, 0x0200);
             _a2 = _pool.AsMemory(0x10200, 0x0200);
@@ -466,9 +462,7 @@ namespace Pandowdy.EmuCore
             _a5 = _pool.AsMemory(0x12000, 0x2000);
             _a6 = _pool.AsMemory(0x14000, 0x2000);
             _a7 = _pool.AsMemory(0x16000, 0x6000);
-            //_a8a = _pool.AsMemory(0x1C000, 0x1000);
-            //_a8b = _pool.AsMemory(0x1D000, 0x1000);
-            //_a9 = _pool.AsMemory(0x1E000, 0x2000);
+
 
             _io = _pool.AsMemory(0x20000, 0x0100);
 
@@ -481,8 +475,7 @@ namespace Pandowdy.EmuCore
             _int7 = _pool.AsMemory(0x20700, 0x0100);
             _intext = _pool.AsMemory(0x20800, 0x0800); // Default
 
-            //_rom1 = _pool.AsMemory(0x21000, 0x1000); // Default
-            //_rom2 = _pool.AsMemory(0x22000, 0x2000); // Default
+
             _s1 = _pool.AsMemory(0x24000, 0x0100); // Default
             _s2 = _pool.AsMemory(0x24100, 0x0100); // Default
             _s3 = _pool.AsMemory(0x24200, 0x0100); // Default
@@ -523,6 +516,7 @@ namespace Pandowdy.EmuCore
             _readRanges[Ranges.Region_2000_3FFF] = _m5;
             _readRanges[Ranges.Region_4000_5FFF] = _m6;
             _readRanges[Ranges.Region_6000_BFFF] = _m7;
+
             _readRanges[Ranges.Region_C000_C0FF] = _io;
             _readRanges[Ranges.Region_C100_C1FF] = _int1;
             _readRanges[Ranges.Region_C200_C2FF] = _int2;
@@ -532,8 +526,7 @@ namespace Pandowdy.EmuCore
             _readRanges[Ranges.Region_C600_C6FF] = _int6;
             _readRanges[Ranges.Region_C700_C7FF] = _int7;
             _readRanges[Ranges.Region_C800_CFFF] = _intext;
-           // _readRanges[Ranges.Region_D000_DFFF] = _rom1;
-           // _readRanges[Ranges.Region_E000_FFFF] = _rom2;
+
         }
 
         private void SetDefaultWriteRanges()
@@ -545,6 +538,7 @@ namespace Pandowdy.EmuCore
             _writeRanges[Ranges.Region_2000_3FFF] = _m5;
             _writeRanges[Ranges.Region_4000_5FFF] = _m6;
             _writeRanges[Ranges.Region_6000_BFFF] = _m7;
+
             _writeRanges[Ranges.Region_C000_C0FF] = _io;
             _writeRanges[Ranges.Region_C100_C1FF] = null;
             _writeRanges[Ranges.Region_C200_C2FF] = null;
@@ -554,8 +548,7 @@ namespace Pandowdy.EmuCore
             _writeRanges[Ranges.Region_C600_C6FF] = null;
             _writeRanges[Ranges.Region_C700_C7FF] = null;
             _writeRanges[Ranges.Region_C800_CFFF] = null;
-         //   _writeRanges[Ranges.Region_D000_DFFF] = null;
-         //   _writeRanges[Ranges.Region_E000_FFFF] = null;
+
         }
 
 
@@ -644,8 +637,8 @@ namespace Pandowdy.EmuCore
             {
               //  >= (ushort) Ranges.Region_E000_FFFF => Ranges.Region_E000_FFFF,
               //  >= (ushort) Ranges.Region_D000_DFFF => Ranges.Region_D000_DFFF,
-                >= (ushort) Ranges.Region_E000_FFFF => Ranges.Region_NA,
-                >= (ushort) Ranges.Region_D000_DFFF => Ranges.Region_NA,
+                >= (ushort) Ranges.Region_E000_FFFF => Ranges.Region_LangCard,
+                >= (ushort) Ranges.Region_D000_DFFF => Ranges.Region_LangCard,
                 >= (ushort) Ranges.Region_C800_CFFF => Ranges.Region_C800_CFFF,
                 >= (ushort) Ranges.Region_C700_C7FF => Ranges.Region_C700_C7FF,
                 >= (ushort) Ranges.Region_C600_C6FF => Ranges.Region_C600_C6FF,
@@ -664,13 +657,13 @@ namespace Pandowdy.EmuCore
                 _ => Ranges.Region_0000_01FF
             };
             var validWrite = true;
-            if (range != Ranges.Region_NA)
+            if (range == Ranges.Region_LangCard)
             {
-                validWrite = WriteToRegion(range, address, value);
+                _langCard.Write(address, value);
             }
             else
             {
-                _langCard.Write(address, value);
+                validWrite = WriteToRegion(range, address, value);
             }
             if (!validWrite)
             {
@@ -703,15 +696,25 @@ namespace Pandowdy.EmuCore
                 _readRanges[Ranges.Region_0000_01FF] = _altZp ? _a1 : _m1;
                 _writeRanges[Ranges.Region_0000_01FF] = _altZp ? _a1 : _m1;
 
-                _readRanges[Ranges.Region_0200_03FF] = (_ramRd ? _a2 : _m2);
-                _readRanges[Ranges.Region_0800_1FFF] = (_ramRd ? _a4 : _m4);
-                _readRanges[Ranges.Region_4000_5FFF] = (_ramRd ? _a6 : _m6);
-                _readRanges[Ranges.Region_6000_BFFF] = (_ramRd ? _a7 : _m7);
 
+
+                _readRanges[Ranges.Region_0200_03FF] = (_ramRd ? _a2 : _m2);
                 _writeRanges[Ranges.Region_0200_03FF] = (_ramWrt ? _a2 : _m2);
+
+                // $400-$7ff below
+
+                _readRanges[Ranges.Region_0800_1FFF] = (_ramRd ? _a4 : _m4);
                 _writeRanges[Ranges.Region_0800_1FFF] = (_ramWrt ? _a4 : _m4);
+
+                // $2000-$3FFF below
+
+                _readRanges[Ranges.Region_4000_5FFF] = (_ramRd ? _a6 : _m6);
                 _writeRanges[Ranges.Region_4000_5FFF] = (_ramWrt ? _a6 : _m6);
+
+                _readRanges[Ranges.Region_6000_BFFF] = (_ramRd ? _a7 : _m7);
                 _writeRanges[Ranges.Region_6000_BFFF] = (_ramWrt ? _a7 : _m7);
+
+
 
                 if (!_80Store)
                 {
@@ -736,46 +739,7 @@ namespace Pandowdy.EmuCore
                     }
                 }
 
-                // Region_D000_DFFF -> Slot ROM
-                // Write:
-                //if (_highWrite)
-                //{
-                //    if (_altZp) // Aux a8a/a8b + a9
-                //    { 
-                //        _writeRanges[Ranges.Region_D000_DFFF] = _bank1?_a8a:_a8b;
-                //        _writeRanges[Ranges.Region_E000_FFFF] = _a9;
-                //    }
-                //    else // Main m8a/m8b + m9
-                //    {
-                //        _writeRanges[Ranges.Region_D000_DFFF] = _bank1?_m8a:_m8b;
-                //        _writeRanges[Ranges.Region_E000_FFFF] = _m9;
-                //    }
-                //}
-                //else
-                //{
-                //    _writeRanges[Ranges.Region_D000_DFFF] = null;
-                //    _writeRanges[Ranges.Region_E000_FFFF] = null;
-                //}
-
-                // Read:
-                //if (_highRead)
-                //{
-                //    if (_altZp) // Aux a8a/a8b + a9
-                //    {
-                //        _readRanges[Ranges.Region_D000_DFFF] = _bank1?_a8a:_a8b;
-                //        _readRanges[Ranges.Region_E000_FFFF] = _a9;
-                //    }
-                //    else // Main m8a/m8b + m9
-                //    {
-                //        _readRanges[Ranges.Region_D000_DFFF] = _bank1?_m8a:_m8b;
-                //        _readRanges[Ranges.Region_E000_FFFF] = _m9;
-                //    }
-                //}
-                //else
-                //{
-                //    _readRanges[Ranges.Region_D000_DFFF] = _rom1;
-                //    _readRanges[Ranges.Region_E000_FFFF] = _rom2;
-                //}
+    
 
                 // This will take the place of the card mechanism for now.
                 bool[] hasCard = [false, true, true, true, true, true, true, true]; // Slots 0-7 (0 -> unused)

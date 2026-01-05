@@ -48,15 +48,10 @@ public sealed class TestLanguageCard : ILanguageCard
 /// <summary>
 /// Test implementation of ISystemRam for Language Card testing.
 /// </summary>
-public sealed class TestSystemRam : ISystemRam
+public sealed class TestSystemRam(int size) : ISystemRam
 {
-    private readonly byte[] _memory;
-    
-    public TestSystemRam(int size)
-    {
-        _memory = new byte[size];
-    }
-    
+    private readonly byte[] _memory = new byte[size];
+
     public int Size => _memory.Length;
     
     public byte Read(ushort address) => _memory[address];
@@ -67,6 +62,31 @@ public sealed class TestSystemRam : ISystemRam
     {
         get => _memory[address];
         set => _memory[address] = value;
+    }
+}
+
+/// <summary>
+/// Test implementation of ISystemRomProvider for Language Card testing.
+/// </summary>
+public sealed class TestSystemRomProvider(int size) : ISystemRomProvider
+{
+    private readonly byte[] _memory = new byte[size];
+
+    public int Size => _memory.Length;
+    
+    public byte Read(ushort address) => _memory[address];
+    
+    public void Write(ushort address, byte value) => _memory[address] = value;
+    
+    public byte this[ushort address]
+    {
+        get => _memory[address];
+        set => _memory[address] = value;
+    }
+    
+    public void LoadRomFile(string filename)
+    {
+        throw new NotImplementedException("LoadRomFile not needed for tests");
     }
 }
 
@@ -93,7 +113,7 @@ public static class LanguageCardTestFactory
     {
         var mainRam = new TestSystemRam(0x4000); // 16KB main LC RAM
         var auxRam = new TestSystemRam(0x4000);  // 16KB aux LC RAM
-        var systemRom = new TestSystemRam(0x4000); // 16KB system ROM
+        var systemRom = new TestSystemRomProvider(0x4000); // 16KB system ROM
         
         // Install ROM if provided
         if (rom != null)

@@ -701,7 +701,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// <para>
     /// <strong>Important:</strong> Settings are saved in OnClosing (not OnClosed) because
     /// by the time OnClosed fires, the window's platform implementation has been disposed
-    /// and we can't access Position, Width, Height, or Screens properties.
+    /// and we can't access Position, Width, Height, or Screens Properties.
     /// </para>
     /// <para>
     /// <strong>Settings Persistence:</strong> Saves both window geometry (position/size) and
@@ -739,10 +739,13 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             // Save with normal bounds
             try
             {
+#pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
                 var json = System.Text.Json.JsonSerializer.Serialize(settings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+#pragma warning restore CA1869
                 var path = System.IO.Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                     "LydianScaleSoftware", "Pandowdy", "window-settings.json");
+
                 var dir = System.IO.Path.GetDirectoryName(path);
                 if (dir != null)
                 {
