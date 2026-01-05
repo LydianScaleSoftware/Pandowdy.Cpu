@@ -38,7 +38,7 @@ public class VA2MBusTests
         public VA2MBusFixture()
         {
             StatusProvider = new SystemStatusProvider();
-            MemoryPool = new MemoryPool(StatusProvider, new TestLanguageCard());
+            MemoryPool = new MemoryPool(StatusProvider, new TestLanguageCard(), new Test64KSystemRamSelector());
             Cpu = new CPUAdapter(new CPU());
             Bus = new VA2MBus(MemoryPool, StatusProvider, Cpu);
         }
@@ -53,7 +53,7 @@ public class VA2MBusTests
     {
         // Arrange
         var status = new SystemStatusProvider();
-        var mempool = new MemoryPool(status, new TestLanguageCard());
+        var mempool = new MemoryPool(status, new TestLanguageCard(), new TestSystemRamSelector());
         var cpu = new CPUAdapter(new CPU());
 
         // Act
@@ -70,7 +70,7 @@ public class VA2MBusTests
     {
         // Arrange
         var status = new SystemStatusProvider();
-        var mempool = new MemoryPool(status, new TestLanguageCard());
+        var mempool = new MemoryPool(status, new TestLanguageCard(), new TestSystemRamSelector());
         var cpu = new CPUAdapter(new CPU());
 
         // Act & Assert
@@ -82,7 +82,7 @@ public class VA2MBusTests
     {
         // Arrange
         var status = new SystemStatusProvider();
-        var mempool = new MemoryPool(status, new TestLanguageCard());
+        var mempool = new MemoryPool(status, new TestLanguageCard(), new TestSystemRamSelector());
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new VA2MBus(mempool, status, null!));

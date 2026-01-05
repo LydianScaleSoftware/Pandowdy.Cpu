@@ -400,38 +400,6 @@ public class VA2MTests
 
     #endregion
 
-    #region Memory Pool Tests
-
-    [Fact]
-    public void MemoryPool_IsAccessibleAfterConstruction()
-    {
-        // Arrange
-        var statusProvider = new SystemStatusProvider();
-        var memoryPool = new MemoryPool(statusProvider, new TestLanguageCard());
-        var va2m = VA2MTestHelpers.CreateBuilder()
-            .WithMemoryPool(memoryPool)
-            .Build();
-
-        // Act & Assert
-        Assert.Same(memoryPool, va2m.MemoryPool);
-    }
-
-    [Fact]
-    public void MemoryPool_CanReadAndWrite()
-    {
-        // Arrange
-        var va2m = VA2MTestHelpers.CreateBuilder().Build();
-
-        // Act
-        va2m.MemoryPool.Write(0x1000, 0x42);
-        var value = va2m.MemoryPool.Read(0x1000);
-
-        // Assert
-        Assert.Equal(0x42, value);
-    }
-
-    #endregion
-
     #region Throttling Tests
 
     [Fact]

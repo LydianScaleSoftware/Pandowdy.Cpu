@@ -60,11 +60,12 @@ public class LanguageCardTests
         public bool StateUseBank1 { get; set; }
         public bool StateRamRd { get; set; }
         public bool StateRamWrt { get; set; }
-        
+        public bool StateAltZp { get; set; }
+
+
         // Other required properties (not used in LanguageCard tests)
         public bool State80Store => false;
         public bool StateIntCxRom => false;
-        public bool StateAltZp => false;
         public bool StateSlotC3Rom => false;
         public bool StatePb0 => false;
         public bool StatePb1 => false;
@@ -401,12 +402,12 @@ public class LanguageCardTests
     #region Read Tests - RAM Mode (Aux)
 
     [Fact]
-    public void Read_WhenStateRamRdTrue_ReadsFromAuxRAM()
+    public void Read_WhenStateAltZpTrue_ReadsFromAuxRAM()
     {
         // Arrange
         var fixture = new TestFixture();
         fixture.Status.StateHighRead = true;
-        fixture.Status.StateRamRd = true; // Aux RAM
+        fixture.Status.StateAltZp = true; // Aux RAM
         fixture.AuxRam[0x1000] = 0x77;
         var lc = fixture.CreateLanguageCard();
 
@@ -423,7 +424,7 @@ public class LanguageCardTests
         // Arrange
         var fixture = new TestFixture();
         fixture.Status.StateHighRead = true;
-        fixture.Status.StateRamRd = true;
+        fixture.Status.StateAltZp = true;
         fixture.MainRam[0x1000] = 0xAA;
         fixture.AuxRam[0x1000] = 0xBB;
         var lc = fixture.CreateLanguageCard();
@@ -441,7 +442,7 @@ public class LanguageCardTests
         // Arrange
         var fixture = new TestFixture();
         fixture.Status.StateHighRead = true;
-        fixture.Status.StateRamRd = true;
+        fixture.Status.StateAltZp = true;
         fixture.FloatingBus.SetReturnValue(0x99);
         var lc = fixture.CreateLanguageCard(includeAuxRam: false);
 
@@ -558,12 +559,12 @@ public class LanguageCardTests
     #region Write Tests - Aux RAM
 
     [Fact]
-    public void Write_WhenStateRamWrtTrue_WritesToAuxRAM()
+    public void Write_WhenStateAltZpTrue_WritesToAuxRAM()
     {
         // Arrange
         var fixture = new TestFixture();
         fixture.Status.StateHighWrite = true;
-        fixture.Status.StateRamWrt = true; // Aux RAM
+        fixture.Status.StateAltZp = true; // Aux RAM
         var lc = fixture.CreateLanguageCard();
 
         // Act
@@ -580,7 +581,7 @@ public class LanguageCardTests
         // Arrange
         var fixture = new TestFixture();
         fixture.Status.StateHighWrite = true;
-        fixture.Status.StateRamWrt = true;
+        fixture.Status.StateAltZp = true;
         var lc = fixture.CreateLanguageCard(includeAuxRam: false);
 
         // Act (should not throw)

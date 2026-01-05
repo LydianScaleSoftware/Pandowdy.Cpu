@@ -254,7 +254,7 @@ namespace Pandowdy.EmuCore
         /// if PAGE2 is off, so it uses this method instead of the normal <see cref="Read"/> method.
         /// </para>
         /// </remarks>
-        public byte ReadRawMain(int address) => _pool[(address & 0xffff)];
+        public byte ReadRawMain(int address) => _systemRam.ReadRawMain(address);
         
         /// <summary>
         /// Reads directly from the auxiliary memory bank, bypassing soft switch mapping.
@@ -353,6 +353,7 @@ namespace Pandowdy.EmuCore
             Region_C800_CFFF = 0xC800,
             Region_D000_DFFF = 0xD000,
             Region_E000_FFFF = 0xE000,
+            Region_SysRam = 0xFFFFFE,
             Region_LangCard = 0xFFFFFF
         }
 
@@ -364,22 +365,6 @@ namespace Pandowdy.EmuCore
 
 
         // Region slices (instance readonly; previously static)
-        private readonly Memory<byte> _m1;
-        private readonly Memory<byte> _m2;
-        private readonly Memory<byte> _m3;
-        private readonly Memory<byte> _m4;
-        private readonly Memory<byte> _m5;
-        private readonly Memory<byte> _m6;
-        private readonly Memory<byte> _m7;
-
-
-        private readonly Memory<byte> _a1;
-        private readonly Memory<byte> _a2;
-        private readonly Memory<byte> _a3;
-        private readonly Memory<byte> _a4;
-        private readonly Memory<byte> _a5;
-        private readonly Memory<byte> _a6;
-        private readonly Memory<byte> _a7;
 
 
         private readonly Memory<byte> _io;
@@ -416,16 +401,23 @@ namespace Pandowdy.EmuCore
         private ISystemStatusProvider _status;
 
         private ILanguageCard _langCard;
+        private ISystemRamSelector _systemRam;
 
 
-
-        public MemoryPool(ISystemStatusProvider status, ILanguageCard langCard, int poolSize = 0x27F00, bool randomInit = false)
+        public MemoryPool(
+            ISystemStatusProvider status,
+            ILanguageCard langCard,
+            ISystemRamSelector systemRam,
+            int poolSize = 0x27F00,
+            bool randomInit = false)
         {
             ArgumentNullException.ThrowIfNull(status);
             ArgumentNullException.ThrowIfNull(langCard);
+            ArgumentNullException.ThrowIfNull(systemRam);
 
             _status = status;
             _langCard = langCard;
+            _systemRam = Utility.ValidateIMemorySize(systemRam, nameof(systemRam), RequiredRamSize);
 
             // Subscribe to memory mapping changes
             _status.MemoryMappingChanged += OnMemoryMappingChanged;
@@ -446,22 +438,22 @@ namespace Pandowdy.EmuCore
             }
 
             // Create slices (offset, length) exactly as before
-            _m1 = _pool.AsMemory(0x0000, 0x0200); // Default
-            _m2 = _pool.AsMemory(0x0200, 0x0200); // Default
-            _m3 = _pool.AsMemory(0x0400, 0x0400); // Default
-            _m4 = _pool.AsMemory(0x0800, 0x1800); // Default
-            _m5 = _pool.AsMemory(0x2000, 0x2000); // Default
-            _m6 = _pool.AsMemory(0x4000, 0x2000); // Default
-            _m7 = _pool.AsMemory(0x6000, 0x6000); // Default
+            //_m1 = _pool.AsMemory(0x0000, 0x0200); // Default
+            //_m2 = _pool.AsMemory(0x0200, 0x0200); // Default
+            //_m3 = _pool.AsMemory(0x0400, 0x0400); // Default
+            //_m4 = _pool.AsMemory(0x0800, 0x1800); // Default
+            //_m5 = _pool.AsMemory(0x2000, 0x2000); // Default
+            //_m6 = _pool.AsMemory(0x4000, 0x2000); // Default
+            //_m7 = _pool.AsMemory(0x6000, 0x6000); // Default
 
 
-            _a1 = _pool.AsMemory(0x10000, 0x0200);
-            _a2 = _pool.AsMemory(0x10200, 0x0200);
-            _a3 = _pool.AsMemory(0x10400, 0x0400);
-            _a4 = _pool.AsMemory(0x10800, 0x1800);
-            _a5 = _pool.AsMemory(0x12000, 0x2000);
-            _a6 = _pool.AsMemory(0x14000, 0x2000);
-            _a7 = _pool.AsMemory(0x16000, 0x6000);
+            //_a1 = _pool.AsMemory(0x10000, 0x0200);
+            //_a2 = _pool.AsMemory(0x10200, 0x0200);
+            //_a3 = _pool.AsMemory(0x10400, 0x0400);
+            //_a4 = _pool.AsMemory(0x10800, 0x1800);
+            //_a5 = _pool.AsMemory(0x12000, 0x2000);
+            //_a6 = _pool.AsMemory(0x14000, 0x2000);
+            //_a7 = _pool.AsMemory(0x16000, 0x6000);
 
 
             _io = _pool.AsMemory(0x20000, 0x0100);
@@ -509,14 +501,6 @@ namespace Pandowdy.EmuCore
 
         private void SetDefaultReadRanges()
         {
-            _readRanges[Ranges.Region_0000_01FF] = _m1;
-            _readRanges[Ranges.Region_0200_03FF] = _m2;
-            _readRanges[Ranges.Region_0400_07FF] = _m3;
-            _readRanges[Ranges.Region_0800_1FFF] = _m4;
-            _readRanges[Ranges.Region_2000_3FFF] = _m5;
-            _readRanges[Ranges.Region_4000_5FFF] = _m6;
-            _readRanges[Ranges.Region_6000_BFFF] = _m7;
-
             _readRanges[Ranges.Region_C000_C0FF] = _io;
             _readRanges[Ranges.Region_C100_C1FF] = _int1;
             _readRanges[Ranges.Region_C200_C2FF] = _int2;
@@ -531,14 +515,6 @@ namespace Pandowdy.EmuCore
 
         private void SetDefaultWriteRanges()
         {
-            _writeRanges[Ranges.Region_0000_01FF] = _m1;
-            _writeRanges[Ranges.Region_0200_03FF] = _m2;
-            _writeRanges[Ranges.Region_0400_07FF] = _m3;
-            _writeRanges[Ranges.Region_0800_1FFF] = _m4;
-            _writeRanges[Ranges.Region_2000_3FFF] = _m5;
-            _writeRanges[Ranges.Region_4000_5FFF] = _m6;
-            _writeRanges[Ranges.Region_6000_BFFF] = _m7;
-
             _writeRanges[Ranges.Region_C000_C0FF] = _io;
             _writeRanges[Ranges.Region_C100_C1FF] = null;
             _writeRanges[Ranges.Region_C200_C2FF] = null;
@@ -621,13 +597,20 @@ namespace Pandowdy.EmuCore
             >= (ushort) Ranges.Region_C200_C2FF => ReadFromRegion(Ranges.Region_C200_C2FF, address),
             >= (ushort) Ranges.Region_C100_C1FF => ReadFromRegion(Ranges.Region_C100_C1FF, address),
             >= (ushort) Ranges.Region_C000_C0FF => ReadFromRegion(Ranges.Region_C000_C0FF, address),
-            >= (ushort) Ranges.Region_6000_BFFF => ReadFromRegion(Ranges.Region_6000_BFFF, address),
-            >= (ushort) Ranges.Region_4000_5FFF => ReadFromRegion(Ranges.Region_4000_5FFF, address),
-            >= (ushort) Ranges.Region_2000_3FFF => ReadFromRegion(Ranges.Region_2000_3FFF, address),
-            >= (ushort) Ranges.Region_0800_1FFF => ReadFromRegion(Ranges.Region_0800_1FFF, address),
-            >= (ushort) Ranges.Region_0400_07FF => ReadFromRegion(Ranges.Region_0400_07FF, address),
-            >= (ushort) Ranges.Region_0200_03FF => ReadFromRegion(Ranges.Region_0200_03FF, address),
-            _ => ReadFromRegion(Ranges.Region_0000_01FF, address)
+            //>= (ushort) Ranges.Region_6000_BFFF => ReadFromRegion(Ranges.Region_6000_BFFF, address),
+            //>= (ushort) Ranges.Region_4000_5FFF => ReadFromRegion(Ranges.Region_4000_5FFF, address),
+            //>= (ushort) Ranges.Region_2000_3FFF => ReadFromRegion(Ranges.Region_2000_3FFF, address),
+            //>= (ushort) Ranges.Region_0800_1FFF => ReadFromRegion(Ranges.Region_0800_1FFF, address),
+            //>= (ushort) Ranges.Region_0400_07FF => ReadFromRegion(Ranges.Region_0400_07FF, address),
+            //>= (ushort) Ranges.Region_0200_03FF => ReadFromRegion(Ranges.Region_0200_03FF, address),
+            >= (ushort) Ranges.Region_6000_BFFF => _systemRam.Read(address),
+            >= (ushort) Ranges.Region_4000_5FFF => _systemRam.Read(address),
+            >= (ushort) Ranges.Region_2000_3FFF => _systemRam.Read(address),
+            >= (ushort) Ranges.Region_0800_1FFF => _systemRam.Read(address),
+            >= (ushort) Ranges.Region_0400_07FF => _systemRam.Read(address),
+            >= (ushort) Ranges.Region_0200_03FF => _systemRam.Read(address),
+            //_ => ReadFromRegion(Ranges.Region_0000_01FF, address)
+            _ => _systemRam.Read(address)
         };
 
         public void WriteMapped(ushort address, byte value)
@@ -648,16 +631,27 @@ namespace Pandowdy.EmuCore
                 >= (ushort) Ranges.Region_C200_C2FF => Ranges.Region_C200_C2FF,
                 >= (ushort) Ranges.Region_C100_C1FF => Ranges.Region_C100_C1FF,
                 >= (ushort) Ranges.Region_C000_C0FF => Ranges.Region_C000_C0FF,
-                >= (ushort) Ranges.Region_6000_BFFF => Ranges.Region_6000_BFFF,
-                >= (ushort) Ranges.Region_4000_5FFF => Ranges.Region_4000_5FFF,
-                >= (ushort) Ranges.Region_2000_3FFF => Ranges.Region_2000_3FFF,
-                >= (ushort) Ranges.Region_0800_1FFF => Ranges.Region_0800_1FFF,
-                >= (ushort) Ranges.Region_0400_07FF => Ranges.Region_0400_07FF,
-                >= (ushort) Ranges.Region_0200_03FF => Ranges.Region_0200_03FF,
-                _ => Ranges.Region_0000_01FF
+                //>= (ushort) Ranges.Region_6000_BFFF => Ranges.Region_6000_BFFF,
+                //>= (ushort) Ranges.Region_4000_5FFF => Ranges.Region_4000_5FFF,
+                //>= (ushort) Ranges.Region_2000_3FFF => Ranges.Region_2000_3FFF,
+                //>= (ushort) Ranges.Region_0800_1FFF => Ranges.Region_0800_1FFF,
+                //>= (ushort) Ranges.Region_0400_07FF => Ranges.Region_0400_07FF,
+                //>= (ushort) Ranges.Region_0200_03FF => Ranges.Region_0200_03FF,
+                >= (ushort) Ranges.Region_6000_BFFF => Ranges.Region_SysRam,
+                >= (ushort) Ranges.Region_4000_5FFF => Ranges.Region_SysRam,
+                >= (ushort) Ranges.Region_2000_3FFF => Ranges.Region_SysRam,
+                >= (ushort) Ranges.Region_0800_1FFF => Ranges.Region_SysRam,
+                >= (ushort) Ranges.Region_0400_07FF => Ranges.Region_SysRam,
+                >= (ushort) Ranges.Region_0200_03FF => Ranges.Region_SysRam,
+                //_ => Ranges.Region_0000_01FF
+                _ => Ranges.Region_SysRam
             };
             var validWrite = true;
-            if (range == Ranges.Region_LangCard)
+            if (range == Ranges.Region_SysRam)
+            {
+                _systemRam.Write(address, value);
+            }
+            else if(range == Ranges.Region_LangCard)
             {
                 _langCard.Write(address, value);
             }
@@ -678,66 +672,66 @@ namespace Pandowdy.EmuCore
 
         public void UpdateMemoryMappings()
         {
-            bool _altZp = _status.StateAltZp;
-            bool _ramRd = _status.StateRamRd;
-            bool _ramWrt = _status.StateRamWrt;
-            bool _80Store = _status.State80Store;
-            bool _page2 = _status.StatePage2;
+            //bool _altZp = _status.StateAltZp;
+            //bool _ramRd = _status.StateRamRd;
+            //bool _ramWrt = _status.StateRamWrt;
+            //bool _80Store = _status.State80Store;
+            //bool _page2 = _status.StatePage2;
             //bool _highWrite = _status.StateHighWrite;
             //bool _highRead = _status.StateHighRead;
           //  bool _bank1 = _status.StateUseBank1;
-            bool _hires = _status.StateHiRes;
+            //bool _hires = _status.StateHiRes;
             bool _intCxRom = _status.StateIntCxRom;
             bool _slotC3Rom = _status.StateSlotC3Rom;
 
             _mappingLock.EnterWriteLock();
             try
             {
-                _readRanges[Ranges.Region_0000_01FF] = _altZp ? _a1 : _m1;
-                _writeRanges[Ranges.Region_0000_01FF] = _altZp ? _a1 : _m1;
+                //_readRanges[Ranges.Region_0000_01FF] = _altZp ? _a1 : _m1;
+                //_writeRanges[Ranges.Region_0000_01FF] = _altZp ? _a1 : _m1;
 
 
 
-                _readRanges[Ranges.Region_0200_03FF] = (_ramRd ? _a2 : _m2);
-                _writeRanges[Ranges.Region_0200_03FF] = (_ramWrt ? _a2 : _m2);
+                //_readRanges[Ranges.Region_0200_03FF] = (_ramRd ? _a2 : _m2);
+                //_writeRanges[Ranges.Region_0200_03FF] = (_ramWrt ? _a2 : _m2);
 
-                // $400-$7ff below
+                //// $400-$7ff below
 
-                _readRanges[Ranges.Region_0800_1FFF] = (_ramRd ? _a4 : _m4);
-                _writeRanges[Ranges.Region_0800_1FFF] = (_ramWrt ? _a4 : _m4);
+                //_readRanges[Ranges.Region_0800_1FFF] = (_ramRd ? _a4 : _m4);
+                //_writeRanges[Ranges.Region_0800_1FFF] = (_ramWrt ? _a4 : _m4);
 
-                // $2000-$3FFF below
+                //// $2000-$3FFF below
 
-                _readRanges[Ranges.Region_4000_5FFF] = (_ramRd ? _a6 : _m6);
-                _writeRanges[Ranges.Region_4000_5FFF] = (_ramWrt ? _a6 : _m6);
+                //_readRanges[Ranges.Region_4000_5FFF] = (_ramRd ? _a6 : _m6);
+                //_writeRanges[Ranges.Region_4000_5FFF] = (_ramWrt ? _a6 : _m6);
 
-                _readRanges[Ranges.Region_6000_BFFF] = (_ramRd ? _a7 : _m7);
-                _writeRanges[Ranges.Region_6000_BFFF] = (_ramWrt ? _a7 : _m7);
+                //_readRanges[Ranges.Region_6000_BFFF] = (_ramRd ? _a7 : _m7);
+                //_writeRanges[Ranges.Region_6000_BFFF] = (_ramWrt ? _a7 : _m7);
 
 
 
-                if (!_80Store)
-                {
-                    _readRanges[Ranges.Region_0400_07FF] = (_ramRd ? _a3 : _m3);
-                    _readRanges[Ranges.Region_2000_3FFF] = (_ramRd ? _a5 : _m5);
-                    _writeRanges[Ranges.Region_0400_07FF] = (_ramWrt ? _a3 : _m3);
-                    _writeRanges[Ranges.Region_2000_3FFF] = (_ramWrt ? _a5 : _m5);
-                }
-                else
-                {
-                    _readRanges[Ranges.Region_0400_07FF] = (_page2 ? _a3 : _m3);
-                    _writeRanges[Ranges.Region_0400_07FF] = (_page2 ? _a3 : _m3);
-                    if (_hires)
-                    {
-                        _readRanges[Ranges.Region_2000_3FFF] = (_page2 ? _a5 : _m5);
-                        _writeRanges[Ranges.Region_2000_3FFF] = (_page2 ? _a5 : _m5);
-                    }
-                    else
-                    {
-                        _readRanges[Ranges.Region_2000_3FFF] = (_ramRd ? _a5 : _m5);
-                        _writeRanges[Ranges.Region_2000_3FFF] = (_ramWrt ? _a5 : _m5);
-                    }
-                }
+                //if (!_80Store)
+                //{
+                //    _readRanges[Ranges.Region_0400_07FF] = (_ramRd ? _a3 : _m3);
+                //    _readRanges[Ranges.Region_2000_3FFF] = (_ramRd ? _a5 : _m5);
+                //    _writeRanges[Ranges.Region_0400_07FF] = (_ramWrt ? _a3 : _m3);
+                //    _writeRanges[Ranges.Region_2000_3FFF] = (_ramWrt ? _a5 : _m5);
+                //}
+                //else
+                //{
+                //    _readRanges[Ranges.Region_0400_07FF] = (_page2 ? _a3 : _m3);
+                //    _writeRanges[Ranges.Region_0400_07FF] = (_page2 ? _a3 : _m3);
+                //    if (_hires)
+                //    {
+                //        _readRanges[Ranges.Region_2000_3FFF] = (_page2 ? _a5 : _m5);
+                //        _writeRanges[Ranges.Region_2000_3FFF] = (_page2 ? _a5 : _m5);
+                //    }
+                //    else
+                //    {
+                //        _readRanges[Ranges.Region_2000_3FFF] = (_ramRd ? _a5 : _m5);
+                //        _writeRanges[Ranges.Region_2000_3FFF] = (_ramWrt ? _a5 : _m5);
+                //    }
+                //}
 
     
 

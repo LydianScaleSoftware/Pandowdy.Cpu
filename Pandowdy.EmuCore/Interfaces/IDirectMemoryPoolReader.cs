@@ -46,7 +46,7 @@ namespace Pandowdy.EmuCore.Interfaces
         /// rendering video from specific memory pages or debugging memory contents.
         /// </para>
         /// </remarks>
-        byte ReadRawMain(int address);
+        public byte ReadRawMain(int address);
 
         /// <summary>
         /// Reads a byte from the auxiliary memory pool, bypassing all bus mapping and soft switches.
@@ -68,7 +68,7 @@ namespace Pandowdy.EmuCore.Interfaces
         /// 80-column text or double hi-res graphics.
         /// </para>
         /// </remarks>
-        byte ReadRawAux(int address);
+        public byte ReadRawAux(int address);
     }
 }
 

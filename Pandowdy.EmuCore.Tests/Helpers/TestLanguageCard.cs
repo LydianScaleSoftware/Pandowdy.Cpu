@@ -1,6 +1,7 @@
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.EmuCore.Services;
 using Emulator;
+using System.Drawing;
 
 namespace Pandowdy.EmuCore.Tests.Helpers;
 
@@ -96,6 +97,48 @@ public sealed class TestSystemRomProvider(int size) : ISystemRomProvider
 public sealed class TestFloatingBusProvider : IFloatingBusProvider
 {
     public byte Read() => 0xFF;
+}
+
+/// <summary>
+/// Test implementation of ISystemRamSelector for MemoryPool testing.
+/// </summary>
+/// <remarks>
+/// Simple mock that returns 0xFF for all reads and ignores writes.
+/// Implements IDirectMemoryPoolReader for raw memory access.
+/// </remarks>
+public sealed class TestSystemRamSelector : ISystemRamSelector
+{
+    public int Size => 0xC000; // 48KB
+
+    public byte Read(ushort address) => 0xFF;
+
+    public void Write(ushort address, byte value) { /* No-op */ }
+
+    public byte this[ushort address]
+    {
+        get => 0xFF;
+        set { /* No-op */ }
+    }
+
+    public byte ReadRawMain(int address) => 0xFF;
+
+    public byte ReadRawAux(int address) => 0xFF;
+}
+
+public sealed class Test64KSystemRamSelector : ISystemRamSelector
+{
+    private byte[] data =  new byte[0xC000];
+    public int Size => 0xC000;
+    public byte Read(ushort address) => data[address];
+    public void Write(ushort address, byte value) { data[address] = value; }
+    public byte this[ushort address]
+    {
+        get => Read(address);
+        set => Write(address, value);
+    }
+    public byte ReadRawMain(int address) => Read((ushort)(address & 0xffff));
+
+    public byte ReadRawAux(int address) => Read((ushort) (address & 0xffff));
 }
 
 /// <summary>

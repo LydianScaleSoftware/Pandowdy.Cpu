@@ -23,7 +23,20 @@ namespace Pandowdy.EmuCore
  
         public int Size => RequiredRamSize; // 48kb addressable space
 
-    
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ReadRawMain(int address)
+        {
+            return _mainRam[(ushort)(address & 0xffff)];
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte ReadRawAux(int address)
+        {
+            return _auxRam == null ? _floatingBus.Read() : _auxRam[(ushort) (address & 0xffff)];
+        }
+
                
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte Read(ushort address)

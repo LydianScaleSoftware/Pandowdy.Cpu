@@ -96,7 +96,18 @@ namespace Pandowdy
                         
                         return new LanguageCard(mainRam, auxRam, systemRom, floatingBus, status);
                     });
-                    
+
+                    // SystemRamSelector - uses two 48KB RAM blocks
+                    services.AddSingleton<ISystemRamSelector, SystemRamSelector>(sp =>
+                    {
+                        var mainRam = sp.GetRequiredKeyedService<ISystemRam>("48K");    // 48KB main RAM
+                        var auxRam = sp.GetRequiredKeyedService<ISystemRam>("48K");     // 48KB aux RAM
+                        var floatingBus = sp.GetRequiredService<IFloatingBusProvider>();
+                        var status = sp.GetRequiredService<ISystemStatusProvider>();
+
+                        return new SystemRamSelector(mainRam, auxRam, floatingBus, status);
+                    });
+
                     services.AddSingleton<IAppleIIBus,VA2MBus>();
 
                     // UI services

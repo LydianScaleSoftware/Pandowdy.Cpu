@@ -75,7 +75,7 @@ public class MainWindowFactoryTests
         {
             // Create core dependencies
             var statusProvider = new SystemStatusProvider();
-            var memoryPool = new MemoryPool(statusProvider, new TestLanguageCard());
+            var memoryPool = new MemoryPool(statusProvider, new TestLanguageCard(), new TestSystemRamSelector());
             var stateProvider = new EmulatorStateProvider();
             var cpu = new CPUAdapter(new Emulator.CPU());
             var frameProvider = new FrameProvider();
@@ -318,5 +318,22 @@ public class MainWindowFactoryTests
             get => 0xFF;
             set { }
         }
+    }
+
+    /// <summary>
+    /// Simple test implementation of ISystemRamSelector for MemoryPool testing.
+    /// </summary>
+    private class TestSystemRamSelector : ISystemRamSelector
+    {
+        public int Size => 0xC000; // 48KB
+        public byte Read(ushort address) => 0xFF;
+        public void Write(ushort address, byte value) { }
+        public byte this[ushort address]
+        {
+            get => 0xFF;
+            set { }
+        }
+        public byte ReadRawMain(int address) => 0xFF;
+        public byte ReadRawAux(int address) => 0xFF;
     }
 }
