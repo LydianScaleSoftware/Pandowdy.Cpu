@@ -189,7 +189,7 @@ public class LanguageCard(
     /// where unmapped memory reads return the last value on the data bus.
     /// </para>
     /// <para>
-    /// <strong>Bank Selection:</strong> The <see cref="StateUseBank1"/> flag determines
+    /// <strong>Bank Selection:</strong> The <see cref="ISystemStatusProvider.StateUseBank1"/> flag determines
     /// which 4KB bank is accessed for $D000-$DFFF. The $E000-$FFFF region is shared.
     /// </para>
     /// <para>
@@ -239,7 +239,7 @@ public class LanguageCard(
     /// </code>
     /// </para>
     /// <para>
-    /// <strong>Bank Selection:</strong> The <see cref="StateUseBank1"/> flag determines
+    /// <strong>Bank Selection:</strong> The <see cref="ISystemStatusProvider.StateUseBank1"/> flag determines
     /// which 4KB bank is written to for $D000-$DFFF. The $E000-$FFFF region is shared.
     /// </para>
     /// <para>

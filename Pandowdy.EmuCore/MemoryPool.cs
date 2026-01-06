@@ -1,41 +1,4 @@
-//------------------------------------------------------------------------------
-// MemoryPool.cs
-//
-// ⚠️ PERFORMANCE-OPTIMIZED IMPLEMENTATION - PLANNED FOR REFACTORING ⚠️
-//
-// This class implements Apple IIe memory management using a slice-based approach
-// where all memory regions are allocated from a single backing pool and mapped
-// dynamically based on soft switch states. While this provides excellent
-// performance, it trades clarity for speed.
-//
-// DESIGN RATIONALE:
-// The Apple IIe's 128KB memory space (64KB main + 64KB auxiliary) plus ROM and
-// I/O regions are all carved from a single byte[] pool. Memory accesses are
-// mapped to slices via switch expressions, eliminating allocation overhead and
-// providing cache-friendly sequential access patterns.
-//
-// PERFORMANCE BENEFITS:
-// - Single allocation (no GC pressure from multiple arrays)
-// - Cache-friendly contiguous memory layout
-// - Fast slice-based remapping (just pointer arithmetic)
-// - Lock-based thread safety for mapping updates
-//
-// CLARITY TRADE-OFFS:
-// - Complex slice management (40+ Memory<byte> fields)
-// - Non-obvious address mapping logic
-// - Harder to understand Apple IIe memory model at first glance
-// - Tight coupling between soft switches and memory layout
-//
-// FUTURE REFACTORING:
-// The planned refactoring will prioritize clarity:
-// - Explicit memory region classes (MainRAM, AuxiliaryRAM, ROM, etc.)
-// - Clear separation between physical memory and address space mapping
-// - Strategy pattern for soft switch-based mapping rules
-// - Better abstraction of Apple IIe memory architecture
-//
-// For now, this implementation works well and is thoroughly tested. The
-// refactoring will improve maintainability without sacrificing performance.
-//------------------------------------------------------------------------------
+
 
 using Emulator;
 using Pandowdy.EmuCore.Interfaces;
@@ -63,100 +26,7 @@ public sealed class MemoryAccessEventArgs : EventArgs
     public byte? Value { get; init; }
 }
 
-/// <summary>
-/// Manages Apple IIe memory (128KB RAM + ROM/I/O) using a slice-based pool architecture.
-/// </summary>
-/// <remarks>
-/// <para>
-/// <strong>⚠️ PERFORMANCE-OPTIMIZED DESIGN:</strong> This class uses a single backing
-/// array with memory slices to implement the Apple IIe's complex memory architecture.
-/// While fast, this design trades clarity for performance and will be refactored to
-/// improve maintainability in the future.
-/// </para>
-/// <para>
-/// <strong>Apple IIe Memory Architecture:</strong> The Apple IIe has 128KB of RAM
-/// (64KB main + 64KB auxiliary) plus 16KB of ROM and 4KB of I/O space. Memory is
-/// accessed through a 16-bit address space ($0000-$FFFF), but the actual physical
-/// memory accessed depends on soft switch settings.
-/// </para>
-/// <para>
-/// <strong>Memory Layout:</strong>
-/// <code>
-/// Pool Layout (163,072 bytes total):
-/// 
-/// Main Memory (64KB):
-///   $0000-$01FF: _m1  (512B)  - Zero Page + Stack
-///   $0200-$03FF: _m2  (512B)  - Input Buffer
-///   $0400-$07FF: _m3  (1KB)   - Text Page 1
-///   $0800-$1FFF: _m4  (6KB)   - Main RAM
-///   $2000-$3FFF: _m5  (8KB)   - Hi-Res Page 1
-///   $4000-$5FFF: _m6  (8KB)   - Hi-Res Page 2
-///   $6000-$BFFF: _m7  (24KB)  - Main RAM
-///   $C000-$CFFF: _m8a (4KB)   - Language Card Bank 1
-///   $D000-$DFFF: _m8b (4KB)   - Language Card Bank 2
-///   $E000-$FFFF: _m9  (8KB)   - Language Card High
-/// 
-/// Auxiliary Memory (64KB):
-///   $0000-$01FF: _a1  (512B)  - Aux Zero Page + Stack
-///   $0200-$03FF: _a2  (512B)  - Aux Input Buffer
-///   $0400-$07FF: _a3  (1KB)   - Aux Text Page 1
-///   $0800-$1FFF: _a4  (6KB)   - Aux RAM
-///   $2000-$3FFF: _a5  (8KB)   - Aux Hi-Res Page 1
-///   $4000-$5FFF: _a6  (8KB)   - Aux Hi-Res Page 2
-///   $6000-$BFFF: _a7  (24KB)  - Aux RAM
-///   $C000-$CFFF: _a8a (4KB)   - Aux Language Card Bank 1
-///   $D000-$DFFF: _a8b (4KB)   - Aux Language Card Bank 2
-///   $E000-$FFFF: _a9  (8KB)   - Aux Language Card High
-/// 
-/// ROM/I/O (16KB + 4KB):
-///   $C000-$C0FF: _io      (256B) - I/O Space
-///   $C100-$C7FF: _int1-7  (7×256B) - Internal ROM (per slot)
-///   $C800-$CFFF: _intext  (2KB)  - Extended Internal ROM
-///   $D000-$DFFF: _rom1    (4KB)  - Monitor ROM Bank 1
-///   $E000-$FFFF: _rom2    (8KB)  - Monitor ROM Bank 2 + Reset Vector
-/// 
-/// Slot ROMs (7 × 256B + 7 × 2KB extensions):
-///   $C100-$C7FF: _s1-7    (7×256B) - Slot ROM (1 page per slot)
-///   $C800-$CFFF: _s1ext-7 (7×2KB)  - Slot ROM extensions
-/// </code>
-/// </para>
-/// <para>
-/// <strong>Soft Switch Mapping:</strong> The Apple IIe uses soft switches to control
-/// which physical memory is mapped into the 64KB address space:
-/// <list type="bullet">
-/// <item><strong>RAMRD/RAMWRT:</strong> Select main vs auxiliary RAM for reads/writes</item>
-/// <item><strong>ALTZP:</strong> Select main vs auxiliary zero page and stack</item>
-/// <item><strong>80STORE:</strong> Page 2 selection for text/hi-res pages</item>
-/// <item><strong>HIRES:</strong> Hi-res page selection when 80STORE is active</item>
-/// <item><strong>PAGE2:</strong> Select page 1 vs page 2 for video</item>
-/// <item><strong>INTCXROM:</strong> Internal ROM vs slot ROMs ($C100-$C7FF)</item>
-/// <item><strong>SLOTC3ROM:</strong> Slot 3 ROM vs internal ROM</item>
-/// <item><strong>Language Card:</strong> Bank switching for $D000-$FFFF</item>
-/// </list>
-/// </para>
-/// <para>
-/// <strong>Slice-Based Performance:</strong> All memory regions are sliced from a single
-/// backing array. Mapping updates change which slices are active for each address range,
-/// providing fast remapping without copying data. Read/write operations use switch
-/// expressions for efficient address-to-slice lookup.
-/// </para>
-/// <para>
-/// <strong>Thread Safety:</strong> Memory mapping updates (soft switch changes) use a
-/// <see cref="ReaderWriterLockSlim"/> to allow concurrent reads while serializing
-/// mapping updates. This is important since the bus is accessed from the CPU thread
-/// while soft switches may be toggled from UI or I/O operations.
-/// </para>
-/// <para>
-/// <strong>Future Refactoring:</strong> This class will be refactored to improve clarity:
-/// <list type="bullet">
-/// <item>Explicit memory region classes instead of generic slices</item>
-/// <item>Strategy pattern for soft switch mapping rules</item>
-/// <item>Better separation between physical memory and address space</item>
-/// <item>Clearer documentation of Apple IIe memory model</item>
-/// </list>
-/// The refactoring will maintain performance while improving maintainability.
-/// </para>
-/// </remarks>
+
 public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPoolReader,  IDisposable
 {
     //Methods from IMemory:
@@ -272,10 +142,8 @@ public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPo
     /// directly.
     /// </para>
     /// </remarks>
-    public byte ReadRawAux(int address) => _pool[(address & 0xffff) | 0x10000];
 
-
-
+    public byte ReadRawAux(int address) => _systemRam.ReadRawAux(address);
     /// <summary>
     /// The backing store - single contiguous byte array containing all memory regions.
     /// </summary>
@@ -296,43 +164,9 @@ public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPo
     /// </remarks>
     private readonly byte[] _pool;
     
-    /// <summary>
-    /// Gets the backing store array (for advanced/debugging use).
-    /// </summary>
-    /// <remarks>
-    /// Exposes the raw pool for scenarios that need direct memory access (save states,
-    /// memory dumps, advanced debugging). Use with caution - modifying the pool directly
-    /// bypasses all soft switch logic and mapping.
-    /// </remarks>
-    public byte[] Pool => _pool;
 
-    /// <summary>
-    /// Memory address ranges used for region-based mapping.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <strong>Purpose:</strong> The Apple IIe's 64KB address space is divided into
-    /// regions based on how soft switches affect them. Each range has independent
-    /// mapping rules.
-    /// </para>
-    /// <para>
-    /// <strong>Region Boundaries:</strong>
-    /// <list type="bullet">
-    /// <item>$0000-$01FF: Zero page + Stack (ALTZP controls)</item>
-    /// <item>$0200-$03FF: Input buffer (RAMRD/RAMWRT control)</item>
-    /// <item>$0400-$07FF: Text page 1 (80STORE + PAGE2 control)</item>
-    /// <item>$0800-$1FFF: Main low RAM (RAMRD/RAMWRT control)</item>
-    /// <item>$2000-$3FFF: Hi-res page 1 (80STORE + HIRES + PAGE2 control)</item>
-    /// <item>$4000-$5FFF: Hi-res page 2 (RAMRD/RAMWRT control)</item>
-    /// <item>$6000-$BFFF: Main high RAM (RAMRD/RAMWRT control)</item>
-    /// <item>$C000-$C0FF: I/O space (always I/O)</item>
-    /// <item>$C100-$C7FF: Slot ROMs (INTCXROM + SLOTC3ROM control, per-slot)</item>
-    /// <item>$C800-$CFFF: Extended ROM (slot-selected or internal)</item>
-    /// <item>$D000-$DFFF: Language card bank (bank switching)</item>
-    /// <item>$E000-$FFFF: Language card high + reset vector (bank switching)</item>
-    /// </list>
-    /// </para>
-    /// </remarks>
+
+
     public enum Ranges
     {
         Region_0000_01FF = 0,
@@ -584,8 +418,7 @@ public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPo
 
     public byte ReadMapped(ushort address) => address switch
     {
-        //>= (ushort) Ranges.Region_E000_FFFF => ReadFromRegion(Ranges.Region_E000_FFFF, address),
-        //>= (ushort) Ranges.Region_D000_DFFF => ReadFromRegion(Ranges.Region_D000_DFFF, address),
+
         >= (ushort) Ranges.Region_E000_FFFF => _langCard.Read(address),
         >= (ushort) Ranges.Region_D000_DFFF => _langCard.Read(address),
         >= (ushort) Ranges.Region_C800_CFFF => ReadFromRegion(Ranges.Region_C800_CFFF, address),
@@ -597,19 +430,12 @@ public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPo
         >= (ushort) Ranges.Region_C200_C2FF => ReadFromRegion(Ranges.Region_C200_C2FF, address),
         >= (ushort) Ranges.Region_C100_C1FF => ReadFromRegion(Ranges.Region_C100_C1FF, address),
         >= (ushort) Ranges.Region_C000_C0FF => ReadFromRegion(Ranges.Region_C000_C0FF, address),
-        //>= (ushort) Ranges.Region_6000_BFFF => ReadFromRegion(Ranges.Region_6000_BFFF, address),
-        //>= (ushort) Ranges.Region_4000_5FFF => ReadFromRegion(Ranges.Region_4000_5FFF, address),
-        //>= (ushort) Ranges.Region_2000_3FFF => ReadFromRegion(Ranges.Region_2000_3FFF, address),
-        //>= (ushort) Ranges.Region_0800_1FFF => ReadFromRegion(Ranges.Region_0800_1FFF, address),
-        //>= (ushort) Ranges.Region_0400_07FF => ReadFromRegion(Ranges.Region_0400_07FF, address),
-        //>= (ushort) Ranges.Region_0200_03FF => ReadFromRegion(Ranges.Region_0200_03FF, address),
         >= (ushort) Ranges.Region_6000_BFFF => _systemRam.Read(address),
         >= (ushort) Ranges.Region_4000_5FFF => _systemRam.Read(address),
         >= (ushort) Ranges.Region_2000_3FFF => _systemRam.Read(address),
         >= (ushort) Ranges.Region_0800_1FFF => _systemRam.Read(address),
         >= (ushort) Ranges.Region_0400_07FF => _systemRam.Read(address),
         >= (ushort) Ranges.Region_0200_03FF => _systemRam.Read(address),
-        //_ => ReadFromRegion(Ranges.Region_0000_01FF, address)
         _ => _systemRam.Read(address)
     };
 
@@ -618,8 +444,6 @@ public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPo
 
         var range = address switch
         {
-          //  >= (ushort) Ranges.Region_E000_FFFF => Ranges.Region_E000_FFFF,
-          //  >= (ushort) Ranges.Region_D000_DFFF => Ranges.Region_D000_DFFF,
             >= (ushort) Ranges.Region_E000_FFFF => Ranges.Region_LangCard,
             >= (ushort) Ranges.Region_D000_DFFF => Ranges.Region_LangCard,
             >= (ushort) Ranges.Region_C800_CFFF => Ranges.Region_C800_CFFF,
@@ -631,19 +455,12 @@ public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPo
             >= (ushort) Ranges.Region_C200_C2FF => Ranges.Region_C200_C2FF,
             >= (ushort) Ranges.Region_C100_C1FF => Ranges.Region_C100_C1FF,
             >= (ushort) Ranges.Region_C000_C0FF => Ranges.Region_C000_C0FF,
-            //>= (ushort) Ranges.Region_6000_BFFF => Ranges.Region_6000_BFFF,
-            //>= (ushort) Ranges.Region_4000_5FFF => Ranges.Region_4000_5FFF,
-            //>= (ushort) Ranges.Region_2000_3FFF => Ranges.Region_2000_3FFF,
-            //>= (ushort) Ranges.Region_0800_1FFF => Ranges.Region_0800_1FFF,
-            //>= (ushort) Ranges.Region_0400_07FF => Ranges.Region_0400_07FF,
-            //>= (ushort) Ranges.Region_0200_03FF => Ranges.Region_0200_03FF,
             >= (ushort) Ranges.Region_6000_BFFF => Ranges.Region_SysRam,
             >= (ushort) Ranges.Region_4000_5FFF => Ranges.Region_SysRam,
             >= (ushort) Ranges.Region_2000_3FFF => Ranges.Region_SysRam,
             >= (ushort) Ranges.Region_0800_1FFF => Ranges.Region_SysRam,
             >= (ushort) Ranges.Region_0400_07FF => Ranges.Region_SysRam,
             >= (ushort) Ranges.Region_0200_03FF => Ranges.Region_SysRam,
-            //_ => Ranges.Region_0000_01FF
             _ => Ranges.Region_SysRam
         };
         var validWrite = true;
@@ -672,68 +489,13 @@ public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPo
 
     public void UpdateMemoryMappings()
     {
-        //bool _altZp = _status.StateAltZp;
-        //bool _ramRd = _status.StateRamRd;
-        //bool _ramWrt = _status.StateRamWrt;
-        //bool _80Store = _status.State80Store;
-        //bool _page2 = _status.StatePage2;
-        //bool _highWrite = _status.StateHighWrite;
-        //bool _highRead = _status.StateHighRead;
-      //  bool _bank1 = _status.StateUseBank1;
-        //bool _hires = _status.StateHiRes;
+
         bool _intCxRom = _status.StateIntCxRom;
         bool _slotC3Rom = _status.StateSlotC3Rom;
 
         _mappingLock.EnterWriteLock();
         try
         {
-            //_readRanges[Ranges.Region_0000_01FF] = _altZp ? _a1 : _m1;
-            //_writeRanges[Ranges.Region_0000_01FF] = _altZp ? _a1 : _m1;
-
-
-
-            //_readRanges[Ranges.Region_0200_03FF] = (_ramRd ? _a2 : _m2);
-            //_writeRanges[Ranges.Region_0200_03FF] = (_ramWrt ? _a2 : _m2);
-
-            //// $400-$7ff below
-
-            //_readRanges[Ranges.Region_0800_1FFF] = (_ramRd ? _a4 : _m4);
-            //_writeRanges[Ranges.Region_0800_1FFF] = (_ramWrt ? _a4 : _m4);
-
-            //// $2000-$3FFF below
-
-            //_readRanges[Ranges.Region_4000_5FFF] = (_ramRd ? _a6 : _m6);
-            //_writeRanges[Ranges.Region_4000_5FFF] = (_ramWrt ? _a6 : _m6);
-
-            //_readRanges[Ranges.Region_6000_BFFF] = (_ramRd ? _a7 : _m7);
-            //_writeRanges[Ranges.Region_6000_BFFF] = (_ramWrt ? _a7 : _m7);
-
-
-
-            //if (!_80Store)
-            //{
-            //    _readRanges[Ranges.Region_0400_07FF] = (_ramRd ? _a3 : _m3);
-            //    _readRanges[Ranges.Region_2000_3FFF] = (_ramRd ? _a5 : _m5);
-            //    _writeRanges[Ranges.Region_0400_07FF] = (_ramWrt ? _a3 : _m3);
-            //    _writeRanges[Ranges.Region_2000_3FFF] = (_ramWrt ? _a5 : _m5);
-            //}
-            //else
-            //{
-            //    _readRanges[Ranges.Region_0400_07FF] = (_page2 ? _a3 : _m3);
-            //    _writeRanges[Ranges.Region_0400_07FF] = (_page2 ? _a3 : _m3);
-            //    if (_hires)
-            //    {
-            //        _readRanges[Ranges.Region_2000_3FFF] = (_page2 ? _a5 : _m5);
-            //        _writeRanges[Ranges.Region_2000_3FFF] = (_page2 ? _a5 : _m5);
-            //    }
-            //    else
-            //    {
-            //        _readRanges[Ranges.Region_2000_3FFF] = (_ramRd ? _a5 : _m5);
-            //        _writeRanges[Ranges.Region_2000_3FFF] = (_ramWrt ? _a5 : _m5);
-            //    }
-            //}
-
-
 
             // This will take the place of the card mechanism for now.
             bool[] hasCard = [false, true, true, true, true, true, true, true]; // Slots 0-7 (0 -> unused)
@@ -779,7 +541,6 @@ public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPo
             throw new Exception("Apple IIe ROM must be exactly 16KB in size.");
         }
 
-        // rom should be 16k with the rom data filling _io, _int1-_int7, _intext, _rom1, _rom2
         rom.AsSpan(0x0000, 0x0100).CopyTo(_io.Span);
 
         rom.AsSpan(0x0100, 0x0100).CopyTo(_int1.Span);
@@ -791,8 +552,5 @@ public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPo
         rom.AsSpan(0x0700, 0x0100).CopyTo(_int7.Span);
 
         rom.AsSpan(0x0800, 0x0800).CopyTo(_intext.Span);
-
-      //  rom.AsSpan(0x1000, 0x1000).CopyTo(_rom1.Span);
-      //  rom.AsSpan(0x2000, 0x2000).CopyTo(_rom2.Span);
     }
 }

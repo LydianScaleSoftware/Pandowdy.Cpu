@@ -42,7 +42,7 @@ namespace Pandowdy.EmuCore;
 /// <remarks>
 /// <para>
 /// <strong>One-Shot Lifetime:</strong> A RenderContext is valid only until it is committed via
-/// <see cref="FrameGenerator.RenderFrame"/>. After commit, the context is automatically invalidated
+/// <see cref="IFrameGenerator.RenderFrame"/>. After commit, the context is automatically invalidated
 /// and attempting to use it will throw <see cref="InvalidOperationException"/>.
 /// </para>
 /// <para>
