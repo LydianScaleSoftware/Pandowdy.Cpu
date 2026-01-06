@@ -73,10 +73,11 @@ namespace Pandowdy
                     // Then register both interfaces to point to the same instance
                     services.AddSingleton<ISystemStatusProvider>(sp => sp.GetRequiredService<SystemStatusProvider>());
                     services.AddSingleton<ISoftSwitchResponder>(sp => sp.GetRequiredService<SystemStatusProvider>());
-                    
+
                     // Floating Bus Provider
-                    services.AddSingleton<IFloatingBusProvider, NullFloatingBusProvider>();
-                    
+                    //services.AddSingleton<IFloatingBusProvider, NullFloatingBusProvider>();
+                    services.AddSingleton<IFloatingBusProvider, RandomFloatingBusProvider>();
+
                     // System ROM Provider - loads embedded ROM
                     services.AddSingleton<ISystemRomProvider>(sp => 
                         new SystemRomProvider("res:Pandowdy.EmuCore.Resources.a2e_enh_c-f.rom"));

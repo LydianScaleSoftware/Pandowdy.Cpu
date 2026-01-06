@@ -111,28 +111,78 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     private bool _button2 = false;
 
     /// <summary>
-    /// Number of CPU cycles between VBlank events (17,063 = 1,023,000 Hz / 60 Hz).
+    /// Number of CPU cycles between VBlank events (17,030 = 262 scanlines × 65 cycles/scanline).
     /// </summary>
     /// <remarks>
-    /// This value matches the Apple IIe NTSC specification. For PAL systems,
-    /// this would be different (~20,460 cycles for 50 Hz).
+    /// <para>
+    /// <strong>Apple IIe NTSC Timing:</strong>
+    /// <list type="bullet">
+    /// <item>192 visible scanlines (cycles 0-12,479)</item>
+    /// <item>70 vertical blanking scanlines (cycles 12,480-17,029)</item>
+    /// <item>Total: 262 scanlines × 65 cycles/scanline = 17,030 cycles/frame</item>
+    /// <item>Frame rate: 1,023,000 Hz / 17,030 cycles ≈ 60.06 Hz (NTSC)</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Why 17,030 not 17,063:</strong> The correct Apple IIe timing is 17,030 cycles
+    /// per frame. The value 17,063 was an approximation that caused synchronization issues
+    /// with 80-column firmware which expects VBlank at scanline 192 (cycle 12,480).
+    /// </para>
     /// </remarks>
-    private const ulong CyclesPerVBlank = 17063;
+    private const ulong CyclesPerVBlank = 17030;
 
     /// <summary>
     /// Number of cycles during which the vertical blanking flag (RD_VERTBLANK_) reads as $80.
     /// </summary>
     /// <remarks>
-    /// The VBlank blackout period is 4,550 cycles during which the video scanner is not
-    /// drawing visible scanlines. Software can use this period for graphics updates without
-    /// causing visual artifacts.
+    /// <para>
+    /// The VBlank blackout period is 4,550 cycles (70 scanlines × 65 cycles/scanline) during
+    /// which the video scanner is not drawing visible scanlines. Software can use this period
+    /// for graphics updates without causing visual artifacts.
+    /// </para>
+    /// <para>
+    /// <strong>Timing:</strong>
+    /// <list type="bullet">
+    /// <item>VBlank starts at cycle 12,480 (scanline 192)</item>
+    /// <item>VBlank ends at cycle 17,029 (scanline 261)</item>
+    /// <item>Duration: 70 scanlines × 65 cycles = 4,550 cycles</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>80-Column Firmware Synchronization:</strong> The 80-column firmware relies on
+    /// testing RD_VERTBLANK_ to determine when to start page-flipping. By ensuring VBlank
+    /// fires at the correct cycle (12,480), we maintain synchronization with firmware timing
+    /// expectations.
+    /// </para>
     /// </remarks>
     private const int VBlankBlackoutCycles = 4550;
     
     /// <summary>
+    /// Cycle count within frame at which VBlank starts (scanline 192 begins).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>Visible Display Ends:</strong> After 192 visible scanlines × 65 cycles/scanline
+    /// = 12,480 cycles, the video scanner enters vertical blanking. This is when RD_VERTBLANK_
+    /// ($C019) transitions from $00 to $80.
+    /// </para>
+    /// <para>
+    /// <strong>Why This Matters:</strong> The Apple IIe 80-column firmware expects VBlank to
+    /// occur at this specific cycle offset, not at cycle 0 (start of frame). By firing VBlank
+    /// at cycle 12,480, we ensure firmware PAGE2 toggles are synchronized with the correct
+    /// scanline positions.
+    /// </para>
+    /// </remarks>
+    private const ulong VBlankStartCycle = 12480; // 192 scanlines × 65 cycles
+    
+    /// <summary>
     /// Cycle count at which the next VBlank event will fire.
     /// </summary>
-    private ulong _nextVblankCycle = CyclesPerVBlank;
+    /// <remarks>
+    /// Initialized to VBlankStartCycle so the first VBlank fires at cycle 12,480 (not 0),
+    /// matching Apple IIe hardware behavior where VBlank occurs after visible display.
+    /// </remarks>
+    private ulong _nextVblankCycle = VBlankStartCycle;
     
     /// <summary>
     /// Countdown timer for VBlank blackout period (decremented each cycle).
@@ -614,7 +664,6 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// <strong>Write vs Read Semantics:</strong> Language card write handlers have different behavior
     /// than read handlers. Specifically, the two-access write sequence is reset on writes to certain
     /// addresses (see <see cref="ApplyBankIoWriteFlags"/>).
-    /// </para>
     /// </remarks>
     private void InitIoWriteHandlers()
     {
@@ -1065,14 +1114,28 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// </list>
     /// </para>
     /// <para>
-    /// <strong>VBlank Timing:</strong> When _systemClock reaches _nextVblankCycle, the VBlank
-    /// event is fired and _nextVblankCycle is advanced by CyclesPerVBlank (17,063). The VBlank
-    /// blackout counter is reset to 4,550 cycles.
+    /// <strong>VBlank Timing:</strong> When _systemClock reaches _nextVblankCycle (initially
+    /// 12,480, then 29,510, 46,540, ...), the VBlank event is fired and _nextVblankCycle is
+    /// advanced by CyclesPerVBlank (17,030). The VBlank blackout counter is reset to 4,550 cycles.
+    /// </para>
+    /// <para>
+    /// <strong>Frame Cycle Calculation:</strong>
+    /// <code>
+    /// Frame 0: VBlank at cycle 12,480 (scanline 192)
+    /// Frame 1: VBlank at cycle 29,510 (12,480 + 17,030)
+    /// Frame 2: VBlank at cycle 46,540 (29,510 + 17,030)
+    /// ...and so on
+    /// </code>
     /// </para>
     /// <para>
     /// <strong>Catch-Up Logic:</strong> If the emulator runs fast (unthrottled batches), multiple
     /// VBlank cycles may be skipped. The do-while loop ensures _nextVblankCycle catches up to
-    /// _systemClock, preventing event spam.
+    /// _systemClock, preventing event spam while maintaining proper phase alignment.
+    /// </para>
+    /// <para>
+    /// <strong>80-Column Synchronization:</strong> By firing VBlank at cycle 12,480 (not 0),
+    /// we maintain synchronization with Apple IIe 80-column firmware which rapidly toggles
+    /// PAGE2 during visible scanlines and relies on VBlank flag ($C019) for timing.
     /// </para>
     /// <para>
     /// <strong>Disposal Safety:</strong> If the bus has been disposed, Clock() returns immediately
@@ -1115,6 +1178,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         if (_systemClock >= _nextVblankCycle)
         {
             // Catch up if emulator ran fast (unthrottled batches)
+            // Advance VBlank cycle by full frame duration (17,030 cycles)
             do
             { 
                 _nextVblankCycle += CyclesPerVBlank;

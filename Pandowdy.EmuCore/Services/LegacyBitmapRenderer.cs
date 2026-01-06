@@ -410,18 +410,46 @@ public class LegacyBitmapRenderer : IDisplayBitmapRenderer
     /// <strong>80-Column Mode:</strong> Renders two 7-pixel characters side-by-side (aux + main)
     /// without horizontal doubling, for a total of 14 pixels per cell.
     /// </para>
+    /// <para>
+    /// <strong>80STORE + PAGE2 Behavior:</strong> When 80STORE is active, PAGE2 controls which
+    /// memory bank (aux vs main) to read from at $0400-$07FF, not which address range ($0400 vs $0800).
+    /// This is critical for 80-column text rendering where aux and main are interleaved.
+    /// </para>
     /// </remarks>
     private void RenderTextCell(int address, int row, int col, bool text80, BitmapDataArray buf)
     {
         bool flashOn = _context!.SystemStatus.StateFlashOn;
         bool altChar = _context!.SystemStatus.StateAltCharSet;
+        bool store80 = _context!.SystemStatus.State80Store;
+        bool page2 = _context!.SystemStatus.StatePage2;
 
-        byte ch = _context!.Memory.ReadRawMain((ushort)address);
-        var glyph = _charRomProvider.GetGlyph(ch, flashOn, altChar);
+        // Calculate base address - always $0400 in text/lo-res range
+        // (80STORE controls bank, not address when active)
+        int baseAddr = 0x0400 + (row % 8) * 128 + (row / 8) * 40 + col;
 
         if (!text80)
         {
             // 40-column text: render with horizontal doubling
+            // When 80STORE is active and PAGE2 is set, read from AUX at $0400
+            // Otherwise read from MAIN (at $0400 or $0800 depending on PAGE2)
+            byte ch;
+            if (store80 && page2)
+            {
+                ch = _context!.Memory.ReadRawAux((ushort)baseAddr);
+            }
+            else if (!store80 && page2)
+            {
+                // Standard PAGE2 behavior: read from $0800
+                ch = _context!.Memory.ReadRawMain((ushort)(baseAddr + 0x400));
+            }
+            else
+            {
+                // PAGE1 or 80STORE+PAGE1: read from main $0400
+                ch = _context!.Memory.ReadRawMain((ushort)baseAddr);
+            }
+            
+            var glyph = _charRomProvider.GetGlyph(ch, flashOn, altChar);
+            
             for (int r = 0; r < 8; r++)
             {
                 int buffY = row * 8 + r;
@@ -433,14 +461,18 @@ public class LegacyBitmapRenderer : IDisplayBitmapRenderer
         else
         {
             // 80-column text: render aux and main characters side-by-side
-            byte ch1 = _context!.Memory.ReadRawAux((ushort)address);
+            // Always use $0400 base address - 80-column mode implies 80STORE is active
+            byte ch1 = _context!.Memory.ReadRawAux((ushort)baseAddr);
+            byte ch2 = _context!.Memory.ReadRawMain((ushort)baseAddr);
+            
             var glyph1 = _charRomProvider.GetGlyph(ch1, flashOn, altChar);
+            var glyph2 = _charRomProvider.GetGlyph(ch2, flashOn, altChar);
 
             for (int r = 0; r < 8; r++)
             {
                 int y = row * 8 + r;
                 byte fontRow1 = (byte)~glyph1[r]; // Aux character
-                byte fontRow2 = (byte)~glyph[r];  // Main character
+                byte fontRow2 = (byte)~glyph2[r];  // Main character
                 int baseX = col * 2;
                 
                 Insert7BitLsbAt(buf, _bitplane, baseX * 7, y, fontRow1, expand: false);

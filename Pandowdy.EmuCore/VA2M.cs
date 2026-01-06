@@ -842,21 +842,27 @@ public class VA2M : IDisposable
         double cyclesPerTick = TargetHz / ticksPerSecond;
         double carry = 0.0;
         
+        // Check for pending commands every N cycles to reduce input latency
+        const int PendingCheckInterval = 100; // Check every ~0.1ms at 1MHz
+        
         while (!ct.IsCancellationRequested)
         {
             if (ThrottleEnabled)
             {
-                // Execute queued commands on emulator thread before cycles
-                ProcessPending();
-                
                 // Calculate target cycles for this batch
                 double want = cyclesPerTick + carry;
                 int cycles = (int)want;
                 carry = want - cycles;
                 
-                // Execute the batch of cycles
+                // Execute the batch of cycles with periodic pending checks
                 for (int i = 0; i < cycles; i++)
                 {
+                    // Check for pending commands periodically to reduce input latency
+                    if (i % PendingCheckInterval == 0)
+                    {
+                        ProcessPending();
+                    }
+                    
                     Bus.Clock();
                     _throttleCycles++;
                     
@@ -865,6 +871,9 @@ public class VA2M : IDisposable
                         break;
                     }
                 }
+                
+                // Final pending check at end of batch
+                ProcessPending();
                 
                 // Apply adaptive throttling AFTER executing the batch
                 // This allows the PID controller to adjust delays based on actual execution time
@@ -875,18 +884,26 @@ public class VA2M : IDisposable
             else
             {
                 const int FastBatch = 10_000;
-                // Execute queued commands on emulator thread before fast batch
-                ProcessPending();
                 
                 for (int i = 0; i < FastBatch; i++)
                 {
+                    // Check for pending commands periodically in fast mode too
+                    if (i % PendingCheckInterval == 0)
+                    {
+                        ProcessPending();
+                    }
+                    
                     Bus.Clock();
                     _throttleCycles++;
+                    
                     if (ct.IsCancellationRequested)
                     {
                         break;
                     }
                 }
+                
+                // Final pending check
+                ProcessPending();
                 
                 PublishState();
                 
