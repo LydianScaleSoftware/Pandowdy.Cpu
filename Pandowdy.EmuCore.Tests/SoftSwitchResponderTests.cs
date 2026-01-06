@@ -79,6 +79,10 @@ namespace Pandowdy.EmuCore.Tests
             public void Set80Vid(bool enabled) => Vid80 = enabled;
             public bool StateShow80Col{ get => Vid80; }
 
+            public void SetButton0(bool pressed) { }
+            public void SetButton1(bool pressed) { }
+            public void SetButton2(bool pressed) { }
+
             public bool StatePb0 { get => false; }
             public bool StatePb1 { get => false; }
             public bool StatePb2 { get => false; }

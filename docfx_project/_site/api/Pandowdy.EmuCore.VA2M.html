@@ -469,7 +469,7 @@ instead as it batches cycles to reduce per-cycle overhead.
 
   <h3 id="Pandowdy_EmuCore_VA2M_Dispose" data-uid="Pandowdy.EmuCore.VA2M.Dispose">
   Dispose()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L1247"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L1130"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Releases all resources used by the VA2M emulator instance.</p>
@@ -506,52 +506,6 @@ be revisited if MemoryPool lifetime is clarified.
 <p>
 <strong>CPU Note:</strong> The legacy 6502.NET CPU library does not implement IDisposable,
 so no explicit CPU cleanup is needed. The CPU instance is managed by the Bus.
-</p>
-</div>
-
-
-
-
-  <a id="Pandowdy_EmuCore_VA2M_GenerateStatusData_" data-uid="Pandowdy.EmuCore.VA2M.GenerateStatusData*"></a>
-
-  <h3 id="Pandowdy_EmuCore_VA2M_GenerateStatusData" data-uid="Pandowdy.EmuCore.VA2M.GenerateStatusData">
-  GenerateStatusData()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L1119"><i class="bi bi-code-slash"></i></a>
-  </h3>
-
-  <div class="markdown level1 summary"><p>Enqueues generation of a system status snapshot containing soft switch and button states.</p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void GenerateStatusData()</code></pre>
-  </div>
-
-
-
-
-
-
-
-
-
-  <h4 class="section" id="Pandowdy_EmuCore_VA2M_GenerateStatusData_remarks">Remarks</h4>
-  <div class="markdown level1 remarks"><p>
-<strong>Purpose:</strong> Triggers creation of a comprehensive system status snapshot
-that includes all soft switches (memory mapping, video modes, ROM, annunciators)
-and pushbutton states.
-</p>
-<p>
-<strong>Thread Safety:</strong> This method is thread-safe. It enqueues the status
-generation command which will be executed on the emulator thread via <span class="xref">Pandowdy.EmuCore.VA2M.BuildStatusData()</span>.
-</p>
-<p>
-<strong>Typical Usage:</strong> Called periodically (e.g., at frame boundaries or on-demand)
-to update UI displays showing soft switch states, debug panels, or system status indicators.
-</p>
-<p>
-<strong>Snapshot Contents:</strong> See <span class="xref">Pandowdy.EmuCore.VA2M.BuildStatusData()</span> for details
-on what data is captured in the status snapshot.
 </p>
 </div>
 

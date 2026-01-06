@@ -245,7 +245,22 @@ public sealed class SoftSwitches
         /// PREWRITE switch. Pre-write state for language card write protection.
         /// Two consecutive reads of certain addresses are required to enable writing.
         /// </summary>
-        PreWrite
+        PreWrite,
+        
+        /// <summary>
+        /// Pushbutton 0 state (readable at $C061). Typically mapped to Open-Apple key.
+        /// </summary>
+        Button0,
+        
+        /// <summary>
+        /// Pushbutton 1 state (readable at $C062). Typically mapped to Closed-Apple/Solid-Apple key.
+        /// </summary>
+        Button1,
+        
+        /// <summary>
+        /// Pushbutton 2 state (readable at $C063). Typically mapped to Shift key for joystick button emulation.
+        /// </summary>
+        Button2
     }
 
     /// <summary>
@@ -283,8 +298,9 @@ public sealed class SoftSwitches
         _switches[SoftSwitchId.HighWrite] = new SoftSwitch("HIGHWRITE");
         _switches[SoftSwitchId.HighRead] = new SoftSwitch("HIGHREAD");
         _switches[SoftSwitchId.PreWrite] = new SoftSwitch("PREWRITE");
-
-        
+        _switches[SoftSwitchId.Button0] = new SoftSwitch("BUTTON0");
+        _switches[SoftSwitchId.Button1] = new SoftSwitch("BUTTON1");
+        _switches[SoftSwitchId.Button2] = new SoftSwitch("BUTTON2");
      //   DumpSoftSwitchStatus("Init:");
     }
 
@@ -502,6 +518,18 @@ public sealed class SoftSwitches
 
                 case SoftSwitchId.PreWrite:
                     responder.SetPreWrite(value);
+                    break;
+
+                case SoftSwitchId.Button0:
+                    responder.SetButton0(value);
+                    break;
+
+                case SoftSwitchId.Button1:
+                    responder.SetButton1(value);
+                    break;
+
+                case SoftSwitchId.Button2:
+                    responder.SetButton2(value);
                     break;
             }
         }

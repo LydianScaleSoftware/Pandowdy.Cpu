@@ -206,7 +206,7 @@ Card installation/removal during emulation may cause race conditions.
 
   <h3 id="Pandowdy_EmuCore_Slots__ctor_Pandowdy_EmuCore_Interfaces_ICardFactory_Pandowdy_EmuCore_Interfaces_ISystemRomProvider_Pandowdy_EmuCore_Interfaces_IFloatingBusProvider_Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_" data-uid="Pandowdy.EmuCore.Slots.#ctor(Pandowdy.EmuCore.Interfaces.ICardFactory,Pandowdy.EmuCore.Interfaces.ISystemRomProvider,Pandowdy.EmuCore.Interfaces.IFloatingBusProvider,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider)">
   Slots(ICardFactory, ISystemRomProvider, IFloatingBusProvider, ISystemStatusProvider)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L123"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Pandowdy.EmuCore.Slots.html">Slots</a> class with all slots empty.</p>
@@ -272,7 +272,7 @@ to ensure each slot has its own instance, even though NullCards are stateless.
 
   <h3 id="Pandowdy_EmuCore_Slots_BankSelect" data-uid="Pandowdy.EmuCore.Slots.BankSelect">
   BankSelect
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L169"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets the currently active slot for extended ROM at $C800-$CFFF.</p>
@@ -324,7 +324,7 @@ extended ROM becomes active at $C800-$CFFF. Reading $CFFF disables extended ROM.
 
   <h3 id="Pandowdy_EmuCore_Slots_Item_System_UInt16_" data-uid="Pandowdy.EmuCore.Slots.Item(System.UInt16)">
   this[ushort]
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L482"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L489"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets or sets a byte at the specified address using array-style indexing.</p>
@@ -374,7 +374,7 @@ delegating to <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore
 
   <h3 id="Pandowdy_EmuCore_Slots_Size" data-uid="Pandowdy.EmuCore.Slots.Size">
   Size
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L159"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L166"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the size of the address space managed by this slots system.</p>
@@ -423,7 +423,7 @@ will be thrown.
 
   <h3 id="Pandowdy_EmuCore_Slots_ApplyMetadata_System_String_" data-uid="Pandowdy.EmuCore.Slots.ApplyMetadata(System.String)">
   ApplyMetadata(string)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L629"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L633"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Applies slot configuration from JSON metadata, restoring installed cards and their configurations.</p>
@@ -503,7 +503,7 @@ slot will remain empty and the method will return <code>false</code>.
 
   <h3 id="Pandowdy_EmuCore_Slots_GetCardIn_Pandowdy_EmuCore_Interfaces_SlotNumber_" data-uid="Pandowdy.EmuCore.Slots.GetCardIn(Pandowdy.EmuCore.Interfaces.SlotNumber)">
   GetCardIn(SlotNumber)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L183"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L190"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Retrieves the card currently installed in the specified slot.</p>
@@ -563,7 +563,7 @@ if (slots.GetCardIn(SlotNumber.Slot3).Id == 0) // NullCard.Id == 0
 
   <h3 id="Pandowdy_EmuCore_Slots_GetMetadata" data-uid="Pandowdy.EmuCore.Slots.GetMetadata">
   GetMetadata()
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L534"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L541"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Gets the current slot configuration as JSON metadata.</p>
@@ -634,7 +634,7 @@ precise state restoration during debugging or save states.
 
   <h3 id="Pandowdy_EmuCore_Slots_InstallCard_System_Int32_Pandowdy_EmuCore_Interfaces_SlotNumber_" data-uid="Pandowdy.EmuCore.Slots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)">
   InstallCard(int, SlotNumber)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L165"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L172"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Installs a peripheral card in the specified slot using its numeric card ID.</p>
@@ -698,7 +698,7 @@ Common card IDs:
 
   <h3 id="Pandowdy_EmuCore_Slots_InstallCard_System_String_Pandowdy_EmuCore_Interfaces_SlotNumber_" data-uid="Pandowdy.EmuCore.Slots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)">
   InstallCard(string, SlotNumber)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L171"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L178"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Installs a peripheral card in the specified slot using its human-readable name.</p>
@@ -762,7 +762,7 @@ If a card is already installed in the specified slot, it is replaced by the new 
 
   <h3 id="Pandowdy_EmuCore_Slots_IsEmpty_Pandowdy_EmuCore_Interfaces_SlotNumber_" data-uid="Pandowdy.EmuCore.Slots.IsEmpty(Pandowdy.EmuCore.Interfaces.SlotNumber)">
   IsEmpty(SlotNumber)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L189"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L196"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Determines whether the specified slot is empty (contains a NullCard).</p>
@@ -838,7 +838,7 @@ This method is equivalent to:
 
   <h3 id="Pandowdy_EmuCore_Slots_Read_System_UInt16_" data-uid="Pandowdy.EmuCore.Slots.Read(System.UInt16)">
   Read(ushort)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L240"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L247"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Reads a byte from the slots address space ($C090-$CFFF).</p>
@@ -922,7 +922,7 @@ being disabled.
 
   <h3 id="Pandowdy_EmuCore_Slots_RemoveCard_Pandowdy_EmuCore_Interfaces_SlotNumber_" data-uid="Pandowdy.EmuCore.Slots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)">
   RemoveCard(SlotNumber)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L177"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L184"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Removes the card from the specified slot, replacing it with an empty slot (NullCard).</p>
@@ -984,7 +984,7 @@ the emulator doesn't maintain references to installed cards outside the slots ar
 
   <h3 id="Pandowdy_EmuCore_Slots_Write_System_UInt16_System_Byte_" data-uid="Pandowdy.EmuCore.Slots.Write(System.UInt16,System.Byte)">
   Write(ushort, byte)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L372"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L379"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Writes a byte to the slots address space ($C090-$CFFF).</p>

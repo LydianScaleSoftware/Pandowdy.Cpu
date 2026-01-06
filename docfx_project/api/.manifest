@@ -494,7 +494,6 @@
   "Pandowdy.EmuCore.VA2M.Bus": "Pandowdy.EmuCore.VA2M.yml",
   "Pandowdy.EmuCore.VA2M.Clock": "Pandowdy.EmuCore.VA2M.yml",
   "Pandowdy.EmuCore.VA2M.Dispose": "Pandowdy.EmuCore.VA2M.yml",
-  "Pandowdy.EmuCore.VA2M.GenerateStatusData": "Pandowdy.EmuCore.VA2M.yml",
   "Pandowdy.EmuCore.VA2M.InjectKey(System.Byte)": "Pandowdy.EmuCore.VA2M.yml",
   "Pandowdy.EmuCore.VA2M.MemoryPool": "Pandowdy.EmuCore.VA2M.yml",
   "Pandowdy.EmuCore.VA2M.Reset": "Pandowdy.EmuCore.VA2M.yml",

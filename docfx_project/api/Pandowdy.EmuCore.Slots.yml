@@ -151,7 +151,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: .ctor
     path: ../Pandowdy.EmuCore/Slots.cs
-    startLine: 115
+    startLine: 122
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -220,7 +220,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: Size
     path: ../Pandowdy.EmuCore/Slots.cs
-    startLine: 158
+    startLine: 165
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -274,7 +274,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: BankSelect
     path: ../Pandowdy.EmuCore/Slots.cs
-    startLine: 161
+    startLine: 168
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -343,7 +343,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: InstallCard
     path: ../Pandowdy.EmuCore/Slots.cs
-    startLine: 164
+    startLine: 171
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -418,7 +418,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: InstallCard
     path: ../Pandowdy.EmuCore/Slots.cs
-    startLine: 170
+    startLine: 177
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -493,7 +493,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: RemoveCard
     path: ../Pandowdy.EmuCore/Slots.cs
-    startLine: 176
+    startLine: 183
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -564,7 +564,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: GetCardIn
     path: ../Pandowdy.EmuCore/Slots.cs
-    startLine: 182
+    startLine: 189
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -638,7 +638,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: IsEmpty
     path: ../Pandowdy.EmuCore/Slots.cs
-    startLine: 188
+    startLine: 195
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -729,7 +729,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: Read
     path: ../Pandowdy.EmuCore/Slots.cs
-    startLine: 239
+    startLine: 246
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -839,7 +839,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: Write
     path: ../Pandowdy.EmuCore/Slots.cs
-    startLine: 371
+    startLine: 378
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -949,7 +949,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: this[]
     path: ../Pandowdy.EmuCore/Slots.cs
-    startLine: 481
+    startLine: 488
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -1002,7 +1002,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: GetMetadata
     path: ../Pandowdy.EmuCore/Slots.cs
-    startLine: 533
+    startLine: 540
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -1098,7 +1098,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: ApplyMetadata
     path: ../Pandowdy.EmuCore/Slots.cs
-    startLine: 628
+    startLine: 632
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore

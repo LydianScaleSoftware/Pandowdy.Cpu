@@ -68,7 +68,6 @@
 
 using System.Reflection;
 using System.Diagnostics;
-using System.Collections.Immutable;
 using System.Collections.Concurrent;
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.EmuCore.Services;
@@ -1096,98 +1095,7 @@ public class VA2M : IDisposable
 
 
 
-    /// <summary>
-    /// Immutable dictionary mapping soft switch IDs to their corresponding snapshot builder setter methods.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <strong>Purpose:</strong> Provides efficient, type-safe mapping from SoftSwitchId enum
-    /// values to the appropriate property setter on SystemStatusSnapshotBuilder.
-    /// </para>
-    /// <para>
-    /// <strong>Why Immutable:</strong> The dictionary is initialized once at class load time
-    /// and never modified, making it thread-safe and cache-friendly for repeated lookups.
-    /// </para>
-    /// <para>
-    /// <strong>Usage Pattern:</strong> Used by <see cref="BuildStatusData"/> to efficiently
-    /// populate the status snapshot from soft switch states without large switch statements.
-    /// </para>
-    /// <para>
-    /// <strong>Coverage:</strong> Maps 19 of 20 soft switches (PreWrite is internal state,
-    /// not typically published to UI).
-    /// </para>
-    /// </remarks>
-    private static readonly ImmutableDictionary<SoftSwitches.SoftSwitchId, System.Action<SystemStatusSnapshotBuilder, bool>> _switchSetters
-        = new Dictionary<SoftSwitches.SoftSwitchId, System.Action<SystemStatusSnapshotBuilder, bool>>
-        {
-            { SoftSwitches.SoftSwitchId.Store80, (b,v) => b.State80Store = v },
-            { SoftSwitches.SoftSwitchId.RamRd, (b,v) => b.StateRamRd = v },
-            { SoftSwitches.SoftSwitchId.RamWrt, (b,v) => b.StateRamWrt = v },
-            { SoftSwitches.SoftSwitchId.IntCxRom, (b,v) => b.StateIntCxRom = v },
-            { SoftSwitches.SoftSwitchId.AltZp, (b,v) => b.StateAltZp = v },
-            { SoftSwitches.SoftSwitchId.SlotC3Rom, (b,v) => b.StateSlotC3Rom = v },
-            { SoftSwitches.SoftSwitchId.Vid80, (b,v) => b.StateShow80Col = v },
-            { SoftSwitches.SoftSwitchId.AltChar, (b,v) => b.StateAltCharSet = v },
-            { SoftSwitches.SoftSwitchId.Text, (b,v) => b.StateTextMode = v },
-            { SoftSwitches.SoftSwitchId.Mixed, (b,v) => b.StateMixed = v },
-            { SoftSwitches.SoftSwitchId.Page2, (b,v) => b.StatePage2 = v },
-            { SoftSwitches.SoftSwitchId.HiRes, (b,v) => b.StateHiRes = v },
-            { SoftSwitches.SoftSwitchId.An0, (b,v) => b.StateAnn0 = v },
-            { SoftSwitches.SoftSwitchId.An1, (b,v) => b.StateAnn1 = v },
-            { SoftSwitches.SoftSwitchId.An2, (b,v) => b.StateAnn2 = v },
-            { SoftSwitches.SoftSwitchId.An3, (b,v) => b.StateAnn3 = v },
-            { SoftSwitches.SoftSwitchId.Bank1, (b,v) => b.StateUseBank1 = v },
-            { SoftSwitches.SoftSwitchId.HighRead, (b,v) => b.StateHighRead = v },
-            { SoftSwitches.SoftSwitchId.HighWrite, (b,v) => b.StateHighWrite = v },
-        }.ToImmutableDictionary();
-
-    /// <summary>
-    /// Builds and publishes a comprehensive system status snapshot containing all soft switches and button states.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <strong>Data Captured:</strong>
-    /// <list type="bullet">
-    /// <item><strong>Soft Switches:</strong> All 19 user-visible soft switches (memory, video, ROM, annunciators)</item>
-    /// <item><strong>Pushbuttons:</strong> State of all 3 game controller buttons</item>
-    /// <item><strong>Change Counts:</strong> Number of times each switch has changed (for debugging)</item>
-    /// </list>
-    /// </para>
-    /// <para>
-    /// <strong>Implementation:</strong> Uses the <see cref="_switchSetters"/> dictionary for
-    /// efficient mapping of soft switch values to snapshot builder properties. The snapshot
-    /// is built using the mutable builder pattern and then published atomically to the
-    /// status provider sink.
-    /// </para>
-    /// <para>
-    /// <strong>Thread Context:</strong> Must be called on the emulator thread. 
-    /// </para>
-    /// <para>
-    /// <strong>Performance:</strong> Relatively lightweight operation (dictionary lookups + property sets).
-    /// Typically called at frame boundaries (~60 Hz) or on-demand for UI updates.
-    /// </para>
-    /// </remarks>
-    private void BuildStatusData()
-    {
-        var switches = (Bus as VA2MBus)?.Switches;
-        var data = switches!.GetSwitchList();
-
-        _sysStatusSink.Mutate(b =>
-        {
-            foreach (var (id, value) in data)
-            {
-                if (_switchSetters.TryGetValue(id, out var setter))
-                {
-                    setter(b, value);
-                }
-            }
-
-            var vb = Bus as VA2MBus;
-            b.StatePb0 = vb!.GetPushButton(0);
-            b.StatePb1 = vb!.GetPushButton(1);
-            b.StatePb2 = vb!.GetPushButton(2);
-        });
-    }
+  
 
 
     /// <summary>

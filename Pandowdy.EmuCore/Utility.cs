@@ -28,4 +28,20 @@ public static class Utility
 
         return memory;
     }
+
+
+    /// <summary>
+    /// Builds a byte value with a soft switch state in bit 7.
+    /// </summary>
+    /// <param name="state">Soft switch state (true = bit 7 set, false = bit 7 clear).</param>
+    /// <param name="other">Base byte value (typically keyboard latch), bits 0-6 preserved.</param>
+    /// <returns>Byte with bit 7 set according to <paramref name="state"/>, bits 0-6 from <paramref name="other"/>.</returns>
+    /// <remarks>
+    /// Apple IIe soft switch status reads typically return the keyboard latch value (bits 0-6)
+    /// with the switch state encoded in bit 7.
+    /// </remarks>
+    public static byte BuildHiBitVal(bool state, byte other = 0x00)
+    {
+        return (byte) ((state ? 0x80 : 0x00) | (other & 0x7f));
+    }
 }

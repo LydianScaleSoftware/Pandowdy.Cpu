@@ -560,6 +560,9 @@ public class SoftSwitchTests
         public void SetHighWrite(bool value) { HighWriteCallCount++; }
         public void SetHighRead(bool value) { HighReadCallCount++; }
         public void SetPreWrite(bool value) { PreWriteCallCount++; }
+        public void SetButton0(bool value) { }
+        public void SetButton1(bool value) { }
+        public void SetButton2(bool value) { }
 
         public void Reset()
         {

@@ -3405,7 +3405,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: Connect
     path: ../Pandowdy.EmuCore/VA2MBus.cs
-    startLine: 780
+    startLine: 781
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -3449,7 +3449,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: SetKeyValue
     path: ../Pandowdy.EmuCore/VA2MBus.cs
-    startLine: 800
+    startLine: 801
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -3504,7 +3504,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: GetPushButton
     path: ../Pandowdy.EmuCore/VA2MBus.cs
-    startLine: 813
+    startLine: 814
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -3543,7 +3543,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: SetPushButton
     path: ../Pandowdy.EmuCore/VA2MBus.cs
-    startLine: 838
+    startLine: 839
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -3597,7 +3597,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: CpuRead
     path: ../Pandowdy.EmuCore/VA2MBus.cs
-    startLine: 1059
+    startLine: 1060
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -3659,7 +3659,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: CpuWrite
     path: ../Pandowdy.EmuCore/VA2MBus.cs
-    startLine: 1091
+    startLine: 1092
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -3726,7 +3726,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: Clock
     path: ../Pandowdy.EmuCore/VA2MBus.cs
-    startLine: 1148
+    startLine: 1149
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -3826,7 +3826,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: Reset
     path: ../Pandowdy.EmuCore/VA2MBus.cs
-    startLine: 1218
+    startLine: 1219
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -3883,7 +3883,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: UserReset
     path: ../Pandowdy.EmuCore/VA2MBus.cs
-    startLine: 1252
+    startLine: 1253
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -3939,7 +3939,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: Dispose
     path: ../Pandowdy.EmuCore/VA2MBus.cs
-    startLine: 1290
+    startLine: 1291
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore

@@ -258,10 +258,41 @@ public interface ISoftSwitchResponder
     /// <param name="enabled">True if pre-write sequence is active; false otherwise</param>
     /// <remarks>
     /// The language card uses a two-access sequence to enable writing, preventing
-    /// accidental modification. The first access to certain addresses sets pre-write
-    /// mode. A second consecutive access to the same address enables write mode.
-    /// Any other memory access clears pre-write. This is an internal state used
-    /// to implement the write protection mechanism.
+    /// accidental writes. The first access sets pre-write (this method), and the
+    /// second consecutive access enables writing (SetHighWrite). Accessing different
+    /// language card addresses resets the sequence.
     /// </remarks>
     void SetPreWrite(bool enabled);
+    
+    // Pushbuttons (game controller)
+    
+    /// <summary>
+    /// Called when pushbutton 0 state changes (readable at $C061).
+    /// </summary>
+    /// <param name="pressed">True if button is pressed; false if released</param>
+    /// <remarks>
+    /// Pushbutton 0 is typically mapped to the Open-Apple key (Command on modern keyboards).
+    /// Returns bit 7 set when pressed. Used by games and applications for user input.
+    /// </remarks>
+    void SetButton0(bool pressed);
+    
+    /// <summary>
+    /// Called when pushbutton 1 state changes (readable at $C062).
+    /// </summary>
+    /// <param name="pressed">True if button is pressed; false if released</param>
+    /// <remarks>
+    /// Pushbutton 1 is typically mapped to the Closed-Apple/Solid-Apple key (Option on modern keyboards).
+    /// Returns bit 7 set when pressed. Used by games and applications for user input.
+    /// </remarks>
+    void SetButton1(bool pressed);
+    
+    /// <summary>
+    /// Called when pushbutton 2 state changes (readable at $C063).
+    /// </summary>
+    /// <param name="pressed">True if button is pressed; false if released</param>
+    /// <remarks>
+    /// Pushbutton 2 is typically mapped to the Shift key for joystick button emulation.
+    /// Returns bit 7 set when pressed. Used by games and applications for user input.
+    /// </remarks>
+    void SetButton2(bool pressed);
 }

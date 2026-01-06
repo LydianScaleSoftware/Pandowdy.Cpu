@@ -509,15 +509,15 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// <remarks>
     /// <para>
     /// <strong>Handler Categories:</strong>
-    /// <list type="bullet">
-    /// <item><strong>Simple reads:</strong> Return composed values (keyboard latch, soft switch states)</item>
-    /// <item><strong>Side-effect reads:</strong> Toggle soft switches when read (TEXT, MIXED, PAGE2, HIRES, annunciators)</item>
+    /// <list type = "bullet" >
+    /// <item><strong> Simple reads:</strong> Return composed values (keyboard latch, soft switch states)</item>
+    /// <item><strong>Side-effect reads:</strong> Toggle soft switches when read(TEXT, MIXED, PAGE2, HIRES, annunciators)</item>
     /// <item><strong>Language card reads:</strong> Complex banking logic with two-access write sequence</item>
     /// </list>
     /// </para>
     /// <para>
-    /// <strong>Apple II Behavior:</strong> Many I/O addresses have side effects when read. For example,
-    /// reading $C050 (CLRTXT_) turns off text mode, and reading $C051 (SETTXT_) turns it on.
+    /// <strong>Apple II Behavior:</strong> Many I/O addresses have side effects when read.For example,
+    /// reading $C050(CLRTXT_) turns off text mode, and reading $C051(SETTXT_) turns it on.
     /// This is standard Apple II behavior, not a bug.
     /// </para>
     /// <para>
@@ -529,25 +529,25 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     {
         // Simple reads that only return composed values
         _ioReadHandlers[KEYSTRB_] = () => { _currKey &= 0x7f; return _currKey; };
-        _ioReadHandlers[RD_LC_BANK1_] = () => (byte)(BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Bank1), _currKey) ^ 0x80);
-        _ioReadHandlers[RD_LC_RAM] = () => BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.HighRead), _currKey);
-        _ioReadHandlers[RD_RAMRD_] = () => BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.RamRd), _currKey);
-        _ioReadHandlers[RD_RAMWRT_] = () => BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.RamWrt), _currKey);
-        _ioReadHandlers[RD_INTCXROM_] = () => BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.IntCxRom), _currKey);
-        _ioReadHandlers[RD_ALTZP_] = () => BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.AltZp), _currKey);
-        _ioReadHandlers[RD_SLOTC3ROM_] = () => BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.SlotC3Rom), _currKey);
-        _ioReadHandlers[RD_80STORE_] = () => BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Store80), _currKey);
-        _ioReadHandlers[RD_TEXT_] = () => BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Text), _currKey);
-        _ioReadHandlers[RD_MIXED_] = () => BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Mixed), _currKey);
-        _ioReadHandlers[RD_PAGE2_] = () => BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Page2), _currKey);
-        _ioReadHandlers[RD_HIRES_] = () => BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.HiRes), _currKey);
-        _ioReadHandlers[RD_ALTCHAR_] = () => BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.AltChar), _currKey);
-        _ioReadHandlers[RD_80VID_] = () => BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Vid80), _currKey);
-        _ioReadHandlers[RD_VERTBLANK_] = () => { byte inVBlank = (byte)(_VblankBlackoutCounter > 0 ? 0x80 : 0x00); return (byte)(inVBlank | _currKey & 0x7f); };
+        _ioReadHandlers[RD_LC_BANK1_] = () => (byte) (Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Bank1), _currKey) ^ 0x80);
+        _ioReadHandlers[RD_LC_RAM] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.HighRead), _currKey);
+        _ioReadHandlers[RD_RAMRD_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.RamRd), _currKey);
+        _ioReadHandlers[RD_RAMWRT_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.RamWrt), _currKey);
+        _ioReadHandlers[RD_INTCXROM_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.IntCxRom), _currKey);
+        _ioReadHandlers[RD_ALTZP_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.AltZp), _currKey);
+        _ioReadHandlers[RD_SLOTC3ROM_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.SlotC3Rom), _currKey);
+        _ioReadHandlers[RD_80STORE_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Store80), _currKey);
+        _ioReadHandlers[RD_TEXT_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Text), _currKey);
+        _ioReadHandlers[RD_MIXED_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Mixed), _currKey);
+        _ioReadHandlers[RD_PAGE2_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Page2), _currKey);
+        _ioReadHandlers[RD_HIRES_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.HiRes), _currKey);
+        _ioReadHandlers[RD_ALTCHAR_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.AltChar), _currKey);
+        _ioReadHandlers[RD_80VID_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Vid80), _currKey);
+        _ioReadHandlers[RD_VERTBLANK_] = () => { byte inVBlank = (byte) (_VblankBlackoutCounter > 0 ? 0x80 : 0x00); return (byte) (inVBlank | _currKey & 0x7f); };
         _ioReadHandlers[TAPEIN_] = () => 0x00;
-        _ioReadHandlers[BUTTON0_] = () => (byte)(_button0 ? 0x80 : 0x00);
-        _ioReadHandlers[BUTTON1_] = () => (byte)(_button1 ? 0x80 : 0x00);
-        _ioReadHandlers[BUTTON2_] = () => (byte)(_button2 ? 0x80 : 0x00);
+        _ioReadHandlers[BUTTON0_] = () => (byte) (_button0 ? 0x80 : 0x00);
+        _ioReadHandlers[BUTTON1_] = () => (byte) (_button1 ? 0x80 : 0x00);
+        _ioReadHandlers[BUTTON2_] = () => (byte) (_button2 ? 0x80 : 0x00);
 
         // Reads that also toggle soft switches (Apple II behavior: reading addresses sets switches)
         _ioReadHandlers[CLRTXT_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Text, false); return 0xA0; };
@@ -558,14 +558,14 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         _ioReadHandlers[SETPAGE2_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Page2, true); return 0xA0; };
         _ioReadHandlers[CLRHIRES_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.HiRes, false); return 0xA0; };
         _ioReadHandlers[SETHIRES_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.HiRes, true); return 0xA0; };
-        _ioReadHandlers[CLRAN0_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An0, false); return BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An0)); };
-        _ioReadHandlers[SETAN0_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An0, true); return BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An0)); };
-        _ioReadHandlers[CLRAN1_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An1, false); return BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An1)); };
-        _ioReadHandlers[SETAN1_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An1, true); return BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An1)); };
-        _ioReadHandlers[CLRAN2_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An2, false); return BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An2)); };
-        _ioReadHandlers[SETAN2_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An2, true); return BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An2)); };
-        _ioReadHandlers[CLRAN3_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An3, false); return BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An3)); };
-        _ioReadHandlers[SETAN3_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An3, true); return BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An3)); };
+        _ioReadHandlers[CLRAN0_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An0, false); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An0)); };
+        _ioReadHandlers[SETAN0_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An0, true); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An0)); };
+        _ioReadHandlers[CLRAN1_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An1, false); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An1)); };
+        _ioReadHandlers[SETAN1_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An1, true); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An1)); };
+        _ioReadHandlers[CLRAN2_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An2, false); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An2)); };
+        _ioReadHandlers[SETAN2_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An2, true); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An2)); };
+        _ioReadHandlers[CLRAN3_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An3, false); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An3)); };
+        _ioReadHandlers[SETAN3_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An3, true); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An3)); };
 
         // Banked block reads (unrolled to individual addresses, sharing helper)
         _ioReadHandlers[B2_RD_RAM_NO_WRT_] = () => { ApplyBankIoReadFlags(false, B2_RD_RAM_NO_WRT_); return 0xA0; };
@@ -650,20 +650,20 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// <remarks>
     /// <para>
     /// <strong>Write Behavior:</strong> Most I/O write handlers ignore the data value and simply
-    /// toggle soft switches based on the address. This matches Apple II hardware behavior where
+    /// toggle soft switches based on the address.This matches Apple II hardware behavior where
     /// the address strobe, not the data, controls the logic.
     /// </para>
     /// <para>
     /// <strong>Handler Categories:</strong>
-    /// <list type="bullet">
-    /// <item><strong>Soft switch writes:</strong> Set/clear memory mapping and video mode switches</item>
+    /// <list type = "bullet" >
+    /// <item><strong> Soft switch writes:</strong> Set/clear memory mapping and video mode switches</item>
     /// <item><strong>Language card writes:</strong> Banking control with different semantics than reads</item>
     /// </list>
     /// </para>
     /// <para>
     /// <strong>Write vs Read Semantics:</strong> Language card write handlers have different behavior
-    /// than read handlers. Specifically, the two-access write sequence is reset on writes to certain
-    /// addresses (see <see cref="ApplyBankIoWriteFlags"/>).
+    /// than read handlers.Specifically, the two-access write sequence is reset on writes to certain
+    /// addresses (see<see cref= "ApplyBankIoWriteFlags" />).
     /// </para>
     /// </remarks>
     private void InitIoWriteHandlers()
@@ -725,17 +725,17 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// <summary>
     /// Applies language card banking flags when writing to language card I/O addresses.
     /// </summary>
-    /// <param name="bank1">True to select bank 1 ($D000-$DFFF), false for bank 2.</param>
-    /// <param name="address">Specific language card I/O address ($C080-$C08F) being accessed.</param>
+    /// <param name = "bank1" > True to select bank 1 ($D000-$DFFF), false for bank 2.</param>
+    /// <param name = "address" > Specific language card I/O address($C080-$C08F) being accessed.</param>
     /// <remarks>
     /// <para>
     /// <strong>Write Semantics:</strong> Language card write handlers have slightly different behavior
-    /// than read handlers. The two-access write sequence is reset by certain writes, preventing
+    /// than read handlers.The two-access write sequence is reset by certain writes, preventing
     /// accidental write enable.
     /// </para>
     /// <para>
     /// <strong>Key Difference:</strong> Writes to addresses ending in 1, 5, 9, D immediately clear
-    /// PreWrite, unlike reads which set it. This asymmetry is part of the Apple IIe design.
+    /// PreWrite, unlike reads which set it.This asymmetry is part of the Apple IIe design.
     /// </para>
     /// </remarks>
     private void ApplyBankIoWriteFlags(bool bank1, ushort address)
@@ -843,14 +843,17 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         {
             case 0:
                 _button0 = pressed;
+                _softSwitches.Set(SoftSwitches.SoftSwitchId.Button0, pressed);
                 break;
 
             case 1:
                 _button1 = pressed;
+                _softSwitches.Set(SoftSwitches.SoftSwitchId.Button1, pressed);
                 break;
 
             case 2:
                 _button2 = pressed;
+                _softSwitches.Set(SoftSwitches.SoftSwitchId.Button2, pressed);
                 break;
         }
     }
@@ -891,20 +894,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         }
     }
 
-    /// <summary>
-    /// Builds a byte value with a soft switch state in bit 7.
-    /// </summary>
-    /// <param name="state">Soft switch state (true = bit 7 set, false = bit 7 clear).</param>
-    /// <param name="other">Base byte value (typically keyboard latch), bits 0-6 preserved.</param>
-    /// <returns>Byte with bit 7 set according to <paramref name="state"/>, bits 0-6 from <paramref name="other"/>.</returns>
-    /// <remarks>
-    /// Apple IIe soft switch status reads typically return the keyboard latch value (bits 0-6)
-    /// with the switch state encoded in bit 7.
-    /// </remarks>
-    private static byte BuildHiBitVal(bool state, byte other = 0x00)
-    {
-        return (byte) ((state ? 0x80 : 0x00) | (other & 0x7f));
-    }
+
 
     /// <summary>
     /// Reads a byte from I/O space ($C000-$C0FF) by dispatching to the appropriate handler.
@@ -958,10 +948,14 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         // Preserve original switch-case fallback for any addresses not yet tabled
         switch (address)
         {
-            case PADDLE0_: return 0x00;
-            case PADDLE1_: return 0x00;
-            case PADDLE2_: return 0x00;
-            case PADDLE3_: return 0x00;
+            case PADDLE0_:
+                return 0x00;
+            case PADDLE1_:
+                return 0x00;
+            case PADDLE2_:
+                return 0x00;
+            case PADDLE3_:
+                return 0x00;
         }
 
         if (address >= B2_RD_RAM_NO_WRT_ && address <= B2_RD_RAM_WRT_RAM_ALT_)

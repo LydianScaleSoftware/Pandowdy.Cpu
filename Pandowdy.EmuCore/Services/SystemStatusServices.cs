@@ -375,6 +375,16 @@ public sealed class SystemStatusProvider : ISystemStatusProvider, ISoftSwitchRes
     /// <inheritdoc />
     public void SetPreWrite(bool enabled) => Mutate(b => b.StatePrewrite = enabled);
 
+    // Pushbuttons (game controller)
+    /// <inheritdoc />
+    public void SetButton0(bool pressed) => Mutate(b => b.StatePb0 = pressed);
+    
+    /// <inheritdoc />
+    public void SetButton1(bool pressed) => Mutate(b => b.StatePb1 = pressed);
+    
+    /// <inheritdoc />
+    public void SetButton2(bool pressed) => Mutate(b => b.StatePb2 = pressed);
+
     #endregion
 }
 

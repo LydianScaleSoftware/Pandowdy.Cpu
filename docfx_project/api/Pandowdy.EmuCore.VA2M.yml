@@ -9,7 +9,6 @@ items:
   - Pandowdy.EmuCore.VA2M.Bus
   - Pandowdy.EmuCore.VA2M.Clock
   - Pandowdy.EmuCore.VA2M.Dispose
-  - Pandowdy.EmuCore.VA2M.GenerateStatusData
   - Pandowdy.EmuCore.VA2M.InjectKey(System.Byte)
   - Pandowdy.EmuCore.VA2M.MemoryPool
   - Pandowdy.EmuCore.VA2M.Reset
@@ -782,68 +781,6 @@ items:
   nameWithType.vb: VA2M.SetPushButton(Byte, Boolean)
   fullName.vb: Pandowdy.EmuCore.VA2M.SetPushButton(Byte, Boolean)
   name.vb: SetPushButton(Byte, Boolean)
-- uid: Pandowdy.EmuCore.VA2M.GenerateStatusData
-  commentId: M:Pandowdy.EmuCore.VA2M.GenerateStatusData
-  id: GenerateStatusData
-  parent: Pandowdy.EmuCore.VA2M
-  langs:
-  - csharp
-  - vb
-  name: GenerateStatusData()
-  nameWithType: VA2M.GenerateStatusData()
-  fullName: Pandowdy.EmuCore.VA2M.GenerateStatusData()
-  type: Method
-  source:
-    remote:
-      path: Pandowdy.EmuCore/VA2M.cs
-      branch: refactor
-      repo: https://github.com/markdavidlong/Pandowdy.git
-    id: GenerateStatusData
-    path: ../Pandowdy.EmuCore/VA2M.cs
-    startLine: 1118
-  assemblies:
-  - Pandowdy.EmuCore
-  namespace: Pandowdy.EmuCore
-  summary: Enqueues generation of a system status snapshot containing soft switch and button states.
-  remarks: >-
-    <p>
-
-    <strong>Purpose:</strong> Triggers creation of a comprehensive system status snapshot
-
-    that includes all soft switches (memory mapping, video modes, ROM, annunciators)
-
-    and pushbutton states.
-
-    </p>
-
-    <p>
-
-    <strong>Thread Safety:</strong> This method is thread-safe. It enqueues the status
-
-    generation command which will be executed on the emulator thread via <xref href="Pandowdy.EmuCore.VA2M.BuildStatusData" data-throw-if-not-resolved="false"></xref>.
-
-    </p>
-
-    <p>
-
-    <strong>Typical Usage:</strong> Called periodically (e.g., at frame boundaries or on-demand)
-
-    to update UI displays showing soft switch states, debug panels, or system status indicators.
-
-    </p>
-
-    <p>
-
-    <strong>Snapshot Contents:</strong> See <xref href="Pandowdy.EmuCore.VA2M.BuildStatusData" data-throw-if-not-resolved="false"></xref> for details
-
-    on what data is captured in the status snapshot.
-
-    </p>
-  example: []
-  syntax:
-    content: public void GenerateStatusData()
-    content.vb: Public Sub GenerateStatusData()
-  overload: Pandowdy.EmuCore.VA2M.GenerateStatusData*
 - uid: Pandowdy.EmuCore.VA2M.Dispose
   commentId: M:Pandowdy.EmuCore.VA2M.Dispose
   id: Dispose
@@ -862,7 +799,7 @@ items:
       repo: https://github.com/markdavidlong/Pandowdy.git
     id: Dispose
     path: ../Pandowdy.EmuCore/VA2M.cs
-    startLine: 1246
+    startLine: 1129
   assemblies:
   - Pandowdy.EmuCore
   namespace: Pandowdy.EmuCore
@@ -1541,27 +1478,6 @@ references:
   name: SetPushButton
   nameWithType: VA2M.SetPushButton
   fullName: Pandowdy.EmuCore.VA2M.SetPushButton
-- uid: Pandowdy.EmuCore.VA2M.BuildStatusData
-  commentId: M:Pandowdy.EmuCore.VA2M.BuildStatusData
-  name: BuildStatusData()
-  nameWithType: VA2M.BuildStatusData()
-  fullName: Pandowdy.EmuCore.VA2M.BuildStatusData()
-  spec.csharp:
-  - uid: Pandowdy.EmuCore.VA2M.BuildStatusData
-    name: BuildStatusData
-  - name: (
-  - name: )
-  spec.vb:
-  - uid: Pandowdy.EmuCore.VA2M.BuildStatusData
-    name: BuildStatusData
-  - name: (
-  - name: )
-- uid: Pandowdy.EmuCore.VA2M.GenerateStatusData*
-  commentId: Overload:Pandowdy.EmuCore.VA2M.GenerateStatusData
-  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_GenerateStatusData
-  name: GenerateStatusData
-  nameWithType: VA2M.GenerateStatusData
-  fullName: Pandowdy.EmuCore.VA2M.GenerateStatusData
 - uid: Pandowdy.EmuCore.VA2M.Dispose*
   commentId: Overload:Pandowdy.EmuCore.VA2M.Dispose
   href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_Dispose

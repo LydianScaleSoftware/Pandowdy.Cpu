@@ -272,7 +272,7 @@ items:
   remarks: >-
     <p>
 
-    <strong>Operation:</strong> Uses <xref href="System.Array.Clear(System.Array)" data-throw-if-not-resolved="false"></xref> to zero out the entire
+    <strong>Operation:</strong> Uses <xref href="System.Array.Clear(System.Array%2cSystem.Int32%2cSystem.Int32)" data-throw-if-not-resolved="false"></xref> to zero out the entire
 
     107,520-element array. This is more efficient than looping through each pixel manually.
 
@@ -1054,34 +1054,61 @@ references:
   nameWithType.vb: BitmapDataArray.New
   fullName.vb: Pandowdy.EmuCore.DataTypes.BitmapDataArray.New
   name.vb: New
-- uid: System.Array.Clear(System.Array)
-  commentId: M:System.Array.Clear(System.Array)
+- uid: System.Array.Clear(System.Array,System.Int32,System.Int32)
+  commentId: M:System.Array.Clear(System.Array,System.Int32,System.Int32)
   isExternal: true
-  href: https://learn.microsoft.com/dotnet/api/system.array.clear#system-array-clear(system-array)
-  name: Clear(Array)
-  nameWithType: Array.Clear(Array)
-  fullName: System.Array.Clear(System.Array)
+  href: https://learn.microsoft.com/dotnet/api/system.array.clear#system-array-clear(system-array-system-int32-system-int32)
+  name: Clear(Array, int, int)
+  nameWithType: Array.Clear(Array, int, int)
+  fullName: System.Array.Clear(System.Array, int, int)
+  nameWithType.vb: Array.Clear(Array, Integer, Integer)
+  fullName.vb: System.Array.Clear(System.Array, Integer, Integer)
+  name.vb: Clear(Array, Integer, Integer)
   spec.csharp:
-  - uid: System.Array.Clear(System.Array)
+  - uid: System.Array.Clear(System.Array,System.Int32,System.Int32)
     name: Clear
     isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.array.clear#system-array-clear(system-array)
+    href: https://learn.microsoft.com/dotnet/api/system.array.clear#system-array-clear(system-array-system-int32-system-int32)
   - name: (
   - uid: System.Array
     name: Array
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.array
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
   - name: )
   spec.vb:
-  - uid: System.Array.Clear(System.Array)
+  - uid: System.Array.Clear(System.Array,System.Int32,System.Int32)
     name: Clear
     isExternal: true
-    href: https://learn.microsoft.com/dotnet/api/system.array.clear#system-array-clear(system-array)
+    href: https://learn.microsoft.com/dotnet/api/system.array.clear#system-array-clear(system-array-system-int32-system-int32)
   - name: (
   - uid: System.Array
     name: Array
     isExternal: true
     href: https://learn.microsoft.com/dotnet/api/system.array
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
   - name: )
 - uid: Pandowdy.EmuCore.RenderContext.ClearBuffer
   commentId: M:Pandowdy.EmuCore.RenderContext.ClearBuffer

@@ -5934,19 +5934,6 @@ references:
   isSpec: "True"
   fullName: Pandowdy.EmuCore.VA2M.Dispose
   nameWithType: VA2M.Dispose
-- uid: Pandowdy.EmuCore.VA2M.GenerateStatusData
-  name: GenerateStatusData()
-  href: api/Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_GenerateStatusData
-  commentId: M:Pandowdy.EmuCore.VA2M.GenerateStatusData
-  fullName: Pandowdy.EmuCore.VA2M.GenerateStatusData()
-  nameWithType: VA2M.GenerateStatusData()
-- uid: Pandowdy.EmuCore.VA2M.GenerateStatusData*
-  name: GenerateStatusData
-  href: api/Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_GenerateStatusData_
-  commentId: Overload:Pandowdy.EmuCore.VA2M.GenerateStatusData
-  isSpec: "True"
-  fullName: Pandowdy.EmuCore.VA2M.GenerateStatusData
-  nameWithType: VA2M.GenerateStatusData
 - uid: Pandowdy.EmuCore.VA2M.InjectKey(System.Byte)
   name: InjectKey(byte)
   href: api/Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_InjectKey_System_Byte_
