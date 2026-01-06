@@ -7,7 +7,7 @@ namespace Pandowdy.EmuCore.DataTypes;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <strong>Purpose:</strong> This struct wraps a <see cref="UInt16"/> and provides
+/// <strong>Purpose:</strong> This struct wraps a <see cref="ushort"/> and provides
 /// methods to get and set individual bits by index (0-15). This is useful for
 /// managing packed bit flags, hardware registers, or bitmap data where individual
 /// bits have specific meanings.
@@ -42,7 +42,7 @@ public struct BitField16
     /// <summary>
     /// The underlying 16-bit unsigned integer value.
     /// </summary>
-    private UInt16 _value;
+    private ushort _value;
 
     /// <summary>
     /// Gets or sets the complete 16-bit value.
@@ -61,7 +61,7 @@ public struct BitField16
     /// when you need to initialize or bulk-update the entire value.
     /// </para>
     /// </remarks>
-    public UInt16 Value
+    public ushort Value
     {
         readonly get => _value;
         set => _value = value;
@@ -71,11 +71,11 @@ public struct BitField16
     /// Gets the bit width of the underlying value (always 16).
     /// </summary>
     /// <remarks>
-    /// Static property that returns <c>sizeof(UInt16) * 8 = 16</c>. Used internally
+    /// Static property that returns <c>sizeof(ushort) * 8 = 16</c>. Used internally
     /// for bounds checking in <see cref="CheckIndex"/>. Calculating via sizeof()
-    /// allows the code to be self-documenting and portable (though UInt16 is always 16 bits).
+    /// allows the code to be self-documenting and portable (though ushort is always 16 bits).
     /// </remarks>
-    private static int BitWidth => sizeof(UInt16) * 8;
+    private static int BitWidth => sizeof(ushort) * 8;
 
     /// <summary>
     /// Validates that a bit index is within the valid range (0-15).
@@ -140,7 +140,7 @@ public struct BitField16
     public readonly bool GetBit(int index)
     {
         CheckIndex(index);
-        UInt16 mask = (UInt16)(1 << index);
+        ushort mask = (ushort)(1 << index);
         return (_value & mask) != 0;
     }
 
@@ -189,7 +189,7 @@ public struct BitField16
     public void SetBit(int index, bool state)
     {
         CheckIndex(index);
-        UInt16 mask = (UInt16)(1 << index);
+        ushort mask = (ushort)(1 << index);
 
         if (state)
         {
@@ -199,7 +199,7 @@ public struct BitField16
         else
         {
             // Clear bit: AND with complement of mask
-            _value &= (UInt16)~mask;
+            _value &= (ushort)~mask;
         }
     }
 }

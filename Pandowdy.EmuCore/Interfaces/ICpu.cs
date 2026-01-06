@@ -21,7 +21,7 @@ public interface ICpu
     /// A 16-bit address ($0000-$FFFF) indicating the memory location of the next
     /// instruction byte to be fetched and executed.
     /// </value>
-    UInt16 PC { get; }
+    ushort PC { get; }
 
     /// <summary>
     /// Gets the Stack Pointer register, which points to the current top of the stack.
@@ -30,7 +30,7 @@ public interface ICpu
     /// An 8-bit offset ($00-$FF) within the stack page ($0100-$01FF). The actual
     /// stack address is $0100 + SP. The stack grows downward (SP decrements on push).
     /// </value>
-    Byte SP { get; }
+    byte SP { get; }
 
     /// <summary>
     /// Gets the Accumulator register, the primary register for arithmetic and logic operations.
@@ -39,7 +39,7 @@ public interface ICpu
     /// An 8-bit value used as the primary operand for ALU operations, loads, stores,
     /// and comparisons. Most 6502 instructions operate on or with the accumulator.
     /// </value>
-    Byte A { get; }
+    byte A { get; }
 
     /// <summary>
     /// Gets the X Index register, used for indexed addressing modes and counters.
@@ -48,7 +48,7 @@ public interface ICpu
     /// An 8-bit value commonly used for indexed addressing (e.g., "LDA $1000,X"),
     /// loop counters, and temporary storage.
     /// </value>
-    Byte X { get; }
+    byte X { get; }
 
     /// <summary>
     /// Gets the Y Index register, used for indexed addressing modes and counters.
@@ -57,7 +57,7 @@ public interface ICpu
     /// An 8-bit value commonly used for indexed addressing (e.g., "LDA $1000,Y"),
     /// loop counters, and temporary storage. Similar to X but with fewer addressing modes.
     /// </value>
-    Byte Y { get; }
+    byte Y { get; }
 
     /// <summary>
     /// Gets the Processor Status register containing condition flags.

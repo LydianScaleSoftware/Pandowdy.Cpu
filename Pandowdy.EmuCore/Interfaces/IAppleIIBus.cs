@@ -64,7 +64,7 @@ public interface IAppleIIBus : IBus
     /// call to <see cref="Clock"/> and is used for timing VBlank events and other
     /// time-sensitive operations. Runs at approximately 1.023 MHz.
     /// </value>
-    UInt64 SystemClockCounter { get; }
+    ulong SystemClockCounter { get; }
 
     /// <summary>
     /// Reads a byte from the specified memory address as the CPU would.
@@ -79,7 +79,7 @@ public interface IAppleIIBus : IBus
     /// Regular memory reads ($0000-$BFFF, $D000-$FFFF) are routed to the memory pool
     /// with bank switching and auxiliary memory selection applied.
     /// </remarks>
-    Byte CpuRead(UInt16 address, bool readOnly = false);
+    byte CpuRead(ushort address, bool readOnly = false);
     
     /// <summary>
     /// Writes a byte to the specified memory address as the CPU would.
@@ -94,7 +94,7 @@ public interface IAppleIIBus : IBus
     /// Many Apple II soft switches are write-triggered, changing system state based
     /// on the write address rather than the data value.
     /// </remarks>
-    void CpuWrite(UInt16 address, byte data);
+    void CpuWrite(ushort address, byte data);
     
     /// <summary>
     /// Advances the system clock by one cycle.

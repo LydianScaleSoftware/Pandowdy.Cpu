@@ -14,7 +14,7 @@ public static class Utility
     /// <returns>The validated memory instance.</returns>
     /// <exception cref="ArgumentNullException">Thrown if memory is null.</exception>
     /// <exception cref="ArgumentException">Thrown if memory size does not match expected size.</exception>
-    public static T ValidateIMemorySize<T>(T memory, string paramName, UInt16 expectedSize) where T : IMemory
+    public static T ValidateIMemorySize<T>(T memory, string paramName, ushort expectedSize) where T : IMemory
     {
         ArgumentNullException.ThrowIfNull(memory, paramName);
 

@@ -1,5 +1,4 @@
 
-
 using Emulator;
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.EmuCore.Services;
@@ -40,7 +39,7 @@ public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPo
     /// physical memory may be larger (128KB main+aux + ROM), but it's accessed through
     /// this 64KB window via soft switch-controlled bank switching.
     /// </remarks>
-    public System.Int32 Size { get => 0x10000;  } // 64k addressable space
+    public int Size { get => 0x10000;  } // 64k addressable space
 
     /// <summary>
     /// Reads a byte from the specified address in the mapped memory space.
@@ -483,7 +482,6 @@ public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPo
         MemoryWritten?.Invoke(this, new MemoryAccessEventArgs { Address = address, Value = value});
 
     }
-
 
 
 

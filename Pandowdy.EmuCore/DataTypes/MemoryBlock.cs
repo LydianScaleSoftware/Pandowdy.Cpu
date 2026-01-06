@@ -60,7 +60,7 @@ namespace Pandowdy.EmuCore.DataTypes
     /// </para>
     /// <para>
     /// <strong>Size Limit:</strong> Maximum size is 65,536 bytes (0x10000) because addresses
-    /// are <see cref="UInt16"/> (16-bit). Attempting to create a larger block throws
+    /// are <see cref="ushort"/> (16-bit). Attempting to create a larger block throws
     /// <see cref="ArgumentOutOfRangeException"/>. This matches the 6502 processor's
     /// addressing capabilities.
     /// </para>
@@ -91,7 +91,7 @@ namespace Pandowdy.EmuCore.DataTypes
         /// </summary>
         private byte[] _data = size <= 0 || size > MaxSize
             ? throw new ArgumentOutOfRangeException(nameof(size), size, 
-                $"Memory size must be between 1 and {MaxSize} (0x{MaxSize:X}) bytes. UInt16 addresses cannot access beyond 64KB.")
+                $"Memory size must be between 1 and {MaxSize} (0x{MaxSize:X}) bytes. ushort addresses cannot access beyond 64KB.")
             : new byte[size];
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace Pandowdy.EmuCore.DataTypes
         /// <value>
         /// The length of the underlying byte array. This is the size specified in the constructor.
         /// </value>
-        public Int32 Size { get => _data.Length; }
+        public int Size { get => _data.Length; }
 
         /// <summary>
         /// Reads a byte from the specified memory address.
@@ -121,7 +121,7 @@ namespace Pandowdy.EmuCore.DataTypes
         /// This is intentional for maximum performance in tight CPU emulation loops.
         /// </para>
         /// </remarks>
-        public byte Read(UInt16 address) => _data[address];
+        public byte Read(ushort address) => _data[address];
         
         /// <summary>
         /// Writes a byte to the specified memory address.
@@ -143,7 +143,7 @@ namespace Pandowdy.EmuCore.DataTypes
         /// memory write implementation - no validation, no mapping, no locking.
         /// </para>
         /// </remarks>
-        public void Write(UInt16 address, byte data)
+        public void Write(ushort address, byte data)
         {
             _data[address] = data;
         }
@@ -170,7 +170,7 @@ namespace Pandowdy.EmuCore.DataTypes
         /// logic or overhead.
         /// </para>
         /// </remarks>
-        public byte this[UInt16 address]
+        public byte this[ushort address]
         {
             get => _data[address];
             set => Write(address, value);
@@ -187,7 +187,7 @@ namespace Pandowdy.EmuCore.DataTypes
     /// specifying the size parameter. Equivalent to <c>new MemoryBlock(0x10000)</c>.
     /// </para>
     /// <para>
-    /// <strong>6502 Address Space:</strong> The 6502 processor uses 16-bit addresses (UInt16),
+    /// <strong>6502 Address Space:</strong> The 6502 processor uses 16-bit addresses (ushort),
     /// allowing access to 65,536 bytes (64KB) of memory from $0000 to $FFFF. This class creates
     /// a memory block that covers the entire addressable range.
     /// </para>

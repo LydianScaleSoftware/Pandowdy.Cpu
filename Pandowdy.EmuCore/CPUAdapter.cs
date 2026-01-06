@@ -92,31 +92,31 @@ public class CPUAdapter : ICpu
     /// <remarks>
     /// Directly exposes the Program Counter from the wrapped CPU. No adaptation needed.
     /// </remarks>
-    public UInt16 PC { get => _oldCpu.PC; }
+    public ushort PC { get => _oldCpu.PC; }
     
     /// <inheritdoc />
     /// <remarks>
     /// Directly exposes the Stack Pointer from the wrapped CPU. No adaptation needed.
     /// </remarks>
-    public Byte SP { get => _oldCpu.SP; }
+    public byte SP { get => _oldCpu.SP; }
     
     /// <inheritdoc />
     /// <remarks>
     /// Directly exposes the Accumulator from the wrapped CPU. No adaptation needed.
     /// </remarks>
-    public Byte A { get => _oldCpu.A; }
+    public byte A { get => _oldCpu.A; }
     
     /// <inheritdoc />
     /// <remarks>
     /// Directly exposes the X Index register from the wrapped CPU. No adaptation needed.
     /// </remarks>
-    public Byte X { get => _oldCpu.X; }
+    public byte X { get => _oldCpu.X; }
     
     /// <inheritdoc />
     /// <remarks>
     /// Directly exposes the Y Index register from the wrapped CPU. No adaptation needed.
     /// </remarks>
-    public Byte Y { get => _oldCpu.Y; }
+    public byte Y { get => _oldCpu.Y; }
     
     /// <inheritdoc />
     /// <remarks>
@@ -162,7 +162,7 @@ public class CPUAdapter : ICpu
     /// </para>
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Byte Read(UInt16 address)
+    public byte Read(ushort address)
     {
         return _oldCpu.Read(address);
     }
@@ -184,7 +184,7 @@ public class CPUAdapter : ICpu
     /// </para>
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Write(UInt16 address, Byte data)
+    public void Write(ushort address, byte data)
     {
         _oldCpu.Write(address, data);
     }

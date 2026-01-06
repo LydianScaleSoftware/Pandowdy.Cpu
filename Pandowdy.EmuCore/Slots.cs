@@ -156,7 +156,7 @@ public class Slots : ISlots
     /// will be thrown.
     /// </para>
     /// </remarks>
-    public Int32 Size { get => 0x1000; }
+    public int Size { get => 0x1000; }
 
     /// <inheritdoc/>
     public byte BankSelect { get; set; } = 0;
@@ -479,7 +479,7 @@ public class Slots : ISlots
     /// slots[0x00EC] = 0x00;
     /// </code>
     /// </example>
-    public byte this[UInt16 address]
+    public byte this[ushort address]
     {
         get => Read(address);
         set => Write(address, value);

@@ -68,55 +68,55 @@ public class Apple2Display : Control
     // These colors match the Apple IIe's NTSC color output
     
     /// <summary>Black color (NTSC color 0).</summary>
-    private const UInt32 BlackColor = 0xFF000000;
+    private const uint BlackColor = 0xFF000000;
     /// <summary>Magenta color (NTSC artifact color).</summary>
-    private const UInt32 MagentaColor = 0xFF930B7C;
+    private const uint MagentaColor = 0xFF930B7C;
     /// <summary>Dark blue color (NTSC artifact color).</summary>
-    private const UInt32 DarkBlueColor = 0xFF1F35D3;
+    private const uint DarkBlueColor = 0xFF1F35D3;
     /// <summary>Purple/violet color (NTSC artifact color).</summary>
-    private const UInt32 PurpleColor = 0xFFBB36FF;
+    private const uint PurpleColor = 0xFFBB36FF;
     /// <summary>Dark green color (NTSC artifact color).</summary>
-    private const UInt32 DarkGreenColor = 0xFF00760C;
+    private const uint DarkGreenColor = 0xFF00760C;
     /// <summary>Gray color (NTSC artifact color).</summary>
-    private const UInt32 GrayColor = 0xFF7E7E7E;
+    private const uint GrayColor = 0xFF7E7E7E;
     /// <summary>Medium blue color (NTSC artifact color).</summary>
-    private const UInt32 BlueColor = 0xFF07A5FF;
+    private const uint BlueColor = 0xFF07A5FF;
     /// <summary>Light blue color (NTSC artifact color).</summary>
-    private const UInt32 LightBlueColor = 0xFF6AB6FF;
+    private const uint LightBlueColor = 0xFF6AB6FF;
     /// <summary>Brown/orange color (NTSC artifact color).</summary>
-    private const UInt32 BrownColor = 0xFF7B3F00;
+    private const uint BrownColor = 0xFF7B3F00;
     /// <summary>Orange color (NTSC artifact color).</summary>
-    private const UInt32 OrangeColor = 0xFFFF6A00;
+    private const uint OrangeColor = 0xFFFF6A00;
     /// <summary>Gray 2 color (NTSC artifact color, same as Gray).</summary>
-    private const UInt32 Gray2Color = 0xFF7E7E7E;
+    private const uint Gray2Color = 0xFF7E7E7E;
     /// <summary>Pink color (NTSC artifact color).</summary>
-    private const UInt32 PinkColor = 0xFFFF9ACD;
+    private const uint PinkColor = 0xFFFF9ACD;
     /// <summary>Bright green color (NTSC artifact color).</summary>
-    private const UInt32 GreenColor = 0xFF00FF00;
+    private const uint GreenColor = 0xFF00FF00;
     /// <summary>Yellow color (NTSC artifact color).</summary>
-    private const UInt32 YellowColor = 0xFFFFFF00;
+    private const uint YellowColor = 0xFFFFFF00;
     /// <summary>Aqua/cyan color (NTSC artifact color).</summary>
-    private const UInt32 AquaColor = 0xFF00FFFF;
+    private const uint AquaColor = 0xFF00FFFF;
     /// <summary>White color (NTSC color 15).</summary>
-    private const UInt32 WhiteColor = 0xFFFFFFFF;
+    private const uint WhiteColor = 0xFFFFFFFF;
 
     // Alternative color palette (commented out for future experimentation)
-    //private const UInt32 BlackColor = 0xFF000000;
-    //private const UInt32 MagentaColor = 0xFFE31E60;
-    //private const UInt32 DarkBlueColor = 0xFF604EBD;
-    //private const UInt32 PurpleColor = 0xFF442FD0;
-    //private const UInt32 DarkGreenColor = 0xFF00A360;
-    //private const UInt32 GrayColor = 0xFF9C9C9C;
-    //private const UInt32 BlueColor = 0xFF14CFD0;
-    //private const UInt32 LightBlueColor = 0xFFD0C3FF;
-    //private const UInt32 BrownColor = 0xFF607203;
-    //private const UInt32 OrangeColor = 0xFFFF6A3C;
-    //private const UInt32 Gray2Color = 0xFF9C9C9C;
-    //private const UInt32 PinkColor = 0xFFFFA0D0;
-    //private const UInt32 GreenColor = 0xFF14F53C;
-    //private const UInt32 YellowColor = 0xFFD0DD8D;
-    //private const UInt32 AquaColor = 0xFF72FFD0;
-    //private const UInt32 WhiteColor = 0xFFFFFFFF;
+    //private const uint BlackColor = 0xFF000000;
+    //private const uint MagentaColor = 0xFFE31E60;
+    //private const uint DarkBlueColor = 0xFF604EBD;
+    //private const uint PurpleColor = 0xFF442FD0;
+    //private const uint DarkGreenColor = 0xFF00A360;
+    //private const uint GrayColor = 0xFF9C9C9C;
+    //private const uint BlueColor = 0xFF14CFD0;
+    //private const uint LightBlueColor = 0xFFD0C3FF;
+    //private const uint BrownColor = 0xFF607203;
+    //private const uint OrangeColor = 0xFFFF6A3C;
+    //private const uint Gray2Color = 0xFF9C9C9C;
+    //private const uint PinkColor = 0xFFFFA0D0;
+    //private const uint GreenColor = 0xFF14F53C;
+    //private const uint YellowColor = 0xFFD0DD8D;
+    //private const uint AquaColor = 0xFF72FFD0;
+    //private const uint WhiteColor = 0xFFFFFFFF;
 
     #endregion
 
@@ -693,7 +693,7 @@ bool showScanLines)
     /// </list>
     /// </para>
     /// </remarks>
-    static UInt32 GetNTSCColorFromBits(byte bitval, byte phase)
+    static uint GetNTSCColorFromBits(byte bitval, byte phase)
     {
         phase %= 4;
 
