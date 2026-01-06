@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class VA2M | Pandowdy Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class VA2M | Pandowdy Documentation ">
+      
+      <meta name="description" content="Main Apple IIe emulator orchestrator coordinating CPU, bus, memory, and timing.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/markdavidlong/Pandowdy/new/refactor/apiSpec/new?filename=Pandowdy_EmuCore_VA2M.md&amp;value=---%0Auid%3A%20Pandowdy.EmuCore.VA2M%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="Pandowdy Apple IIe Emulator">
+            Pandowdy Apple IIe Emulator
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Pandowdy.EmuCore.VA2M">
+
+
+
+  <h1 id="Pandowdy_EmuCore_VA2M" data-uid="Pandowdy.EmuCore.VA2M" class="text-break">
+Class VA2M  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L108"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Pandowdy.html">Pandowdy</a>.<a class="xref" href="Pandowdy.EmuCore.html">EmuCore</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Pandowdy.EmuCore.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Main Apple IIe emulator orchestrator coordinating CPU, bus, memory, and timing.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class VA2M : IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">VA2M</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+  <h2 id="Pandowdy_EmuCore_VA2M_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+<strong>⚠️ PLANNED FOR REFACTORING:</strong> This class will be refactored to separate
+concerns (timing, input, state publishing) into dedicated services. See
+Pandowdy.EmuCore/_docs_/VA2MBus-Refactoring-Notes.md for planned architecture.
+</p>
+<p>
+<strong>Name Origin:</strong> "VA2M" = "Virtual Apple II Machinator" - the machine
+orchestrator that brings together all emulator subsystems.
+</p>
+<p>
+<strong>Threading Model:</strong>
+<ul><li><strong>Emulator Thread:</strong> Single-threaded CPU execution (Clock/RunAsync loop)</li><li><strong>External Threads:</strong> UI/input threads enqueue commands via InjectKey(), etc.</li><li><strong>Flash Timer:</strong> Separate timer thread toggles cursor at ~2.1 Hz</li><li><strong>Synchronization:</strong> Commands processed at frame boundaries (thread-safe)</li></ul>
+
+<p>
+<strong>Execution Modes:</strong>
+<ul><li><strong>Clock():</strong> Single-cycle execution, useful for debugging/stepping</li><li><strong>RunAsync():</strong> Continuous batched execution, normal operation mode</li></ul>
+
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_VA2M__ctor_" data-uid="Pandowdy.EmuCore.VA2M.#ctor*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2M__ctor_Pandowdy_EmuCore_Interfaces_IEmulatorState_Pandowdy_EmuCore_Interfaces_IFrameProvider_Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_Pandowdy_EmuCore_Interfaces_IAppleIIBus_Pandowdy_EmuCore_MemoryPool_Pandowdy_EmuCore_Interfaces_IFrameGenerator_" data-uid="Pandowdy.EmuCore.VA2M.#ctor(Pandowdy.EmuCore.Interfaces.IEmulatorState,Pandowdy.EmuCore.Interfaces.IFrameProvider,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider,Pandowdy.EmuCore.Interfaces.IAppleIIBus,Pandowdy.EmuCore.MemoryPool,Pandowdy.EmuCore.Interfaces.IFrameGenerator)">
+  VA2M(IEmulatorState, IFrameProvider, ISystemStatusProvider, IAppleIIBus, MemoryPool, IFrameGenerator)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L305"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the VA2M emulator.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public VA2M(IEmulatorState stateSink, IFrameProvider frameSink, ISystemStatusProvider statusProvider, IAppleIIBus bus, MemoryPool memoryPool, IFrameGenerator frameGenerator)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>stateSink</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.IEmulatorState.html">IEmulatorState</a></dt>
+    <dd><p>State provider for publishing emulator state snapshots.</p>
+</dd>
+    <dt><code>frameSink</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.IFrameProvider.html">IFrameProvider</a></dt>
+    <dd><p>Frame provider for publishing rendered video frames.</p>
+</dd>
+    <dt><code>statusProvider</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.html">ISystemStatusProvider</a></dt>
+    <dd><p>System status provider for soft switch states.</p>
+</dd>
+    <dt><code>bus</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.IAppleIIBus.html">IAppleIIBus</a></dt>
+    <dd><p>System bus coordinating CPU, memory, and I/O.</p>
+</dd>
+    <dt><code>memoryPool</code> <a class="xref" href="Pandowdy.EmuCore.MemoryPool.html">MemoryPool</a></dt>
+    <dd><p>Memory pool managing 128KB Apple IIe memory.</p>
+</dd>
+    <dt><code>frameGenerator</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.IFrameGenerator.html">IFrameGenerator</a></dt>
+    <dd><p>Frame generator for rendering video output.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2M__ctor_Pandowdy_EmuCore_Interfaces_IEmulatorState_Pandowdy_EmuCore_Interfaces_IFrameProvider_Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_Pandowdy_EmuCore_Interfaces_IAppleIIBus_Pandowdy_EmuCore_MemoryPool_Pandowdy_EmuCore_Interfaces_IFrameGenerator__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Initialization Sequence:</strong>
+<ol><li>Store dependency references (all required)</li><li>Load embedded Apple IIe ROM from resources</li><li>Subscribe to VBlank event from bus (if VA2MBus)</li><li>Start flash timer for cursor blinking</li></ol>
+
+<p>
+<strong>ROM Loading:</strong> The Apple IIe Enhanced ROM (16KB) is embedded
+as a resource and automatically loaded during construction. This ROM contains
+the Monitor, Applesoft BASIC, and peripheral firmware.
+</p>
+<p>
+<strong>VBlank Event:</strong> If the bus is a VA2MBus, the OnVBlank handler
+is registered to trigger frame rendering and flash state updates at ~60 Hz.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>Thrown if any parameter is null.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_VA2M_Bus_" data-uid="Pandowdy.EmuCore.VA2M.Bus*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2M_Bus" data-uid="Pandowdy.EmuCore.VA2M.Bus">
+  Bus
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the system bus coordinating CPU, memory, and I/O access.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IAppleIIBus Bus { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.IAppleIIBus.html">IAppleIIBus</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2M_MemoryPool_" data-uid="Pandowdy.EmuCore.VA2M.MemoryPool*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2M_MemoryPool" data-uid="Pandowdy.EmuCore.VA2M.MemoryPool">
+  MemoryPool
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L113"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the memory pool managing the 128KB Apple IIe memory space.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MemoryPool MemoryPool { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Pandowdy.EmuCore.MemoryPool.html">MemoryPool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2M_SystemClock_" data-uid="Pandowdy.EmuCore.VA2M.SystemClock*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2M_SystemClock" data-uid="Pandowdy.EmuCore.VA2M.SystemClock">
+  SystemClock
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L232"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the total number of CPU cycles executed since last reset.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ulong SystemClock { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2M_TargetHz_" data-uid="Pandowdy.EmuCore.VA2M.TargetHz*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2M_TargetHz" data-uid="Pandowdy.EmuCore.VA2M.TargetHz">
+  TargetHz
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L227"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the target CPU frequency in Hz.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public double TargetHz { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2M_TargetHz_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Default is 1,023,000 Hz (1.023 MHz), the Apple IIe's clock speed.
+Can be adjusted for testing or to match different Apple II models.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2M_ThrottleEnabled_" data-uid="Pandowdy.EmuCore.VA2M.ThrottleEnabled*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2M_ThrottleEnabled" data-uid="Pandowdy.EmuCore.VA2M.ThrottleEnabled">
+  ThrottleEnabled
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L182"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets whether throttling is enabled to maintain Apple IIe speed.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ThrottleEnabled { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2M_ThrottleEnabled_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>When true, the emulator runs at ~1.023 MHz (Apple IIe speed).
+When false, runs as fast as possible (useful for loading programs, debugging).</p>
+</div>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_VA2M_Clock_" data-uid="Pandowdy.EmuCore.VA2M.Clock*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2M_Clock" data-uid="Pandowdy.EmuCore.VA2M.Clock">
+  Clock()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L546"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Advance one system clock (one CPU/bus cycle). If throttling is enabled,
+the call will delay to keep approx TargetHz. Suitable for simple loops.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Clock()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2M_Clock_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Execution Sequence:</strong>
+<ol><li>Process pending cross-thread commands (ProcessPending)</li><li>Execute one bus clock cycle (CPU + memory + I/O)</li><li>Increment throttle cycle counter</li><li>Apply throttling delay if enabled (ThrottleOneCycle)</li><li>Publish emulator state snapshot</li></ol>
+
+<p>
+<strong>Use Cases:</strong>
+<ul><li>Single-step debugging (execute one instruction at a time)</li><li>Simple synchronous execution loops</li><li>Testing and verification scenarios</li></ul>
+
+<p>
+<strong>Performance Note:</strong> For continuous operation, use <a class="xref" href="Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_RunAsync_System_Threading_CancellationToken_System_Double_">RunAsync(CancellationToken, double)</a>
+instead as it batches cycles to reduce per-cycle overhead.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2M_Dispose_" data-uid="Pandowdy.EmuCore.VA2M.Dispose*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2M_Dispose" data-uid="Pandowdy.EmuCore.VA2M.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L1247"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Releases all resources used by the VA2M emulator instance.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2M_Dispose_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Cleanup Sequence:</strong>
+<ol><li>Stop and dispose flash timer (~2.1 Hz cursor blink timer)</li><li>Clear pending command queue to release enqueued actions</li><li>Dispose bus (includes VBlank event cleanup)</li><li>Suppress finalization (no unmanaged resources)</li></ol>
+
+<p>
+<strong>Thread Safety:</strong> Should be called from the thread that owns the emulator
+instance (typically the UI thread after stopping emulation). Do not call while RunAsync()
+is executing.
+</p>
+<p>
+<strong>MemoryPool Note:</strong> MemoryPool disposal is currently commented out as it
+may be shared across multiple emulator instances or have external ownership. This should
+be revisited if MemoryPool lifetime is clarified.
+</p>
+<p>
+<strong>CPU Note:</strong> The legacy 6502.NET CPU library does not implement IDisposable,
+so no explicit CPU cleanup is needed. The CPU instance is managed by the Bus.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2M_GenerateStatusData_" data-uid="Pandowdy.EmuCore.VA2M.GenerateStatusData*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2M_GenerateStatusData" data-uid="Pandowdy.EmuCore.VA2M.GenerateStatusData">
+  GenerateStatusData()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L1119"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Enqueues generation of a system status snapshot containing soft switch and button states.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void GenerateStatusData()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2M_GenerateStatusData_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Purpose:</strong> Triggers creation of a comprehensive system status snapshot
+that includes all soft switches (memory mapping, video modes, ROM, annunciators)
+and pushbutton states.
+</p>
+<p>
+<strong>Thread Safety:</strong> This method is thread-safe. It enqueues the status
+generation command which will be executed on the emulator thread via <span class="xref">Pandowdy.EmuCore.VA2M.BuildStatusData()</span>.
+</p>
+<p>
+<strong>Typical Usage:</strong> Called periodically (e.g., at frame boundaries or on-demand)
+to update UI displays showing soft switch states, debug panels, or system status indicators.
+</p>
+<p>
+<strong>Snapshot Contents:</strong> See <span class="xref">Pandowdy.EmuCore.VA2M.BuildStatusData()</span> for details
+on what data is captured in the status snapshot.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2M_InjectKey_" data-uid="Pandowdy.EmuCore.VA2M.InjectKey*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2M_InjectKey_System_Byte_" data-uid="Pandowdy.EmuCore.VA2M.InjectKey(System.Byte)">
+  InjectKey(byte)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L1057"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Inject a keyboard value into the machine as if a key was latched at $C000.
+High bit must be set.  Cleared by access of $C010.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void InjectKey(byte ascii)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>ascii</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>ASCII character code (0-127). High bit will be set automatically.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2M_InjectKey_System_Byte__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Apple IIe Keyboard Protocol:</strong> The Apple IIe keyboard latch is a memory-mapped
+register at $C000. When a key is pressed, the ASCII value with bit 7 set appears at this
+address. Reading $C010 (KBDSTRB) clears bit 7, indicating the key has been read.
+</p>
+<p>
+<strong>Thread Safety:</strong> This method is thread-safe. It enqueues the key injection
+command which will be executed on the emulator thread at the next ProcessPending() call.
+This allows UI threads to inject keyboard input without race conditions.
+</p>
+<p>
+<strong>ASCII Codes:</strong>
+<ul><li>0x20-0x7E: Standard printable ASCII characters</li><li>0x0D (13): Return/Enter key</li><li>0x08 (8): Backspace (sometimes)</li><li>0x15 (21): Right arrow (Apple IIe convention)</li><li>0x1B (27): Escape</li></ul>
+
+<p>
+<strong>Implementation:</strong> The method automatically sets bit 7 (ORs with 0x80)
+to match Apple IIe hardware behavior. The command is enqueued and executed via
+Bus.SetKeyValue() on the emulator thread.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2M_Reset_" data-uid="Pandowdy.EmuCore.VA2M.Reset*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2M_Reset" data-uid="Pandowdy.EmuCore.VA2M.Reset">
+  Reset()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L713"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reset machine and system clock.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Reset()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2M_Reset_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Full System Reset (Power Cycle):</strong> This method performs a complete
+hardware reset equivalent to powering off and on the Apple IIe.
+</p>
+<p>
+<strong>Operations Performed:</strong>
+<ul><li>Reset CPU registers (PC loaded from $FFFC/$FFFD, SP = $FF)</li><li>Reset all soft switches to power-on state</li><li>Reset memory bank mappings</li><li>Clear keyboard latch</li><li>Reset cycle counter to zero</li><li>Restart throttle stopwatch</li><li>Reset performance measurement counters</li></ul>
+
+<p>
+<strong>Difference from UserReset:</strong> Reset() is a cold boot that initializes
+everything. <a class="xref" href="Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_UserReset">UserReset()</a> is a warm reset that preserves memory contents
+and only resets the CPU (Ctrl+Reset behavior).
+</p>
+<p>
+<strong>Thread Safety:</strong> Should be called from the emulator thread.
+For cross-thread reset, enqueue via command queue.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2M_RunAsync_" data-uid="Pandowdy.EmuCore.VA2M.RunAsync*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2M_RunAsync_System_Threading_CancellationToken_System_Double_" data-uid="Pandowdy.EmuCore.VA2M.RunAsync(System.Threading.CancellationToken,System.Double)">
+  RunAsync(CancellationToken, double)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L835"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Run the emulator asynchronously with batched cycles and time slices.
+Batches cycles per tick (e.g.,1 ms or 60 Hz) to reduce overhead of per-cycle waits.
+When ThrottleEnabled is true, pacing uses the periodic timer to approximate TargetHz.
+When false, runs fast batches without waiting.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task RunAsync(CancellationToken ct, double ticksPerSecond = 1000)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>ct</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancellation token to stop the runner.</p>
+</dd>
+    <dt><code>ticksPerSecond</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.double">double</a></dt>
+    <dd><p>Time slice frequency. Use 1000 for 1ms slices or 60 for video-frame pacing.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd><p>A task that completes when the cancellation token is triggered or the emulator stops.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2M_RunAsync_System_Threading_CancellationToken_System_Double__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Throttled Mode (ThrottleEnabled = true):</strong>
+<ul><li>Uses PeriodicTimer to wait for each tick (e.g., 1ms or ~16.67ms for 60 Hz)</li><li>Executes calculated number of cycles per tick (TargetHz / ticksPerSecond)</li><li>Accumulates fractional cycles to prevent drift over time</li><li>Processes pending commands before each batch</li><li>Publishes state after each batch</li></ul>
+
+<p>
+<strong>Fast Mode (ThrottleEnabled = false):</strong>
+<ul><li>Executes 10,000 cycle batches as fast as possible</li><li>No timer delays (runs full CPU speed)</li><li>Yields with Task.Delay(0) to remain responsive</li><li>Useful for loading programs quickly or testing</li></ul>
+
+<p>
+<strong>Recommended ticksPerSecond Values:</strong>
+<ul><li><strong>1000:</strong> 1ms time slices, ~1,023 cycles/tick (balanced)</li><li><strong>60:</strong> ~16.67ms slices, ~17,050 cycles/tick (matches VBlank)</li><li><strong>100:</strong> 10ms slices, ~10,230 cycles/tick (less frequent)</li></ul>
+
+<p>
+<strong>Fractional Cycle Accumulation:</strong> The algorithm tracks fractional
+cycles with a carry variable to prevent cumulative drift. For example, with
+ticksPerSecond=1000, each tick should execute 1023 cycles, but the fractional
+0.0 carry is accumulated so over time the average is exactly 1,023,000 Hz.
+</p>
+<p>
+<strong>Cancellation:</strong> The loop checks the cancellation token after each
+batch and breaks cleanly. OperationCanceledException is caught and handled gracefully.
+</p>
+<p>
+<strong>ConfigureAwait(false):</strong> Used to avoid capturing synchronization
+context, improving performance and preventing potential deadlocks in UI scenarios.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>Thrown if <code class="paramref">ticksPerSecond</code> is zero or negative.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Pandowdy_EmuCore_VA2M_SetPushButton_" data-uid="Pandowdy.EmuCore.VA2M.SetPushButton*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2M_SetPushButton_System_Byte_System_Boolean_" data-uid="Pandowdy.EmuCore.VA2M.SetPushButton(System.Byte,System.Boolean)">
+  SetPushButton(byte, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L1092"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the state of an Apple IIe pushbutton (game controller button).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetPushButton(byte num, bool pressed)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>num</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>Button number (0-2). Button 0 is typically button 0, buttons 1-2 are paddle buttons.</p>
+</dd>
+    <dt><code>pressed</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if button is pressed, false if released.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2M_SetPushButton_System_Byte_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Apple IIe Pushbutton Hardware:</strong> The Apple IIe has three pushbutton
+inputs typically used for game controllers (joysticks/paddles). These are read from
+I/O addresses $C061-$C063.
+</p>
+<p>
+<strong>Button Mapping:</strong>
+<ul><li><strong>Button 0 ($C061):</strong> Typically joystick/paddle button 0</li><li><strong>Button 1 ($C062):</strong> Typically joystick/paddle button 1</li><li><strong>Button 2 ($C063):</strong> Typically joystick/paddle button 2</li></ul>
+
+<p>
+<strong>Reading Buttons:</strong> Software reads the button state by checking bit 7
+of the corresponding I/O address. If bit 7 is set, the button is pressed.
+</p>
+<p>
+<strong>Thread Safety:</strong> This method is thread-safe. It enqueues the button
+state change which will be executed on the emulator thread at the next ProcessPending() call.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2M_UserReset_" data-uid="Pandowdy.EmuCore.VA2M.UserReset*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2M_UserReset" data-uid="Pandowdy.EmuCore.VA2M.UserReset">
+  UserReset()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L773"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Performs a warm reset (Ctrl+Reset) without clearing memory or resetting cycle counters.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void UserReset()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2M_UserReset_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Warm Reset Behavior:</strong> Simulates pressing Ctrl+Reset on the Apple IIe,
+which resets the CPU but preserves RAM contents and continues timing.
+</p>
+<p>
+<strong>Operations Performed:</strong>
+<ul><li>Reset CPU registers (PC loaded from $FFFC/$FFFD, SP reset)</li><li>Memory contents preserved (RAM, soft switches mostly unchanged)</li><li>Cycle counter continues (not reset)</li><li>Throttle timing continues (not restarted)</li></ul>
+
+<p>
+<strong>Use Cases:</strong>
+<ul><li>Break out of infinite loop without losing program in memory</li><li>Return to Monitor/BASIC prompt from running program</li><li>Recover from program hang while preserving state</li></ul>
+
+<p>
+<strong>Difference from Reset:</strong> <a class="xref" href="Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_Reset">Reset()</a> is a cold boot (power cycle).
+UserReset() is a warm reset that preserves memory and timing state.
+</p>
+<p>
+<strong>Thread Safety:</strong> This method is thread-safe. It enqueues the reset
+operation which will be executed on the emulator thread at the next instruction boundary
+(via ProcessPending). This ensures the reset doesn't interrupt a CPU instruction in progress,
+maintaining 6502 atomic instruction guarantees.
+</p>
+<p>
+<strong>Implementation Note:</strong> The reset command is enqueued and will be processed
+at the next safe point (instruction boundary) on the emulator thread. This prevents
+race conditions and undefined behavior from resetting the CPU mid-instruction.
+</p>
+</div>
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2M.cs/#L108" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

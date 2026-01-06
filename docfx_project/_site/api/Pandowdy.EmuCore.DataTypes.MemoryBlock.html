@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class MemoryBlock | Pandowdy Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class MemoryBlock | Pandowdy Documentation ">
+      
+      <meta name="description" content="Simple contiguous memory block implementation for testing and basic memory emulation.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/markdavidlong/Pandowdy/new/refactor/apiSpec/new?filename=Pandowdy_EmuCore_DataTypes_MemoryBlock.md&amp;value=---%0Auid%3A%20Pandowdy.EmuCore.DataTypes.MemoryBlock%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="Pandowdy Apple IIe Emulator">
+            Pandowdy Apple IIe Emulator
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock">
+
+
+
+  <h1 id="Pandowdy_EmuCore_DataTypes_MemoryBlock" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock" class="text-break">
+Class MemoryBlock  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/MemoryBlock.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Pandowdy.html">Pandowdy</a>.<a class="xref" href="Pandowdy.EmuCore.html">EmuCore</a>.<a class="xref" href="Pandowdy.EmuCore.DataTypes.html">DataTypes</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Pandowdy.EmuCore.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Simple contiguous memory block implementation for testing and basic memory emulation.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class MemoryBlock : ISystemRam, IMemory</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">MemoryBlock</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISystemRam.html">ISystemRam</a></div>
+      <div><span class="xref">IMemory</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist derived">
+    <dt>Derived</dt>
+    <dd>
+      <div><a class="xref" href="Pandowdy.EmuCore.DataTypes.MemoryBlock64k.html">MemoryBlock64k</a></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+  <h2 id="Pandowdy_EmuCore_DataTypes_MemoryBlock_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+<strong>Purpose:</strong> Provides a straightforward, flat memory space without the
+complexity of bank switching, soft switches, or memory mapping. Ideal for unit testing,
+CPU instruction validation, and scenarios where simplified memory is sufficient.
+</p>
+<p>
+<strong>Key Characteristics:</strong>
+<ul><li><strong>Size:</strong> Configurable from 1 byte to 64KB (0x10000 bytes maximum)</li><li><strong>Memory Model:</strong> Flat, linear address space with no bank switching</li><li><strong>Access Control:</strong> No write protection - all addresses are read/write</li><li><strong>Thread Safety:</strong> Not thread-safe - intended for single-threaded use</li><li><strong>Performance:</strong> Direct array access with zero overhead</li><li><strong>Bounds Checking:</strong> None - throws <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.indexoutofrangeexception">IndexOutOfRangeException</a> on invalid access</li></ul>
+
+<p>
+<strong>Usage Example:</strong>
+<pre><code class="lang-csharp">// Create 64KB memory block
+var memory = new MemoryBlock(0x10000);
+
+// Or use the convenience class
+var memory64k = new MemoryBlock64k();
+
+// Write test program
+memory.Write(0x0000, 0xA9); // LDA #$42
+memory.Write(0x0001, 0x42);
+
+// Read back
+byte opcode = memory.Read(0x0000); // Returns 0xA9
+
+// Array-like indexer
+memory[0x0200] = 0xFF;
+byte value = memory[0x0200]; // Returns 0xFF</code></pre>
+
+<p>
+<strong>Design Philosophy:</strong>
+This class prioritizes simplicity and performance over features. It provides the bare
+minimum needed to implement the <span class="xref">Emulator.IMemory</span> interface, making it ideal for:
+<ul><li>Unit testing CPU instructions in isolation</li><li>Simple emulators that don't need memory mapping</li><li>Rapid prototyping and experimentation</li><li>Educational purposes and learning 6502 programming</li></ul>
+For production emulation requiring bank switching, soft switches, or advanced memory
+management, consider implementing a more sophisticated memory manager tailored to
+your specific hardware architecture.
+
+<p>
+<strong>Size Limit:</strong> Maximum size is 65,536 bytes (0x10000) because addresses
+are <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a> (16-bit). Attempting to create a larger block throws
+<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a>. This matches the 6502 processor's
+addressing capabilities.
+</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_MemoryBlock__ctor_" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock.#ctor*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_MemoryBlock__ctor_System_Int32_" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock.#ctor(System.Int32)">
+  MemoryBlock(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/MemoryBlock.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Simple contiguous memory block implementation for testing and basic memory emulation.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MemoryBlock(int size)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>size</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Size of the memory block in bytes. Common values:</p>
+<ul><li>64KB (0x10000) - Full 6502 address space (maximum)</li><li>16KB (0x4000) - Typical ROM size</li><li>4KB (0x1000) - Common RAM bank size</li><li>256 bytes (0x100) - Zero page + stack</li><li>Custom sizes for testing specific memory layouts</li></ul>
+Must be between 1 and 65,536 (0x10000) inclusive.
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_DataTypes_MemoryBlock__ctor_System_Int32__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Purpose:</strong> Provides a straightforward, flat memory space without the
+complexity of bank switching, soft switches, or memory mapping. Ideal for unit testing,
+CPU instruction validation, and scenarios where simplified memory is sufficient.
+</p>
+<p>
+<strong>Key Characteristics:</strong>
+<ul><li><strong>Size:</strong> Configurable from 1 byte to 64KB (0x10000 bytes maximum)</li><li><strong>Memory Model:</strong> Flat, linear address space with no bank switching</li><li><strong>Access Control:</strong> No write protection - all addresses are read/write</li><li><strong>Thread Safety:</strong> Not thread-safe - intended for single-threaded use</li><li><strong>Performance:</strong> Direct array access with zero overhead</li><li><strong>Bounds Checking:</strong> None - throws <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.indexoutofrangeexception">IndexOutOfRangeException</a> on invalid access</li></ul>
+
+<p>
+<strong>Usage Example:</strong>
+<pre><code class="lang-csharp">// Create 64KB memory block
+var memory = new MemoryBlock(0x10000);
+
+// Or use the convenience class
+var memory64k = new MemoryBlock64k();
+
+// Write test program
+memory.Write(0x0000, 0xA9); // LDA #$42
+memory.Write(0x0001, 0x42);
+
+// Read back
+byte opcode = memory.Read(0x0000); // Returns 0xA9
+
+// Array-like indexer
+memory[0x0200] = 0xFF;
+byte value = memory[0x0200]; // Returns 0xFF</code></pre>
+
+<p>
+<strong>Design Philosophy:</strong>
+This class prioritizes simplicity and performance over features. It provides the bare
+minimum needed to implement the <span class="xref">Emulator.IMemory</span> interface, making it ideal for:
+<ul><li>Unit testing CPU instructions in isolation</li><li>Simple emulators that don't need memory mapping</li><li>Rapid prototyping and experimentation</li><li>Educational purposes and learning 6502 programming</li></ul>
+For production emulation requiring bank switching, soft switches, or advanced memory
+management, consider implementing a more sophisticated memory manager tailored to
+your specific hardware architecture.
+
+<p>
+<strong>Size Limit:</strong> Maximum size is 65,536 bytes (0x10000) because addresses
+are <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a> (16-bit). Attempting to create a larger block throws
+<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a>. This matches the 6502 processor's
+addressing capabilities.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>Thrown if <code class="paramref">size</code> is less than 1 or greater than 65,536 (0x10000).</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="fields">Fields
+</h2>
+
+
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_MemoryBlock_MaxSize" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock.MaxSize">
+  MaxSize
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/MemoryBlock.cs/#L87"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Maximum allowed memory size in bytes (64KB - the full 16-bit address space).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const int MaxSize = 65536</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>Thrown if <code class="paramref">size</code> is less than 1 or greater than 65,536 (0x10000).</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_MemoryBlock_Item_" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock.Item*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_MemoryBlock_Item_System_UInt16_" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock.Item(System.UInt16)">
+  this[ushort]
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/MemoryBlock.cs/#L173"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the byte value at the specified memory address using array-like indexer syntax.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public byte this[ushort address] { get; set; }</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>address</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>16-bit memory address (0x0000-0xFFFF).</p>
+</dd>
+  </dl>
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>Byte value at the specified address.</p>
+</dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_DataTypes_MemoryBlock_Item_System_UInt16__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Convenience Syntax:</strong> Provides array-like access to memory:
+<pre><code class="lang-csharp">memory[0x1000] = 0x42;      // Write
+byte value = memory[0x1000]; // Read</code></pre>
+
+<p>
+<strong>Implementation:</strong> Getter provides direct array access for maximum
+performance. Setter delegates to <a class="xref" href="Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_Write_System_UInt16_System_Byte_">Write(ushort, byte)</a> for consistency. No additional
+logic or overhead.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.indexoutofrangeexception">IndexOutOfRangeException</a></dt>
+    <dd><p>Thrown if <code class="paramref">address</code> is beyond the memory block size.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_MemoryBlock_Size_" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock.Size*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_MemoryBlock_Size" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock.Size">
+  Size
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/MemoryBlock.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the size of the memory block in bytes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Size { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The length of the underlying byte array. This is the size specified in the constructor.</p>
+</dd>
+  </dl>
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>Thrown if <code class="paramref">size</code> is less than 1 or greater than 65,536 (0x10000).</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_MemoryBlock_Read_" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock.Read*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_MemoryBlock_Read_System_UInt16_" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock.Read(System.UInt16)">
+  Read(ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/MemoryBlock.cs/#L124"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a byte from the specified memory address.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public byte Read(ushort address)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>address</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>16-bit memory address (0x0000-0xFFFF).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>Byte value at the specified address.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_DataTypes_MemoryBlock_Read_System_UInt16__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Performance:</strong> Direct array access with no overhead. Fastest possible
+memory read implementation - no validation, no mapping, no locking.
+</p>
+<p>
+<strong>No Bounds Checking:</strong> This method does not validate the address range.
+Accessing beyond <a class="xref" href="Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_Size">Size</a> will throw <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.indexoutofrangeexception">IndexOutOfRangeException</a>.
+This is intentional for maximum performance in tight CPU emulation loops.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.indexoutofrangeexception">IndexOutOfRangeException</a></dt>
+    <dd><p>Thrown if <code class="paramref">address</code> is beyond the memory block size.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_MemoryBlock_Write_" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock.Write*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_MemoryBlock_Write_System_UInt16_System_Byte_" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock.Write(System.UInt16,System.Byte)">
+  Write(ushort, byte)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/MemoryBlock.cs/#L146"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes a byte to the specified memory address.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Write(ushort address, byte data)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>address</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>16-bit memory address (0x0000-0xFFFF).</p>
+</dd>
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>Byte value to write.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_DataTypes_MemoryBlock_Write_System_UInt16_System_Byte__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>No Write Protection:</strong> All addresses within the memory block are
+writable. There is no ROM simulation, write protection, or access control.
+If you need write-protected regions, implement wrapper logic or use a more
+sophisticated memory manager.
+</p>
+<p>
+<strong>Performance:</strong> Direct array access with no overhead. Fastest possible
+memory write implementation - no validation, no mapping, no locking.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.indexoutofrangeexception">IndexOutOfRangeException</a></dt>
+    <dd><p>Thrown if <code class="paramref">address</code> is beyond the memory block size.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/MemoryBlock.cs/#L82" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,976 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.RenderContext
+  commentId: T:Pandowdy.EmuCore.RenderContext
+  id: RenderContext
+  parent: Pandowdy.EmuCore
+  children:
+  - Pandowdy.EmuCore.RenderContext.#ctor(Pandowdy.EmuCore.DataTypes.BitmapDataArray,Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider)
+  - Pandowdy.EmuCore.RenderContext.ClearBuffer
+  - Pandowdy.EmuCore.RenderContext.FrameBuffer
+  - Pandowdy.EmuCore.RenderContext.IsHiRes
+  - Pandowdy.EmuCore.RenderContext.IsInvalidated
+  - Pandowdy.EmuCore.RenderContext.IsMixed
+  - Pandowdy.EmuCore.RenderContext.IsPage2
+  - Pandowdy.EmuCore.RenderContext.IsTextMode
+  - Pandowdy.EmuCore.RenderContext.Memory
+  - Pandowdy.EmuCore.RenderContext.SystemStatus
+  langs:
+  - csharp
+  - vb
+  name: RenderContext
+  nameWithType: RenderContext
+  fullName: Pandowdy.EmuCore.RenderContext
+  type: Class
+  source:
+    remote:
+      path: Pandowdy.EmuCore/RenderContext.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: RenderContext
+    path: ../Pandowdy.EmuCore/RenderContext.cs
+    startLine: 73
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Context for rendering a single video frame, containing frame buffer, memory access, and system status.
+  remarks: >-
+    <p>
+
+    <strong>One-Shot Lifetime:</strong> A RenderContext is valid only until it is committed via
+
+    <xref href="Pandowdy.EmuCore.Interfaces.IFrameGenerator.RenderFrame(Pandowdy.EmuCore.RenderContext)" data-throw-if-not-resolved="false"></xref>. After commit, the context is automatically invalidated
+
+    and attempting to use it will throw <xref href="System.InvalidOperationException" data-throw-if-not-resolved="false"></xref>.
+
+    </p>
+
+    <p>
+
+    <strong>Usage Pattern:</strong>
+
+
+    <pre><code class="lang-csharp">var context = frameGenerator.AllocateRenderContext();  // Valid
+
+    frameGenerator.RenderFrame(context);                    // Commits and invalidates
+
+    // context is now invalid - do not reuse!</code></pre>
+
+    </p>
+
+    <p>
+
+    <strong>Reference Type:</strong> RenderContext is a class (reference type), so invalidation state
+
+    is naturally shared across all references to the same instance.
+
+    </p>
+
+    <p>
+
+    <strong>Thread Safety:</strong> Not thread-safe. A context should be used by a single thread
+
+    from allocation through commit.
+
+    </p>
+  example: []
+  syntax:
+    content: public class RenderContext
+    content.vb: Public Class RenderContext
+  exceptions:
+  - type: System.ArgumentNullException
+    commentId: T:System.ArgumentNullException
+    description: Thrown if any parameter is null. All dependencies are required.
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Pandowdy.EmuCore.RenderContext.#ctor(Pandowdy.EmuCore.DataTypes.BitmapDataArray,Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider)
+  commentId: M:Pandowdy.EmuCore.RenderContext.#ctor(Pandowdy.EmuCore.DataTypes.BitmapDataArray,Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider)
+  id: '#ctor(Pandowdy.EmuCore.DataTypes.BitmapDataArray,Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider)'
+  parent: Pandowdy.EmuCore.RenderContext
+  langs:
+  - csharp
+  - vb
+  name: RenderContext(BitmapDataArray, IDirectMemoryPoolReader, ISystemStatusProvider)
+  nameWithType: RenderContext.RenderContext(BitmapDataArray, IDirectMemoryPoolReader, ISystemStatusProvider)
+  fullName: Pandowdy.EmuCore.RenderContext.RenderContext(Pandowdy.EmuCore.DataTypes.BitmapDataArray, Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader, Pandowdy.EmuCore.Interfaces.ISystemStatusProvider)
+  type: Constructor
+  source:
+    remote:
+      path: Pandowdy.EmuCore/RenderContext.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: .ctor
+    path: ../Pandowdy.EmuCore/RenderContext.cs
+    startLine: 73
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Context for rendering a single video frame, containing frame buffer, memory access, and system status.
+  remarks: >-
+    <p>
+
+    <strong>One-Shot Lifetime:</strong> A RenderContext is valid only until it is committed via
+
+    <xref href="Pandowdy.EmuCore.Interfaces.IFrameGenerator.RenderFrame(Pandowdy.EmuCore.RenderContext)" data-throw-if-not-resolved="false"></xref>. After commit, the context is automatically invalidated
+
+    and attempting to use it will throw <xref href="System.InvalidOperationException" data-throw-if-not-resolved="false"></xref>.
+
+    </p>
+
+    <p>
+
+    <strong>Usage Pattern:</strong>
+
+
+    <pre><code class="lang-csharp">var context = frameGenerator.AllocateRenderContext();  // Valid
+
+    frameGenerator.RenderFrame(context);                    // Commits and invalidates
+
+    // context is now invalid - do not reuse!</code></pre>
+
+    </p>
+
+    <p>
+
+    <strong>Reference Type:</strong> RenderContext is a class (reference type), so invalidation state
+
+    is naturally shared across all references to the same instance.
+
+    </p>
+
+    <p>
+
+    <strong>Thread Safety:</strong> Not thread-safe. A context should be used by a single thread
+
+    from allocation through commit.
+
+    </p>
+  example: []
+  syntax:
+    content: public RenderContext(BitmapDataArray frameBuffer, IDirectMemoryPoolReader memory, ISystemStatusProvider status)
+    parameters:
+    - id: frameBuffer
+      type: Pandowdy.EmuCore.DataTypes.BitmapDataArray
+      description: The frame buffer where pixels will be written during rendering.
+    - id: memory
+      type: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+      description: Direct memory access for reading video RAM (main and auxiliary banks).
+    - id: status
+      type: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+      description: System status provider for reading soft switch states.
+    content.vb: Public Sub New(frameBuffer As BitmapDataArray, memory As IDirectMemoryPoolReader, status As ISystemStatusProvider)
+  overload: Pandowdy.EmuCore.RenderContext.#ctor*
+  exceptions:
+  - type: System.ArgumentNullException
+    commentId: T:System.ArgumentNullException
+    description: Thrown if any parameter is null. All dependencies are required.
+  nameWithType.vb: RenderContext.New(BitmapDataArray, IDirectMemoryPoolReader, ISystemStatusProvider)
+  fullName.vb: Pandowdy.EmuCore.RenderContext.New(Pandowdy.EmuCore.DataTypes.BitmapDataArray, Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader, Pandowdy.EmuCore.Interfaces.ISystemStatusProvider)
+  name.vb: New(BitmapDataArray, IDirectMemoryPoolReader, ISystemStatusProvider)
+- uid: Pandowdy.EmuCore.RenderContext.FrameBuffer
+  commentId: P:Pandowdy.EmuCore.RenderContext.FrameBuffer
+  id: FrameBuffer
+  parent: Pandowdy.EmuCore.RenderContext
+  langs:
+  - csharp
+  - vb
+  name: FrameBuffer
+  nameWithType: RenderContext.FrameBuffer
+  fullName: Pandowdy.EmuCore.RenderContext.FrameBuffer
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/RenderContext.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: FrameBuffer
+    path: ../Pandowdy.EmuCore/RenderContext.cs
+    startLine: 89
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Frame buffer where pixels are written during rendering.
+  example: []
+  syntax:
+    content: public BitmapDataArray FrameBuffer { get; }
+    parameters: []
+    return:
+      type: Pandowdy.EmuCore.DataTypes.BitmapDataArray
+    content.vb: Public ReadOnly Property FrameBuffer As BitmapDataArray
+  overload: Pandowdy.EmuCore.RenderContext.FrameBuffer*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown when accessing the frame buffer after the context has been invalidated (committed).
+- uid: Pandowdy.EmuCore.RenderContext.Memory
+  commentId: P:Pandowdy.EmuCore.RenderContext.Memory
+  id: Memory
+  parent: Pandowdy.EmuCore.RenderContext
+  langs:
+  - csharp
+  - vb
+  name: Memory
+  nameWithType: RenderContext.Memory
+  fullName: Pandowdy.EmuCore.RenderContext.Memory
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/RenderContext.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Memory
+    path: ../Pandowdy.EmuCore/RenderContext.cs
+    startLine: 104
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Direct memory access for reading video RAM (main and auxiliary banks).
+  example: []
+  syntax:
+    content: public IDirectMemoryPoolReader Memory { get; }
+    parameters: []
+    return:
+      type: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+    content.vb: Public ReadOnly Property Memory As IDirectMemoryPoolReader
+  overload: Pandowdy.EmuCore.RenderContext.Memory*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown when accessing memory after the context has been invalidated (committed).
+- uid: Pandowdy.EmuCore.RenderContext.SystemStatus
+  commentId: P:Pandowdy.EmuCore.RenderContext.SystemStatus
+  id: SystemStatus
+  parent: Pandowdy.EmuCore.RenderContext
+  langs:
+  - csharp
+  - vb
+  name: SystemStatus
+  nameWithType: RenderContext.SystemStatus
+  fullName: Pandowdy.EmuCore.RenderContext.SystemStatus
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/RenderContext.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SystemStatus
+    path: ../Pandowdy.EmuCore/RenderContext.cs
+    startLine: 119
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: System status provider for reading soft switch states (video mode, page selection, etc.).
+  example: []
+  syntax:
+    content: public ISystemStatusProvider SystemStatus { get; }
+    parameters: []
+    return:
+      type: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+    content.vb: Public ReadOnly Property SystemStatus As ISystemStatusProvider
+  overload: Pandowdy.EmuCore.RenderContext.SystemStatus*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown when accessing system status after the context has been invalidated (committed).
+- uid: Pandowdy.EmuCore.RenderContext.IsInvalidated
+  commentId: P:Pandowdy.EmuCore.RenderContext.IsInvalidated
+  id: IsInvalidated
+  parent: Pandowdy.EmuCore.RenderContext
+  langs:
+  - csharp
+  - vb
+  name: IsInvalidated
+  nameWithType: RenderContext.IsInvalidated
+  fullName: Pandowdy.EmuCore.RenderContext.IsInvalidated
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/RenderContext.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IsInvalidated
+    path: ../Pandowdy.EmuCore/RenderContext.cs
+    startLine: 135
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Gets a value indicating whether this context has been invalidated (committed).
+  remarks: >-
+    Once a context is invalidated, it cannot be used for rendering or buffer access.
+
+    A new context must be allocated via <xref href="Pandowdy.EmuCore.Interfaces.IFrameGenerator.AllocateRenderContext" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public bool IsInvalidated { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsInvalidated As Boolean
+  overload: Pandowdy.EmuCore.RenderContext.IsInvalidated*
+- uid: Pandowdy.EmuCore.RenderContext.IsTextMode
+  commentId: P:Pandowdy.EmuCore.RenderContext.IsTextMode
+  id: IsTextMode
+  parent: Pandowdy.EmuCore.RenderContext
+  langs:
+  - csharp
+  - vb
+  name: IsTextMode
+  nameWithType: RenderContext.IsTextMode
+  fullName: Pandowdy.EmuCore.RenderContext.IsTextMode
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/RenderContext.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IsTextMode
+    path: ../Pandowdy.EmuCore/RenderContext.cs
+    startLine: 143
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Gets whether the current video mode is text mode.
+  example: []
+  syntax:
+    content: public bool IsTextMode { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsTextMode As Boolean
+  overload: Pandowdy.EmuCore.RenderContext.IsTextMode*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown when accessing after the context has been invalidated (committed).
+- uid: Pandowdy.EmuCore.RenderContext.IsMixed
+  commentId: P:Pandowdy.EmuCore.RenderContext.IsMixed
+  id: IsMixed
+  parent: Pandowdy.EmuCore.RenderContext
+  langs:
+  - csharp
+  - vb
+  name: IsMixed
+  nameWithType: RenderContext.IsMixed
+  fullName: Pandowdy.EmuCore.RenderContext.IsMixed
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/RenderContext.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IsMixed
+    path: ../Pandowdy.EmuCore/RenderContext.cs
+    startLine: 158
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Gets whether mixed mode is active (text bottom, graphics top).
+  example: []
+  syntax:
+    content: public bool IsMixed { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsMixed As Boolean
+  overload: Pandowdy.EmuCore.RenderContext.IsMixed*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown when accessing after the context has been invalidated (committed).
+- uid: Pandowdy.EmuCore.RenderContext.IsHiRes
+  commentId: P:Pandowdy.EmuCore.RenderContext.IsHiRes
+  id: IsHiRes
+  parent: Pandowdy.EmuCore.RenderContext
+  langs:
+  - csharp
+  - vb
+  name: IsHiRes
+  nameWithType: RenderContext.IsHiRes
+  fullName: Pandowdy.EmuCore.RenderContext.IsHiRes
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/RenderContext.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IsHiRes
+    path: ../Pandowdy.EmuCore/RenderContext.cs
+    startLine: 173
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Gets whether hi-res graphics mode is active.
+  example: []
+  syntax:
+    content: public bool IsHiRes { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsHiRes As Boolean
+  overload: Pandowdy.EmuCore.RenderContext.IsHiRes*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown when accessing after the context has been invalidated (committed).
+- uid: Pandowdy.EmuCore.RenderContext.IsPage2
+  commentId: P:Pandowdy.EmuCore.RenderContext.IsPage2
+  id: IsPage2
+  parent: Pandowdy.EmuCore.RenderContext
+  langs:
+  - csharp
+  - vb
+  name: IsPage2
+  nameWithType: RenderContext.IsPage2
+  fullName: Pandowdy.EmuCore.RenderContext.IsPage2
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/RenderContext.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IsPage2
+    path: ../Pandowdy.EmuCore/RenderContext.cs
+    startLine: 188
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Gets whether page 2 is active (affects which video memory page is displayed).
+  example: []
+  syntax:
+    content: public bool IsPage2 { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsPage2 As Boolean
+  overload: Pandowdy.EmuCore.RenderContext.IsPage2*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown when accessing after the context has been invalidated (committed).
+- uid: Pandowdy.EmuCore.RenderContext.ClearBuffer
+  commentId: M:Pandowdy.EmuCore.RenderContext.ClearBuffer
+  id: ClearBuffer
+  parent: Pandowdy.EmuCore.RenderContext
+  langs:
+  - csharp
+  - vb
+  name: ClearBuffer()
+  nameWithType: RenderContext.ClearBuffer()
+  fullName: Pandowdy.EmuCore.RenderContext.ClearBuffer()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/RenderContext.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ClearBuffer
+    path: ../Pandowdy.EmuCore/RenderContext.cs
+    startLine: 203
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Clears the frame buffer (resets all pixels to black/background).
+  example: []
+  syntax:
+    content: public void ClearBuffer()
+    content.vb: Public Sub ClearBuffer()
+  overload: Pandowdy.EmuCore.RenderContext.ClearBuffer*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown when called after the context has been invalidated (committed).
+references:
+- uid: Pandowdy.EmuCore.Interfaces.IFrameGenerator.RenderFrame(Pandowdy.EmuCore.RenderContext)
+  commentId: M:Pandowdy.EmuCore.Interfaces.IFrameGenerator.RenderFrame(Pandowdy.EmuCore.RenderContext)
+  parent: Pandowdy.EmuCore.Interfaces.IFrameGenerator
+  href: Pandowdy.EmuCore.Interfaces.IFrameGenerator.html#Pandowdy_EmuCore_Interfaces_IFrameGenerator_RenderFrame_Pandowdy_EmuCore_RenderContext_
+  name: RenderFrame(RenderContext)
+  nameWithType: IFrameGenerator.RenderFrame(RenderContext)
+  fullName: Pandowdy.EmuCore.Interfaces.IFrameGenerator.RenderFrame(Pandowdy.EmuCore.RenderContext)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IFrameGenerator.RenderFrame(Pandowdy.EmuCore.RenderContext)
+    name: RenderFrame
+    href: Pandowdy.EmuCore.Interfaces.IFrameGenerator.html#Pandowdy_EmuCore_Interfaces_IFrameGenerator_RenderFrame_Pandowdy_EmuCore_RenderContext_
+  - name: (
+  - uid: Pandowdy.EmuCore.RenderContext
+    name: RenderContext
+    href: Pandowdy.EmuCore.RenderContext.html
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IFrameGenerator.RenderFrame(Pandowdy.EmuCore.RenderContext)
+    name: RenderFrame
+    href: Pandowdy.EmuCore.Interfaces.IFrameGenerator.html#Pandowdy_EmuCore_Interfaces_IFrameGenerator_RenderFrame_Pandowdy_EmuCore_RenderContext_
+  - name: (
+  - uid: Pandowdy.EmuCore.RenderContext
+    name: RenderContext
+    href: Pandowdy.EmuCore.RenderContext.html
+  - name: )
+- uid: System.InvalidOperationException
+  commentId: T:System.InvalidOperationException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.invalidoperationexception
+  name: InvalidOperationException
+  nameWithType: InvalidOperationException
+  fullName: System.InvalidOperationException
+- uid: Pandowdy.EmuCore.RenderContext
+  commentId: T:Pandowdy.EmuCore.RenderContext
+  parent: Pandowdy.EmuCore
+  href: Pandowdy.EmuCore.RenderContext.html
+  name: RenderContext
+  nameWithType: RenderContext
+  fullName: Pandowdy.EmuCore.RenderContext
+- uid: System.ArgumentNullException
+  commentId: T:System.ArgumentNullException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.argumentnullexception
+  name: ArgumentNullException
+  nameWithType: ArgumentNullException
+  fullName: System.ArgumentNullException
+- uid: Pandowdy.EmuCore
+  commentId: N:Pandowdy.EmuCore
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore
+  nameWithType: Pandowdy.EmuCore
+  fullName: Pandowdy.EmuCore
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.IFrameGenerator
+  commentId: T:Pandowdy.EmuCore.Interfaces.IFrameGenerator
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IFrameGenerator.html
+  name: IFrameGenerator
+  nameWithType: IFrameGenerator
+  fullName: Pandowdy.EmuCore.Interfaces.IFrameGenerator
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.RenderContext.#ctor*
+  commentId: Overload:Pandowdy.EmuCore.RenderContext.#ctor
+  href: Pandowdy.EmuCore.RenderContext.html#Pandowdy_EmuCore_RenderContext__ctor_Pandowdy_EmuCore_DataTypes_BitmapDataArray_Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_
+  name: RenderContext
+  nameWithType: RenderContext.RenderContext
+  fullName: Pandowdy.EmuCore.RenderContext.RenderContext
+  nameWithType.vb: RenderContext.New
+  fullName.vb: Pandowdy.EmuCore.RenderContext.New
+  name.vb: New
+- uid: Pandowdy.EmuCore.DataTypes.BitmapDataArray
+  commentId: T:Pandowdy.EmuCore.DataTypes.BitmapDataArray
+  parent: Pandowdy.EmuCore.DataTypes
+  href: Pandowdy.EmuCore.DataTypes.BitmapDataArray.html
+  name: BitmapDataArray
+  nameWithType: BitmapDataArray
+  fullName: Pandowdy.EmuCore.DataTypes.BitmapDataArray
+- uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  commentId: T:Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html
+  name: IDirectMemoryPoolReader
+  nameWithType: IDirectMemoryPoolReader
+  fullName: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+- uid: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.html
+  name: ISystemStatusProvider
+  nameWithType: ISystemStatusProvider
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+- uid: Pandowdy.EmuCore.DataTypes
+  commentId: N:Pandowdy.EmuCore.DataTypes
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.DataTypes
+  nameWithType: Pandowdy.EmuCore.DataTypes
+  fullName: Pandowdy.EmuCore.DataTypes
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.DataTypes
+    name: DataTypes
+    href: Pandowdy.EmuCore.DataTypes.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.DataTypes
+    name: DataTypes
+    href: Pandowdy.EmuCore.DataTypes.html
+- uid: Pandowdy.EmuCore.RenderContext.FrameBuffer*
+  commentId: Overload:Pandowdy.EmuCore.RenderContext.FrameBuffer
+  href: Pandowdy.EmuCore.RenderContext.html#Pandowdy_EmuCore_RenderContext_FrameBuffer
+  name: FrameBuffer
+  nameWithType: RenderContext.FrameBuffer
+  fullName: Pandowdy.EmuCore.RenderContext.FrameBuffer
+- uid: Pandowdy.EmuCore.RenderContext.Memory*
+  commentId: Overload:Pandowdy.EmuCore.RenderContext.Memory
+  href: Pandowdy.EmuCore.RenderContext.html#Pandowdy_EmuCore_RenderContext_Memory
+  name: Memory
+  nameWithType: RenderContext.Memory
+  fullName: Pandowdy.EmuCore.RenderContext.Memory
+- uid: Pandowdy.EmuCore.RenderContext.SystemStatus*
+  commentId: Overload:Pandowdy.EmuCore.RenderContext.SystemStatus
+  href: Pandowdy.EmuCore.RenderContext.html#Pandowdy_EmuCore_RenderContext_SystemStatus
+  name: SystemStatus
+  nameWithType: RenderContext.SystemStatus
+  fullName: Pandowdy.EmuCore.RenderContext.SystemStatus
+- uid: Pandowdy.EmuCore.Interfaces.IFrameGenerator.AllocateRenderContext
+  commentId: M:Pandowdy.EmuCore.Interfaces.IFrameGenerator.AllocateRenderContext
+  parent: Pandowdy.EmuCore.Interfaces.IFrameGenerator
+  href: Pandowdy.EmuCore.Interfaces.IFrameGenerator.html#Pandowdy_EmuCore_Interfaces_IFrameGenerator_AllocateRenderContext
+  name: AllocateRenderContext()
+  nameWithType: IFrameGenerator.AllocateRenderContext()
+  fullName: Pandowdy.EmuCore.Interfaces.IFrameGenerator.AllocateRenderContext()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IFrameGenerator.AllocateRenderContext
+    name: AllocateRenderContext
+    href: Pandowdy.EmuCore.Interfaces.IFrameGenerator.html#Pandowdy_EmuCore_Interfaces_IFrameGenerator_AllocateRenderContext
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IFrameGenerator.AllocateRenderContext
+    name: AllocateRenderContext
+    href: Pandowdy.EmuCore.Interfaces.IFrameGenerator.html#Pandowdy_EmuCore_Interfaces_IFrameGenerator_AllocateRenderContext
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.RenderContext.IsInvalidated*
+  commentId: Overload:Pandowdy.EmuCore.RenderContext.IsInvalidated
+  href: Pandowdy.EmuCore.RenderContext.html#Pandowdy_EmuCore_RenderContext_IsInvalidated
+  name: IsInvalidated
+  nameWithType: RenderContext.IsInvalidated
+  fullName: Pandowdy.EmuCore.RenderContext.IsInvalidated
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Pandowdy.EmuCore.RenderContext.IsTextMode*
+  commentId: Overload:Pandowdy.EmuCore.RenderContext.IsTextMode
+  href: Pandowdy.EmuCore.RenderContext.html#Pandowdy_EmuCore_RenderContext_IsTextMode
+  name: IsTextMode
+  nameWithType: RenderContext.IsTextMode
+  fullName: Pandowdy.EmuCore.RenderContext.IsTextMode
+- uid: Pandowdy.EmuCore.RenderContext.IsMixed*
+  commentId: Overload:Pandowdy.EmuCore.RenderContext.IsMixed
+  href: Pandowdy.EmuCore.RenderContext.html#Pandowdy_EmuCore_RenderContext_IsMixed
+  name: IsMixed
+  nameWithType: RenderContext.IsMixed
+  fullName: Pandowdy.EmuCore.RenderContext.IsMixed
+- uid: Pandowdy.EmuCore.RenderContext.IsHiRes*
+  commentId: Overload:Pandowdy.EmuCore.RenderContext.IsHiRes
+  href: Pandowdy.EmuCore.RenderContext.html#Pandowdy_EmuCore_RenderContext_IsHiRes
+  name: IsHiRes
+  nameWithType: RenderContext.IsHiRes
+  fullName: Pandowdy.EmuCore.RenderContext.IsHiRes
+- uid: Pandowdy.EmuCore.RenderContext.IsPage2*
+  commentId: Overload:Pandowdy.EmuCore.RenderContext.IsPage2
+  href: Pandowdy.EmuCore.RenderContext.html#Pandowdy_EmuCore_RenderContext_IsPage2
+  name: IsPage2
+  nameWithType: RenderContext.IsPage2
+  fullName: Pandowdy.EmuCore.RenderContext.IsPage2
+- uid: Pandowdy.EmuCore.RenderContext.ClearBuffer*
+  commentId: Overload:Pandowdy.EmuCore.RenderContext.ClearBuffer
+  href: Pandowdy.EmuCore.RenderContext.html#Pandowdy_EmuCore_RenderContext_ClearBuffer
+  name: ClearBuffer
+  nameWithType: RenderContext.ClearBuffer
+  fullName: Pandowdy.EmuCore.RenderContext.ClearBuffer

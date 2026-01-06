@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Interface IFrameGenerator | Pandowdy Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Interface IFrameGenerator | Pandowdy Documentation ">
+      
+      <meta name="description" content="Coordinates the generation of video frames from Apple IIe system state.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/markdavidlong/Pandowdy/new/refactor/apiSpec/new?filename=Pandowdy_EmuCore_Interfaces_IFrameGenerator.md&amp;value=---%0Auid%3A%20Pandowdy.EmuCore.Interfaces.IFrameGenerator%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="Pandowdy Apple IIe Emulator">
+            Pandowdy Apple IIe Emulator
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Pandowdy.EmuCore.Interfaces.IFrameGenerator">
+
+
+
+  <h1 id="Pandowdy_EmuCore_Interfaces_IFrameGenerator" data-uid="Pandowdy.EmuCore.Interfaces.IFrameGenerator" class="text-break">
+Interface IFrameGenerator  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/IFrameGenerator.cs/#L28"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Pandowdy.html">Pandowdy</a>.<a class="xref" href="Pandowdy.EmuCore.html">EmuCore</a>.<a class="xref" href="Pandowdy.EmuCore.Interfaces.html">Interfaces</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Pandowdy.EmuCore.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Coordinates the generation of video frames from Apple IIe system state.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public interface IFrameGenerator</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+  <h2 id="Pandowdy_EmuCore_Interfaces_IFrameGenerator_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>This interface is responsible for orchestrating the frame rendering process by:</p>
+<ul><li>Allocating render contexts with necessary dependencies (memory, status, frame buffer)</li><li>Invoking the appropriate renderer to convert video memory into displayable pixels</li><li>Managing the rendering pipeline from system state to final frame buffer</li></ul>
+<p>
+The frame generator acts as a coordinator between the emulator core (which provides
+system state and memory) and the renderer (which produces pixels). It abstracts
+the details of render context creation and renderer invocation, providing a simple
+interface for the UI or display subsystem to request rendered frames.
+</p>
+<p>
+Typical usage pattern:
+<pre><code class="lang-csharp">var context = frameGenerator.AllocateRenderContext();
+frameGenerator.RenderFrame(context);
+// context.FrameBuffer now contains the rendered frame</code></pre>
+
+</div>
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_IFrameGenerator_AllocateRenderContext_" data-uid="Pandowdy.EmuCore.Interfaces.IFrameGenerator.AllocateRenderContext*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_IFrameGenerator_AllocateRenderContext" data-uid="Pandowdy.EmuCore.Interfaces.IFrameGenerator.AllocateRenderContext">
+  AllocateRenderContext()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/IFrameGenerator.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Allocates and initializes a render context for frame generation.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">RenderContext AllocateRenderContext()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Pandowdy.EmuCore.RenderContext.html">RenderContext</a></dt>
+    <dd><p>A <a class="xref" href="Pandowdy.EmuCore.RenderContext.html">RenderContext</a> containing the frame buffer, memory access,
+and system status required for rendering a frame.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_IFrameGenerator_AllocateRenderContext_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>This method creates a render context that packages together all the dependencies
+needed for frame rendering:</p>
+<ul><li><strong>Frame buffer</strong> - The writable bitmap where pixels will be rendered</li><li><strong>Memory access</strong> - Direct access to video memory (main and auxiliary)</li><li><strong>System status</strong> - Current soft switch states (video mode, page selection, etc.)</li></ul>
+<p>
+The allocated context is typically short-lived, used for rendering a single frame
+and then discarded. For performance, the underlying frame buffer may be reused
+through a double-buffering mechanism managed by the <a class="xref" href="Pandowdy.EmuCore.Interfaces.IFrameProvider.html">IFrameProvider</a>.
+</p>
+<p>
+This method should be called once per frame, typically in response to a VBlank
+event or refresh timer tick (~60 Hz).
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_IFrameGenerator_RenderFrame_" data-uid="Pandowdy.EmuCore.Interfaces.IFrameGenerator.RenderFrame*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_IFrameGenerator_RenderFrame_Pandowdy_EmuCore_RenderContext_" data-uid="Pandowdy.EmuCore.Interfaces.IFrameGenerator.RenderFrame(Pandowdy.EmuCore.RenderContext)">
+  RenderFrame(RenderContext)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/IFrameGenerator.cs/#L89"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Renders the current Apple IIe video state into the provided context's frame buffer.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void RenderFrame(RenderContext context)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>context</code> <a class="xref" href="Pandowdy.EmuCore.RenderContext.html">RenderContext</a></dt>
+    <dd><p>The <a class="xref" href="Pandowdy.EmuCore.RenderContext.html">RenderContext</a> containing the frame buffer, memory access,
+and system status. Typically obtained from <a class="xref" href="Pandowdy.EmuCore.Interfaces.IFrameGenerator.html#Pandowdy_EmuCore_Interfaces_IFrameGenerator_AllocateRenderContext">AllocateRenderContext()</a>.
+As a reference type, the context's invalidation state is shared across all references.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_IFrameGenerator_RenderFrame_Pandowdy_EmuCore_RenderContext__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>This method invokes the configured renderer (typically <a class="xref" href="Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer.html">IDisplayBitmapRenderer</a>)
+to convert the current video memory contents and mode settings into a displayable
+bitmap. The rendering process:</p>
+<ol><li>Examines the system status to determine active video mode (text/graphics, mixed, etc.)</li><li>Reads video memory from the appropriate pages (main/auxiliary, page 1/2)</li><li>Applies character ROM lookups for text modes or color generation for graphics modes</li><li>Writes the resulting pixels to the context's frame buffer</li><li>Invalidates the context to prevent reuse (implementation detail)</li></ol>
+<p>
+This method should complete quickly (ideally under 16ms for 60 fps) to maintain
+smooth frame rates. The actual rendering work is delegated to the renderer
+implementation, which may employ various optimizations (dirty rectangle tracking,
+scanline caching, etc.).
+</p>
+<p>
+<strong>Context Lifetime:</strong> After this method completes, the provided context
+is invalidated and cannot be reused. Attempting to access properties or call methods
+on the context after this method returns will throw <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a>.
+Allocate a new context for each frame via <a class="xref" href="Pandowdy.EmuCore.Interfaces.IFrameGenerator.html#Pandowdy_EmuCore_Interfaces_IFrameGenerator_AllocateRenderContext">AllocateRenderContext()</a>.
+</p>
+</div>
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/IFrameGenerator.cs/#L28" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

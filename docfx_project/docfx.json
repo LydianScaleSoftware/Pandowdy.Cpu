@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "..",
+          "files": [
+            "Pandowdy.EmuCore/Pandowdy.EmuCore.csproj",
+            "Pandowdy.UI/Pandowdy.UI.csproj",
+            "Pandowdy/Pandowdy.csproj"
+          ]
+        }
+      ],
+      "dest": "api",
+      "properties": {
+        "TargetFramework": "net8.0"
+      },
+      "disableGitFeatures": false,
+      "disableDefaultFilter": false
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**/*.{md,yml}"
+        ],
+        "exclude": [
+          "_site/**",
+          "obj/**"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ]
+      }
+    ],
+    "output": "_site",
+    "template": [
+      "default",
+      "modern"
+    ],
+    "globalMetadata": {
+      "_appName": "Pandowdy Apple IIe Emulator",
+      "_appTitle": "Pandowdy Documentation",
+      "_enableSearch": true,
+      "_gitContribute": {
+        "repo": "https://github.com/markdavidlong/Pandowdy",
+        "branch": "refactor"
+      },
+      "pdf": false
+    }
+  }
+}

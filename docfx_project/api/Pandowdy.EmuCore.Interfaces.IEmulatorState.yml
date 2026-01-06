@@ -1,0 +1,387 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Interfaces.IEmulatorState
+  commentId: T:Pandowdy.EmuCore.Interfaces.IEmulatorState
+  id: IEmulatorState
+  parent: Pandowdy.EmuCore.Interfaces
+  children:
+  - Pandowdy.EmuCore.Interfaces.IEmulatorState.GetCurrent
+  - Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestContinue
+  - Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestPause
+  - Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestStep
+  - Pandowdy.EmuCore.Interfaces.IEmulatorState.Stream
+  - Pandowdy.EmuCore.Interfaces.IEmulatorState.Update(Pandowdy.EmuCore.Services.StateSnapshot)
+  langs:
+  - csharp
+  - vb
+  name: IEmulatorState
+  nameWithType: IEmulatorState
+  fullName: Pandowdy.EmuCore.Interfaces.IEmulatorState
+  type: Interface
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IEmulatorState.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IEmulatorState
+    path: ../Pandowdy.EmuCore/Interfaces/IEmulatorState.cs
+    startLine: 8
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: >-
+    Provides access to the emulator's execution state (PC, SP, cycle count, etc.).
+
+    Supports reactive subscriptions and control operations (pause, continue, step).
+  example: []
+  syntax:
+    content: public interface IEmulatorState
+    content.vb: Public Interface IEmulatorState
+- uid: Pandowdy.EmuCore.Interfaces.IEmulatorState.Stream
+  commentId: P:Pandowdy.EmuCore.Interfaces.IEmulatorState.Stream
+  id: Stream
+  parent: Pandowdy.EmuCore.Interfaces.IEmulatorState
+  langs:
+  - csharp
+  - vb
+  name: Stream
+  nameWithType: IEmulatorState.Stream
+  fullName: Pandowdy.EmuCore.Interfaces.IEmulatorState.Stream
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IEmulatorState.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Stream
+    path: ../Pandowdy.EmuCore/Interfaces/IEmulatorState.cs
+    startLine: 13
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Observable stream of emulator state snapshots.
+  example: []
+  syntax:
+    content: IObservable<StateSnapshot> Stream { get; }
+    parameters: []
+    return:
+      type: System.IObservable{Pandowdy.EmuCore.Services.StateSnapshot}
+    content.vb: ReadOnly Property Stream As IObservable(Of StateSnapshot)
+  overload: Pandowdy.EmuCore.Interfaces.IEmulatorState.Stream*
+- uid: Pandowdy.EmuCore.Interfaces.IEmulatorState.GetCurrent
+  commentId: M:Pandowdy.EmuCore.Interfaces.IEmulatorState.GetCurrent
+  id: GetCurrent
+  parent: Pandowdy.EmuCore.Interfaces.IEmulatorState
+  langs:
+  - csharp
+  - vb
+  name: GetCurrent()
+  nameWithType: IEmulatorState.GetCurrent()
+  fullName: Pandowdy.EmuCore.Interfaces.IEmulatorState.GetCurrent()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IEmulatorState.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: GetCurrent
+    path: ../Pandowdy.EmuCore/Interfaces/IEmulatorState.cs
+    startLine: 18
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Gets the current emulator state snapshot.
+  example: []
+  syntax:
+    content: StateSnapshot GetCurrent()
+    return:
+      type: Pandowdy.EmuCore.Services.StateSnapshot
+    content.vb: Function GetCurrent() As StateSnapshot
+  overload: Pandowdy.EmuCore.Interfaces.IEmulatorState.GetCurrent*
+- uid: Pandowdy.EmuCore.Interfaces.IEmulatorState.Update(Pandowdy.EmuCore.Services.StateSnapshot)
+  commentId: M:Pandowdy.EmuCore.Interfaces.IEmulatorState.Update(Pandowdy.EmuCore.Services.StateSnapshot)
+  id: Update(Pandowdy.EmuCore.Services.StateSnapshot)
+  parent: Pandowdy.EmuCore.Interfaces.IEmulatorState
+  langs:
+  - csharp
+  - vb
+  name: Update(StateSnapshot)
+  nameWithType: IEmulatorState.Update(StateSnapshot)
+  fullName: Pandowdy.EmuCore.Interfaces.IEmulatorState.Update(Pandowdy.EmuCore.Services.StateSnapshot)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IEmulatorState.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Update
+    path: ../Pandowdy.EmuCore/Interfaces/IEmulatorState.cs
+    startLine: 23
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Updates the emulator state with a new snapshot.
+  example: []
+  syntax:
+    content: void Update(StateSnapshot snapshot)
+    parameters:
+    - id: snapshot
+      type: Pandowdy.EmuCore.Services.StateSnapshot
+    content.vb: Sub Update(snapshot As StateSnapshot)
+  overload: Pandowdy.EmuCore.Interfaces.IEmulatorState.Update*
+- uid: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestPause
+  commentId: M:Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestPause
+  id: RequestPause
+  parent: Pandowdy.EmuCore.Interfaces.IEmulatorState
+  langs:
+  - csharp
+  - vb
+  name: RequestPause()
+  nameWithType: IEmulatorState.RequestPause()
+  fullName: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestPause()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IEmulatorState.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: RequestPause
+    path: ../Pandowdy.EmuCore/Interfaces/IEmulatorState.cs
+    startLine: 28
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Requests the emulator to pause execution.
+  example: []
+  syntax:
+    content: void RequestPause()
+    content.vb: Sub RequestPause()
+  overload: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestPause*
+- uid: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestContinue
+  commentId: M:Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestContinue
+  id: RequestContinue
+  parent: Pandowdy.EmuCore.Interfaces.IEmulatorState
+  langs:
+  - csharp
+  - vb
+  name: RequestContinue()
+  nameWithType: IEmulatorState.RequestContinue()
+  fullName: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestContinue()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IEmulatorState.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: RequestContinue
+    path: ../Pandowdy.EmuCore/Interfaces/IEmulatorState.cs
+    startLine: 33
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Requests the emulator to continue execution.
+  example: []
+  syntax:
+    content: void RequestContinue()
+    content.vb: Sub RequestContinue()
+  overload: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestContinue*
+- uid: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestStep
+  commentId: M:Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestStep
+  id: RequestStep
+  parent: Pandowdy.EmuCore.Interfaces.IEmulatorState
+  langs:
+  - csharp
+  - vb
+  name: RequestStep()
+  nameWithType: IEmulatorState.RequestStep()
+  fullName: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestStep()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IEmulatorState.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: RequestStep
+    path: ../Pandowdy.EmuCore/Interfaces/IEmulatorState.cs
+    startLine: 38
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Requests the emulator to execute a single instruction step.
+  example: []
+  syntax:
+    content: void RequestStep()
+    content.vb: Sub RequestStep()
+  overload: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestStep*
+references:
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.Interfaces.IEmulatorState.Stream*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.IEmulatorState.Stream
+  href: Pandowdy.EmuCore.Interfaces.IEmulatorState.html#Pandowdy_EmuCore_Interfaces_IEmulatorState_Stream
+  name: Stream
+  nameWithType: IEmulatorState.Stream
+  fullName: Pandowdy.EmuCore.Interfaces.IEmulatorState.Stream
+- uid: System.IObservable{Pandowdy.EmuCore.Services.StateSnapshot}
+  commentId: T:System.IObservable{Pandowdy.EmuCore.Services.StateSnapshot}
+  parent: System
+  definition: System.IObservable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<StateSnapshot>
+  nameWithType: IObservable<StateSnapshot>
+  fullName: System.IObservable<Pandowdy.EmuCore.Services.StateSnapshot>
+  nameWithType.vb: IObservable(Of StateSnapshot)
+  fullName.vb: System.IObservable(Of Pandowdy.EmuCore.Services.StateSnapshot)
+  name.vb: IObservable(Of StateSnapshot)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - uid: Pandowdy.EmuCore.Services.StateSnapshot
+    name: StateSnapshot
+    href: Pandowdy.EmuCore.Services.StateSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Pandowdy.EmuCore.Services.StateSnapshot
+    name: StateSnapshot
+    href: Pandowdy.EmuCore.Services.StateSnapshot.html
+  - name: )
+- uid: System.IObservable`1
+  commentId: T:System.IObservable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<T>
+  nameWithType: IObservable<T>
+  fullName: System.IObservable<T>
+  nameWithType.vb: IObservable(Of T)
+  fullName.vb: System.IObservable(Of T)
+  name.vb: IObservable(Of T)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.Interfaces.IEmulatorState.GetCurrent*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.IEmulatorState.GetCurrent
+  href: Pandowdy.EmuCore.Interfaces.IEmulatorState.html#Pandowdy_EmuCore_Interfaces_IEmulatorState_GetCurrent
+  name: GetCurrent
+  nameWithType: IEmulatorState.GetCurrent
+  fullName: Pandowdy.EmuCore.Interfaces.IEmulatorState.GetCurrent
+- uid: Pandowdy.EmuCore.Services.StateSnapshot
+  commentId: T:Pandowdy.EmuCore.Services.StateSnapshot
+  parent: Pandowdy.EmuCore.Services
+  href: Pandowdy.EmuCore.Services.StateSnapshot.html
+  name: StateSnapshot
+  nameWithType: StateSnapshot
+  fullName: Pandowdy.EmuCore.Services.StateSnapshot
+- uid: Pandowdy.EmuCore.Services
+  commentId: N:Pandowdy.EmuCore.Services
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Services
+  nameWithType: Pandowdy.EmuCore.Services
+  fullName: Pandowdy.EmuCore.Services
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Services
+    name: Services
+    href: Pandowdy.EmuCore.Services.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Services
+    name: Services
+    href: Pandowdy.EmuCore.Services.html
+- uid: Pandowdy.EmuCore.Interfaces.IEmulatorState.Update*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.IEmulatorState.Update
+  href: Pandowdy.EmuCore.Interfaces.IEmulatorState.html#Pandowdy_EmuCore_Interfaces_IEmulatorState_Update_Pandowdy_EmuCore_Services_StateSnapshot_
+  name: Update
+  nameWithType: IEmulatorState.Update
+  fullName: Pandowdy.EmuCore.Interfaces.IEmulatorState.Update
+- uid: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestPause*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestPause
+  href: Pandowdy.EmuCore.Interfaces.IEmulatorState.html#Pandowdy_EmuCore_Interfaces_IEmulatorState_RequestPause
+  name: RequestPause
+  nameWithType: IEmulatorState.RequestPause
+  fullName: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestPause
+- uid: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestContinue*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestContinue
+  href: Pandowdy.EmuCore.Interfaces.IEmulatorState.html#Pandowdy_EmuCore_Interfaces_IEmulatorState_RequestContinue
+  name: RequestContinue
+  nameWithType: IEmulatorState.RequestContinue
+  fullName: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestContinue
+- uid: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestStep*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestStep
+  href: Pandowdy.EmuCore.Interfaces.IEmulatorState.html#Pandowdy_EmuCore_Interfaces_IEmulatorState_RequestStep
+  name: RequestStep
+  nameWithType: IEmulatorState.RequestStep
+  fullName: Pandowdy.EmuCore.Interfaces.IEmulatorState.RequestStep

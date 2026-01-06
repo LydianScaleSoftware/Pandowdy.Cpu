@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Interface ISoftSwitchResponder | Pandowdy Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Interface ISoftSwitchResponder | Pandowdy Documentation ">
+      
+      <meta name="description" content="Callback interface for components that need to respond to Apple II soft switch state changes.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/markdavidlong/Pandowdy/new/refactor/apiSpec/new?filename=Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder.md&amp;value=---%0Auid%3A%20Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="Pandowdy Apple IIe Emulator">
+            Pandowdy Apple IIe Emulator
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder">
+
+
+
+  <h1 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder" class="text-break">
+Interface ISoftSwitchResponder  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L25"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Pandowdy.html">Pandowdy</a>.<a class="xref" href="Pandowdy.EmuCore.html">EmuCore</a>.<a class="xref" href="Pandowdy.EmuCore.Interfaces.html">Interfaces</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Pandowdy.EmuCore.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Callback interface for components that need to respond to Apple II soft switch state changes.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public interface ISoftSwitchResponder</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+  <h2 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>This interface is implemented by components that need to react to soft switch changes,
+such as the system status provider, memory manager, or video renderer. The soft switch
+manager calls these methods whenever a soft switch is toggled by CPU access to specific
+I/O addresses ($C000-$C0FF range).</p>
+<p>
+Apple II soft switches control various hardware features including:
+<ul><li>Memory banking (main/auxiliary RAM, language card, ROM selection)</li><li>Video modes (text/graphics, mixed mode, page selection, 80-column)</li><li>Annunciators (general-purpose output signals)</li></ul>
+
+<p>
+Implementations should update their internal state to reflect the new switch settings
+and adjust their behavior accordingly. Multiple responders can be registered to receive
+the same notifications, allowing different subsystems to react independently.
+</p>
+</div>
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_Set80Store_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Store*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_Set80Store_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Store(System.Boolean)">
+  Set80Store(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L38"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the 80STORE soft switch is changed ($C000/$C001).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void Set80Store(bool store80)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>store80</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if 80STORE is enabled; false if disabled</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_Set80Store_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>When enabled, page 2 memory ($0800-$0BFF for text, $2000-$3FFF for hi-res)
+is redirected to auxiliary memory when PAGE2 is set. This is used for 80-column
+text mode and double hi-res graphics to provide independent main and aux video pages.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_Set80Vid_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Vid*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_Set80Vid_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Vid(System.Boolean)">
+  Set80Vid(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L106"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the 80VID soft switch is changed ($C00C/$C00D).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void Set80Vid(bool vid)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>vid</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True for 80-column mode; false for 40-column mode</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_Set80Vid_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Enables 80-column text mode, which uses both main and auxiliary memory to display
+80 characters per line (alternating bytes from main and aux memory). When false,
+standard 40-column text mode is used.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAltChar_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltChar*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAltChar_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltChar(System.Boolean)">
+  SetAltChar(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the ALTCHAR soft switch is changed ($C00E/$C00F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetAltChar(bool altChar)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>altChar</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True for MouseText character set; false for standard</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAltChar_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Selects between the standard Apple II character set and the alternate MouseText
+character set. MouseText provides graphical symbols for building text-based UIs
+(boxes, arrows, icons) in the $40-$5F character range.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAltZp_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltZp*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAltZp_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltZp(System.Boolean)">
+  SetAltZp(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L82"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the ALTZP soft switch is changed ($C008/$C009).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetAltZp(bool altZp)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>altZp</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True to use auxiliary zero page/stack; false for main</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAltZp_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Controls whether zero page ($0000-$00FF) and stack ($0100-$01FF) access main
+or auxiliary memory. When true, these critical CPU regions use auxiliary memory,
+allowing programs to maintain separate zero page and stack contexts.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn0_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn0*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn0_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn0(System.Boolean)">
+  SetAn0(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L175"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when annunciator 0 is changed ($C058/$C059).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetAn0(bool an0)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>an0</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if annunciator 0 is on; false if off</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn0_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Annunciator 0 is a general-purpose output signal. Originally intended for
+controlling external devices, rarely used in standard software. Some games
+use annunciators for audio effects or peripheral control.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn1_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn1*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn1_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn1(System.Boolean)">
+  SetAn1(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L185"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when annunciator 1 is changed ($C05A/$C05B).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetAn1(bool an1)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>an1</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if annunciator 1 is on; false if off</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn1_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Annunciator 1 is a general-purpose output signal. Originally intended for
+controlling external devices, rarely used in standard software.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn2_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn2*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn2_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn2(System.Boolean)">
+  SetAn2(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L195"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when annunciator 2 is changed ($C05C/$C05D).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetAn2(bool an2)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>an2</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if annunciator 2 is on; false if off</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn2_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Annunciator 2 is a general-purpose output signal. Originally intended for
+controlling external devices, rarely used in standard software.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn3_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn3*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn3_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn3(System.Boolean)">
+  SetAn3(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L215"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when annunciator 3 is changed ($C05E/$C05F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetAn3(bool an3)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>an3</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if annunciator 3 is on; false if off</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn3_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Annunciator 3 doubles as the double hi-res (DHR) enable switch.</p>
+<p>
+<strong>Important:</strong> The logic is inverted - when this annunciator is 
+<em>off</em> (false), double hi-res mode is <em>enabled</em>. When the annunciator 
+is <em>on</em> (true), double hi-res is <em>disabled</em>. This backwards behavior 
+is a quirk of the Apple IIe hardware design.
+</p>
+<p>
+Double hi-res mode (560×192 pixels, 16 colors) uses both main and auxiliary video 
+pages. When not used for DHGR control, this functions as a general-purpose output 
+signal like the other annunciators.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetBank1_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetBank1*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetBank1_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetBank1(System.Boolean)">
+  SetBank1(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L229"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the language card bank selection changes ($C080-$C08F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetBank1(bool enabled)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>enabled</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True for bank 1 (D000-DFFF physical at C000); false for bank 2 (at D000)</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetBank1_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>The language card provides two 4KB RAM banks that can be mapped into the
+$D000-$DFFF address space. Bank 1 is physically located at $C000-$CFFF,
+while bank 2 is at $D000-$DFFF. This is often confusing because bank 1's
+physical location overlaps with I/O space in the address map.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetHiRes_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHiRes*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetHiRes_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHiRes(System.Boolean)">
+  SetHiRes(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the HIRES soft switch is changed ($C056/$C057).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetHiRes(bool hires)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>hires</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True for hi-res graphics; false for lo-res graphics</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetHiRes_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>In graphics mode (TEXT off), controls whether to display hi-res graphics
+(280×192 pixels, 6 colors) or lo-res graphics (40×48 color blocks, 16 colors).
+Has no effect when TEXT mode is enabled.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetHighRead_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighRead*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetHighRead_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighRead(System.Boolean)">
+  SetHighRead(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L253"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the language card read enable state changes ($C080-$C08F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetHighRead(bool enabled)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>enabled</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True to read from language card RAM; false to read from ROM</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetHighRead_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Controls whether reads from $D000-$FFFF access the language card RAM or the
+built-in ROM. When true, the selected bank ($D000-$DFFF) and upper 8KB
+($E000-$FFFF) are read from RAM. When false, ROM is visible instead.
+Independent of write enable, allowing read-from-ROM, write-to-RAM configurations.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetHighWrite_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighWrite*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetHighWrite_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighWrite(System.Boolean)">
+  SetHighWrite(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L241"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the language card write enable state changes ($C080-$C08F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetHighWrite(bool enabled)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>enabled</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if writing to language card RAM is enabled; false if write-protected</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetHighWrite_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Controls whether writes to the $D000-$FFFF range modify the language card RAM
+or are ignored. Write protection is engaged through a two-access sequence to
+prevent accidental modification of critical code. When false, writes to this
+region have no effect (ROM remains visible during reads).</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetIntCxRom_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetIntCxRom*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetIntCxRom_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetIntCxRom(System.Boolean)">
+  SetIntCxRom(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the INTCXROM soft switch is changed ($C006/$C007).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetIntCxRom(bool intCxRom)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>intCxRom</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True to use internal ROM; false to use slot ROMs</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetIntCxRom_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Controls whether the $C100-$CFFF range accesses internal ROM or peripheral card
+slot ROMs. When true (internal), the built-in ROM is used. When false, individual
+slot ROMs can be accessed. Typically set by the monitor during initialization.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetMixed_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetMixed*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetMixed_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetMixed(System.Boolean)">
+  SetMixed(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the MIXED soft switch is changed ($C052/$C053).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetMixed(bool mixed)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mixed</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True for mixed mode; false for full-screen mode</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetMixed_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>When true and in graphics mode, displays graphics on the top 20 rows (160 scanlines)
+and text on the bottom 4 rows (32 scanlines). Commonly used in games to show
+graphics with a text status line. Has no effect in text mode.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetPage2_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPage2*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetPage2_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPage2(System.Boolean)">
+  SetPage2(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L151"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the PAGE2 soft switch is changed ($C054/$C055).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetPage2(bool page2)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>page2</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True for page 2; false for page 1</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetPage2_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Selects which video page is displayed. Page 1 uses $0400-$07FF (text) or
+$2000-$3FFF (hi-res). Page 2 uses $0800-$0BFF (text) or $4000-$5FFF (hi-res).
+Can be used for page flipping animation. Interaction with 80STORE affects
+whether page 2 uses main or auxiliary memory.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetPreWrite_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPreWrite*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetPreWrite_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPreWrite(System.Boolean)">
+  SetPreWrite(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L266"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the language card pre-write state changes ($C080-$C08F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetPreWrite(bool enabled)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>enabled</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if pre-write sequence is active; false otherwise</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetPreWrite_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>The language card uses a two-access sequence to enable writing, preventing
+accidental modification. The first access to certain addresses sets pre-write
+mode. A second consecutive access to the same address enables write mode.
+Any other memory access clears pre-write. This is an internal state used
+to implement the write protection mechanism.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetRamRd_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamRd*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetRamRd_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamRd(System.Boolean)">
+  SetRamRd(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the RAMRD soft switch is changed ($C002/$C003).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetRamRd(bool ramRd)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>ramRd</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True to read from auxiliary memory; false to read from main memory</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetRamRd_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Controls which 64KB bank (main or auxiliary) is read from for memory accesses.
+This affects most memory regions except those controlled by other soft switches
+(like 80STORE for video pages). Used for accessing the extended 128KB memory space.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetRamWrt_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamWrt*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetRamWrt_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamWrt(System.Boolean)">
+  SetRamWrt(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the RAMWRT soft switch is changed ($C004/$C005).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetRamWrt(bool ramWrt)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>ramWrt</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True to write to auxiliary memory; false to write to main memory</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetRamWrt_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Controls which 64KB bank (main or auxiliary) is written to for memory accesses.
+Independent from RAMRD, allowing asymmetric configurations (e.g., read from main,
+write to aux). Used for accessing the extended 128KB memory space.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetSlotC3Rom_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetSlotC3Rom*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetSlotC3Rom_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetSlotC3Rom(System.Boolean)">
+  SetSlotC3Rom(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L93"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the SLOTC3ROM soft switch is changed ($C00A/$C00B).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetSlotC3Rom(bool slotC3Rom)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>slotC3Rom</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True to use slot C3 ROM; false to use internal ROM</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetSlotC3Rom_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Controls whether the $C300-$C3FF range (slot 3) uses the peripheral card ROM
+or internal ROM. Independent of INTCXROM, allowing slot 3 to be controlled
+separately from other slots. Commonly used for 80-column card firmware.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetText_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetText*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetText_System_Boolean_" data-uid="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetText(System.Boolean)">
+  SetText(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L128"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Called when the TEXT soft switch is changed ($C050/$C051).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetText(bool text)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True for text mode; false for graphics mode</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetText_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Controls the primary video mode. When true, displays 40-column or 80-column text.
+When false, displays lo-res (40×48 color blocks) or hi-res (280×192 pixels)
+graphics, depending on the HIRES switch.</p>
+</div>
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs/#L25" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

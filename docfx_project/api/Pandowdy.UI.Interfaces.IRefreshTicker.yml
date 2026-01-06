@@ -1,0 +1,386 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.UI.Interfaces.IRefreshTicker
+  commentId: T:Pandowdy.UI.Interfaces.IRefreshTicker
+  id: IRefreshTicker
+  parent: Pandowdy.UI.Interfaces
+  children:
+  - Pandowdy.UI.Interfaces.IRefreshTicker.Start
+  - Pandowdy.UI.Interfaces.IRefreshTicker.Stop
+  - Pandowdy.UI.Interfaces.IRefreshTicker.Stream
+  langs:
+  - csharp
+  - vb
+  name: IRefreshTicker
+  nameWithType: IRefreshTicker
+  fullName: Pandowdy.UI.Interfaces.IRefreshTicker
+  type: Interface
+  source:
+    remote:
+      path: Pandowdy.UI/Interfaces/IRefreshTicker.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IRefreshTicker
+    path: ../Pandowdy.UI/Interfaces/IRefreshTicker.cs
+    startLine: 24
+  assemblies:
+  - Pandowdy.UI
+  namespace: Pandowdy.UI.Interfaces
+  summary: Provides a 60 Hz refresh signal for driving UI-based frame rendering and updates.
+  remarks: >-
+    This interface represents a timing source that emits periodic signals at approximately
+
+    60 Hz (60 times per second), matching the typical video refresh rate of the Apple IIe
+
+    and modern displays. It's designed to be implemented by UI-layer components (such as
+
+    Avalonia's DispatcherTimer) to drive frame rendering in a way that's synchronized with
+
+    the UI thread and display refresh.
+
+    <p>
+
+    The ticker uses the Observable pattern (Rx.NET) to provide a reactive stream of
+
+    timestamps. Subscribers can use this stream to trigger frame generation, display
+
+    updates, and other time-based operations that need to occur at regular intervals.
+
+    </p>
+
+    <p>
+
+    <strong>Implementation Note:</strong> This interface is implemented in the
+
+    UI layer using platform-specific timing mechanisms (DispatcherTimer, animation
+
+    frames, etc.) that are only available in the UI context.
+
+    </p>
+  example: []
+  syntax:
+    content: public interface IRefreshTicker
+    content.vb: Public Interface IRefreshTicker
+- uid: Pandowdy.UI.Interfaces.IRefreshTicker.Stream
+  commentId: P:Pandowdy.UI.Interfaces.IRefreshTicker.Stream
+  id: Stream
+  parent: Pandowdy.UI.Interfaces.IRefreshTicker
+  langs:
+  - csharp
+  - vb
+  name: Stream
+  nameWithType: IRefreshTicker.Stream
+  fullName: Pandowdy.UI.Interfaces.IRefreshTicker.Stream
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.UI/Interfaces/IRefreshTicker.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Stream
+    path: ../Pandowdy.UI/Interfaces/IRefreshTicker.cs
+    startLine: 52
+  assemblies:
+  - Pandowdy.UI
+  namespace: Pandowdy.UI.Interfaces
+  summary: Gets an observable stream that emits timestamps at approximately 60 Hz.
+  remarks: >-
+    The stream emits approximately 60 times per second when the ticker is running.
+
+    Each emission provides the current <xref href="System.DateTime" data-throw-if-not-resolved="false"></xref> at the time of the tick,
+
+    which can be used for time-based calculations or simply as a signal to perform
+
+    periodic work.
+
+    <p>
+
+    Typical usage pattern:
+
+    <pre><code class="lang-csharp">ticker.Stream
+        .ObserveOn(RxApp.MainThreadScheduler)
+        .Subscribe(_ =&gt; RenderFrame());</code></pre>
+    </p>
+
+    <p>
+
+    The actual timing may vary slightly based on system load and UI thread scheduling,
+
+    but should maintain an average rate close to 60 Hz for smooth animation.
+
+    </p>
+  example: []
+  syntax:
+    content: IObservable<DateTime> Stream { get; }
+    parameters: []
+    return:
+      type: System.IObservable{System.DateTime}
+      description: >-
+        An <xref href="System.IObservable%601" data-throw-if-not-resolved="false"></xref> that emits the current timestamp each time
+
+        the ticker fires. Subscribers can observe this stream to receive periodic
+
+        notifications for driving frame updates.
+    content.vb: ReadOnly Property Stream As IObservable(Of Date)
+  overload: Pandowdy.UI.Interfaces.IRefreshTicker.Stream*
+- uid: Pandowdy.UI.Interfaces.IRefreshTicker.Start
+  commentId: M:Pandowdy.UI.Interfaces.IRefreshTicker.Start
+  id: Start
+  parent: Pandowdy.UI.Interfaces.IRefreshTicker
+  langs:
+  - csharp
+  - vb
+  name: Start()
+  nameWithType: IRefreshTicker.Start()
+  fullName: Pandowdy.UI.Interfaces.IRefreshTicker.Start()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.UI/Interfaces/IRefreshTicker.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Start
+    path: ../Pandowdy.UI/Interfaces/IRefreshTicker.cs
+    startLine: 65
+  assemblies:
+  - Pandowdy.UI
+  namespace: Pandowdy.UI.Interfaces
+  summary: Starts the refresh ticker, causing it to begin emitting periodic signals.
+  remarks: >-
+    After calling this method, the <xref href="Pandowdy.UI.Interfaces.IRefreshTicker.Stream" data-throw-if-not-resolved="false"></xref> will begin emitting timestamps
+
+    at approximately 60 Hz. This method is typically called when the emulator starts
+
+    running or when the UI becomes visible and ready to display frames.
+
+    <p>
+
+    Calling <xref href="Pandowdy.UI.Interfaces.IRefreshTicker.Start" data-throw-if-not-resolved="false"></xref> on an already-running ticker should be safe (idempotent).
+
+    </p>
+  example: []
+  syntax:
+    content: void Start()
+    content.vb: Sub Start()
+  overload: Pandowdy.UI.Interfaces.IRefreshTicker.Start*
+- uid: Pandowdy.UI.Interfaces.IRefreshTicker.Stop
+  commentId: M:Pandowdy.UI.Interfaces.IRefreshTicker.Stop
+  id: Stop
+  parent: Pandowdy.UI.Interfaces.IRefreshTicker
+  langs:
+  - csharp
+  - vb
+  name: Stop()
+  nameWithType: IRefreshTicker.Stop()
+  fullName: Pandowdy.UI.Interfaces.IRefreshTicker.Stop()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.UI/Interfaces/IRefreshTicker.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Stop
+    path: ../Pandowdy.UI/Interfaces/IRefreshTicker.cs
+    startLine: 78
+  assemblies:
+  - Pandowdy.UI
+  namespace: Pandowdy.UI.Interfaces
+  summary: Stops the refresh ticker, causing it to cease emitting signals.
+  remarks: >-
+    After calling this method, the <xref href="Pandowdy.UI.Interfaces.IRefreshTicker.Stream" data-throw-if-not-resolved="false"></xref> will stop emitting timestamps
+
+    until <xref href="Pandowdy.UI.Interfaces.IRefreshTicker.Start" data-throw-if-not-resolved="false"></xref> is called again. This method is typically called when
+
+    the emulator is paused or when the UI is no longer visible.
+
+    <p>
+
+    Calling <xref href="Pandowdy.UI.Interfaces.IRefreshTicker.Stop" data-throw-if-not-resolved="false"></xref> on an already-stopped ticker should be safe (idempotent).
+
+    </p>
+  example: []
+  syntax:
+    content: void Stop()
+    content.vb: Sub [Stop]()
+  overload: Pandowdy.UI.Interfaces.IRefreshTicker.Stop*
+references:
+- uid: Pandowdy.UI.Interfaces
+  commentId: N:Pandowdy.UI.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.UI.Interfaces
+  nameWithType: Pandowdy.UI.Interfaces
+  fullName: Pandowdy.UI.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.UI
+    name: UI
+    href: Pandowdy.UI.html
+  - name: .
+  - uid: Pandowdy.UI.Interfaces
+    name: Interfaces
+    href: Pandowdy.UI.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.UI
+    name: UI
+    href: Pandowdy.UI.html
+  - name: .
+  - uid: Pandowdy.UI.Interfaces
+    name: Interfaces
+    href: Pandowdy.UI.Interfaces.html
+- uid: System.IObservable`1
+  commentId: T:System.IObservable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<T>
+  nameWithType: IObservable<T>
+  fullName: System.IObservable<T>
+  nameWithType.vb: IObservable(Of T)
+  fullName.vb: System.IObservable(Of T)
+  name.vb: IObservable(Of T)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Pandowdy.UI.Interfaces.IRefreshTicker.Stream*
+  commentId: Overload:Pandowdy.UI.Interfaces.IRefreshTicker.Stream
+  href: Pandowdy.UI.Interfaces.IRefreshTicker.html#Pandowdy_UI_Interfaces_IRefreshTicker_Stream
+  name: Stream
+  nameWithType: IRefreshTicker.Stream
+  fullName: Pandowdy.UI.Interfaces.IRefreshTicker.Stream
+- uid: System.IObservable{System.DateTime}
+  commentId: T:System.IObservable{System.DateTime}
+  parent: System
+  definition: System.IObservable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<DateTime>
+  nameWithType: IObservable<DateTime>
+  fullName: System.IObservable<System.DateTime>
+  nameWithType.vb: IObservable(Of Date)
+  fullName.vb: System.IObservable(Of Date)
+  name.vb: IObservable(Of Date)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.UI.Interfaces.IRefreshTicker.Stream
+  commentId: P:Pandowdy.UI.Interfaces.IRefreshTicker.Stream
+  parent: Pandowdy.UI.Interfaces.IRefreshTicker
+  href: Pandowdy.UI.Interfaces.IRefreshTicker.html#Pandowdy_UI_Interfaces_IRefreshTicker_Stream
+  name: Stream
+  nameWithType: IRefreshTicker.Stream
+  fullName: Pandowdy.UI.Interfaces.IRefreshTicker.Stream
+- uid: Pandowdy.UI.Interfaces.IRefreshTicker.Start
+  commentId: M:Pandowdy.UI.Interfaces.IRefreshTicker.Start
+  parent: Pandowdy.UI.Interfaces.IRefreshTicker
+  href: Pandowdy.UI.Interfaces.IRefreshTicker.html#Pandowdy_UI_Interfaces_IRefreshTicker_Start
+  name: Start()
+  nameWithType: IRefreshTicker.Start()
+  fullName: Pandowdy.UI.Interfaces.IRefreshTicker.Start()
+  spec.csharp:
+  - uid: Pandowdy.UI.Interfaces.IRefreshTicker.Start
+    name: Start
+    href: Pandowdy.UI.Interfaces.IRefreshTicker.html#Pandowdy_UI_Interfaces_IRefreshTicker_Start
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.UI.Interfaces.IRefreshTicker.Start
+    name: Start
+    href: Pandowdy.UI.Interfaces.IRefreshTicker.html#Pandowdy_UI_Interfaces_IRefreshTicker_Start
+  - name: (
+  - name: )
+- uid: Pandowdy.UI.Interfaces.IRefreshTicker.Start*
+  commentId: Overload:Pandowdy.UI.Interfaces.IRefreshTicker.Start
+  href: Pandowdy.UI.Interfaces.IRefreshTicker.html#Pandowdy_UI_Interfaces_IRefreshTicker_Start
+  name: Start
+  nameWithType: IRefreshTicker.Start
+  fullName: Pandowdy.UI.Interfaces.IRefreshTicker.Start
+- uid: Pandowdy.UI.Interfaces.IRefreshTicker
+  commentId: T:Pandowdy.UI.Interfaces.IRefreshTicker
+  parent: Pandowdy.UI.Interfaces
+  href: Pandowdy.UI.Interfaces.IRefreshTicker.html
+  name: IRefreshTicker
+  nameWithType: IRefreshTicker
+  fullName: Pandowdy.UI.Interfaces.IRefreshTicker
+- uid: Pandowdy.UI.Interfaces.IRefreshTicker.Stop
+  commentId: M:Pandowdy.UI.Interfaces.IRefreshTicker.Stop
+  parent: Pandowdy.UI.Interfaces.IRefreshTicker
+  href: Pandowdy.UI.Interfaces.IRefreshTicker.html#Pandowdy_UI_Interfaces_IRefreshTicker_Stop
+  name: Stop()
+  nameWithType: IRefreshTicker.Stop()
+  fullName: Pandowdy.UI.Interfaces.IRefreshTicker.Stop()
+  spec.csharp:
+  - uid: Pandowdy.UI.Interfaces.IRefreshTicker.Stop
+    name: Stop
+    href: Pandowdy.UI.Interfaces.IRefreshTicker.html#Pandowdy_UI_Interfaces_IRefreshTicker_Stop
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.UI.Interfaces.IRefreshTicker.Stop
+    name: Stop
+    href: Pandowdy.UI.Interfaces.IRefreshTicker.html#Pandowdy_UI_Interfaces_IRefreshTicker_Stop
+  - name: (
+  - name: )
+- uid: Pandowdy.UI.Interfaces.IRefreshTicker.Stop*
+  commentId: Overload:Pandowdy.UI.Interfaces.IRefreshTicker.Stop
+  href: Pandowdy.UI.Interfaces.IRefreshTicker.html#Pandowdy_UI_Interfaces_IRefreshTicker_Stop
+  name: Stop
+  nameWithType: IRefreshTicker.Stop
+  fullName: Pandowdy.UI.Interfaces.IRefreshTicker.Stop

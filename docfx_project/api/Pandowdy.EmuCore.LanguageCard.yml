@@ -1,0 +1,1116 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.LanguageCard
+  commentId: T:Pandowdy.EmuCore.LanguageCard
+  id: LanguageCard
+  parent: Pandowdy.EmuCore
+  children:
+  - Pandowdy.EmuCore.LanguageCard.#ctor(Pandowdy.EmuCore.Interfaces.ISystemRam,Pandowdy.EmuCore.Interfaces.ISystemRam,Pandowdy.EmuCore.Interfaces.ISystemRomProvider,Pandowdy.EmuCore.Interfaces.IFloatingBusProvider,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider)
+  - Pandowdy.EmuCore.LanguageCard.Item(System.UInt16)
+  - Pandowdy.EmuCore.LanguageCard.Read(System.UInt16)
+  - Pandowdy.EmuCore.LanguageCard.Size
+  - Pandowdy.EmuCore.LanguageCard.Write(System.UInt16,System.Byte)
+  langs:
+  - csharp
+  - vb
+  name: LanguageCard
+  nameWithType: LanguageCard
+  fullName: Pandowdy.EmuCore.LanguageCard
+  type: Class
+  source:
+    remote:
+      path: Pandowdy.EmuCore/LanguageCard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: LanguageCard
+    path: ../Pandowdy.EmuCore/LanguageCard.cs
+    startLine: 53
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Manages the Apple IIe Language Card memory banking for the $D000-$FFFF address space.
+  remarks: >-
+    <p>
+
+    <strong>Purpose:</strong> Implements the Language Card banking mechanism that allows
+
+    16KB of RAM to be mapped into the normally ROM-occupied address space ($D000-$FFFF),
+
+    with two switchable 4KB banks for $D000-$DFFF and a shared 8KB region for $E000-$FFFF.
+
+    </p>
+
+    <p>
+
+    <strong>Memory Layout:</strong>
+
+
+    <pre><code class="lang-csharp">Apple IIe Address Space:
+
+    $D000-$DFFF (4KB) - Bank 1 or Bank 2 (switchable)
+
+    $E000-$FFFF (8KB) - Common area (shared between banks)
+
+
+    Physical RAM Layout (16KB total):
+
+    Bank 1: $0000-$0FFF (4KB) + $2000-$3FFF (8KB) = 12KB
+
+    Bank 2: $1000-$3FFF (12KB)</code></pre>
+
+    </p>
+
+    <p>
+
+    <strong>Banking Control:</strong> The Language Card reads state from
+
+    <xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider" data-throw-if-not-resolved="false"></xref> to determine:
+
+    <ul><li><xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateHighRead" data-throw-if-not-resolved="false"></xref> - Read from RAM vs ROM</li><li><xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateHighWrite" data-throw-if-not-resolved="false"></xref> - RAM write enable</li><li><xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateUseBank1" data-throw-if-not-resolved="false"></xref> - Bank 1 vs Bank 2 selection</li><li><xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateRamRd" data-throw-if-not-resolved="false"></xref> - Main vs auxiliary memory for reads</li><li><xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateRamWrt" data-throw-if-not-resolved="false"></xref> - Main vs auxiliary memory for writes</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Design Philosophy:</strong> This class is a pure memory accessor that queries
+
+    current state flags but does not manage state transitions. State management is handled
+
+    by the soft switch controller, which updates the <xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider" data-throw-if-not-resolved="false"></xref>.
+
+    This separation provides clean architecture, optimal performance, and excellent testability.
+
+    </p>
+
+    <p>
+
+    <strong>Performance:</strong> All read/write methods use aggressive inlining for maximum
+
+    performance in this hot path (called hundreds of thousands of times per second).
+
+    </p>
+
+    <p>
+
+    <strong>Thread Safety:</strong> Not thread-safe. Assumes single-threaded CPU execution.
+
+    The <xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider" data-throw-if-not-resolved="false"></xref> should handle any necessary synchronization.
+
+    </p>
+  example: []
+  syntax:
+    content: 'public class LanguageCard : ILanguageCard, IMemory'
+    content.vb: Public Class LanguageCard Implements ILanguageCard, IMemory
+  inheritance:
+  - System.Object
+  implements:
+  - Pandowdy.EmuCore.Interfaces.ILanguageCard
+  - Emulator.IMemory
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Pandowdy.EmuCore.LanguageCard.#ctor(Pandowdy.EmuCore.Interfaces.ISystemRam,Pandowdy.EmuCore.Interfaces.ISystemRam,Pandowdy.EmuCore.Interfaces.ISystemRomProvider,Pandowdy.EmuCore.Interfaces.IFloatingBusProvider,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider)
+  commentId: M:Pandowdy.EmuCore.LanguageCard.#ctor(Pandowdy.EmuCore.Interfaces.ISystemRam,Pandowdy.EmuCore.Interfaces.ISystemRam,Pandowdy.EmuCore.Interfaces.ISystemRomProvider,Pandowdy.EmuCore.Interfaces.IFloatingBusProvider,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider)
+  id: '#ctor(Pandowdy.EmuCore.Interfaces.ISystemRam,Pandowdy.EmuCore.Interfaces.ISystemRam,Pandowdy.EmuCore.Interfaces.ISystemRomProvider,Pandowdy.EmuCore.Interfaces.IFloatingBusProvider,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider)'
+  parent: Pandowdy.EmuCore.LanguageCard
+  langs:
+  - csharp
+  - vb
+  name: LanguageCard(ISystemRam, ISystemRam?, ISystemRomProvider, IFloatingBusProvider, ISystemStatusProvider)
+  nameWithType: LanguageCard.LanguageCard(ISystemRam, ISystemRam?, ISystemRomProvider, IFloatingBusProvider, ISystemStatusProvider)
+  fullName: Pandowdy.EmuCore.LanguageCard.LanguageCard(Pandowdy.EmuCore.Interfaces.ISystemRam, Pandowdy.EmuCore.Interfaces.ISystemRam?, Pandowdy.EmuCore.Interfaces.ISystemRomProvider, Pandowdy.EmuCore.Interfaces.IFloatingBusProvider, Pandowdy.EmuCore.Interfaces.ISystemStatusProvider)
+  type: Constructor
+  source:
+    remote:
+      path: Pandowdy.EmuCore/LanguageCard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: .ctor
+    path: ../Pandowdy.EmuCore/LanguageCard.cs
+    startLine: 53
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Manages the Apple IIe Language Card memory banking for the $D000-$FFFF address space.
+  remarks: >-
+    <p>
+
+    <strong>Purpose:</strong> Implements the Language Card banking mechanism that allows
+
+    16KB of RAM to be mapped into the normally ROM-occupied address space ($D000-$FFFF),
+
+    with two switchable 4KB banks for $D000-$DFFF and a shared 8KB region for $E000-$FFFF.
+
+    </p>
+
+    <p>
+
+    <strong>Memory Layout:</strong>
+
+
+    <pre><code class="lang-csharp">Apple IIe Address Space:
+
+    $D000-$DFFF (4KB) - Bank 1 or Bank 2 (switchable)
+
+    $E000-$FFFF (8KB) - Common area (shared between banks)
+
+
+    Physical RAM Layout (16KB total):
+
+    Bank 1: $0000-$0FFF (4KB) + $2000-$3FFF (8KB) = 12KB
+
+    Bank 2: $1000-$3FFF (12KB)</code></pre>
+
+    </p>
+
+    <p>
+
+    <strong>Banking Control:</strong> The Language Card reads state from
+
+    <xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider" data-throw-if-not-resolved="false"></xref> to determine:
+
+    <ul><li><xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateHighRead" data-throw-if-not-resolved="false"></xref> - Read from RAM vs ROM</li><li><xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateHighWrite" data-throw-if-not-resolved="false"></xref> - RAM write enable</li><li><xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateUseBank1" data-throw-if-not-resolved="false"></xref> - Bank 1 vs Bank 2 selection</li><li><xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateRamRd" data-throw-if-not-resolved="false"></xref> - Main vs auxiliary memory for reads</li><li><xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateRamWrt" data-throw-if-not-resolved="false"></xref> - Main vs auxiliary memory for writes</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Design Philosophy:</strong> This class is a pure memory accessor that queries
+
+    current state flags but does not manage state transitions. State management is handled
+
+    by the soft switch controller, which updates the <xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider" data-throw-if-not-resolved="false"></xref>.
+
+    This separation provides clean architecture, optimal performance, and excellent testability.
+
+    </p>
+
+    <p>
+
+    <strong>Performance:</strong> All read/write methods use aggressive inlining for maximum
+
+    performance in this hot path (called hundreds of thousands of times per second).
+
+    </p>
+
+    <p>
+
+    <strong>Thread Safety:</strong> Not thread-safe. Assumes single-threaded CPU execution.
+
+    The <xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider" data-throw-if-not-resolved="false"></xref> should handle any necessary synchronization.
+
+    </p>
+  example: []
+  syntax:
+    content: public LanguageCard(ISystemRam mainRam, ISystemRam? auxRam, ISystemRomProvider systemRom, IFloatingBusProvider floatingBus, ISystemStatusProvider status)
+    parameters:
+    - id: mainRam
+      type: Pandowdy.EmuCore.Interfaces.ISystemRam
+    - id: auxRam
+      type: Pandowdy.EmuCore.Interfaces.ISystemRam
+    - id: systemRom
+      type: Pandowdy.EmuCore.Interfaces.ISystemRomProvider
+    - id: floatingBus
+      type: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider
+    - id: status
+      type: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+    content.vb: Public Sub New(mainRam As ISystemRam, auxRam As ISystemRam, systemRom As ISystemRomProvider, floatingBus As IFloatingBusProvider, status As ISystemStatusProvider)
+  overload: Pandowdy.EmuCore.LanguageCard.#ctor*
+  nameWithType.vb: LanguageCard.New(ISystemRam, ISystemRam, ISystemRomProvider, IFloatingBusProvider, ISystemStatusProvider)
+  fullName.vb: Pandowdy.EmuCore.LanguageCard.New(Pandowdy.EmuCore.Interfaces.ISystemRam, Pandowdy.EmuCore.Interfaces.ISystemRam, Pandowdy.EmuCore.Interfaces.ISystemRomProvider, Pandowdy.EmuCore.Interfaces.IFloatingBusProvider, Pandowdy.EmuCore.Interfaces.ISystemStatusProvider)
+  name.vb: New(ISystemRam, ISystemRam, ISystemRomProvider, IFloatingBusProvider, ISystemStatusProvider)
+- uid: Pandowdy.EmuCore.LanguageCard.Size
+  commentId: P:Pandowdy.EmuCore.LanguageCard.Size
+  id: Size
+  parent: Pandowdy.EmuCore.LanguageCard
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: LanguageCard.Size
+  fullName: Pandowdy.EmuCore.LanguageCard.Size
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/LanguageCard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Size
+    path: ../Pandowdy.EmuCore/LanguageCard.cs
+    startLine: 87
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Gets the size of the Language Card address space (12KB).
+  remarks: >-
+    Note: The Language Card uses 16KB of physical RAM, but only 12KB is addressable
+
+    at any given time due to bank switching. The returned size matches the accessible
+
+    address space ($D000-$FFFF).
+  example: []
+  syntax:
+    content: public int Size { get; }
+    parameters: []
+    return:
+      type: System.Int32
+      description: Always returns 0x3000 (12,288 bytes), representing the $D000-$FFFF address range.
+    content.vb: Public ReadOnly Property Size As Integer
+  overload: Pandowdy.EmuCore.LanguageCard.Size*
+  implements:
+  - Emulator.IMemory.Size
+- uid: Pandowdy.EmuCore.LanguageCard.Read(System.UInt16)
+  commentId: M:Pandowdy.EmuCore.LanguageCard.Read(System.UInt16)
+  id: Read(System.UInt16)
+  parent: Pandowdy.EmuCore.LanguageCard
+  langs:
+  - csharp
+  - vb
+  name: Read(ushort)
+  nameWithType: LanguageCard.Read(ushort)
+  fullName: Pandowdy.EmuCore.LanguageCard.Read(ushort)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/LanguageCard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Read
+    path: ../Pandowdy.EmuCore/LanguageCard.cs
+    startLine: 199
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Reads a byte from the Language Card address space.
+  remarks: >-
+    <p>
+
+    <strong>Read Decision Logic:</strong>
+
+
+    <pre><code class="lang-csharp">If StateHighRead is true:
+      If StateRamRd is true:
+        Read from auxiliary RAM (or floating bus if aux doesn't exist)
+      Else:
+        Read from main RAM
+    Else:
+      Read from system ROM</code></pre>
+    </p>
+
+    <p>
+
+    <strong>Floating Bus:</strong> If auxiliary memory is accessed but doesn't exist,
+
+    returns the floating bus value instead. This models Apple IIe hardware behavior
+
+    where unmapped memory reads return the last value on the data bus.
+
+    </p>
+
+    <p>
+
+    <strong>Bank Selection:</strong> The <xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateUseBank1" data-throw-if-not-resolved="false"></xref> flag determines
+
+    which 4KB bank is accessed for $D000-$DFFF. The $E000-$FFFF region is shared.
+
+    </p>
+
+    <p>
+
+    <strong>Performance:</strong> Aggressively inlined. Read from main RAM with ROM
+
+    fallback is the common path and executes in ~7-10 cycles after inlining.
+
+    </p>
+  example: []
+  syntax:
+    content: public byte Read(ushort address)
+    parameters:
+    - id: address
+      type: System.UInt16
+      description: >-
+        Address to read from, typically in the $D000-$FFFF range (though any 16-bit
+
+        address is accepted for calculation purposes).
+    return:
+      type: System.Byte
+      description: Byte value from RAM, ROM, or floating bus, depending on system state.
+    content.vb: Public Function Read(address As UShort) As Byte
+  overload: Pandowdy.EmuCore.LanguageCard.Read*
+  implements:
+  - Emulator.IMemory.Read(System.UInt16)
+  nameWithType.vb: LanguageCard.Read(UShort)
+  fullName.vb: Pandowdy.EmuCore.LanguageCard.Read(UShort)
+  name.vb: Read(UShort)
+- uid: Pandowdy.EmuCore.LanguageCard.Write(System.UInt16,System.Byte)
+  commentId: M:Pandowdy.EmuCore.LanguageCard.Write(System.UInt16,System.Byte)
+  id: Write(System.UInt16,System.Byte)
+  parent: Pandowdy.EmuCore.LanguageCard
+  langs:
+  - csharp
+  - vb
+  name: Write(ushort, byte)
+  nameWithType: LanguageCard.Write(ushort, byte)
+  fullName: Pandowdy.EmuCore.LanguageCard.Write(ushort, byte)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/LanguageCard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Write
+    path: ../Pandowdy.EmuCore/LanguageCard.cs
+    startLine: 254
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Writes a byte to the Language Card address space.
+  remarks: >-
+    <p>
+
+    <strong>Write Protection:</strong> Writes are only executed if
+
+    <xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateHighWrite" data-throw-if-not-resolved="false"></xref> is true. The Language Card
+
+    uses a two-access sequence to enable writing, preventing accidental ROM overwrites.
+
+    </p>
+
+    <p>
+
+    <strong>Write Decision Logic:</strong>
+
+
+    <pre><code class="lang-csharp">If StateHighWrite is false:
+      Return (no-op, ROM is write-protected)
+
+    If StateRamWrt is true:
+      Write to auxiliary RAM (or ignore if aux doesn't exist)
+    Else:
+      Write to main RAM</code></pre>
+    </p>
+
+    <p>
+
+    <strong>Bank Selection:</strong> The <xref href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateUseBank1" data-throw-if-not-resolved="false"></xref> flag determines
+
+    which 4KB bank is written to for $D000-$DFFF. The $E000-$FFFF region is shared.
+
+    </p>
+
+    <p>
+
+    <strong>ROM Write Attempts:</strong> Writes when StateHighWrite is false are
+
+    silently ignored (no-op), matching Apple IIe hardware behavior where ROM writes
+
+    have no effect.
+
+    </p>
+
+    <p>
+
+    <strong>Performance:</strong> Aggressively inlined. Write protection check is
+
+    the fast path (early return), keeping overhead minimal.
+
+    </p>
+  example: []
+  syntax:
+    content: public void Write(ushort address, byte data)
+    parameters:
+    - id: address
+      type: System.UInt16
+      description: >-
+        Address to write to, typically in the $D000-$FFFF range (though any 16-bit
+
+        address is accepted for calculation purposes).
+    - id: data
+      type: System.Byte
+      description: Byte value to write.
+    content.vb: Public Sub Write(address As UShort, data As Byte)
+  overload: Pandowdy.EmuCore.LanguageCard.Write*
+  implements:
+  - Emulator.IMemory.Write(System.UInt16,System.Byte)
+  nameWithType.vb: LanguageCard.Write(UShort, Byte)
+  fullName.vb: Pandowdy.EmuCore.LanguageCard.Write(UShort, Byte)
+  name.vb: Write(UShort, Byte)
+- uid: Pandowdy.EmuCore.LanguageCard.Item(System.UInt16)
+  commentId: P:Pandowdy.EmuCore.LanguageCard.Item(System.UInt16)
+  id: Item(System.UInt16)
+  parent: Pandowdy.EmuCore.LanguageCard
+  langs:
+  - csharp
+  - vb
+  name: this[ushort]
+  nameWithType: LanguageCard.this[ushort]
+  fullName: Pandowdy.EmuCore.LanguageCard.this[ushort]
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/LanguageCard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: this[]
+    path: ../Pandowdy.EmuCore/LanguageCard.cs
+    startLine: 290
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Gets or sets a byte at the specified address using array-like indexer syntax.
+  remarks: >-
+    <p>
+
+    <strong>Convenience Syntax:</strong> Provides array-like access to the Language Card:
+
+    <pre><code class="lang-csharp">byte value = languageCard[0xD000];  // Read
+
+    languageCard[0xE000] = 0x42;        // Write</code></pre>
+
+    </p>
+
+    <p>
+
+    <strong>Implementation:</strong> Getter delegates to <xref href="Pandowdy.EmuCore.LanguageCard.Read(System.UInt16)" data-throw-if-not-resolved="false"></xref>, setter
+
+    delegates to <xref href="Pandowdy.EmuCore.LanguageCard.Write(System.UInt16%2cSystem.Byte)" data-throw-if-not-resolved="false"></xref>. See those methods for detailed behavior.
+
+    </p>
+  example: []
+  syntax:
+    content: public byte this[ushort address] { get; set; }
+    parameters:
+    - id: address
+      type: System.UInt16
+      description: Address to access, typically in the $D000-$FFFF range.
+    return:
+      type: System.Byte
+      description: Byte value from RAM, ROM, or floating bus.
+    content.vb: Public Default Property this[](address As UShort) As Byte
+  overload: Pandowdy.EmuCore.LanguageCard.Item*
+  implements:
+  - Emulator.IMemory.Item(System.UInt16)
+  nameWithType.vb: LanguageCard.this[](UShort)
+  fullName.vb: Pandowdy.EmuCore.LanguageCard.this[](UShort)
+  name.vb: this[](UShort)
+references:
+- uid: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.html
+  name: ISystemStatusProvider
+  nameWithType: ISystemStatusProvider
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+- uid: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateHighRead
+  commentId: P:Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateHighRead
+  parent: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+  href: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.html#Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_StateHighRead
+  name: StateHighRead
+  nameWithType: ISystemStatusProvider.StateHighRead
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateHighRead
+- uid: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateHighWrite
+  commentId: P:Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateHighWrite
+  parent: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+  href: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.html#Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_StateHighWrite
+  name: StateHighWrite
+  nameWithType: ISystemStatusProvider.StateHighWrite
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateHighWrite
+- uid: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateUseBank1
+  commentId: P:Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateUseBank1
+  parent: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+  href: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.html#Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_StateUseBank1
+  name: StateUseBank1
+  nameWithType: ISystemStatusProvider.StateUseBank1
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateUseBank1
+- uid: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateRamRd
+  commentId: P:Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateRamRd
+  parent: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+  href: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.html#Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_StateRamRd
+  name: StateRamRd
+  nameWithType: ISystemStatusProvider.StateRamRd
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateRamRd
+- uid: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateRamWrt
+  commentId: P:Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateRamWrt
+  parent: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+  href: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.html#Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_StateRamWrt
+  name: StateRamWrt
+  nameWithType: ISystemStatusProvider.StateRamWrt
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.StateRamWrt
+- uid: Pandowdy.EmuCore
+  commentId: N:Pandowdy.EmuCore
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore
+  nameWithType: Pandowdy.EmuCore
+  fullName: Pandowdy.EmuCore
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Pandowdy.EmuCore.Interfaces.ILanguageCard
+  commentId: T:Pandowdy.EmuCore.Interfaces.ILanguageCard
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ILanguageCard.html
+  name: ILanguageCard
+  nameWithType: ILanguageCard
+  fullName: Pandowdy.EmuCore.Interfaces.ILanguageCard
+- uid: Emulator.IMemory
+  commentId: T:Emulator.IMemory
+  parent: Emulator
+  name: IMemory
+  nameWithType: IMemory
+  fullName: Emulator.IMemory
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Emulator
+  commentId: N:Emulator
+  name: Emulator
+  nameWithType: Emulator
+  fullName: Emulator
+- uid: Pandowdy.EmuCore.LanguageCard.#ctor*
+  commentId: Overload:Pandowdy.EmuCore.LanguageCard.#ctor
+  href: Pandowdy.EmuCore.LanguageCard.html#Pandowdy_EmuCore_LanguageCard__ctor_Pandowdy_EmuCore_Interfaces_ISystemRam_Pandowdy_EmuCore_Interfaces_ISystemRam_Pandowdy_EmuCore_Interfaces_ISystemRomProvider_Pandowdy_EmuCore_Interfaces_IFloatingBusProvider_Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_
+  name: LanguageCard
+  nameWithType: LanguageCard.LanguageCard
+  fullName: Pandowdy.EmuCore.LanguageCard.LanguageCard
+  nameWithType.vb: LanguageCard.New
+  fullName.vb: Pandowdy.EmuCore.LanguageCard.New
+  name.vb: New
+- uid: Pandowdy.EmuCore.Interfaces.ISystemRam
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISystemRam
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ISystemRam.html
+  name: ISystemRam
+  nameWithType: ISystemRam
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemRam
+- uid: Pandowdy.EmuCore.Interfaces.ISystemRomProvider
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISystemRomProvider
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ISystemRomProvider.html
+  name: ISystemRomProvider
+  nameWithType: ISystemRomProvider
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemRomProvider
+- uid: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider
+  commentId: T:Pandowdy.EmuCore.Interfaces.IFloatingBusProvider
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.html
+  name: IFloatingBusProvider
+  nameWithType: IFloatingBusProvider
+  fullName: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider
+- uid: Pandowdy.EmuCore.LanguageCard.Size*
+  commentId: Overload:Pandowdy.EmuCore.LanguageCard.Size
+  href: Pandowdy.EmuCore.LanguageCard.html#Pandowdy_EmuCore_LanguageCard_Size
+  name: Size
+  nameWithType: LanguageCard.Size
+  fullName: Pandowdy.EmuCore.LanguageCard.Size
+- uid: Emulator.IMemory.Size
+  commentId: P:Emulator.IMemory.Size
+  parent: Emulator.IMemory
+  name: Size
+  nameWithType: IMemory.Size
+  fullName: Emulator.IMemory.Size
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Pandowdy.EmuCore.LanguageCard.Read*
+  commentId: Overload:Pandowdy.EmuCore.LanguageCard.Read
+  href: Pandowdy.EmuCore.LanguageCard.html#Pandowdy_EmuCore_LanguageCard_Read_System_UInt16_
+  name: Read
+  nameWithType: LanguageCard.Read
+  fullName: Pandowdy.EmuCore.LanguageCard.Read
+- uid: Emulator.IMemory.Read(System.UInt16)
+  commentId: M:Emulator.IMemory.Read(System.UInt16)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: Read(ushort)
+  nameWithType: IMemory.Read(ushort)
+  fullName: Emulator.IMemory.Read(ushort)
+  nameWithType.vb: IMemory.Read(UShort)
+  fullName.vb: Emulator.IMemory.Read(UShort)
+  name.vb: Read(UShort)
+  spec.csharp:
+  - uid: Emulator.IMemory.Read(System.UInt16)
+    name: Read
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+  spec.vb:
+  - uid: Emulator.IMemory.Read(System.UInt16)
+    name: Read
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+- uid: System.UInt16
+  commentId: T:System.UInt16
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: ushort
+  nameWithType: ushort
+  fullName: ushort
+  nameWithType.vb: UShort
+  fullName.vb: UShort
+  name.vb: UShort
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte
+- uid: Pandowdy.EmuCore.LanguageCard.Write*
+  commentId: Overload:Pandowdy.EmuCore.LanguageCard.Write
+  href: Pandowdy.EmuCore.LanguageCard.html#Pandowdy_EmuCore_LanguageCard_Write_System_UInt16_System_Byte_
+  name: Write
+  nameWithType: LanguageCard.Write
+  fullName: Pandowdy.EmuCore.LanguageCard.Write
+- uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+  commentId: M:Emulator.IMemory.Write(System.UInt16,System.Byte)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: Write(ushort, byte)
+  nameWithType: IMemory.Write(ushort, byte)
+  fullName: Emulator.IMemory.Write(ushort, byte)
+  nameWithType.vb: IMemory.Write(UShort, Byte)
+  fullName.vb: Emulator.IMemory.Write(UShort, Byte)
+  name.vb: Write(UShort, Byte)
+  spec.csharp:
+  - uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+    name: Write
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+  spec.vb:
+  - uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+    name: Write
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+- uid: Pandowdy.EmuCore.LanguageCard.Read(System.UInt16)
+  commentId: M:Pandowdy.EmuCore.LanguageCard.Read(System.UInt16)
+  isExternal: true
+  href: Pandowdy.EmuCore.LanguageCard.html#Pandowdy_EmuCore_LanguageCard_Read_System_UInt16_
+  name: Read(ushort)
+  nameWithType: LanguageCard.Read(ushort)
+  fullName: Pandowdy.EmuCore.LanguageCard.Read(ushort)
+  nameWithType.vb: LanguageCard.Read(UShort)
+  fullName.vb: Pandowdy.EmuCore.LanguageCard.Read(UShort)
+  name.vb: Read(UShort)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.LanguageCard.Read(System.UInt16)
+    name: Read
+    href: Pandowdy.EmuCore.LanguageCard.html#Pandowdy_EmuCore_LanguageCard_Read_System_UInt16_
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.LanguageCard.Read(System.UInt16)
+    name: Read
+    href: Pandowdy.EmuCore.LanguageCard.html#Pandowdy_EmuCore_LanguageCard_Read_System_UInt16_
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+- uid: Pandowdy.EmuCore.LanguageCard.Write(System.UInt16,System.Byte)
+  commentId: M:Pandowdy.EmuCore.LanguageCard.Write(System.UInt16,System.Byte)
+  isExternal: true
+  href: Pandowdy.EmuCore.LanguageCard.html#Pandowdy_EmuCore_LanguageCard_Write_System_UInt16_System_Byte_
+  name: Write(ushort, byte)
+  nameWithType: LanguageCard.Write(ushort, byte)
+  fullName: Pandowdy.EmuCore.LanguageCard.Write(ushort, byte)
+  nameWithType.vb: LanguageCard.Write(UShort, Byte)
+  fullName.vb: Pandowdy.EmuCore.LanguageCard.Write(UShort, Byte)
+  name.vb: Write(UShort, Byte)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.LanguageCard.Write(System.UInt16,System.Byte)
+    name: Write
+    href: Pandowdy.EmuCore.LanguageCard.html#Pandowdy_EmuCore_LanguageCard_Write_System_UInt16_System_Byte_
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.LanguageCard.Write(System.UInt16,System.Byte)
+    name: Write
+    href: Pandowdy.EmuCore.LanguageCard.html#Pandowdy_EmuCore_LanguageCard_Write_System_UInt16_System_Byte_
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+- uid: Pandowdy.EmuCore.LanguageCard.Item*
+  commentId: Overload:Pandowdy.EmuCore.LanguageCard.Item
+  href: Pandowdy.EmuCore.LanguageCard.html#Pandowdy_EmuCore_LanguageCard_Item_System_UInt16_
+  name: this
+  nameWithType: LanguageCard.this
+  fullName: Pandowdy.EmuCore.LanguageCard.this
+  nameWithType.vb: LanguageCard.this[]
+  fullName.vb: Pandowdy.EmuCore.LanguageCard.this[]
+  name.vb: this[]
+- uid: Emulator.IMemory.Item(System.UInt16)
+  commentId: P:Emulator.IMemory.Item(System.UInt16)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: this[ushort]
+  nameWithType: IMemory.this[ushort]
+  fullName: Emulator.IMemory.this[ushort]
+  nameWithType.vb: IMemory.this[](UShort)
+  fullName.vb: Emulator.IMemory.this[](UShort)
+  name.vb: this[](UShort)
+  spec.csharp:
+  - name: this
+  - name: '['
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ']'
+  spec.vb:
+  - uid: Emulator.IMemory.Item(System.UInt16)
+    name: this[]
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )

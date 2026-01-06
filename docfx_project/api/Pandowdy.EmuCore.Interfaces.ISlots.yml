@@ -1,0 +1,1085 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Interfaces.ISlots
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISlots
+  id: ISlots
+  parent: Pandowdy.EmuCore.Interfaces
+  children:
+  - Pandowdy.EmuCore.Interfaces.ISlots.BankSelect
+  - Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  - Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  - Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  - Pandowdy.EmuCore.Interfaces.ISlots.IsEmpty(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  - Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  langs:
+  - csharp
+  - vb
+  name: ISlots
+  nameWithType: ISlots
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots
+  type: Interface
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ISlots
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 99
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Manages Apple IIe expansion slots and coordinates peripheral card I/O and ROM access.
+  remarks: >-
+    <p>
+
+    The <xref href="Pandowdy.EmuCore.Interfaces.ISlots" data-throw-if-not-resolved="false"></xref> interface coordinates all expansion card operations in the
+
+    Apple IIe emulator, managing the complex address decoding logic that determines which
+
+    device (card or system ROM) responds to memory accesses in the $C000-$CFFF range.
+
+    </p>
+
+    <p>
+
+    <strong>Address Space Management:</strong>
+
+    </p>
+
+    <table><thead><tr><th class="term">Address Range</th><th class="description">Purpose</th></tr></thead><tbody><tr><td class="term">$C090-$C0FF</td><td class="description">Card I/O space (16 bytes per slot: $C0n0-$C0nF where n = slot + 8)</td></tr><tr><td class="term">$C100-$C7FF</td><td class="description">Card ROM space (256 bytes per slot: $Cn00-$CnFF where n = slot)</td></tr><tr><td class="term">$C800-$CFFF</td><td class="description">Extended ROM space (2KB shared via bank switching)</td></tr></tbody></table>
+
+    <p>
+
+    <strong>Soft Switch Control:</strong><br />
+
+    The slots system respects three soft switches that control ROM visibility:
+
+    </p>
+
+    <ul><li><strong>INTCXROM</strong> ($C006/$C007): Master override—when enabled, internal ROM appears for entire $C100-$CFFF range, disabling all cards</li><li><strong>SLOTCXROM</strong> ($C00A/$C00B): When INTCXROM is off, controls whether slots 1,2,4-7 use card ROM or system ROM</li><li><strong>SLOTC3ROM</strong> ($C00C/$C00D): Independent control for slot 3 (typically 80-column firmware)</li></ul>
+
+    <p>
+
+    <strong>Extended ROM Bank Switching:</strong><br />
+
+    The $C800-$CFFF region is shared among all slots via the <xref href="Pandowdy.EmuCore.Interfaces.ISlots.BankSelect" data-throw-if-not-resolved="false"></xref> mechanism:
+
+    </p>
+
+    <ul><li>Accessing a slot's ROM ($Cn00-$CnFF) activates that slot's extended ROM at $C800-$CFFF</li><li>Accessing $CFFF from any slot disables extended ROM (sets <xref href="Pandowdy.EmuCore.Interfaces.ISlots.BankSelect" data-throw-if-not-resolved="false"></xref> to 0)</li><li>Only one slot's extended ROM can be active at a time</li></ul>
+
+    <p>
+
+    <strong>Null Card Behavior:</strong><br />
+
+    Empty slots are filled with <xref href="Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard" data-throw-if-not-resolved="false"></xref> instances that return
+
+    <code>null</code> for all operations, causing the slots system to return floating bus values
+
+    for reads and no-op for writes.
+
+    </p>
+
+    <p>
+
+    <strong>Configuration Management:</strong><br />
+
+    The slots system implements <xref href="Pandowdy.EmuCore.Interfaces.IConfigurable" data-throw-if-not-resolved="false"></xref>, enabling complete save/restore
+
+    of the entire peripheral configuration. The metadata includes which cards are installed
+
+    in which slots, along with each card's configuration (hierarchically embedded). This
+
+    allows the entire emulator peripheral setup to be persisted, shared, and restored,
+
+    including disk images, serial settings, and other card-specific state. The metadata
+
+    format is typically JSON. See <xref href="Pandowdy.EmuCore.Interfaces.IConfigurable" data-throw-if-not-resolved="false"></xref> for the configuration protocol.
+
+    </p>
+  example: []
+  syntax:
+    content: 'public interface ISlots : IMemory, IConfigurable'
+    content.vb: Public Interface ISlots Inherits IMemory, IConfigurable
+  seealso:
+  - linkId: Emulator.IMemory
+    commentId: T:Emulator.IMemory
+  - linkId: Pandowdy.EmuCore.Interfaces.IConfigurable
+    commentId: T:Pandowdy.EmuCore.Interfaces.IConfigurable
+  - linkId: Pandowdy.EmuCore.Interfaces.ICard
+    commentId: T:Pandowdy.EmuCore.Interfaces.ICard
+  - linkId: Pandowdy.EmuCore.Interfaces.ICardFactory
+    commentId: T:Pandowdy.EmuCore.Interfaces.ICardFactory
+  inheritedMembers:
+  - Emulator.IMemory.Size
+  - Emulator.IMemory.Read(System.UInt16)
+  - Emulator.IMemory.Write(System.UInt16,System.Byte)
+  - Emulator.IMemory.Item(System.UInt16)
+  - Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+  - Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.BankSelect
+  commentId: P:Pandowdy.EmuCore.Interfaces.ISlots.BankSelect
+  id: BankSelect
+  parent: Pandowdy.EmuCore.Interfaces.ISlots
+  langs:
+  - csharp
+  - vb
+  name: BankSelect
+  nameWithType: ISlots.BankSelect
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.BankSelect
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: BankSelect
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 132
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Gets or sets the currently active slot for extended ROM at $C800-$CFFF.
+  remarks: >-
+    <p>
+
+    This property implements the Apple IIe's extended ROM bank switching mechanism.
+
+    The hardware allows only one slot's extended ROM to be visible at $C800-$CFFF
+
+    at any given time. The active slot is determined by:
+
+    </p>
+
+    <ol><li>Reading/writing $Cn00-$CnFF sets <xref href="Pandowdy.EmuCore.Interfaces.ISlots.BankSelect" data-throw-if-not-resolved="false"></xref> to slot n</li><li>Reading/writing $CFFF sets <xref href="Pandowdy.EmuCore.Interfaces.ISlots.BankSelect" data-throw-if-not-resolved="false"></xref> to 0 (disabled)</li></ol>
+
+    <p>
+
+    The bank selection state is preserved even when INTCXROM is enabled (which overrides
+
+    extended ROM with system ROM but doesn't clear the selection). This allows the
+
+    previously selected card's extended ROM to reappear when INTCXROM is disabled.
+
+    </p>
+
+    <p>
+
+    <strong>Example:</strong> A Disk II controller in slot 6 has boot ROM at $C600-$C6FF
+
+    and extended driver code at its extended ROM. When the system reads $C600, slot 6's
+
+    extended ROM becomes active at $C800-$CFFF. Reading $CFFF disables extended ROM.
+
+    </p>
+  example: []
+  syntax:
+    content: byte BankSelect { get; set; }
+    parameters: []
+    return:
+      type: System.Byte
+      description: >-
+        A value from 0-7 where:
+
+        <ul><li>0 = No slot active (extended ROM disabled)</li><li>1-7 = That slot's extended ROM is active at $C800-$CFFF</li></ul>
+    content.vb: Property BankSelect As Byte
+  overload: Pandowdy.EmuCore.Interfaces.ISlots.BankSelect*
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  id: InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  parent: Pandowdy.EmuCore.Interfaces.ISlots
+  langs:
+  - csharp
+  - vb
+  name: InstallCard(int, SlotNumber)
+  nameWithType: ISlots.InstallCard(int, SlotNumber)
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(int, Pandowdy.EmuCore.Interfaces.SlotNumber)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: InstallCard
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 163
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Installs a peripheral card in the specified slot using its numeric card ID.
+  remarks: >-
+    <p>
+
+    This method uses the <xref href="Pandowdy.EmuCore.Interfaces.ICardFactory" data-throw-if-not-resolved="false"></xref> to create a new instance of the
+
+    specified card type via <xref href="Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)" data-throw-if-not-resolved="false"></xref>. The card is
+
+    cloned from a registered prototype, ensuring each slot gets an independent instance.
+
+    </p>
+
+    <p>
+
+    If a card is already installed in the specified slot, it is replaced by the new card.
+
+    No state from the previous card is preserved.
+
+    </p>
+
+    <p>
+
+    Common card IDs:
+
+    <ul><li>0 = NullCard (empty slot)</li><li>1 = Disk II Controller</li><li>2 = Super Serial Card</li></ul>
+
+    </p>
+  example: []
+  syntax:
+    content: void InstallCard(int id, SlotNumber slot)
+    parameters:
+    - id: id
+      type: System.Int32
+      description: The unique numeric identifier of the card type to install (see <xref href="Pandowdy.EmuCore.Interfaces.ICard.Id" data-throw-if-not-resolved="false"></xref>).
+    - id: slot
+      type: Pandowdy.EmuCore.Interfaces.SlotNumber
+      description: The slot number (1-7) where the card should be installed.
+    content.vb: Sub InstallCard(id As Integer, slot As SlotNumber)
+  overload: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown if the card factory cannot create a card with the specified ID.
+  seealso:
+  - linkId: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+    commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  - linkId: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+    commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  nameWithType.vb: ISlots.InstallCard(Integer, SlotNumber)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(Integer, Pandowdy.EmuCore.Interfaces.SlotNumber)
+  name.vb: InstallCard(Integer, SlotNumber)
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  id: InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  parent: Pandowdy.EmuCore.Interfaces.ISlots
+  langs:
+  - csharp
+  - vb
+  name: InstallCard(string, SlotNumber)
+  nameWithType: ISlots.InstallCard(string, SlotNumber)
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(string, Pandowdy.EmuCore.Interfaces.SlotNumber)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: InstallCard
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 192
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Installs a peripheral card in the specified slot using its human-readable name.
+  remarks: >-
+    <p>
+
+    This method provides a more user-friendly alternative to <xref href="Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32%2cPandowdy.EmuCore.Interfaces.SlotNumber)" data-throw-if-not-resolved="false"></xref>
+
+    by accepting the card's display name instead of its numeric ID. The card name must exactly
+
+    match the value returned by <xref href="Pandowdy.EmuCore.Interfaces.ICard.Name" data-throw-if-not-resolved="false"></xref> (case-sensitive).
+
+    </p>
+
+    <p>
+
+    Example usage:
+
+    <pre><code class="lang-csharp">slots.InstallCard("Disk II Controller", SlotNumber.Slot6);
+
+    slots.InstallCard("Super Serial Card", SlotNumber.Slot2);</code></pre>
+
+    </p>
+
+    <p>
+
+    If a card is already installed in the specified slot, it is replaced by the new card.
+
+    </p>
+  example: []
+  syntax:
+    content: void InstallCard(string name, SlotNumber slot)
+    parameters:
+    - id: name
+      type: System.String
+      description: The name of the card type to install (see <xref href="Pandowdy.EmuCore.Interfaces.ICard.Name" data-throw-if-not-resolved="false"></xref>).
+    - id: slot
+      type: Pandowdy.EmuCore.Interfaces.SlotNumber
+      description: The slot number (1-7) where the card should be installed.
+    content.vb: Sub InstallCard(name As String, slot As SlotNumber)
+  overload: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown if the card factory cannot create a card with the specified name.
+  seealso:
+  - linkId: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+    commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  - linkId: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+    commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  nameWithType.vb: ISlots.InstallCard(String, SlotNumber)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(String, Pandowdy.EmuCore.Interfaces.SlotNumber)
+  name.vb: InstallCard(String, SlotNumber)
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  id: RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  parent: Pandowdy.EmuCore.Interfaces.ISlots
+  langs:
+  - csharp
+  - vb
+  name: RemoveCard(SlotNumber)
+  nameWithType: ISlots.RemoveCard(SlotNumber)
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: RemoveCard
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 219
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Removes the card from the specified slot, replacing it with an empty slot (NullCard).
+  remarks: >-
+    <p>
+
+    This method replaces the card in the specified slot with a <xref href="Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard" data-throw-if-not-resolved="false"></xref>
+
+    instance. The NullCard returns <code>null</code> for all read operations and no-ops for all writes,
+
+    causing the slot to behave as if it's empty (returning floating bus values for reads).
+
+    </p>
+
+    <p>
+
+    Any state maintained by the removed card is lost. If the removed card was the active
+
+    extended ROM slot (see <xref href="Pandowdy.EmuCore.Interfaces.ISlots.BankSelect" data-throw-if-not-resolved="false"></xref>), the extended ROM remains active
+
+    but will return floating bus values since NullCard returns <code>null</code>.
+
+    </p>
+
+    <p>
+
+    <strong>Note:</strong> This method cannot fail due to the card being "in use" since
+
+    the emulator doesn't maintain references to installed cards outside the slots array.
+
+    </p>
+  example: []
+  syntax:
+    content: void RemoveCard(SlotNumber slot)
+    parameters:
+    - id: slot
+      type: Pandowdy.EmuCore.Interfaces.SlotNumber
+      description: The slot number (1-7) to clear.
+    content.vb: Sub RemoveCard(slot As SlotNumber)
+  overload: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown if the card factory cannot create a NullCard replacement.
+  seealso:
+  - linkId: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+    commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  - linkId: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+    commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  id: GetCardIn(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  parent: Pandowdy.EmuCore.Interfaces.ISlots
+  langs:
+  - csharp
+  - vb
+  name: GetCardIn(SlotNumber)
+  nameWithType: ISlots.GetCardIn(SlotNumber)
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: GetCardIn
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 251
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Retrieves the card currently installed in the specified slot.
+  remarks: >-
+    <p>
+
+    This method provides direct access to the card instance for inspection, debugging,
+
+    or advanced operations. Normal emulator operation doesn't require calling this method
+
+    since <xref href="Emulator.IMemory.Read(System.UInt16)" data-throw-if-not-resolved="false"></xref> and <xref href="Emulator.IMemory.Write(System.UInt16%2cSystem.Byte)" data-throw-if-not-resolved="false"></xref> automatically route
+
+    to the appropriate card based on address.
+
+    </p>
+
+    <p>
+
+    <strong>Usage Examples:</strong>
+
+
+    <pre><code class="lang-csharp">// Check what's installed in slot 6
+
+    ICard card = slots.GetCardIn(SlotNumber.Slot6);
+
+    Console.WriteLine($"Slot 6: {card.Name}");
+
+
+    // Verify a slot is empty
+
+    if (slots.GetCardIn(SlotNumber.Slot3).Id == 0) // NullCard.Id == 0
+
+    {
+        Console.WriteLine("Slot 3 is empty");
+    }</code></pre>
+
+    </p>
+  example: []
+  syntax:
+    content: ICard GetCardIn(SlotNumber slot)
+    parameters:
+    - id: slot
+      type: Pandowdy.EmuCore.Interfaces.SlotNumber
+      description: The slot number (1-7) to query.
+    return:
+      type: Pandowdy.EmuCore.Interfaces.ICard
+      description: >-
+        The <xref href="Pandowdy.EmuCore.Interfaces.ICard" data-throw-if-not-resolved="false"></xref> instance installed in the slot. Returns a <xref href="Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard" data-throw-if-not-resolved="false"></xref>
+
+        instance if the slot is empty.
+    content.vb: Function GetCardIn(slot As SlotNumber) As ICard
+  overload: Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn*
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.IsEmpty(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.IsEmpty(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  id: IsEmpty(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  parent: Pandowdy.EmuCore.Interfaces.ISlots
+  langs:
+  - csharp
+  - vb
+  name: IsEmpty(SlotNumber)
+  nameWithType: ISlots.IsEmpty(SlotNumber)
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.IsEmpty(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IsEmpty
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 296
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Determines whether the specified slot is empty (contains a NullCard).
+  remarks: >-
+    <p>
+
+    This is a convenience method that checks whether the card in the specified slot
+
+    has an <xref href="Pandowdy.EmuCore.Interfaces.ICard.Id" data-throw-if-not-resolved="false"></xref> of 0 (the NullCard identifier). It provides a more
+
+    readable alternative to manually checking the card ID.
+
+    </p>
+
+    <p>
+
+    <strong>Usage Examples:</strong>
+
+
+    <pre><code class="lang-csharp">// Clear alternative to checking card ID
+
+    if (slots.IsEmpty(SlotNumber.Slot6))
+
+    {
+        slots.InstallCard("Disk II Controller", SlotNumber.Slot6);
+    }
+
+
+    // List all installed cards
+
+    for (int i = 1; i &lt;= 7; i++)
+
+    {
+        var slot = (SlotNumber)(i - 1);
+        if (!slots.IsEmpty(slot))
+        {
+            Console.WriteLine($"Slot {i}: {slots.GetCardIn(slot).Name}");
+        }
+    }</code></pre>
+
+    </p>
+
+    <p>
+
+    This method is equivalent to:
+
+    <pre><code class="lang-csharp">bool IsEmpty(SlotNumber slot) =&gt; GetCardIn(slot).Id == 0;</code></pre>
+
+    </p>
+  example: []
+  syntax:
+    content: bool IsEmpty(SlotNumber slot)
+    parameters:
+    - id: slot
+      type: Pandowdy.EmuCore.Interfaces.SlotNumber
+      description: The slot number (1-7) to check.
+    return:
+      type: System.Boolean
+      description: >-
+        <code>true</code> if the slot contains a <xref href="Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard" data-throw-if-not-resolved="false"></xref> (empty slot);
+
+        <code>false</code> if the slot contains an actual peripheral card.
+    content.vb: Function IsEmpty(slot As SlotNumber) As Boolean
+  overload: Pandowdy.EmuCore.Interfaces.ISlots.IsEmpty*
+  seealso:
+  - linkId: Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn(Pandowdy.EmuCore.Interfaces.SlotNumber)
+    commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  - linkId: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+    commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+references:
+- uid: Emulator.IMemory
+  commentId: T:Emulator.IMemory
+  parent: Emulator
+  name: IMemory
+  nameWithType: IMemory
+  fullName: Emulator.IMemory
+- uid: Pandowdy.EmuCore.Interfaces.IConfigurable
+  commentId: T:Pandowdy.EmuCore.Interfaces.IConfigurable
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IConfigurable.html
+  name: IConfigurable
+  nameWithType: IConfigurable
+  fullName: Pandowdy.EmuCore.Interfaces.IConfigurable
+- uid: Pandowdy.EmuCore.Interfaces.ICard
+  commentId: T:Pandowdy.EmuCore.Interfaces.ICard
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ICard.html
+  name: ICard
+  nameWithType: ICard
+  fullName: Pandowdy.EmuCore.Interfaces.ICard
+- uid: Pandowdy.EmuCore.Interfaces.ICardFactory
+  commentId: T:Pandowdy.EmuCore.Interfaces.ICardFactory
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ICardFactory.html
+  name: ICardFactory
+  nameWithType: ICardFactory
+  fullName: Pandowdy.EmuCore.Interfaces.ICardFactory
+- uid: Pandowdy.EmuCore.Interfaces.ISlots
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISlots
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html
+  name: ISlots
+  nameWithType: ISlots
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.BankSelect
+  commentId: P:Pandowdy.EmuCore.Interfaces.ISlots.BankSelect
+  parent: Pandowdy.EmuCore.Interfaces.ISlots
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_BankSelect
+  name: BankSelect
+  nameWithType: ISlots.BankSelect
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.BankSelect
+- uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard
+  parent: Pandowdy.EmuCore.Interfaces.ICardFactory
+  href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetNullCard
+  name: GetNullCard()
+  nameWithType: ICardFactory.GetNullCard()
+  fullName: Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard
+    name: GetNullCard
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetNullCard
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard
+    name: GetNullCard
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetNullCard
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Emulator.IMemory.Size
+  commentId: P:Emulator.IMemory.Size
+  parent: Emulator.IMemory
+  name: Size
+  nameWithType: IMemory.Size
+  fullName: Emulator.IMemory.Size
+- uid: Emulator.IMemory.Read(System.UInt16)
+  commentId: M:Emulator.IMemory.Read(System.UInt16)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: Read(ushort)
+  nameWithType: IMemory.Read(ushort)
+  fullName: Emulator.IMemory.Read(ushort)
+  nameWithType.vb: IMemory.Read(UShort)
+  fullName.vb: Emulator.IMemory.Read(UShort)
+  name.vb: Read(UShort)
+  spec.csharp:
+  - uid: Emulator.IMemory.Read(System.UInt16)
+    name: Read
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+  spec.vb:
+  - uid: Emulator.IMemory.Read(System.UInt16)
+    name: Read
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+- uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+  commentId: M:Emulator.IMemory.Write(System.UInt16,System.Byte)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: Write(ushort, byte)
+  nameWithType: IMemory.Write(ushort, byte)
+  fullName: Emulator.IMemory.Write(ushort, byte)
+  nameWithType.vb: IMemory.Write(UShort, Byte)
+  fullName.vb: Emulator.IMemory.Write(UShort, Byte)
+  name.vb: Write(UShort, Byte)
+  spec.csharp:
+  - uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+    name: Write
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+  spec.vb:
+  - uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+    name: Write
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+- uid: Emulator.IMemory.Item(System.UInt16)
+  commentId: P:Emulator.IMemory.Item(System.UInt16)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: this[ushort]
+  nameWithType: IMemory.this[ushort]
+  fullName: Emulator.IMemory.this[ushort]
+  nameWithType.vb: IMemory.this[](UShort)
+  fullName.vb: Emulator.IMemory.this[](UShort)
+  name.vb: this[](UShort)
+  spec.csharp:
+  - name: this
+  - name: '['
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ']'
+  spec.vb:
+  - uid: Emulator.IMemory.Item(System.UInt16)
+    name: this[]
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+  commentId: M:Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+  parent: Pandowdy.EmuCore.Interfaces.IConfigurable
+  href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_GetMetadata
+  name: GetMetadata()
+  nameWithType: IConfigurable.GetMetadata()
+  fullName: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+    name: GetMetadata
+    href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_GetMetadata
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+    name: GetMetadata
+    href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_GetMetadata
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+  commentId: M:Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+  parent: Pandowdy.EmuCore.Interfaces.IConfigurable
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_ApplyMetadata_System_String_
+  name: ApplyMetadata(string)
+  nameWithType: IConfigurable.ApplyMetadata(string)
+  fullName: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(string)
+  nameWithType.vb: IConfigurable.ApplyMetadata(String)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(String)
+  name.vb: ApplyMetadata(String)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+    name: ApplyMetadata
+    href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_ApplyMetadata_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+    name: ApplyMetadata
+    href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_ApplyMetadata_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Emulator
+  commentId: N:Emulator
+  name: Emulator
+  nameWithType: Emulator
+  fullName: Emulator
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.BankSelect*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISlots.BankSelect
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_BankSelect
+  name: BankSelect
+  nameWithType: ISlots.BankSelect
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.BankSelect
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  parent: Pandowdy.EmuCore.Interfaces.ISlots
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_String_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  name: InstallCard(string, SlotNumber)
+  nameWithType: ISlots.InstallCard(string, SlotNumber)
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(string, Pandowdy.EmuCore.Interfaces.SlotNumber)
+  nameWithType.vb: ISlots.InstallCard(String, SlotNumber)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(String, Pandowdy.EmuCore.Interfaces.SlotNumber)
+  name.vb: InstallCard(String, SlotNumber)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+    name: InstallCard
+    href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_String_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+    name: SlotNumber
+    href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+    name: InstallCard
+    href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_String_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+    name: SlotNumber
+    href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  parent: Pandowdy.EmuCore.Interfaces.ISlots
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_RemoveCard_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  name: RemoveCard(SlotNumber)
+  nameWithType: ISlots.RemoveCard(SlotNumber)
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+    name: RemoveCard
+    href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_RemoveCard_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  - name: (
+  - uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+    name: SlotNumber
+    href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+    name: RemoveCard
+    href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_RemoveCard_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  - name: (
+  - uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+    name: SlotNumber
+    href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.ICard.Id
+  commentId: P:Pandowdy.EmuCore.Interfaces.ICard.Id
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Id
+  name: Id
+  nameWithType: ICard.Id
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.Id
+- uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+  parent: Pandowdy.EmuCore.Interfaces.ICardFactory
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithId_System_Int32_
+  name: GetCardWithId(int)
+  nameWithType: ICardFactory.GetCardWithId(int)
+  fullName: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(int)
+  nameWithType.vb: ICardFactory.GetCardWithId(Integer)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(Integer)
+  name.vb: GetCardWithId(Integer)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+    name: GetCardWithId
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithId_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+    name: GetCardWithId
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithId_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.InvalidOperationException
+  commentId: T:System.InvalidOperationException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.invalidoperationexception
+  name: InvalidOperationException
+  nameWithType: InvalidOperationException
+  fullName: System.InvalidOperationException
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISlots.InstallCard
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_Int32_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  name: InstallCard
+  nameWithType: ISlots.InstallCard
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+  commentId: T:Pandowdy.EmuCore.Interfaces.SlotNumber
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  name: SlotNumber
+  nameWithType: SlotNumber
+  fullName: Pandowdy.EmuCore.Interfaces.SlotNumber
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  parent: Pandowdy.EmuCore.Interfaces.ISlots
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_Int32_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  name: InstallCard(int, SlotNumber)
+  nameWithType: ISlots.InstallCard(int, SlotNumber)
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(int, Pandowdy.EmuCore.Interfaces.SlotNumber)
+  nameWithType.vb: ISlots.InstallCard(Integer, SlotNumber)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(Integer, Pandowdy.EmuCore.Interfaces.SlotNumber)
+  name.vb: InstallCard(Integer, SlotNumber)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+    name: InstallCard
+    href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_Int32_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+    name: SlotNumber
+    href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+    name: InstallCard
+    href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_Int32_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+    name: SlotNumber
+    href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.ICard.Name
+  commentId: P:Pandowdy.EmuCore.Interfaces.ICard.Name
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Name
+  name: Name
+  nameWithType: ICard.Name
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_RemoveCard_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  name: RemoveCard
+  nameWithType: ISlots.RemoveCard
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_GetCardIn_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  name: GetCardIn
+  nameWithType: ISlots.GetCardIn
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  parent: Pandowdy.EmuCore.Interfaces.ISlots
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_GetCardIn_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  name: GetCardIn(SlotNumber)
+  nameWithType: ISlots.GetCardIn(SlotNumber)
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn(Pandowdy.EmuCore.Interfaces.SlotNumber)
+    name: GetCardIn
+    href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_GetCardIn_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  - name: (
+  - uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+    name: SlotNumber
+    href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ISlots.GetCardIn(Pandowdy.EmuCore.Interfaces.SlotNumber)
+    name: GetCardIn
+    href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_GetCardIn_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  - name: (
+  - uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+    name: SlotNumber
+    href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.IsEmpty*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISlots.IsEmpty
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_IsEmpty_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  name: IsEmpty
+  nameWithType: ISlots.IsEmpty
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.IsEmpty
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean

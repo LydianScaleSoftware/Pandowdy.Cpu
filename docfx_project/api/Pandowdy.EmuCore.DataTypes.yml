@@ -1,0 +1,76 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.DataTypes
+  commentId: N:Pandowdy.EmuCore.DataTypes
+  id: Pandowdy.EmuCore.DataTypes
+  children:
+  - Pandowdy.EmuCore.DataTypes.BitField16
+  - Pandowdy.EmuCore.DataTypes.BitmapDataArray
+  - Pandowdy.EmuCore.DataTypes.MemoryBlock
+  - Pandowdy.EmuCore.DataTypes.MemoryBlock64k
+  langs:
+  - csharp
+  - vb
+  name: Pandowdy.EmuCore.DataTypes
+  nameWithType: Pandowdy.EmuCore.DataTypes
+  fullName: Pandowdy.EmuCore.DataTypes
+  type: Namespace
+  assemblies:
+  - Pandowdy.EmuCore
+references:
+- uid: Pandowdy.EmuCore.DataTypes.BitField16
+  commentId: T:Pandowdy.EmuCore.DataTypes.BitField16
+  href: Pandowdy.EmuCore.DataTypes.BitField16.html
+  name: BitField16
+  nameWithType: BitField16
+  fullName: Pandowdy.EmuCore.DataTypes.BitField16
+- uid: Pandowdy.EmuCore.DataTypes.BitmapDataArray
+  commentId: T:Pandowdy.EmuCore.DataTypes.BitmapDataArray
+  parent: Pandowdy.EmuCore.DataTypes
+  href: Pandowdy.EmuCore.DataTypes.BitmapDataArray.html
+  name: BitmapDataArray
+  nameWithType: BitmapDataArray
+  fullName: Pandowdy.EmuCore.DataTypes.BitmapDataArray
+- uid: Pandowdy.EmuCore.DataTypes.MemoryBlock
+  commentId: T:Pandowdy.EmuCore.DataTypes.MemoryBlock
+  parent: Pandowdy.EmuCore.DataTypes
+  href: Pandowdy.EmuCore.DataTypes.MemoryBlock.html
+  name: MemoryBlock
+  nameWithType: MemoryBlock
+  fullName: Pandowdy.EmuCore.DataTypes.MemoryBlock
+- uid: Pandowdy.EmuCore.DataTypes.MemoryBlock64k
+  commentId: T:Pandowdy.EmuCore.DataTypes.MemoryBlock64k
+  href: Pandowdy.EmuCore.DataTypes.MemoryBlock64k.html
+  name: MemoryBlock64k
+  nameWithType: MemoryBlock64k
+  fullName: Pandowdy.EmuCore.DataTypes.MemoryBlock64k
+- uid: Pandowdy.EmuCore.DataTypes
+  commentId: N:Pandowdy.EmuCore.DataTypes
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.DataTypes
+  nameWithType: Pandowdy.EmuCore.DataTypes
+  fullName: Pandowdy.EmuCore.DataTypes
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.DataTypes
+    name: DataTypes
+    href: Pandowdy.EmuCore.DataTypes.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.DataTypes
+    name: DataTypes
+    href: Pandowdy.EmuCore.DataTypes.html

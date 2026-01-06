@@ -1,0 +1,1030 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Interfaces.ICard
+  commentId: T:Pandowdy.EmuCore.Interfaces.ICard
+  id: ICard
+  parent: Pandowdy.EmuCore.Interfaces
+  children:
+  - Pandowdy.EmuCore.Interfaces.ICard.Clone
+  - Pandowdy.EmuCore.Interfaces.ICard.Description
+  - Pandowdy.EmuCore.Interfaces.ICard.Id
+  - Pandowdy.EmuCore.Interfaces.ICard.Name
+  - Pandowdy.EmuCore.Interfaces.ICard.ReadExtendedRom(System.UInt16)
+  - Pandowdy.EmuCore.Interfaces.ICard.ReadIO(System.Byte)
+  - Pandowdy.EmuCore.Interfaces.ICard.ReadRom(System.Byte)
+  - Pandowdy.EmuCore.Interfaces.ICard.WriteExtendedRom(System.UInt16,System.Byte)
+  - Pandowdy.EmuCore.Interfaces.ICard.WriteIO(System.Byte,System.Byte)
+  - Pandowdy.EmuCore.Interfaces.ICard.WriteRom(System.Byte,System.Byte)
+  langs:
+  - csharp
+  - vb
+  name: ICard
+  nameWithType: ICard
+  fullName: Pandowdy.EmuCore.Interfaces.ICard
+  type: Interface
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ICard
+    path: ../Pandowdy.EmuCore/Interfaces/ICard.cs
+    startLine: 36
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Represents an Apple II peripheral card that can be installed in expansion slots 1-7.
+  remarks: >-
+    <p>
+
+    The Apple IIe provides seven expansion slots, each offering three distinct address spaces
+
+    that cards can use for I/O operations, firmware, and extended functionality:
+
+    </p>
+
+    <ul><li><b>Card I/O</b> ($C0x0-$C0xF): 16 bytes for hardware control registers</li><li><b>Card ROM</b> ($Cx00-$CxFF): 256 bytes for boot/driver firmware</li><li><b>Extended ROM</b> ($C800-$CFFF): 2KB shared space for extended firmware</li></ul>
+
+    <p>
+
+    All read methods return nullable bytes (<xref href="System.Nullable%601" data-throw-if-not-resolved="false"></xref>). A <code>null</code> return
+
+    indicates the card did not respond at that address, allowing the system to return floating
+
+    bus values or fall back to system ROM.
+
+    </p>
+
+    <p>
+
+    Each card type must implement the <xref href="Pandowdy.EmuCore.Interfaces.ICard.Clone" data-throw-if-not-resolved="false"></xref> method to support multiple instances
+
+    being created from a single registered prototype in the <xref href="Pandowdy.EmuCore.Interfaces.ICardFactory" data-throw-if-not-resolved="false"></xref>.
+
+    </p>
+
+    <p>
+
+    <strong>Configuration Management:</strong><br />
+
+    Cards implement <xref href="Pandowdy.EmuCore.Interfaces.IConfigurable" data-throw-if-not-resolved="false"></xref>, enabling save/restore of card-specific
+
+    configuration (drive images, serial port settings, etc.). The metadata format is
+
+    card-specific, but cards with child components (like drives) should use the hierarchical
+
+    configuration pattern, embedding child metadata within their own. See <xref href="Pandowdy.EmuCore.Interfaces.IConfigurable" data-throw-if-not-resolved="false"></xref>
+
+    for detailed guidance on configuration strategies.
+
+    </p>
+  example: []
+  syntax:
+    content: 'public interface ICard : IConfigurable'
+    content.vb: Public Interface ICard Inherits IConfigurable
+  seealso:
+  - linkId: Pandowdy.EmuCore.Interfaces.IConfigurable
+    commentId: T:Pandowdy.EmuCore.Interfaces.IConfigurable
+  - linkId: Pandowdy.EmuCore.Interfaces.ICardFactory
+    commentId: T:Pandowdy.EmuCore.Interfaces.ICardFactory
+  - linkId: Pandowdy.EmuCore.Interfaces.ISlots
+    commentId: T:Pandowdy.EmuCore.Interfaces.ISlots
+  inheritedMembers:
+  - Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+  - Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+- uid: Pandowdy.EmuCore.Interfaces.ICard.Name
+  commentId: P:Pandowdy.EmuCore.Interfaces.ICard.Name
+  id: Name
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: ICard.Name
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.Name
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Name
+    path: ../Pandowdy.EmuCore/Interfaces/ICard.cs
+    startLine: 45
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Gets the human-readable name of the card (e.g., "Disk II Controller", "Super Serial Card").
+  remarks: >-
+    This name is used for display in UI and configuration. Card names should be unique
+
+    across all card types to prevent ambiguity during card selection.
+  example: []
+  syntax:
+    content: string Name { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property Name As String
+  overload: Pandowdy.EmuCore.Interfaces.ICard.Name*
+- uid: Pandowdy.EmuCore.Interfaces.ICard.Description
+  commentId: P:Pandowdy.EmuCore.Interfaces.ICard.Description
+  id: Description
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: ICard.Description
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.Description
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Description
+    path: ../Pandowdy.EmuCore/Interfaces/ICard.cs
+    startLine: 54
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Gets a detailed description of the card's functionality and features.
+  remarks: >-
+    This description can be displayed in tooltips, help text, or card selection dialogs
+
+    to help users understand what the card does.
+  example: []
+  syntax:
+    content: string Description { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property Description As String
+  overload: Pandowdy.EmuCore.Interfaces.ICard.Description*
+- uid: Pandowdy.EmuCore.Interfaces.ICard.Id
+  commentId: P:Pandowdy.EmuCore.Interfaces.ICard.Id
+  id: Id
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: ICard.Id
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.Id
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Id
+    path: ../Pandowdy.EmuCore/Interfaces/ICard.cs
+    startLine: 70
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Gets the unique numeric identifier for this card type.
+  remarks: >-
+    <p>
+
+    While implemented as an instance property, this should return a constant value
+
+    for all instances of the same card type. Each card implementation should use
+
+    a unique ID (e.g., NullCard = 0, Disk II = 1, Serial = 2).
+
+    </p>
+
+    <p>
+
+    The <xref href="Pandowdy.EmuCore.Interfaces.ICardFactory" data-throw-if-not-resolved="false"></xref> validates that no two card types share the same ID
+
+    during registration and will throw an exception if duplicates are detected.
+
+    </p>
+  example: []
+  syntax:
+    content: int Id { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: ReadOnly Property Id As Integer
+  overload: Pandowdy.EmuCore.Interfaces.ICard.Id*
+- uid: Pandowdy.EmuCore.Interfaces.ICard.ReadIO(System.Byte)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICard.ReadIO(System.Byte)
+  id: ReadIO(System.Byte)
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  langs:
+  - csharp
+  - vb
+  name: ReadIO(byte)
+  nameWithType: ICard.ReadIO(byte)
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.ReadIO(byte)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ReadIO
+    path: ../Pandowdy.EmuCore/Interfaces/ICard.cs
+    startLine: 98
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Reads a byte from the card's I/O address space ($C0x0-$C0xF).
+  remarks: >-
+    <p>
+
+    The I/O space maps to addresses $C0x0-$C0xF where 'x' represents the slot number plus 8
+
+    (slot 1 = $C090-$C09F, slot 2 = $C0A0-$C0AF, etc.). This space is typically used for
+
+    hardware control registers, device status, and triggering operations.
+
+    </p>
+
+    <p>
+
+    Common usage patterns:
+
+    <ul><li>Reading device status flags</li><li>Receiving data from the peripheral</li><li>Triggering actions via read-triggered soft switches</li></ul>
+
+    </p>
+  example: []
+  syntax:
+    content: byte? ReadIO(byte offset)
+    parameters:
+    - id: offset
+      type: System.Byte
+      description: 'The offset within the 16-byte I/O space (valid range: 0x00-0x0F).'
+    return:
+      type: System.Nullable{System.Byte}
+      description: >-
+        The byte value if the card responds at this address, or <code>null</code> if the card
+
+        does not implement this I/O address. A <code>null</code> return allows the system to
+
+        return floating bus values.
+    content.vb: Function ReadIO(offset As Byte) As Byte?
+  overload: Pandowdy.EmuCore.Interfaces.ICard.ReadIO*
+  nameWithType.vb: ICard.ReadIO(Byte)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ICard.ReadIO(Byte)
+  name.vb: ReadIO(Byte)
+- uid: Pandowdy.EmuCore.Interfaces.ICard.WriteIO(System.Byte,System.Byte)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICard.WriteIO(System.Byte,System.Byte)
+  id: WriteIO(System.Byte,System.Byte)
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  langs:
+  - csharp
+  - vb
+  name: WriteIO(byte, byte)
+  nameWithType: ICard.WriteIO(byte, byte)
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.WriteIO(byte, byte)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: WriteIO
+    path: ../Pandowdy.EmuCore/Interfaces/ICard.cs
+    startLine: 116
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Writes a byte to the card's I/O address space ($C0x0-$C0xF).
+  remarks: >-
+    <p>
+
+    The I/O space is used for sending commands and data to the peripheral device.
+
+    Common operations include setting control flags, sending data bytes, and
+
+    triggering hardware operations.
+
+    </p>
+
+    <p>
+
+    If the card does not implement a particular I/O address, this method should
+
+    perform no operation (no-op) rather than throwing an exception.
+
+    </p>
+  example: []
+  syntax:
+    content: void WriteIO(byte offset, byte value)
+    parameters:
+    - id: offset
+      type: System.Byte
+      description: 'The offset within the 16-byte I/O space (valid range: 0x00-0x0F).'
+    - id: value
+      type: System.Byte
+      description: The byte value to write to the card.
+    content.vb: Sub WriteIO(offset As Byte, value As Byte)
+  overload: Pandowdy.EmuCore.Interfaces.ICard.WriteIO*
+  nameWithType.vb: ICard.WriteIO(Byte, Byte)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ICard.WriteIO(Byte, Byte)
+  name.vb: WriteIO(Byte, Byte)
+- uid: Pandowdy.EmuCore.Interfaces.ICard.ReadRom(System.Byte)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICard.ReadRom(System.Byte)
+  id: ReadRom(System.Byte)
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  langs:
+  - csharp
+  - vb
+  name: ReadRom(byte)
+  nameWithType: ICard.ReadRom(byte)
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.ReadRom(byte)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ReadRom
+    path: ../Pandowdy.EmuCore/Interfaces/ICard.cs
+    startLine: 145
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Reads a byte from the card's ROM address space ($Cx00-$CxFF).
+  remarks: >-
+    <p>
+
+    The card ROM space maps to $Cx00-$CxFF where 'x' is the slot number (1-7).
+
+    This space typically contains:
+
+    <ul><li>Boot ROM code that the system executes during slot scanning</li><li>Driver routines for the peripheral</li><li>Interface tables and vectors</li></ul>
+
+    </p>
+
+    <p>
+
+    The first few bytes ($Cx00-$Cx0F) are special:
+
+    <ul><li>$Cx01: Must be $20, $00, $03, or $3C to be recognized during boot scan</li><li>$Cx03, $Cx05, $Cx07: May contain entry point code</li></ul>
+
+    </p>
+  example: []
+  syntax:
+    content: byte? ReadRom(byte offset)
+    parameters:
+    - id: offset
+      type: System.Byte
+      description: 'The offset within the 256-byte ROM space (valid range: 0x00-0xFF).'
+    return:
+      type: System.Nullable{System.Byte}
+      description: >-
+        The ROM byte if the card provides firmware at this address, or <code>null</code> if the
+
+        card does not implement ROM or does not respond at this specific offset. A <code>null</code>
+
+        return allows the system to fall back to internal ROM.
+    content.vb: Function ReadRom(offset As Byte) As Byte?
+  overload: Pandowdy.EmuCore.Interfaces.ICard.ReadRom*
+  nameWithType.vb: ICard.ReadRom(Byte)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ICard.ReadRom(Byte)
+  name.vb: ReadRom(Byte)
+- uid: Pandowdy.EmuCore.Interfaces.ICard.WriteRom(System.Byte,System.Byte)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICard.WriteRom(System.Byte,System.Byte)
+  id: WriteRom(System.Byte,System.Byte)
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  langs:
+  - csharp
+  - vb
+  name: WriteRom(byte, byte)
+  nameWithType: ICard.WriteRom(byte, byte)
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.WriteRom(byte, byte)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: WriteRom
+    path: ../Pandowdy.EmuCore/Interfaces/ICard.cs
+    startLine: 163
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Writes a byte to the card's ROM address space ($Cx00-$CxFF).
+  remarks: >-
+    <p>
+
+    In most cases, this is a no-op since card ROM is typically read-only firmware.
+
+    However, some specialized cards may use this address space for writeable RAM
+
+    or configuration registers.
+
+    </p>
+
+    <p>
+
+    If the card does not support writes to ROM space, this method should perform
+
+    no operation rather than throwing an exception.
+
+    </p>
+  example: []
+  syntax:
+    content: void WriteRom(byte offset, byte value)
+    parameters:
+    - id: offset
+      type: System.Byte
+      description: 'The offset within the 256-byte ROM space (valid range: 0x00-0xFF).'
+    - id: value
+      type: System.Byte
+      description: The byte value to write.
+    content.vb: Sub WriteRom(offset As Byte, value As Byte)
+  overload: Pandowdy.EmuCore.Interfaces.ICard.WriteRom*
+  nameWithType.vb: ICard.WriteRom(Byte, Byte)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ICard.WriteRom(Byte, Byte)
+  name.vb: WriteRom(Byte, Byte)
+- uid: Pandowdy.EmuCore.Interfaces.ICard.ReadExtendedRom(System.UInt16)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICard.ReadExtendedRom(System.UInt16)
+  id: ReadExtendedRom(System.UInt16)
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  langs:
+  - csharp
+  - vb
+  name: ReadExtendedRom(ushort)
+  nameWithType: ICard.ReadExtendedRom(ushort)
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.ReadExtendedRom(ushort)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ReadExtendedRom
+    path: ../Pandowdy.EmuCore/Interfaces/ICard.cs
+    startLine: 193
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Reads a byte from the card's extended ROM address space ($C800-$CFFF).
+  remarks: >-
+    <p>
+
+    The extended ROM space ($C800-$CFFF) is a 2KB region shared among all slots
+
+    via bank switching. Only one card's extended ROM can be active at a time.
+
+    The active card is determined by which slot last accessed address $CFFF.
+
+    </p>
+
+    <p>
+
+    Extended ROM is typically used for:
+
+    <ul><li>Additional driver code that doesn't fit in the 256-byte card ROM</li><li>Enhanced features and utilities</li><li>Configuration and diagnostic code</li></ul>
+
+    </p>
+
+    <p>
+
+    The <xref href="Pandowdy.EmuCore.Interfaces.ISlots" data-throw-if-not-resolved="false"></xref> implementation manages the bank selection mechanism,
+
+    so individual cards only need to return their ROM data when queried.
+
+    </p>
+  example: []
+  syntax:
+    content: byte? ReadExtendedRom(ushort offset)
+    parameters:
+    - id: offset
+      type: System.UInt16
+      description: 'The offset within the 2KB extended ROM space (valid range: 0x0000-0x07FF / 0-2047).'
+    return:
+      type: System.Nullable{System.Byte}
+      description: >-
+        The ROM byte if the card provides extended firmware at this address, or <code>null</code>
+
+        if the card does not implement extended ROM. A <code>null</code> return allows the
+
+        system to return floating bus values.
+    content.vb: Function ReadExtendedRom(offset As UShort) As Byte?
+  overload: Pandowdy.EmuCore.Interfaces.ICard.ReadExtendedRom*
+  nameWithType.vb: ICard.ReadExtendedRom(UShort)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ICard.ReadExtendedRom(UShort)
+  name.vb: ReadExtendedRom(UShort)
+- uid: Pandowdy.EmuCore.Interfaces.ICard.WriteExtendedRom(System.UInt16,System.Byte)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICard.WriteExtendedRom(System.UInt16,System.Byte)
+  id: WriteExtendedRom(System.UInt16,System.Byte)
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  langs:
+  - csharp
+  - vb
+  name: WriteExtendedRom(ushort, byte)
+  nameWithType: ICard.WriteExtendedRom(ushort, byte)
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.WriteExtendedRom(ushort, byte)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: WriteExtendedRom
+    path: ../Pandowdy.EmuCore/Interfaces/ICard.cs
+    startLine: 211
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Writes a byte to the card's extended ROM address space ($C800-$CFFF).
+  remarks: >-
+    <p>
+
+    Like <xref href="Pandowdy.EmuCore.Interfaces.ICard.WriteRom(System.Byte%2cSystem.Byte)" data-throw-if-not-resolved="false"></xref>, this is typically a no-op since extended ROM is
+
+    usually read-only firmware. However, some cards may use this address range
+
+    for writeable RAM or memory-mapped hardware.
+
+    </p>
+
+    <p>
+
+    If the card does not support writes to extended ROM space, this method should
+
+    perform no operation rather than throwing an exception.
+
+    </p>
+  example: []
+  syntax:
+    content: void WriteExtendedRom(ushort offset, byte value)
+    parameters:
+    - id: offset
+      type: System.UInt16
+      description: 'The offset within the 2KB extended ROM space (valid range: 0x0000-0x07FF / 0-2047).'
+    - id: value
+      type: System.Byte
+      description: The byte value to write.
+    content.vb: Sub WriteExtendedRom(offset As UShort, value As Byte)
+  overload: Pandowdy.EmuCore.Interfaces.ICard.WriteExtendedRom*
+  nameWithType.vb: ICard.WriteExtendedRom(UShort, Byte)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ICard.WriteExtendedRom(UShort, Byte)
+  name.vb: WriteExtendedRom(UShort, Byte)
+- uid: Pandowdy.EmuCore.Interfaces.ICard.Clone
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICard.Clone
+  id: Clone
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  langs:
+  - csharp
+  - vb
+  name: Clone()
+  nameWithType: ICard.Clone()
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.Clone()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICard.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Clone
+    path: ../Pandowdy.EmuCore/Interfaces/ICard.cs
+    startLine: 241
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Creates a new independent copy of this card instance.
+  remarks: >-
+    <p>
+
+    The <xref href="Pandowdy.EmuCore.Interfaces.ICardFactory" data-throw-if-not-resolved="false"></xref> maintains a single prototype instance of each card type.
+
+    When a card is requested (via <xref href="Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)" data-throw-if-not-resolved="false"></xref> or
+
+    <xref href="Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(System.String)" data-throw-if-not-resolved="false"></xref>), the factory calls <xref href="Pandowdy.EmuCore.Interfaces.ICard.Clone" data-throw-if-not-resolved="false"></xref>
+
+    to create a fresh, independent instance for the requesting slot.
+
+    </p>
+
+    <p>
+
+    This ensures that:
+
+    <ul><li>Each slot gets its own card instance with independent state</li><li>Multiple slots can use the same card type without interference</li><li>Removing a card from one slot doesn't affect cards in other slots</li></ul>
+
+    </p>
+
+    <p>
+
+    Implementation should typically return a new instance via constructor:
+
+    <pre><code class="lang-csharp">public ICard Clone() =&gt; new MyCard();</code></pre>
+
+    If the card has configurable state, that state may need to be copied to the clone
+
+    depending on the desired behavior.
+
+    </p>
+  example: []
+  syntax:
+    content: ICard Clone()
+    return:
+      type: Pandowdy.EmuCore.Interfaces.ICard
+      description: A new <xref href="Pandowdy.EmuCore.Interfaces.ICard" data-throw-if-not-resolved="false"></xref> instance with the same type and configuration as this card.
+    content.vb: Function Clone() As ICard
+  overload: Pandowdy.EmuCore.Interfaces.ICard.Clone*
+references:
+- uid: Pandowdy.EmuCore.Interfaces.IConfigurable
+  commentId: T:Pandowdy.EmuCore.Interfaces.IConfigurable
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IConfigurable.html
+  name: IConfigurable
+  nameWithType: IConfigurable
+  fullName: Pandowdy.EmuCore.Interfaces.IConfigurable
+- uid: Pandowdy.EmuCore.Interfaces.ICardFactory
+  commentId: T:Pandowdy.EmuCore.Interfaces.ICardFactory
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ICardFactory.html
+  name: ICardFactory
+  nameWithType: ICardFactory
+  fullName: Pandowdy.EmuCore.Interfaces.ICardFactory
+- uid: Pandowdy.EmuCore.Interfaces.ISlots
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISlots
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html
+  name: ISlots
+  nameWithType: ISlots
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.ICard.Clone
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICard.Clone
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Clone
+  name: Clone()
+  nameWithType: ICard.Clone()
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.Clone()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ICard.Clone
+    name: Clone
+    href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Clone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ICard.Clone
+    name: Clone
+    href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Clone
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+  commentId: M:Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+  parent: Pandowdy.EmuCore.Interfaces.IConfigurable
+  href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_GetMetadata
+  name: GetMetadata()
+  nameWithType: IConfigurable.GetMetadata()
+  fullName: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+    name: GetMetadata
+    href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_GetMetadata
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+    name: GetMetadata
+    href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_GetMetadata
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+  commentId: M:Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+  parent: Pandowdy.EmuCore.Interfaces.IConfigurable
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_ApplyMetadata_System_String_
+  name: ApplyMetadata(string)
+  nameWithType: IConfigurable.ApplyMetadata(string)
+  fullName: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(string)
+  nameWithType.vb: IConfigurable.ApplyMetadata(String)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(String)
+  name.vb: ApplyMetadata(String)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+    name: ApplyMetadata
+    href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_ApplyMetadata_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+    name: ApplyMetadata
+    href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_ApplyMetadata_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.ICard
+  commentId: T:Pandowdy.EmuCore.Interfaces.ICard
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ICard.html
+  name: ICard
+  nameWithType: ICard
+  fullName: Pandowdy.EmuCore.Interfaces.ICard
+- uid: Pandowdy.EmuCore.Interfaces.ICard.Name*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICard.Name
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Name
+  name: Name
+  nameWithType: ICard.Name
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.Interfaces.ICard.Description*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICard.Description
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Description
+  name: Description
+  nameWithType: ICard.Description
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.Description
+- uid: Pandowdy.EmuCore.Interfaces.ICard.Id*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICard.Id
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Id
+  name: Id
+  nameWithType: ICard.Id
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.Id
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Pandowdy.EmuCore.Interfaces.ICard.ReadIO*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICard.ReadIO
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_ReadIO_System_Byte_
+  name: ReadIO
+  nameWithType: ICard.ReadIO
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.ReadIO
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte
+- uid: System.Nullable{System.Byte}
+  commentId: T:System.Nullable{System.Byte}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte?
+  nameWithType: byte?
+  fullName: byte?
+  nameWithType.vb: Byte?
+  fullName.vb: Byte?
+  name.vb: Byte?
+  spec.csharp:
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: '?'
+  spec.vb:
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: '?'
+- uid: Pandowdy.EmuCore.Interfaces.ICard.WriteIO*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICard.WriteIO
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_WriteIO_System_Byte_System_Byte_
+  name: WriteIO
+  nameWithType: ICard.WriteIO
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.WriteIO
+- uid: Pandowdy.EmuCore.Interfaces.ICard.ReadRom*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICard.ReadRom
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_ReadRom_System_Byte_
+  name: ReadRom
+  nameWithType: ICard.ReadRom
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.ReadRom
+- uid: Pandowdy.EmuCore.Interfaces.ICard.WriteRom*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICard.WriteRom
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_WriteRom_System_Byte_System_Byte_
+  name: WriteRom
+  nameWithType: ICard.WriteRom
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.WriteRom
+- uid: Pandowdy.EmuCore.Interfaces.ICard.ReadExtendedRom*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICard.ReadExtendedRom
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_ReadExtendedRom_System_UInt16_
+  name: ReadExtendedRom
+  nameWithType: ICard.ReadExtendedRom
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.ReadExtendedRom
+- uid: System.UInt16
+  commentId: T:System.UInt16
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: ushort
+  nameWithType: ushort
+  fullName: ushort
+  nameWithType.vb: UShort
+  fullName.vb: UShort
+  name.vb: UShort
+- uid: Pandowdy.EmuCore.Interfaces.ICard.WriteRom(System.Byte,System.Byte)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICard.WriteRom(System.Byte,System.Byte)
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_WriteRom_System_Byte_System_Byte_
+  name: WriteRom(byte, byte)
+  nameWithType: ICard.WriteRom(byte, byte)
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.WriteRom(byte, byte)
+  nameWithType.vb: ICard.WriteRom(Byte, Byte)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ICard.WriteRom(Byte, Byte)
+  name.vb: WriteRom(Byte, Byte)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ICard.WriteRom(System.Byte,System.Byte)
+    name: WriteRom
+    href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_WriteRom_System_Byte_System_Byte_
+  - name: (
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ICard.WriteRom(System.Byte,System.Byte)
+    name: WriteRom
+    href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_WriteRom_System_Byte_System_Byte_
+  - name: (
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.ICard.WriteExtendedRom*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICard.WriteExtendedRom
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_WriteExtendedRom_System_UInt16_System_Byte_
+  name: WriteExtendedRom
+  nameWithType: ICard.WriteExtendedRom
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.WriteExtendedRom
+- uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+  parent: Pandowdy.EmuCore.Interfaces.ICardFactory
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithId_System_Int32_
+  name: GetCardWithId(int)
+  nameWithType: ICardFactory.GetCardWithId(int)
+  fullName: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(int)
+  nameWithType.vb: ICardFactory.GetCardWithId(Integer)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(Integer)
+  name.vb: GetCardWithId(Integer)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+    name: GetCardWithId
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithId_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+    name: GetCardWithId
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithId_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(System.String)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(System.String)
+  parent: Pandowdy.EmuCore.Interfaces.ICardFactory
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithName_System_String_
+  name: GetCardWithName(string)
+  nameWithType: ICardFactory.GetCardWithName(string)
+  fullName: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(string)
+  nameWithType.vb: ICardFactory.GetCardWithName(String)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(String)
+  name.vb: GetCardWithName(String)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(System.String)
+    name: GetCardWithName
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithName_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(System.String)
+    name: GetCardWithName
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithName_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.ICard.Clone*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICard.Clone
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Clone
+  name: Clone
+  nameWithType: ICard.Clone
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.Clone

@@ -1,0 +1,70 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.UI.ViewModels
+  commentId: N:Pandowdy.UI.ViewModels
+  id: Pandowdy.UI.ViewModels
+  children:
+  - Pandowdy.UI.ViewModels.EmulatorStateViewModel
+  - Pandowdy.UI.ViewModels.MainWindowViewModel
+  - Pandowdy.UI.ViewModels.SystemStatusViewModel
+  langs:
+  - csharp
+  - vb
+  name: Pandowdy.UI.ViewModels
+  nameWithType: Pandowdy.UI.ViewModels
+  fullName: Pandowdy.UI.ViewModels
+  type: Namespace
+  assemblies:
+  - Pandowdy.UI
+references:
+- uid: Pandowdy.UI.ViewModels.EmulatorStateViewModel
+  commentId: T:Pandowdy.UI.ViewModels.EmulatorStateViewModel
+  parent: Pandowdy.UI.ViewModels
+  href: Pandowdy.UI.ViewModels.EmulatorStateViewModel.html
+  name: EmulatorStateViewModel
+  nameWithType: EmulatorStateViewModel
+  fullName: Pandowdy.UI.ViewModels.EmulatorStateViewModel
+- uid: Pandowdy.UI.ViewModels.MainWindowViewModel
+  commentId: T:Pandowdy.UI.ViewModels.MainWindowViewModel
+  parent: Pandowdy.UI.ViewModels
+  href: Pandowdy.UI.ViewModels.MainWindowViewModel.html
+  name: MainWindowViewModel
+  nameWithType: MainWindowViewModel
+  fullName: Pandowdy.UI.ViewModels.MainWindowViewModel
+- uid: Pandowdy.UI.ViewModels.SystemStatusViewModel
+  commentId: T:Pandowdy.UI.ViewModels.SystemStatusViewModel
+  parent: Pandowdy.UI.ViewModels
+  href: Pandowdy.UI.ViewModels.SystemStatusViewModel.html
+  name: SystemStatusViewModel
+  nameWithType: SystemStatusViewModel
+  fullName: Pandowdy.UI.ViewModels.SystemStatusViewModel
+- uid: Pandowdy.UI.ViewModels
+  commentId: N:Pandowdy.UI.ViewModels
+  href: Pandowdy.html
+  name: Pandowdy.UI.ViewModels
+  nameWithType: Pandowdy.UI.ViewModels
+  fullName: Pandowdy.UI.ViewModels
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.UI
+    name: UI
+    href: Pandowdy.UI.html
+  - name: .
+  - uid: Pandowdy.UI.ViewModels
+    name: ViewModels
+    href: Pandowdy.UI.ViewModels.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.UI
+    name: UI
+    href: Pandowdy.UI.html
+  - name: .
+  - uid: Pandowdy.UI.ViewModels
+    name: ViewModels
+    href: Pandowdy.UI.ViewModels.html

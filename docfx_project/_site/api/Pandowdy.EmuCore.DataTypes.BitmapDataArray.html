@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class BitmapDataArray | Pandowdy Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class BitmapDataArray | Pandowdy Documentation ">
+      
+      <meta name="description" content="Multi-bitplane bitmap storage for Apple IIe display rendering (560&#215;192 pixels, 16 bitplanes).">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/markdavidlong/Pandowdy/new/refactor/apiSpec/new?filename=Pandowdy_EmuCore_DataTypes_BitmapDataArray.md&amp;value=---%0Auid%3A%20Pandowdy.EmuCore.DataTypes.BitmapDataArray%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="Pandowdy Apple IIe Emulator">
+            Pandowdy Apple IIe Emulator
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray">
+
+
+
+  <h1 id="Pandowdy_EmuCore_DataTypes_BitmapDataArray" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray" class="text-break">
+Class BitmapDataArray  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/BitmapDataArray.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Pandowdy.html">Pandowdy</a>.<a class="xref" href="Pandowdy.EmuCore.html">EmuCore</a>.<a class="xref" href="Pandowdy.EmuCore.DataTypes.html">DataTypes</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Pandowdy.EmuCore.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Multi-bitplane bitmap storage for Apple IIe display rendering (560×192 pixels, 16 bitplanes).</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class BitmapDataArray</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">BitmapDataArray</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+  <h2 id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+<strong>Purpose:</strong> This class provides a packed bitmap representation supporting
+up to 16 independent bitplanes (layers) per pixel. Each pixel position (x, y) has 16
+boolean flags stored in a <a class="xref" href="Pandowdy.EmuCore.DataTypes.BitField16.html">BitField16</a>, allowing efficient storage of
+multi-channel bitmap data.
+</p>
+<p>
+<strong>Apple IIe Dimensions:</strong> Fixed at 560×192 pixels to match Apple IIe
+video output:
+<ul><li><strong>Width (560):</strong> 280 hi-res pixels × 2 (horizontal doubling for square pixels),
+or 80 columns × 7 pixels per character</li><li><strong>Height (192):</strong> 24 text rows × 8 scanlines per row</li></ul>
+These dimensions are hardcoded constants to optimize performance and memory layout.
+
+<p>
+<strong>Bitplane Architecture:</strong> Each pixel has 16 independent boolean channels
+(bitplanes 0-15). In the current implementation:
+<ul><li><strong>Bitplane 0:</strong> Used for monochrome composite output (primary display)</li><li><strong>Bitplanes 1-15:</strong> Reserved for future use (NTSC color separation,
+double hi-res channels, overlay effects, etc.)</li></ul>
+This design enables future NTSC color artifact generation by separating color phases
+or implementing multi-layer rendering without changing the storage format.
+
+<p>
+<strong>Memory Layout:</strong> Stored as a flat array of <code>560 × 192 = 107,520</code>
+<a class="xref" href="Pandowdy.EmuCore.DataTypes.BitField16.html">BitField16</a> values (215 KB). Pixels are stored row-major (left-to-right,
+top-to-bottom). Offset calculation: <code>offset = x + (y × width)</code>.
+</p>
+<p>
+<strong>Thread Safety:</strong> Not thread-safe. Multiple concurrent writes or
+simultaneous read/write operations require external synchronization. Typically
+used in a single-threaded rendering pipeline where one thread writes during frame
+generation and another reads during display.
+</p>
+<p>
+<strong>Performance:</strong> Direct array access with bounds checking. All coordinate
+validation is performed before accessing the underlying array. For bulk operations,
+consider using <a class="xref" href="Pandowdy.EmuCore.DataTypes.BitmapDataArray.html#Pandowdy_EmuCore_DataTypes_BitmapDataArray_GetRowDataSpan_System_Int32_">GetRowDataSpan(int)</a> to access entire rows efficiently.
+</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_BitmapDataArray__ctor_" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.#ctor*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_BitmapDataArray__ctor" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.#ctor">
+  BitmapDataArray()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/BitmapDataArray.cs/#L110"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Pandowdy.EmuCore.DataTypes.BitmapDataArray.html">BitmapDataArray</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public BitmapDataArray()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_DataTypes_BitmapDataArray__ctor_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Allocation:</strong> Allocates a flat array of 107,520 <a class="xref" href="Pandowdy.EmuCore.DataTypes.BitField16.html">BitField16</a>
+values (215 KB). All pixels are initialized to zero (all bitplanes clear).
+</p>
+<p>
+<strong>Performance:</strong> Array allocation is relatively fast (single allocation),
+but the 215 KB size should be considered when creating multiple instances. For
+double-buffering (front/back buffers), expect 430 KB total.
+</p>
+</div>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_Height_" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.Height*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_Height" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.Height">
+  Height
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/BitmapDataArray.cs/#L94"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the height of the bitmap in scanlines (always 192).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static int Height { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The fixed height of 192 scanlines.</p>
+</dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_Height_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Static property to allow consumers (like <a class="xref" href="Pandowdy.EmuCore.Services.FrameProvider.html">FrameProvider</a>)
+to query dimensions without needing an instance. The value is derived from
+the <code>_height</code> constant.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_Width_" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.Width*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_Width" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.Width">
+  Width
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/BitmapDataArray.cs/#L83"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the width of the bitmap in pixels (always 560).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static int Width { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The fixed width of 560 pixels.</p>
+</dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_Width_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Static property to allow consumers (like <a class="xref" href="Pandowdy.EmuCore.Services.FrameProvider.html">FrameProvider</a>)
+to query dimensions without needing an instance. The value is derived from
+the <code>_width</code> constant.</p>
+</div>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_Clear_" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.Clear*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_Clear" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.Clear">
+  Clear()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/BitmapDataArray.cs/#L136"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clears all pixels across all bitplanes (sets entire bitmap to zero).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Clear()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_Clear_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Operation:</strong> Uses <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.array.clear#system-array-clear(system-array)">Clear(Array)</a> to zero out the entire
+107,520-element array. This is more efficient than looping through each pixel manually.
+</p>
+<p>
+<strong>Result:</strong> After clearing, all pixels on all bitplanes are set to false
+(off). Equivalent to a blank screen.
+</p>
+<p>
+<strong>Performance:</strong> Fast bulk operation optimized by the .NET runtime
+(typically memset at native level). Much faster than individual pixel operations.
+</p>
+<p>
+<strong>Usage:</strong> Called at the start of each frame by <a class="xref" href="Pandowdy.EmuCore.RenderContext.html#Pandowdy_EmuCore_RenderContext_ClearBuffer">ClearBuffer()</a>
+to prepare for rendering.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_ClearPixel_" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.ClearPixel*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_ClearPixel_System_Int32_System_Int32_System_Int32_" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.ClearPixel(System.Int32,System.Int32,System.Int32)">
+  ClearPixel(int, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/BitmapDataArray.cs/#L282"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clears a pixel to off (false) on a specific bitplane.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void ClearPixel(int x, int y, int bitplane)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>X coordinate (0-559).</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Y coordinate (0-191).</p>
+</dd>
+    <dt><code>bitplane</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Bitplane index (0-15).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_ClearPixel_System_Int32_System_Int32_System_Int32__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Operation:</strong> Finds the <a class="xref" href="Pandowdy.EmuCore.DataTypes.BitField16.html">BitField16</a> at (x, y) and clears
+the specified bitplane to false (0). Other bitplanes at this pixel are unaffected.
+</p>
+<p>
+<strong>Idempotent:</strong> Safe to call multiple times with the same coordinates -
+the pixel will remain clear. No error if the pixel is already clear.
+</p>
+<p>
+<strong>Example:</strong>
+<pre><code class="lang-csharp">bitmap.ClearPixel(100, 50, 0);  // Clear pixel on bitplane 0 (monochrome)
+bitmap.ClearPixel(100, 50, 1);  // Also clear on bitplane 1 (independent)</code></pre>
+
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>Thrown if coordinates or bitplane are out of range.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_GetBitplaneSpanForRow_" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.GetBitplaneSpanForRow*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_GetBitplaneSpanForRow_System_Int32_System_Int32_" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.GetBitplaneSpanForRow(System.Int32,System.Int32)">
+  GetBitplaneSpanForRow(int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/BitmapDataArray.cs/#L363"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a read-only span of boolean values for a single bitplane across an entire row.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlySpan&lt;bool&gt; GetBitplaneSpanForRow(int row, int bitplane)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>row</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Row index (0-191).</p>
+</dd>
+    <dt><code>bitplane</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Bitplane index (0-15).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a>&gt;</dt>
+    <dd><p>A <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan&lt;T&gt;</a> of 560 boolean values representing the specified
+bitplane for all pixels in the row (left to right).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_GetBitplaneSpanForRow_System_Int32_System_Int32__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Purpose:</strong> Efficient row-based access for rendering or analysis.
+Returns a contiguous view of one bitplane across an entire scanline.
+</p>
+<p>
+<strong>Extraction:</strong> Iterates through the 560 <a class="xref" href="Pandowdy.EmuCore.DataTypes.BitField16.html">BitField16</a> values
+for the row and extracts the specified bitplane bit from each, building a boolean array.
+</p>
+<p>
+<strong>Performance:</strong> Allocates a 560-element boolean array (560 bytes on heap)
+and uses an optimized for-loop for extraction (more efficient than foreach). For
+zero-allocation scenarios, consider using <a class="xref" href="Pandowdy.EmuCore.DataTypes.BitmapDataArray.html#Pandowdy_EmuCore_DataTypes_BitmapDataArray_GetRowDataSpan_System_Int32_">GetRowDataSpan(int)</a> for direct
+<a class="xref" href="Pandowdy.EmuCore.DataTypes.BitField16.html">BitField16</a> access and extracting bits manually.
+</p>
+<p>
+<strong>Usage Example:</strong>
+<pre><code class="lang-csharp">// Get all pixels on bitplane 0 for row 50
+var pixels = bitmap.GetBitplaneSpanForRow(50, 0);
+for (int x = 0; x &lt; pixels.Length; x++)
+{
+    bool isLit = pixels[x];
+    // Process pixel...
+}</code></pre>
+
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>Thrown if <code class="paramref">row</code> is outside 0-191.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_GetPixel_" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.GetPixel*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_GetPixel_System_Int32_System_Int32_System_Int32_" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.GetPixel(System.Int32,System.Int32,System.Int32)">
+  GetPixel(int, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/BitmapDataArray.cs/#L316"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the state of a pixel on a specific bitplane.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool GetPixel(int x, int y, int bitplane)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>X coordinate (0-559).</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Y coordinate (0-191).</p>
+</dd>
+    <dt><code>bitplane</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Bitplane index (0-15).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><code>true</code> if the pixel is set (on) on the specified bitplane;
+<code>false</code> if the pixel is clear (off).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_GetPixel_System_Int32_System_Int32_System_Int32__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Operation:</strong> Finds the <a class="xref" href="Pandowdy.EmuCore.DataTypes.BitField16.html">BitField16</a> at (x, y) and returns
+the boolean state of the specified bitplane.
+</p>
+<p>
+<strong>Example:</strong>
+<pre><code class="lang-csharp">bitmap.SetPixel(100, 50, 0);
+bool isSet = bitmap.GetPixel(100, 50, 0);  // true
+bool otherPlane = bitmap.GetPixel(100, 50, 1);  // false (unless set separately)</code></pre>
+
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>Thrown if coordinates or bitplane are out of range.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_GetRowDataSpan_" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.GetRowDataSpan*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_GetRowDataSpan_System_Int32_" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.GetRowDataSpan(System.Int32)">
+  GetRowDataSpan(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/BitmapDataArray.cs/#L417"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a read-only span of raw <a class="xref" href="Pandowdy.EmuCore.DataTypes.BitField16.html">BitField16</a> values for an entire row.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ReadOnlySpan&lt;BitField16&gt; GetRowDataSpan(int row)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>row</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Row index (0-191).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;<a class="xref" href="Pandowdy.EmuCore.DataTypes.BitField16.html">BitField16</a>&gt;</dt>
+    <dd><p>A <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan&lt;T&gt;</a> of 560 <a class="xref" href="Pandowdy.EmuCore.DataTypes.BitField16.html">BitField16</a> values representing
+all pixels in the row (all bitplanes included).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_GetRowDataSpan_System_Int32__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Purpose:</strong> Zero-copy access to an entire scanline's raw data. Returns
+a span directly into the underlying <code>_data</code> array without allocation or copying.
+</p>
+<p>
+<strong>Performance:</strong> Extremely efficient - creates a span view over existing
+memory. Ideal for bulk processing or when you need access to all bitplanes simultaneously.
+</p>
+<p>
+<strong>Read-Only:</strong> The span is read-only to prevent accidental modification
+of the underlying array. For modifications, use <a class="xref" href="Pandowdy.EmuCore.DataTypes.BitmapDataArray.html#Pandowdy_EmuCore_DataTypes_BitmapDataArray_SetPixel_System_Int32_System_Int32_System_Int32_">SetPixel(int, int, int)</a> or <a class="xref" href="Pandowdy.EmuCore.DataTypes.BitmapDataArray.html#Pandowdy_EmuCore_DataTypes_BitmapDataArray_ClearPixel_System_Int32_System_Int32_System_Int32_">ClearPixel(int, int, int)</a>.
+</p>
+<p>
+<strong>Usage Example:</strong>
+<pre><code class="lang-csharp">// Process all pixels in row 100 across all bitplanes
+var rowData = bitmap.GetRowDataSpan(100);
+for (int x = 0; x &lt; rowData.Length; x++)
+{
+    BitField16 pixel = rowData[x];
+    bool plane0 = pixel.GetBit(0);
+    bool plane1 = pixel.GetBit(1);
+    // Process multi-plane data...
+}</code></pre>
+
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>Thrown if <code class="paramref">row</code> is outside 0-191.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_SetPixel_" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.SetPixel*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_SetPixel_System_Int32_System_Int32_System_Int32_" data-uid="Pandowdy.EmuCore.DataTypes.BitmapDataArray.SetPixel(System.Int32,System.Int32,System.Int32)">
+  SetPixel(int, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/BitmapDataArray.cs/#L249"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets a pixel to on (true) on a specific bitplane.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetPixel(int x, int y, int bitplane)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>x</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>X coordinate (0-559).</p>
+</dd>
+    <dt><code>y</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Y coordinate (0-191).</p>
+</dd>
+    <dt><code>bitplane</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Bitplane index (0-15).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_DataTypes_BitmapDataArray_SetPixel_System_Int32_System_Int32_System_Int32__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Operation:</strong> Finds the <a class="xref" href="Pandowdy.EmuCore.DataTypes.BitField16.html">BitField16</a> at (x, y) and sets
+the specified bitplane to true (1). Other bitplanes at this pixel are unaffected.
+</p>
+<p>
+<strong>Idempotent:</strong> Safe to call multiple times with the same coordinates -
+the pixel will remain set. No error if the pixel is already set.
+</p>
+<p>
+<strong>Example:</strong>
+<pre><code class="lang-csharp">bitmap.SetPixel(100, 50, 0);  // Set pixel on bitplane 0 (monochrome)
+bitmap.SetPixel(100, 50, 1);  // Also set on bitplane 1 (independent)</code></pre>
+
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p>Thrown if coordinates or bitplane are out of range.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/BitmapDataArray.cs/#L53" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

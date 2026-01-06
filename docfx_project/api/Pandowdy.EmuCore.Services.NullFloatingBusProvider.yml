@@ -1,0 +1,442 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Services.NullFloatingBusProvider
+  commentId: T:Pandowdy.EmuCore.Services.NullFloatingBusProvider
+  id: NullFloatingBusProvider
+  parent: Pandowdy.EmuCore.Services
+  children:
+  - Pandowdy.EmuCore.Services.NullFloatingBusProvider.Read
+  langs:
+  - csharp
+  - vb
+  name: NullFloatingBusProvider
+  nameWithType: NullFloatingBusProvider
+  fullName: Pandowdy.EmuCore.Services.NullFloatingBusProvider
+  type: Class
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/NullFloatingBusProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: NullFloatingBusProvider
+    path: ../Pandowdy.EmuCore/Services/NullFloatingBusProvider.cs
+    startLine: 36
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Simple floating bus provider that always returns zero.
+  remarks: >-
+    <p>
+
+    <strong>Purpose:</strong> Provides a simple, deterministic floating bus implementation
+
+    for testing, debugging, or scenarios where floating bus accuracy is not required.
+
+    </p>
+
+    <p>
+
+    <strong>Behavior:</strong> Always returns 0x00 for unmapped reads, regardless of
+
+    CPU activity or video state. This is the simplest possible floating bus implementation.
+
+    </p>
+
+    <p>
+
+    <strong>Use Cases:</strong>
+
+    <ul><li>Unit testing - Predictable, deterministic behavior</li><li>Initial development - Simplest implementation to get started</li><li>Debugging - Eliminates floating bus complexity from troubleshooting</li><li>Performance baseline - Minimal overhead for benchmarking</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Limitations:</strong> This implementation is not accurate to Apple II hardware.
+
+    Software that relies on floating bus behavior (copy protection, timing loops, video
+
+    synchronization) will not work correctly. For production use, consider
+
+    <code>LastValueFloatingBus</code> or <code>CycleAccurateFloatingBus</code>.
+
+    </p>
+
+    <p>
+
+    <strong>Performance:</strong> Fastest possible implementation - no state, no logic,
+
+    just returns a constant. JIT compiler may inline this to a single instruction.
+
+    </p>
+  example: []
+  syntax:
+    content: 'public sealed class NullFloatingBusProvider : IFloatingBusProvider'
+    content.vb: Public NotInheritable Class NullFloatingBusProvider Implements IFloatingBusProvider
+  inheritance:
+  - System.Object
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IFloatingBusProvider
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Pandowdy.EmuCore.Services.NullFloatingBusProvider.Read
+  commentId: M:Pandowdy.EmuCore.Services.NullFloatingBusProvider.Read
+  id: Read
+  parent: Pandowdy.EmuCore.Services.NullFloatingBusProvider
+  langs:
+  - csharp
+  - vb
+  name: Read()
+  nameWithType: NullFloatingBusProvider.Read()
+  fullName: Pandowdy.EmuCore.Services.NullFloatingBusProvider.Read()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/NullFloatingBusProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Read
+    path: ../Pandowdy.EmuCore/Services/NullFloatingBusProvider.cs
+    startLine: 47
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Reads the floating bus value (always returns 0).
+  remarks: >-
+    This implementation ignores all bus activity and always returns zero.
+
+    This is not accurate to Apple II hardware behavior, where the floating bus
+
+    would typically return the last value on the data bus.
+  example: []
+  syntax:
+    content: public byte Read()
+    return:
+      type: System.Byte
+      description: Always returns 0x00.
+    content.vb: Public Function Read() As Byte
+  overload: Pandowdy.EmuCore.Services.NullFloatingBusProvider.Read*
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.Read
+references:
+- uid: Pandowdy.EmuCore.Services
+  commentId: N:Pandowdy.EmuCore.Services
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Services
+  nameWithType: Pandowdy.EmuCore.Services
+  fullName: Pandowdy.EmuCore.Services
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Services
+    name: Services
+    href: Pandowdy.EmuCore.Services.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Services
+    name: Services
+    href: Pandowdy.EmuCore.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider
+  commentId: T:Pandowdy.EmuCore.Interfaces.IFloatingBusProvider
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.html
+  name: IFloatingBusProvider
+  nameWithType: IFloatingBusProvider
+  fullName: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.Services.NullFloatingBusProvider.Read*
+  commentId: Overload:Pandowdy.EmuCore.Services.NullFloatingBusProvider.Read
+  href: Pandowdy.EmuCore.Services.NullFloatingBusProvider.html#Pandowdy_EmuCore_Services_NullFloatingBusProvider_Read
+  name: Read
+  nameWithType: NullFloatingBusProvider.Read
+  fullName: Pandowdy.EmuCore.Services.NullFloatingBusProvider.Read
+- uid: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.Read
+  commentId: M:Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.Read
+  parent: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider
+  href: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.html#Pandowdy_EmuCore_Interfaces_IFloatingBusProvider_Read
+  name: Read()
+  nameWithType: IFloatingBusProvider.Read()
+  fullName: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.Read()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.Read
+    name: Read
+    href: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.html#Pandowdy_EmuCore_Interfaces_IFloatingBusProvider_Read
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.Read
+    name: Read
+    href: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.html#Pandowdy_EmuCore_Interfaces_IFloatingBusProvider_Read
+  - name: (
+  - name: )
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte

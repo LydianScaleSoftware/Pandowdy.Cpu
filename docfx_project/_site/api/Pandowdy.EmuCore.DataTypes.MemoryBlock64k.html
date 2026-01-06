@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class MemoryBlock64k | Pandowdy Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class MemoryBlock64k | Pandowdy Documentation ">
+      
+      <meta name="description" content="Convenience class that creates a 64KB (0x10000 bytes) memory block - the full 6502 address space.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/markdavidlong/Pandowdy/new/refactor/apiSpec/new?filename=Pandowdy_EmuCore_DataTypes_MemoryBlock64k.md&amp;value=---%0Auid%3A%20Pandowdy.EmuCore.DataTypes.MemoryBlock64k%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="Pandowdy Apple IIe Emulator">
+            Pandowdy Apple IIe Emulator
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock64k">
+
+
+
+  <h1 id="Pandowdy_EmuCore_DataTypes_MemoryBlock64k" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock64k" class="text-break">
+Class MemoryBlock64k  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/MemoryBlock.cs/#L224"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Pandowdy.html">Pandowdy</a>.<a class="xref" href="Pandowdy.EmuCore.html">EmuCore</a>.<a class="xref" href="Pandowdy.EmuCore.DataTypes.html">DataTypes</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Pandowdy.EmuCore.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Convenience class that creates a 64KB (0x10000 bytes) memory block - the full 6502 address space.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class MemoryBlock64k : MemoryBlock, ISystemRam, IMemory</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="Pandowdy.EmuCore.DataTypes.MemoryBlock.html">MemoryBlock</a></div>
+      <div><span class="xref">MemoryBlock64k</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISystemRam.html">ISystemRam</a></div>
+      <div><span class="xref">IMemory</span></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_MaxSize">MemoryBlock.MaxSize</a>
+    </div>
+    <div>
+      <a class="xref" href="Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_Size">MemoryBlock.Size</a>
+    </div>
+    <div>
+      <a class="xref" href="Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_Read_System_UInt16_">MemoryBlock.Read(ushort)</a>
+    </div>
+    <div>
+      <a class="xref" href="Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_Write_System_UInt16_System_Byte_">MemoryBlock.Write(ushort, byte)</a>
+    </div>
+    <div>
+      <a class="xref" href="Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_Item_System_UInt16_">MemoryBlock.this[ushort]</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+  <h2 id="Pandowdy_EmuCore_DataTypes_MemoryBlock64k_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+<strong>Purpose:</strong> Provides a simple way to create a full-sized memory block without
+specifying the size parameter. Equivalent to <code>new MemoryBlock(0x10000)</code>.
+</p>
+<p>
+<strong>6502 Address Space:</strong> The 6502 processor uses 16-bit addresses (ushort),
+allowing access to 65,536 bytes (64KB) of memory from $0000 to $FFFF. This class creates
+a memory block that covers the entire addressable range.
+</p>
+<p>
+<strong>Usage Example:</strong>
+<pre><code class="lang-csharp">// Create full 64KB memory - no size parameter needed
+var memory = new MemoryBlock64k();
+
+// Can address the entire 6502 range
+memory[0x0000] = 0xFF; // Zero page
+memory[0x0100] = 0xFF; // Stack
+memory[0xFFFF] = 0xFF; // End of memory
+
+// Size property returns 65,536
+int size = memory.Size; // Returns 0x10000</code></pre>
+
+<p>
+<strong>Performance:</strong> Identical to <a class="xref" href="Pandowdy.EmuCore.DataTypes.MemoryBlock.html">MemoryBlock</a>. This is purely
+a convenience wrapper with no additional overhead or functionality.
+</p>
+<p>
+<strong>Common Use Cases:</strong>
+<ul><li>CPU instruction testing with full address space</li><li>ROM/RAM simulation for 6502-based systems</li><li>Retro computer emulation (Apple II, Commodore 64, NES, etc.)</li><li>6502 programming education and experimentation</li><li>Rapid prototyping of memory-mapped I/O systems</li></ul>
+
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_DataTypes_MemoryBlock64k__ctor_" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock64k.#ctor*"></a>
+
+  <h3 id="Pandowdy_EmuCore_DataTypes_MemoryBlock64k__ctor" data-uid="Pandowdy.EmuCore.DataTypes.MemoryBlock64k.#ctor">
+  MemoryBlock64k()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/MemoryBlock.cs/#L224"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Convenience class that creates a 64KB (0x10000 bytes) memory block - the full 6502 address space.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MemoryBlock64k()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_DataTypes_MemoryBlock64k__ctor_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Purpose:</strong> Provides a simple way to create a full-sized memory block without
+specifying the size parameter. Equivalent to <code>new MemoryBlock(0x10000)</code>.
+</p>
+<p>
+<strong>6502 Address Space:</strong> The 6502 processor uses 16-bit addresses (ushort),
+allowing access to 65,536 bytes (64KB) of memory from $0000 to $FFFF. This class creates
+a memory block that covers the entire addressable range.
+</p>
+<p>
+<strong>Usage Example:</strong>
+<pre><code class="lang-csharp">// Create full 64KB memory - no size parameter needed
+var memory = new MemoryBlock64k();
+
+// Can address the entire 6502 range
+memory[0x0000] = 0xFF; // Zero page
+memory[0x0100] = 0xFF; // Stack
+memory[0xFFFF] = 0xFF; // End of memory
+
+// Size property returns 65,536
+int size = memory.Size; // Returns 0x10000</code></pre>
+
+<p>
+<strong>Performance:</strong> Identical to <a class="xref" href="Pandowdy.EmuCore.DataTypes.MemoryBlock.html">MemoryBlock</a>. This is purely
+a convenience wrapper with no additional overhead or functionality.
+</p>
+<p>
+<strong>Common Use Cases:</strong>
+<ul><li>CPU instruction testing with full address space</li><li>ROM/RAM simulation for 6502-based systems</li><li>Retro computer emulation (Apple II, Commodore 64, NES, etc.)</li><li>6502 programming education and experimentation</li><li>Rapid prototyping of memory-mapped I/O systems</li></ul>
+
+</div>
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/DataTypes/MemoryBlock.cs/#L224" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

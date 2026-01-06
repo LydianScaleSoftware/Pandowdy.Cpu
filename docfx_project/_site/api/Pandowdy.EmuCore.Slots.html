@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class Slots | Pandowdy Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class Slots | Pandowdy Documentation ">
+      
+      <meta name="description" content="Implements the Apple IIe expansion slot system, managing peripheral cards and their I/O and ROM access.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/markdavidlong/Pandowdy/new/refactor/apiSpec/new?filename=Pandowdy_EmuCore_Slots.md&amp;value=---%0Auid%3A%20Pandowdy.EmuCore.Slots%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="Pandowdy Apple IIe Emulator">
+            Pandowdy Apple IIe Emulator
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Pandowdy.EmuCore.Slots">
+
+
+
+  <h1 id="Pandowdy_EmuCore_Slots" data-uid="Pandowdy.EmuCore.Slots" class="text-break">
+Class Slots  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Pandowdy.html">Pandowdy</a>.<a class="xref" href="Pandowdy.EmuCore.html">EmuCore</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Pandowdy.EmuCore.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Implements the Apple IIe expansion slot system, managing peripheral cards and their I/O and ROM access.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class Slots : ISlots, IMemory, IConfigurable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">Slots</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html">ISlots</a></div>
+      <div><span class="xref">IMemory</span></div>
+      <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.IConfigurable.html">IConfigurable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+  <h2 id="Pandowdy_EmuCore_Slots_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+The <a class="xref" href="Pandowdy.EmuCore.Slots.html">Slots</a> class is the concrete implementation of <a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html">ISlots</a>, providing
+the complete address decoding logic for the Apple IIe's $C000-$CFFF peripheral I/O range.
+It coordinates between peripheral cards, system ROM, and soft switch settings to determine
+which device responds to memory accesses.
+</p>
+<p>
+<strong>Architecture:</strong><br>
+The slots system maintains an array of 8 card positions (0-7), where slot 0 is reserved
+for system use and slots 1-7 are available for peripheral cards. Empty slots are filled
+with <a class="xref" href="Pandowdy.EmuCore.NullCard.html">NullCard</a> instances that return <code>null</code> for all operations, causing
+floating bus behavior.
+</p>
+<p>
+<strong>Address Decoding Priority:</strong>
+</p>
+<ol><li><strong>INTCXROM check</strong> - If enabled, system ROM overrides all cards</li><li><strong>Address range decode</strong> - Determines I/O, ROM, or Extended ROM space</li><li><strong>SLOTCXROM/SLOTC3ROM check</strong> - Determines card vs. system ROM (when INTCXROM off)</li><li><strong>Card query</strong> - Asks the card for data (may return null)</li><li><strong>Fallback</strong> - Returns system ROM or floating bus value</li></ol>
+<p>
+<strong>Extended ROM Bank Selection:</strong><br>
+The <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a> property tracks which slot (1-7) currently owns the $C800-$CFFF
+extended ROM space. Accessing a slot's ROM ($Cn00-$CnFF) activates that slot; accessing
+$CFFF disables all extended ROM.
+</p>
+<p>
+<strong>Configuration Management:</strong><br>
+The <a class="xref" href="Pandowdy.EmuCore.Slots.html">Slots</a> class implements <a class="xref" href="Pandowdy.EmuCore.Interfaces.IConfigurable.html">IConfigurable</a> (via <a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html">ISlots</a>),
+enabling complete save/restore of the slot configuration. The metadata format includes:
+</p>
+<ul><li>Which cards are installed in which slots (by ID)</li><li>Each card's configuration metadata (hierarchical inclusion)</li><li>Current <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a> state (optional)</li></ul>
+<p>
+This allows the entire peripheral configuration to be saved, shared, and restored,
+including disk images, serial port settings, and other card-specific configurations.
+Empty slots are omitted from the metadata to keep it concise.
+</p>
+<p>
+<strong>Threading:</strong><br>
+This class is not thread-safe. All methods must be called from the emulator worker thread.
+Card installation/removal during emulation may cause race conditions.
+</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_Slots__ctor_" data-uid="Pandowdy.EmuCore.Slots.#ctor*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Slots__ctor_Pandowdy_EmuCore_Interfaces_ICardFactory_Pandowdy_EmuCore_Interfaces_ISystemRomProvider_Pandowdy_EmuCore_Interfaces_IFloatingBusProvider_Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_" data-uid="Pandowdy.EmuCore.Slots.#ctor(Pandowdy.EmuCore.Interfaces.ICardFactory,Pandowdy.EmuCore.Interfaces.ISystemRomProvider,Pandowdy.EmuCore.Interfaces.IFloatingBusProvider,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider)">
+  Slots(ICardFactory, ISystemRomProvider, IFloatingBusProvider, ISystemStatusProvider)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Pandowdy.EmuCore.Slots.html">Slots</a> class with all slots empty.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Slots(ICardFactory factory, ISystemRomProvider rom, IFloatingBusProvider floatingBus, ISystemStatusProvider status)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>factory</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICardFactory.html">ICardFactory</a></dt>
+    <dd><p>The card factory for creating card instances.</p>
+</dd>
+    <dt><code>rom</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.ISystemRomProvider.html">ISystemRomProvider</a></dt>
+    <dd><p>The system ROM provider for $C000-$CFFF range.</p>
+</dd>
+    <dt><code>floatingBus</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.html">IFloatingBusProvider</a></dt>
+    <dd><p>The floating bus provider for unresponsive addresses.</p>
+</dd>
+    <dt><code>status</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.html">ISystemStatusProvider</a></dt>
+    <dd><p>The system status provider for soft switch states.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots__ctor_Pandowdy_EmuCore_Interfaces_ICardFactory_Pandowdy_EmuCore_Interfaces_ISystemRomProvider_Pandowdy_EmuCore_Interfaces_IFloatingBusProvider_Pandowdy_EmuCore_Interfaces_ISystemStatusProvider__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+All seven expansion slots (1-7) are initialized with <a class="xref" href="Pandowdy.EmuCore.NullCard.html">NullCard</a> instances,
+representing empty slots. Slot 0 is also filled with a NullCard since it's reserved
+for system use and should never be accessed.
+</p>
+<p>
+The constructor creates independent NullCard instances via <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Clone">Clone()</a>
+to ensure each slot has its own instance, even though NullCards are stateless.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>Thrown if any parameter is <code>null</code>.</p>
+</dd>
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>Thrown if the card factory cannot create a NullCard for initialization.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_Slots_BankSelect_" data-uid="Pandowdy.EmuCore.Slots.BankSelect*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Slots_BankSelect" data-uid="Pandowdy.EmuCore.Slots.BankSelect">
+  BankSelect
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L162"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets the currently active slot for extended ROM at $C800-$CFFF.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public byte BankSelect { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>A value from 0-7 where:</p>
+<ul><li>0 = No slot active (extended ROM disabled)</li><li>1-7 = That slot's extended ROM is active at $C800-$CFFF</li></ul>
+</dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots_BankSelect_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This property implements the Apple IIe's extended ROM bank switching mechanism.
+The hardware allows only one slot's extended ROM to be visible at $C800-$CFFF
+at any given time. The active slot is determined by:
+</p>
+<ol><li>Reading/writing $Cn00-$CnFF sets <a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_BankSelect">BankSelect</a> to slot n</li><li>Reading/writing $CFFF sets <a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_BankSelect">BankSelect</a> to 0 (disabled)</li></ol>
+<p>
+The bank selection state is preserved even when INTCXROM is enabled (which overrides
+extended ROM with system ROM but doesn't clear the selection). This allows the
+previously selected card's extended ROM to reappear when INTCXROM is disabled.
+</p>
+<p>
+<strong>Example:</strong> A Disk II controller in slot 6 has boot ROM at $C600-$C6FF
+and extended driver code at its extended ROM. When the system reads $C600, slot 6's
+extended ROM becomes active at $C800-$CFFF. Reading $CFFF disables extended ROM.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Slots_Item_" data-uid="Pandowdy.EmuCore.Slots.Item*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Slots_Item_System_UInt16_" data-uid="Pandowdy.EmuCore.Slots.Item(System.UInt16)">
+  this[ushort]
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L482"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets a byte at the specified address using array-style indexing.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public byte this[ushort address] { get; set; }</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>address</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The address to access, offset by $C000. For example, to access $C600, use 0x0600.</p>
+</dd>
+  </dl>
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>The byte value at the specified address (reading or writing).</p>
+</dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots_Item_System_UInt16__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Read from $C600
+byte bootByte = slots[0x0600];
+
+// Write to $C0EC (slot 6, I/O offset $0C)
+slots[0x00EC] = 0x00;</code></pre>
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots_Item_System_UInt16__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>This indexer provides convenient array-style access to the slots address space,
+delegating to <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_Read_System_UInt16_">Read(ushort)</a> for gets and <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_Write_System_UInt16_System_Byte_">Write(ushort, byte)</a> for sets.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Slots_Size_" data-uid="Pandowdy.EmuCore.Slots.Size*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Slots_Size" data-uid="Pandowdy.EmuCore.Slots.Size">
+  Size
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L159"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the size of the address space managed by this slots system.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public int Size { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Always returns 0x1000 (4096 bytes), representing the $C000-$CFFF range.</p>
+</dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots_Size_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+Although the value indicates $C000-$CFFF (4KB), the slots system only handles
+$C090-$CFFF (3952 bytes). The range $C000-$C08F contains soft switches and other
+system I/O that's handled elsewhere (typically by <a class="xref" href="Pandowdy.EmuCore.VA2MBus.html">VA2MBus</a>).
+</p>
+<p>
+If <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_Read_System_UInt16_">Read(ushort)</a> or <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_Write_System_UInt16_System_Byte_">Write(ushort, byte)</a> is called with an address in the
+$C000-$C08F range (0x0000-0x008F when offset), an <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a>
+will be thrown.
+</p>
+</div>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_Slots_ApplyMetadata_" data-uid="Pandowdy.EmuCore.Slots.ApplyMetadata*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Slots_ApplyMetadata_System_String_" data-uid="Pandowdy.EmuCore.Slots.ApplyMetadata(System.String)">
+  ApplyMetadata(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L629"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Applies slot configuration from JSON metadata, restoring installed cards and their configurations.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool ApplyMetadata(string metadata)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>metadata</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A JSON metadata string previously obtained from <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_GetMetadata">GetMetadata()</a>, or an empty
+string to clear all slots.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><code>true</code> if the configuration was successfully applied; <code>false</code> if the metadata
+was invalid or any card failed to apply its configuration.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots_ApplyMetadata_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Save current configuration
+string backup = slots.GetMetadata();
+
+// Load a different configuration
+if (!slots.ApplyMetadata(savedConfiguration))
+{
+    // Restore backup on failure
+    slots.ApplyMetadata(backup);
+}
+
+// Clear all slots
+slots.ApplyMetadata(string.Empty);</code></pre>
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots_ApplyMetadata_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method restores the slot configuration from metadata by:
+</p>
+<ol><li>Clearing all slots (removing all cards)</li><li>Parsing the JSON metadata</li><li>Installing each card by ID in its designated slot</li><li>Recursively applying each card's embedded metadata</li><li>Restoring the <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a> state</li></ol>
+<p>
+<strong>Empty String Handling:</strong><br>
+Passing an empty or whitespace-only string clears all slots, leaving the system
+with empty slots (all <a class="xref" href="Pandowdy.EmuCore.NullCard.html">NullCard</a> instances). This represents the
+default/unconfigured state.
+</p>
+<p>
+<strong>Error Handling:</strong><br>
+If any card fails to install or configure, this method returns <code>false</code>. The
+slot system may be left in a partial state where some cards are installed and
+others are not. For transactional behavior, callers should capture the current
+metadata before applying new metadata to enable rollback.
+</p>
+<p>
+<strong>Card Factory Dependency:</strong><br>
+This method relies on <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithId_System_Int32_">GetCardWithId(int)</a> to create card
+instances. If a card ID in the metadata is not registered in the factory, that
+slot will remain empty and the method will return <code>false</code>.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Slots_GetCardIn_" data-uid="Pandowdy.EmuCore.Slots.GetCardIn*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Slots_GetCardIn_Pandowdy_EmuCore_Interfaces_SlotNumber_" data-uid="Pandowdy.EmuCore.Slots.GetCardIn(Pandowdy.EmuCore.Interfaces.SlotNumber)">
+  GetCardIn(SlotNumber)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L183"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Retrieves the card currently installed in the specified slot.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ICard GetCardIn(SlotNumber slot)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>slot</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.SlotNumber.html">SlotNumber</a></dt>
+    <dd><p>The slot number (1-7) to query.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html">ICard</a></dt>
+    <dd><p>The <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html">ICard</a> instance installed in the slot. Returns a <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetNullCard">GetNullCard()</a>
+instance if the slot is empty.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots_GetCardIn_Pandowdy_EmuCore_Interfaces_SlotNumber__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method provides direct access to the card instance for inspection, debugging,
+or advanced operations. Normal emulator operation doesn't require calling this method
+since <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">Read(ushort)</a> and <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">Write(ushort, byte)</a> automatically route
+to the appropriate card based on address.
+</p>
+<p>
+<strong>Usage Examples:</strong>
+<pre><code class="lang-csharp">// Check what's installed in slot 6
+ICard card = slots.GetCardIn(SlotNumber.Slot6);
+Console.WriteLine($"Slot 6: {card.Name}");
+
+// Verify a slot is empty
+if (slots.GetCardIn(SlotNumber.Slot3).Id == 0) // NullCard.Id == 0
+{
+    Console.WriteLine("Slot 3 is empty");
+}</code></pre>
+
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Slots_GetMetadata_" data-uid="Pandowdy.EmuCore.Slots.GetMetadata*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Slots_GetMetadata" data-uid="Pandowdy.EmuCore.Slots.GetMetadata">
+  GetMetadata()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L534"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the current slot configuration as JSON metadata.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string GetMetadata()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A JSON string containing the configuration of all installed cards and their metadata,
+or an empty string if serialization fails.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots_GetMetadata_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method captures the current state of all expansion slots, including which cards
+are installed and their individual configurations. The metadata uses JSON format with
+the following structure:
+</p>
+<pre><code class="lang-csharp">{
+  "version": 1,
+  "bankSelect": 6,
+  "slots": [
+    {
+      "slotNumber": 6,
+      "cardId": 1,
+      "cardName": "Disk II Controller",
+      "metadata": "{...card-specific configuration...}"
+    }
+  ]
+}</code></pre>
+<p>
+<strong>Hierarchical Configuration:</strong><br>
+The slots system uses the inclusive approach to hierarchical configuration. Each
+installed card's metadata (obtained via <a class="xref" href="Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_GetMetadata">GetMetadata()</a>) is embedded
+within the slot configuration. This keeps the entire peripheral configuration
+self-contained and portable.
+</p>
+<p>
+<strong>Empty Slots:</strong><br>
+Empty slots (containing <a class="xref" href="Pandowdy.EmuCore.NullCard.html">NullCard</a>) are omitted from the metadata to
+keep it concise. On restoration, any slot not mentioned in the metadata is left empty.
+</p>
+<p>
+<strong>BankSelect State:</strong><br>
+The current <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a> value is included in the metadata. While not
+strictly necessary for configuration (it's runtime state), including it allows for
+precise state restoration during debugging or save states.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Slots_InstallCard_" data-uid="Pandowdy.EmuCore.Slots.InstallCard*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Slots_InstallCard_System_Int32_Pandowdy_EmuCore_Interfaces_SlotNumber_" data-uid="Pandowdy.EmuCore.Slots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)">
+  InstallCard(int, SlotNumber)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L165"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Installs a peripheral card in the specified slot using its numeric card ID.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void InstallCard(int id, SlotNumber slot)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>id</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The unique numeric identifier of the card type to install (see <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Id">Id</a>).</p>
+</dd>
+    <dt><code>slot</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.SlotNumber.html">SlotNumber</a></dt>
+    <dd><p>The slot number (1-7) where the card should be installed.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots_InstallCard_System_Int32_Pandowdy_EmuCore_Interfaces_SlotNumber__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method uses the <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICardFactory.html">ICardFactory</a> to create a new instance of the
+specified card type via <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithId_System_Int32_">GetCardWithId(int)</a>. The card is
+cloned from a registered prototype, ensuring each slot gets an independent instance.
+</p>
+<p>
+If a card is already installed in the specified slot, it is replaced by the new card.
+No state from the previous card is preserved.
+</p>
+<p>
+Common card IDs:
+<ul><li>0 = NullCard (empty slot)</li><li>1 = Disk II Controller</li><li>2 = Super Serial Card</li></ul>
+
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>Thrown if the card factory cannot create a card with the specified ID.</p>
+</dd>
+  </dl>
+
+  <dl class="typelist seealso">
+    <dt>See Also</dt>
+    <dd>
+    <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_String_Pandowdy_EmuCore_Interfaces_SlotNumber_">InstallCard</a>(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="Pandowdy.EmuCore.Interfaces.SlotNumber.html">SlotNumber</a>)</div>
+    <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_RemoveCard_Pandowdy_EmuCore_Interfaces_SlotNumber_">RemoveCard</a>(<a class="xref" href="Pandowdy.EmuCore.Interfaces.SlotNumber.html">SlotNumber</a>)</div>
+    </dd>
+  </dl>
+
+
+  <a id="Pandowdy_EmuCore_Slots_InstallCard_" data-uid="Pandowdy.EmuCore.Slots.InstallCard*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Slots_InstallCard_System_String_Pandowdy_EmuCore_Interfaces_SlotNumber_" data-uid="Pandowdy.EmuCore.Slots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)">
+  InstallCard(string, SlotNumber)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L171"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Installs a peripheral card in the specified slot using its human-readable name.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void InstallCard(string name, SlotNumber slot)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>name</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The name of the card type to install (see <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Name">Name</a>).</p>
+</dd>
+    <dt><code>slot</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.SlotNumber.html">SlotNumber</a></dt>
+    <dd><p>The slot number (1-7) where the card should be installed.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots_InstallCard_System_String_Pandowdy_EmuCore_Interfaces_SlotNumber__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method provides a more user-friendly alternative to <a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_Int32_Pandowdy_EmuCore_Interfaces_SlotNumber_">InstallCard(int, SlotNumber)</a>
+by accepting the card's display name instead of its numeric ID. The card name must exactly
+match the value returned by <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Name">Name</a> (case-sensitive).
+</p>
+<p>
+Example usage:
+<pre><code class="lang-csharp">slots.InstallCard("Disk II Controller", SlotNumber.Slot6);
+slots.InstallCard("Super Serial Card", SlotNumber.Slot2);</code></pre>
+
+<p>
+If a card is already installed in the specified slot, it is replaced by the new card.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>Thrown if the card factory cannot create a card with the specified name.</p>
+</dd>
+  </dl>
+
+  <dl class="typelist seealso">
+    <dt>See Also</dt>
+    <dd>
+    <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_Int32_Pandowdy_EmuCore_Interfaces_SlotNumber_">InstallCard</a>(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>, <a class="xref" href="Pandowdy.EmuCore.Interfaces.SlotNumber.html">SlotNumber</a>)</div>
+    <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_RemoveCard_Pandowdy_EmuCore_Interfaces_SlotNumber_">RemoveCard</a>(<a class="xref" href="Pandowdy.EmuCore.Interfaces.SlotNumber.html">SlotNumber</a>)</div>
+    </dd>
+  </dl>
+
+
+  <a id="Pandowdy_EmuCore_Slots_IsEmpty_" data-uid="Pandowdy.EmuCore.Slots.IsEmpty*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Slots_IsEmpty_Pandowdy_EmuCore_Interfaces_SlotNumber_" data-uid="Pandowdy.EmuCore.Slots.IsEmpty(Pandowdy.EmuCore.Interfaces.SlotNumber)">
+  IsEmpty(SlotNumber)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L189"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Determines whether the specified slot is empty (contains a NullCard).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsEmpty(SlotNumber slot)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>slot</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.SlotNumber.html">SlotNumber</a></dt>
+    <dd><p>The slot number (1-7) to check.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><code>true</code> if the slot contains a <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetNullCard">GetNullCard()</a> (empty slot);
+<code>false</code> if the slot contains an actual peripheral card.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots_IsEmpty_Pandowdy_EmuCore_Interfaces_SlotNumber__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This is a convenience method that checks whether the card in the specified slot
+has an <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Id">Id</a> of 0 (the NullCard identifier). It provides a more
+readable alternative to manually checking the card ID.
+</p>
+<p>
+<strong>Usage Examples:</strong>
+<pre><code class="lang-csharp">// Clear alternative to checking card ID
+if (slots.IsEmpty(SlotNumber.Slot6))
+{
+    slots.InstallCard("Disk II Controller", SlotNumber.Slot6);
+}
+
+// List all installed cards
+for (int i = 1; i &lt;= 7; i++)
+{
+    var slot = (SlotNumber)(i - 1);
+    if (!slots.IsEmpty(slot))
+    {
+        Console.WriteLine($"Slot {i}: {slots.GetCardIn(slot).Name}");
+    }
+}</code></pre>
+
+<p>
+This method is equivalent to:
+<pre><code class="lang-csharp">bool IsEmpty(SlotNumber slot) =&gt; GetCardIn(slot).Id == 0;</code></pre>
+
+</div>
+
+
+  <dl class="typelist seealso">
+    <dt>See Also</dt>
+    <dd>
+    <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_GetCardIn_Pandowdy_EmuCore_Interfaces_SlotNumber_">GetCardIn</a>(<a class="xref" href="Pandowdy.EmuCore.Interfaces.SlotNumber.html">SlotNumber</a>)</div>
+    <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_RemoveCard_Pandowdy_EmuCore_Interfaces_SlotNumber_">RemoveCard</a>(<a class="xref" href="Pandowdy.EmuCore.Interfaces.SlotNumber.html">SlotNumber</a>)</div>
+    </dd>
+  </dl>
+
+
+  <a id="Pandowdy_EmuCore_Slots_Read_" data-uid="Pandowdy.EmuCore.Slots.Read*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Slots_Read_System_UInt16_" data-uid="Pandowdy.EmuCore.Slots.Read(System.UInt16)">
+  Read(ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L240"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a byte from the slots address space ($C090-$CFFF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public byte Read(ushort address)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>address</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The address to read, offset by $C000. For example, to read from $C600, pass 0x0600.
+Valid range: 0x0090-0x0FFF.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>The byte value from the responding device (card, system ROM, or floating bus).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots_Read_System_UInt16__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Address Decoding Logic:</strong>
+</p>
+<p>
+<strong>$C090-$C0FF (Card I/O Space):</strong><br>
+If INTCXROM is enabled, returns system ROM. Otherwise, extracts slot number from
+address bits 4-6 and calls the card's <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_ReadIO_System_Byte_">ReadIO(byte)</a>. Returns floating
+bus if card returns <code>null</code>. This range never modifies <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a>.
+</p>
+<p>
+<strong>$C100-$C7FF (Card ROM Space):</strong><br>
+If INTCXROM is enabled, returns system ROM. Otherwise, checks SLOTCXROM (or SLOTC3ROM
+for slot 3) to determine card vs. system ROM. If using card ROM, sets <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a>
+to the slot number and calls <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_ReadRom_System_Byte_">ReadRom(byte)</a>. Returns floating bus if
+card returns <code>null</code>, or system ROM if soft switches indicate system ROM.
+</p>
+<p>
+<strong>$C800-$CFFF (Extended ROM Space):</strong><br>
+If INTCXROM is enabled, returns system ROM. Otherwise, checks <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a>
+to determine which card's extended ROM is active. If <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a> is non-zero,
+calls that card's <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_ReadExtendedRom_System_UInt16_">ReadExtendedRom(ushort)</a>. Returns floating bus if
+<a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a> is 0 or if card returns <code>null</code>.
+</p>
+<p>
+<strong>Special Behavior at $CFFF:</strong><br>
+Reading from $CFFF (0x0FFF) disables extended ROM by setting <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a>
+to 0. The read still returns the byte from the currently active card (if any) before
+being disabled.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>Thrown if the address is outside the valid range ($C090-$CFFF / 0x0090-0x0FFF).</p>
+</dd>
+  </dl>
+
+  <dl class="typelist seealso">
+    <dt>See Also</dt>
+    <dd>
+    <div><a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_Write_System_UInt16_System_Byte_">Write(ushort, byte)</a></div>
+    <div><a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a></div>
+    </dd>
+  </dl>
+
+
+  <a id="Pandowdy_EmuCore_Slots_RemoveCard_" data-uid="Pandowdy.EmuCore.Slots.RemoveCard*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Slots_RemoveCard_Pandowdy_EmuCore_Interfaces_SlotNumber_" data-uid="Pandowdy.EmuCore.Slots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)">
+  RemoveCard(SlotNumber)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L177"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes the card from the specified slot, replacing it with an empty slot (NullCard).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void RemoveCard(SlotNumber slot)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>slot</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.SlotNumber.html">SlotNumber</a></dt>
+    <dd><p>The slot number (1-7) to clear.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots_RemoveCard_Pandowdy_EmuCore_Interfaces_SlotNumber__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method replaces the card in the specified slot with a <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetNullCard">GetNullCard()</a>
+instance. The NullCard returns <code>null</code> for all read operations and no-ops for all writes,
+causing the slot to behave as if it's empty (returning floating bus values for reads).
+</p>
+<p>
+Any state maintained by the removed card is lost. If the removed card was the active
+extended ROM slot (see <a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_BankSelect">BankSelect</a>), the extended ROM remains active
+but will return floating bus values since NullCard returns <code>null</code>.
+</p>
+<p>
+<strong>Note:</strong> This method cannot fail due to the card being "in use" since
+the emulator doesn't maintain references to installed cards outside the slots array.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>Thrown if the card factory cannot create a NullCard replacement.</p>
+</dd>
+  </dl>
+
+  <dl class="typelist seealso">
+    <dt>See Also</dt>
+    <dd>
+    <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_Int32_Pandowdy_EmuCore_Interfaces_SlotNumber_">InstallCard</a>(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>, <a class="xref" href="Pandowdy.EmuCore.Interfaces.SlotNumber.html">SlotNumber</a>)</div>
+    <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_String_Pandowdy_EmuCore_Interfaces_SlotNumber_">InstallCard</a>(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="Pandowdy.EmuCore.Interfaces.SlotNumber.html">SlotNumber</a>)</div>
+    </dd>
+  </dl>
+
+
+  <a id="Pandowdy_EmuCore_Slots_Write_" data-uid="Pandowdy.EmuCore.Slots.Write*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Slots_Write_System_UInt16_System_Byte_" data-uid="Pandowdy.EmuCore.Slots.Write(System.UInt16,System.Byte)">
+  Write(ushort, byte)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L372"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes a byte to the slots address space ($C090-$CFFF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Write(ushort address, byte val)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>address</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The address to write, offset by $C000. For example, to write to $C600, pass 0x0600.
+Valid range: 0x0090-0x0FFF.</p>
+</dd>
+    <dt><code>val</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>The byte value to write.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Slots_Write_System_UInt16_System_Byte__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Address Decoding Logic:</strong>
+</p>
+<p>
+<strong>$C090-$C0FF (Card I/O Space):</strong><br>
+If INTCXROM is enabled, writes to system ROM (usually a no-op). Otherwise, extracts
+slot number from address bits 4-6 and calls the card's <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_WriteIO_System_Byte_System_Byte_">WriteIO(byte, byte)</a>.
+Cards typically use this space for control registers, command triggers, and data output.
+This range never modifies <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a>.
+</p>
+<p>
+<strong>$C100-$C7FF (Card ROM Space):</strong><br>
+If INTCXROM is enabled, writes to system ROM (usually a no-op). Otherwise, checks
+SLOTCXROM (or SLOTC3ROM for slot 3) to determine card vs. system ROM. If using card
+ROM, sets <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a> to the slot number and calls <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_WriteRom_System_Byte_System_Byte_">WriteRom(byte, byte)</a>.
+Most cards treat this as a no-op since ROM is read-only, but some cards may implement
+writeable RAM in this space.
+</p>
+<p>
+<strong>$C800-$CFFF (Extended ROM Space):</strong><br>
+If INTCXROM is enabled, writes to system ROM (usually a no-op). Otherwise, if
+<a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a> is non-zero, calls that card's <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_WriteExtendedRom_System_UInt16_System_Byte_">WriteExtendedRom(ushort, byte)</a>.
+If <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a> is 0, the write is silently ignored (no floating bus effect).
+</p>
+<p>
+<strong>Special Behavior at $CFFF:</strong><br>
+Writing to $CFFF (0x0FFF) disables extended ROM by setting <a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a>
+to 0. The write still reaches the currently active card (if any) before being disabled.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.invalidoperationexception">InvalidOperationException</a></dt>
+    <dd><p>Thrown if the address is outside the valid range ($C090-$CFFF / 0x0090-0x0FFF).</p>
+</dd>
+  </dl>
+
+  <dl class="typelist seealso">
+    <dt>See Also</dt>
+    <dd>
+    <div><a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_Read_System_UInt16_">Read(ushort)</a></div>
+    <div><a class="xref" href="Pandowdy.EmuCore.Slots.html#Pandowdy_EmuCore_Slots_BankSelect">BankSelect</a></div>
+    </dd>
+  </dl>
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Slots.cs/#L59" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

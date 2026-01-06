@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Namespace Pandowdy.EmuCore.Interfaces | Pandowdy Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Namespace Pandowdy.EmuCore.Interfaces | Pandowdy Documentation ">
+      
+      
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="Pandowdy Apple IIe Emulator">
+            Pandowdy Apple IIe Emulator
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Pandowdy.EmuCore.Interfaces">
+
+  <h1 id="Pandowdy_EmuCore_Interfaces" data-uid="Pandowdy.EmuCore.Interfaces" class="text-break">Namespace Pandowdy.EmuCore.Interfaces</h1>
+  <div class="markdown level0 summary"></div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="markdown level0 remarks"></div>
+
+    <h3 id="interfaces">
+Interfaces
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.IAppleIIBus.html">IAppleIIBus</a></dt>
+      <dd><p>Apple II specific bus interface that extends the base IBus with
+keyboard input and pushbutton (game controller) functionality.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html">ICard</a></dt>
+      <dd><p>Represents an Apple II peripheral card that can be installed in expansion slots 1-7.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.ICardFactory.html">ICardFactory</a></dt>
+      <dd><p>Factory for creating instances of peripheral cards from registered prototypes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.ICharacterRomProvider.html">ICharacterRomProvider</a></dt>
+      <dd><p>Provides access to the Apple IIe character ROM for text rendering.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.IConfigurable.html">IConfigurable</a></dt>
+      <dd><p>Represents an object that can persist and restore its configuration state via metadata strings.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.ICpu.html">ICpu</a></dt>
+      <dd><p>Represents a 6502 microprocessor and its associated registers and operations.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html">IDirectMemoryPoolReader</a></dt>
+      <dd><p>Provides direct access to the physical memory pools, bypassing the bus mapping
+and soft switch logic used during normal CPU access.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer.html">IDisplayBitmapRenderer</a></dt>
+      <dd><p>Defines a renderer capable of converting Apple IIe video memory into a displayable bitmap.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.IEmulatorState.html">IEmulatorState</a></dt>
+      <dd><p>Provides access to the emulator's execution state (PC, SP, cycle count, etc.).
+Supports reactive subscriptions and control operations (pause, continue, step).</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.html">IFloatingBusProvider</a></dt>
+      <dd><p>Provides floating bus data for unmapped or undriven memory/I/O reads.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.IFrameGenerator.html">IFrameGenerator</a></dt>
+      <dd><p>Coordinates the generation of video frames from Apple IIe system state.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.IFrameProvider.html">IFrameProvider</a></dt>
+      <dd><p>Provides access to the emulator's frame buffer for rendering with double-buffering support.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.ILanguageCard.html">ILanguageCard</a></dt>
+      <dd></dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.html">IMemoryAccessNotifier</a></dt>
+      <dd><p>Provides memory access notifications for debugging and monitoring purposes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html">ISlots</a></dt>
+      <dd><p>Manages Apple IIe expansion slots and coordinates peripheral card I/O and ROM access.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html">ISoftSwitchResponder</a></dt>
+      <dd><p>Callback interface for components that need to respond to Apple II soft switch state changes.</p>
+</dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISystemRam.html">ISystemRam</a></dt>
+      <dd></dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISystemRamSelector.html">ISystemRamSelector</a></dt>
+      <dd></dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISystemRomProvider.html">ISystemRomProvider</a></dt>
+      <dd></dd>
+    </dl>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.html">ISystemStatusProvider</a></dt>
+      <dd><p>Provides read-only access to the current state of Apple IIe system status and soft switches.</p>
+</dd>
+    </dl>
+    <h3 id="enums">
+Enums
+</h3>
+    <dl class="jumplist">
+      <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.SlotNumber.html">SlotNumber</a></dt>
+      <dd><p>Defines the slot numbers for Apple IIe expansion cards.</p>
+</dd>
+    </dl>
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

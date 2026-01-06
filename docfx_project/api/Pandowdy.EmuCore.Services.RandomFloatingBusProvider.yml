@@ -1,0 +1,627 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Services.RandomFloatingBusProvider
+  commentId: T:Pandowdy.EmuCore.Services.RandomFloatingBusProvider
+  id: RandomFloatingBusProvider
+  parent: Pandowdy.EmuCore.Services
+  children:
+  - Pandowdy.EmuCore.Services.RandomFloatingBusProvider.#ctor
+  - Pandowdy.EmuCore.Services.RandomFloatingBusProvider.#ctor(System.Int32)
+  - Pandowdy.EmuCore.Services.RandomFloatingBusProvider.Read
+  langs:
+  - csharp
+  - vb
+  name: RandomFloatingBusProvider
+  nameWithType: RandomFloatingBusProvider
+  fullName: Pandowdy.EmuCore.Services.RandomFloatingBusProvider
+  type: Class
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/RandomFloatingBusProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: RandomFloatingBusProvider
+    path: ../Pandowdy.EmuCore/Services/RandomFloatingBusProvider.cs
+    startLine: 50
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Floating bus provider that returns random values for each read.
+  remarks: >-
+    <p>
+
+    <strong>Purpose:</strong> Provides a randomized floating bus implementation that simulates
+
+    unpredictable bus noise, useful for testing software robustness and detecting code that
+
+    incorrectly relies on specific floating bus values.
+
+    </p>
+
+    <p>
+
+    <strong>Behavior:</strong> Returns a random byte value (0x00-0xFF) for each read operation,
+
+    simulating the unpredictable nature of reading from unmapped memory addresses where the
+
+    data bus may contain arbitrary values from previous bus activity.
+
+    </p>
+
+    <p>
+
+    <strong>Use Cases:</strong>
+
+    <ul><li>Testing - Verifies software doesn't depend on specific floating bus values</li><li>Debugging - Helps identify uninitialized memory reads or bus conflicts</li><li>Robustness validation - Ensures code handles arbitrary floating bus data</li><li>Copy protection analysis - Some protection schemes test for random vs. deterministic behavior</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Limitations:</strong> This implementation is not accurate to Apple II hardware behavior.
+
+    Real hardware floating bus values are not truly random - they reflect the last value on the
+
+    data bus (often video data during screen refresh). Software that relies on specific floating
+
+    bus patterns (video synchronization, timing loops, some copy protection) will not work correctly.
+
+    For production use, consider <code>LastValueFloatingBus</code> or <code>CycleAccurateFloatingBus</code>.
+
+    </p>
+
+    <p>
+
+    <strong>Randomness:</strong> Uses <xref href="System.Random" data-throw-if-not-resolved="false"></xref> with a time-based seed for
+
+    non-cryptographic randomness. Each instance maintains its own random number generator
+
+    to ensure deterministic behavior within a single emulator session if needed.
+
+    </p>
+
+    <p>
+
+    <strong>Performance:</strong> Slightly slower than <xref href="Pandowdy.EmuCore.Services.NullFloatingBusProvider" data-throw-if-not-resolved="false"></xref> due to
+
+    random number generation overhead, but still negligible compared to other emulation operations.
+
+    The random number generator is instance-scoped to avoid thread-safety issues.
+
+    </p>
+
+    <p>
+
+    <strong>Thread Safety:</strong> Not thread-safe. Each instance should be used by a single thread
+
+    (typically the emulator worker thread). The internal <xref href="System.Random" data-throw-if-not-resolved="false"></xref> instance is not
+
+    synchronized for performance reasons.
+
+    </p>
+  example: []
+  syntax:
+    content: 'public sealed class RandomFloatingBusProvider : IFloatingBusProvider'
+    content.vb: Public NotInheritable Class RandomFloatingBusProvider Implements IFloatingBusProvider
+  inheritance:
+  - System.Object
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IFloatingBusProvider
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.#ctor
+  commentId: M:Pandowdy.EmuCore.Services.RandomFloatingBusProvider.#ctor
+  id: '#ctor'
+  parent: Pandowdy.EmuCore.Services.RandomFloatingBusProvider
+  langs:
+  - csharp
+  - vb
+  name: RandomFloatingBusProvider()
+  nameWithType: RandomFloatingBusProvider.RandomFloatingBusProvider()
+  fullName: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.RandomFloatingBusProvider()
+  type: Constructor
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/RandomFloatingBusProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: .ctor
+    path: ../Pandowdy.EmuCore/Services/RandomFloatingBusProvider.cs
+    startLine: 64
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Initializes a new instance of the <xref href="Pandowdy.EmuCore.Services.RandomFloatingBusProvider" data-throw-if-not-resolved="false"></xref> class.
+  remarks: >-
+    Creates a new random number generator with a time-based seed. Each instance will
+
+    produce a different sequence of values, making each emulator session unique.
+  example: []
+  syntax:
+    content: public RandomFloatingBusProvider()
+    content.vb: Public Sub New()
+  overload: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.#ctor*
+  nameWithType.vb: RandomFloatingBusProvider.New()
+  fullName.vb: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.New()
+  name.vb: New()
+- uid: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.#ctor(System.Int32)
+  commentId: M:Pandowdy.EmuCore.Services.RandomFloatingBusProvider.#ctor(System.Int32)
+  id: '#ctor(System.Int32)'
+  parent: Pandowdy.EmuCore.Services.RandomFloatingBusProvider
+  langs:
+  - csharp
+  - vb
+  name: RandomFloatingBusProvider(int)
+  nameWithType: RandomFloatingBusProvider.RandomFloatingBusProvider(int)
+  fullName: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.RandomFloatingBusProvider(int)
+  type: Constructor
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/RandomFloatingBusProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: .ctor
+    path: ../Pandowdy.EmuCore/Services/RandomFloatingBusProvider.cs
+    startLine: 95
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Initializes a new instance of the <xref href="Pandowdy.EmuCore.Services.RandomFloatingBusProvider" data-throw-if-not-resolved="false"></xref> class with a specific seed.
+  remarks: >-
+    <p>
+
+    Using a specific seed allows for reproducible behavior across multiple runs, which is
+
+    useful for:
+
+    <ul><li>Debugging - Reproduce specific floating bus sequences that trigger bugs</li><li>Testing - Ensure consistent test results across runs</li><li>Save states - Maintain consistent floating bus behavior when loading saved state</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Example:</strong>
+
+
+    <pre><code class="lang-csharp">// Create deterministic floating bus provider for testing
+
+    var floatingBus = new RandomFloatingBusProvider(12345);
+
+
+    // Same seed produces same sequence
+
+    var floatingBus2 = new RandomFloatingBusProvider(12345);
+
+    Assert.Equal(floatingBus.Read(), floatingBus2.Read());</code></pre>
+
+    </p>
+  example: []
+  syntax:
+    content: public RandomFloatingBusProvider(int seed)
+    parameters:
+    - id: seed
+      type: System.Int32
+      description: Seed value for the random number generator.
+    content.vb: Public Sub New(seed As Integer)
+  overload: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.#ctor*
+  nameWithType.vb: RandomFloatingBusProvider.New(Integer)
+  fullName.vb: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.New(Integer)
+  name.vb: New(Integer)
+- uid: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.Read
+  commentId: M:Pandowdy.EmuCore.Services.RandomFloatingBusProvider.Read
+  id: Read
+  parent: Pandowdy.EmuCore.Services.RandomFloatingBusProvider
+  langs:
+  - csharp
+  - vb
+  name: Read()
+  nameWithType: RandomFloatingBusProvider.Read()
+  fullName: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.Read()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/RandomFloatingBusProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Read
+    path: ../Pandowdy.EmuCore/Services/RandomFloatingBusProvider.cs
+    startLine: 118
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Reads the floating bus value (returns a random byte).
+  remarks: >-
+    <p>
+
+    Each call returns a new random value. This simulates the unpredictable nature of
+
+    reading from unmapped memory where the data bus contains arbitrary values.
+
+    </p>
+
+    <p>
+
+    <strong>Distribution:</strong> Uses uniform distribution across the full byte range
+
+    (0-255). All values have equal probability.
+
+    </p>
+
+    <p>
+
+    <strong>Performance:</strong> Generates a random integer and masks to byte range.
+
+    Typical execution time is ~10-20ns on modern processors.
+
+    </p>
+  example: []
+  syntax:
+    content: public byte Read()
+    return:
+      type: System.Byte
+      description: A random byte value between 0x00 and 0xFF.
+    content.vb: Public Function Read() As Byte
+  overload: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.Read*
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.Read
+references:
+- uid: System.Random
+  commentId: T:System.Random
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.random
+  name: Random
+  nameWithType: Random
+  fullName: System.Random
+- uid: Pandowdy.EmuCore.Services.NullFloatingBusProvider
+  commentId: T:Pandowdy.EmuCore.Services.NullFloatingBusProvider
+  href: Pandowdy.EmuCore.Services.NullFloatingBusProvider.html
+  name: NullFloatingBusProvider
+  nameWithType: NullFloatingBusProvider
+  fullName: Pandowdy.EmuCore.Services.NullFloatingBusProvider
+- uid: Pandowdy.EmuCore.Services
+  commentId: N:Pandowdy.EmuCore.Services
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Services
+  nameWithType: Pandowdy.EmuCore.Services
+  fullName: Pandowdy.EmuCore.Services
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Services
+    name: Services
+    href: Pandowdy.EmuCore.Services.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Services
+    name: Services
+    href: Pandowdy.EmuCore.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider
+  commentId: T:Pandowdy.EmuCore.Interfaces.IFloatingBusProvider
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.html
+  name: IFloatingBusProvider
+  nameWithType: IFloatingBusProvider
+  fullName: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.Services.RandomFloatingBusProvider
+  commentId: T:Pandowdy.EmuCore.Services.RandomFloatingBusProvider
+  href: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.html
+  name: RandomFloatingBusProvider
+  nameWithType: RandomFloatingBusProvider
+  fullName: Pandowdy.EmuCore.Services.RandomFloatingBusProvider
+- uid: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.#ctor*
+  commentId: Overload:Pandowdy.EmuCore.Services.RandomFloatingBusProvider.#ctor
+  href: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.html#Pandowdy_EmuCore_Services_RandomFloatingBusProvider__ctor
+  name: RandomFloatingBusProvider
+  nameWithType: RandomFloatingBusProvider.RandomFloatingBusProvider
+  fullName: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.RandomFloatingBusProvider
+  nameWithType.vb: RandomFloatingBusProvider.New
+  fullName.vb: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.Read*
+  commentId: Overload:Pandowdy.EmuCore.Services.RandomFloatingBusProvider.Read
+  href: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.html#Pandowdy_EmuCore_Services_RandomFloatingBusProvider_Read
+  name: Read
+  nameWithType: RandomFloatingBusProvider.Read
+  fullName: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.Read
+- uid: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.Read
+  commentId: M:Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.Read
+  parent: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider
+  href: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.html#Pandowdy_EmuCore_Interfaces_IFloatingBusProvider_Read
+  name: Read()
+  nameWithType: IFloatingBusProvider.Read()
+  fullName: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.Read()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.Read
+    name: Read
+    href: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.html#Pandowdy_EmuCore_Interfaces_IFloatingBusProvider_Read
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.Read
+    name: Read
+    href: Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.html#Pandowdy_EmuCore_Interfaces_IFloatingBusProvider_Read
+  - name: (
+  - name: )
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte

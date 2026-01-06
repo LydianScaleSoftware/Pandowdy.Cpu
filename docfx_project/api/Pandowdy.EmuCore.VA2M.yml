@@ -1,0 +1,1592 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.VA2M
+  commentId: T:Pandowdy.EmuCore.VA2M
+  id: VA2M
+  parent: Pandowdy.EmuCore
+  children:
+  - Pandowdy.EmuCore.VA2M.#ctor(Pandowdy.EmuCore.Interfaces.IEmulatorState,Pandowdy.EmuCore.Interfaces.IFrameProvider,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider,Pandowdy.EmuCore.Interfaces.IAppleIIBus,Pandowdy.EmuCore.MemoryPool,Pandowdy.EmuCore.Interfaces.IFrameGenerator)
+  - Pandowdy.EmuCore.VA2M.Bus
+  - Pandowdy.EmuCore.VA2M.Clock
+  - Pandowdy.EmuCore.VA2M.Dispose
+  - Pandowdy.EmuCore.VA2M.GenerateStatusData
+  - Pandowdy.EmuCore.VA2M.InjectKey(System.Byte)
+  - Pandowdy.EmuCore.VA2M.MemoryPool
+  - Pandowdy.EmuCore.VA2M.Reset
+  - Pandowdy.EmuCore.VA2M.RunAsync(System.Threading.CancellationToken,System.Double)
+  - Pandowdy.EmuCore.VA2M.SetPushButton(System.Byte,System.Boolean)
+  - Pandowdy.EmuCore.VA2M.SystemClock
+  - Pandowdy.EmuCore.VA2M.TargetHz
+  - Pandowdy.EmuCore.VA2M.ThrottleEnabled
+  - Pandowdy.EmuCore.VA2M.UserReset
+  langs:
+  - csharp
+  - vb
+  name: VA2M
+  nameWithType: VA2M
+  fullName: Pandowdy.EmuCore.VA2M
+  type: Class
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: VA2M
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 107
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Main Apple IIe emulator orchestrator coordinating CPU, bus, memory, and timing.
+  remarks: >-
+    <p>
+
+    <strong>⚠️ PLANNED FOR REFACTORING:</strong> This class will be refactored to separate
+
+    concerns (timing, input, state publishing) into dedicated services. See
+
+    Pandowdy.EmuCore/_docs_/VA2MBus-Refactoring-Notes.md for planned architecture.
+
+    </p>
+
+    <p>
+
+    <strong>Name Origin:</strong> "VA2M" = "Virtual Apple II Machinator" - the machine
+
+    orchestrator that brings together all emulator subsystems.
+
+    </p>
+
+    <p>
+
+    <strong>Threading Model:</strong>
+
+    <ul><li><strong>Emulator Thread:</strong> Single-threaded CPU execution (Clock/RunAsync loop)</li><li><strong>External Threads:</strong> UI/input threads enqueue commands via InjectKey(), etc.</li><li><strong>Flash Timer:</strong> Separate timer thread toggles cursor at ~2.1 Hz</li><li><strong>Synchronization:</strong> Commands processed at frame boundaries (thread-safe)</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Execution Modes:</strong>
+
+    <ul><li><strong>Clock():</strong> Single-cycle execution, useful for debugging/stepping</li><li><strong>RunAsync():</strong> Continuous batched execution, normal operation mode</li></ul>
+
+    </p>
+  example: []
+  syntax:
+    content: 'public class VA2M : IDisposable'
+    content.vb: Public Class VA2M Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Pandowdy.EmuCore.VA2M.MemoryPool
+  commentId: P:Pandowdy.EmuCore.VA2M.MemoryPool
+  id: MemoryPool
+  parent: Pandowdy.EmuCore.VA2M
+  langs:
+  - csharp
+  - vb
+  name: MemoryPool
+  nameWithType: VA2M.MemoryPool
+  fullName: Pandowdy.EmuCore.VA2M.MemoryPool
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: MemoryPool
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 112
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Gets the memory pool managing the 128KB Apple IIe memory space.
+  example: []
+  syntax:
+    content: public MemoryPool MemoryPool { get; }
+    parameters: []
+    return:
+      type: Pandowdy.EmuCore.MemoryPool
+    content.vb: Public ReadOnly Property MemoryPool As MemoryPool
+  overload: Pandowdy.EmuCore.VA2M.MemoryPool*
+- uid: Pandowdy.EmuCore.VA2M.Bus
+  commentId: P:Pandowdy.EmuCore.VA2M.Bus
+  id: Bus
+  parent: Pandowdy.EmuCore.VA2M
+  langs:
+  - csharp
+  - vb
+  name: Bus
+  nameWithType: VA2M.Bus
+  fullName: Pandowdy.EmuCore.VA2M.Bus
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Bus
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 117
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Gets the system bus coordinating CPU, memory, and I/O access.
+  example: []
+  syntax:
+    content: public IAppleIIBus Bus { get; }
+    parameters: []
+    return:
+      type: Pandowdy.EmuCore.Interfaces.IAppleIIBus
+    content.vb: Public ReadOnly Property Bus As IAppleIIBus
+  overload: Pandowdy.EmuCore.VA2M.Bus*
+- uid: Pandowdy.EmuCore.VA2M.ThrottleEnabled
+  commentId: P:Pandowdy.EmuCore.VA2M.ThrottleEnabled
+  id: ThrottleEnabled
+  parent: Pandowdy.EmuCore.VA2M
+  langs:
+  - csharp
+  - vb
+  name: ThrottleEnabled
+  nameWithType: VA2M.ThrottleEnabled
+  fullName: Pandowdy.EmuCore.VA2M.ThrottleEnabled
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ThrottleEnabled
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 181
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Gets or sets whether throttling is enabled to maintain Apple IIe speed.
+  remarks: >-
+    When true, the emulator runs at ~1.023 MHz (Apple IIe speed).
+
+    When false, runs as fast as possible (useful for loading programs, debugging).
+  example: []
+  syntax:
+    content: public bool ThrottleEnabled { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property ThrottleEnabled As Boolean
+  overload: Pandowdy.EmuCore.VA2M.ThrottleEnabled*
+- uid: Pandowdy.EmuCore.VA2M.TargetHz
+  commentId: P:Pandowdy.EmuCore.VA2M.TargetHz
+  id: TargetHz
+  parent: Pandowdy.EmuCore.VA2M
+  langs:
+  - csharp
+  - vb
+  name: TargetHz
+  nameWithType: VA2M.TargetHz
+  fullName: Pandowdy.EmuCore.VA2M.TargetHz
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: TargetHz
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 226
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Gets or sets the target CPU frequency in Hz.
+  remarks: >-
+    Default is 1,023,000 Hz (1.023 MHz), the Apple IIe's clock speed.
+
+    Can be adjusted for testing or to match different Apple II models.
+  example: []
+  syntax:
+    content: public double TargetHz { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property TargetHz As Double
+  overload: Pandowdy.EmuCore.VA2M.TargetHz*
+- uid: Pandowdy.EmuCore.VA2M.SystemClock
+  commentId: P:Pandowdy.EmuCore.VA2M.SystemClock
+  id: SystemClock
+  parent: Pandowdy.EmuCore.VA2M
+  langs:
+  - csharp
+  - vb
+  name: SystemClock
+  nameWithType: VA2M.SystemClock
+  fullName: Pandowdy.EmuCore.VA2M.SystemClock
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SystemClock
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 231
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Gets the total number of CPU cycles executed since last reset.
+  example: []
+  syntax:
+    content: public ulong SystemClock { get; }
+    parameters: []
+    return:
+      type: System.UInt64
+    content.vb: Public ReadOnly Property SystemClock As ULong
+  overload: Pandowdy.EmuCore.VA2M.SystemClock*
+- uid: Pandowdy.EmuCore.VA2M.#ctor(Pandowdy.EmuCore.Interfaces.IEmulatorState,Pandowdy.EmuCore.Interfaces.IFrameProvider,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider,Pandowdy.EmuCore.Interfaces.IAppleIIBus,Pandowdy.EmuCore.MemoryPool,Pandowdy.EmuCore.Interfaces.IFrameGenerator)
+  commentId: M:Pandowdy.EmuCore.VA2M.#ctor(Pandowdy.EmuCore.Interfaces.IEmulatorState,Pandowdy.EmuCore.Interfaces.IFrameProvider,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider,Pandowdy.EmuCore.Interfaces.IAppleIIBus,Pandowdy.EmuCore.MemoryPool,Pandowdy.EmuCore.Interfaces.IFrameGenerator)
+  id: '#ctor(Pandowdy.EmuCore.Interfaces.IEmulatorState,Pandowdy.EmuCore.Interfaces.IFrameProvider,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider,Pandowdy.EmuCore.Interfaces.IAppleIIBus,Pandowdy.EmuCore.MemoryPool,Pandowdy.EmuCore.Interfaces.IFrameGenerator)'
+  parent: Pandowdy.EmuCore.VA2M
+  langs:
+  - csharp
+  - vb
+  name: VA2M(IEmulatorState, IFrameProvider, ISystemStatusProvider, IAppleIIBus, MemoryPool, IFrameGenerator)
+  nameWithType: VA2M.VA2M(IEmulatorState, IFrameProvider, ISystemStatusProvider, IAppleIIBus, MemoryPool, IFrameGenerator)
+  fullName: Pandowdy.EmuCore.VA2M.VA2M(Pandowdy.EmuCore.Interfaces.IEmulatorState, Pandowdy.EmuCore.Interfaces.IFrameProvider, Pandowdy.EmuCore.Interfaces.ISystemStatusProvider, Pandowdy.EmuCore.Interfaces.IAppleIIBus, Pandowdy.EmuCore.MemoryPool, Pandowdy.EmuCore.Interfaces.IFrameGenerator)
+  type: Constructor
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: .ctor
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 304
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Initializes a new instance of the VA2M emulator.
+  remarks: >-
+    <p>
+
+    <strong>Initialization Sequence:</strong>
+
+    <ol><li>Store dependency references (all required)</li><li>Load embedded Apple IIe ROM from resources</li><li>Subscribe to VBlank event from bus (if VA2MBus)</li><li>Start flash timer for cursor blinking</li></ol>
+
+    </p>
+
+    <p>
+
+    <strong>ROM Loading:</strong> The Apple IIe Enhanced ROM (16KB) is embedded
+
+    as a resource and automatically loaded during construction. This ROM contains
+
+    the Monitor, Applesoft BASIC, and peripheral firmware.
+
+    </p>
+
+    <p>
+
+    <strong>VBlank Event:</strong> If the bus is a VA2MBus, the OnVBlank handler
+
+    is registered to trigger frame rendering and flash state updates at ~60 Hz.
+
+    </p>
+  example: []
+  syntax:
+    content: public VA2M(IEmulatorState stateSink, IFrameProvider frameSink, ISystemStatusProvider statusProvider, IAppleIIBus bus, MemoryPool memoryPool, IFrameGenerator frameGenerator)
+    parameters:
+    - id: stateSink
+      type: Pandowdy.EmuCore.Interfaces.IEmulatorState
+      description: State provider for publishing emulator state snapshots.
+    - id: frameSink
+      type: Pandowdy.EmuCore.Interfaces.IFrameProvider
+      description: Frame provider for publishing rendered video frames.
+    - id: statusProvider
+      type: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+      description: System status provider for soft switch states.
+    - id: bus
+      type: Pandowdy.EmuCore.Interfaces.IAppleIIBus
+      description: System bus coordinating CPU, memory, and I/O.
+    - id: memoryPool
+      type: Pandowdy.EmuCore.MemoryPool
+      description: Memory pool managing 128KB Apple IIe memory.
+    - id: frameGenerator
+      type: Pandowdy.EmuCore.Interfaces.IFrameGenerator
+      description: Frame generator for rendering video output.
+    content.vb: Public Sub New(stateSink As IEmulatorState, frameSink As IFrameProvider, statusProvider As ISystemStatusProvider, bus As IAppleIIBus, memoryPool As MemoryPool, frameGenerator As IFrameGenerator)
+  overload: Pandowdy.EmuCore.VA2M.#ctor*
+  exceptions:
+  - type: System.ArgumentNullException
+    commentId: T:System.ArgumentNullException
+    description: Thrown if any parameter is null.
+  nameWithType.vb: VA2M.New(IEmulatorState, IFrameProvider, ISystemStatusProvider, IAppleIIBus, MemoryPool, IFrameGenerator)
+  fullName.vb: Pandowdy.EmuCore.VA2M.New(Pandowdy.EmuCore.Interfaces.IEmulatorState, Pandowdy.EmuCore.Interfaces.IFrameProvider, Pandowdy.EmuCore.Interfaces.ISystemStatusProvider, Pandowdy.EmuCore.Interfaces.IAppleIIBus, Pandowdy.EmuCore.MemoryPool, Pandowdy.EmuCore.Interfaces.IFrameGenerator)
+  name.vb: New(IEmulatorState, IFrameProvider, ISystemStatusProvider, IAppleIIBus, MemoryPool, IFrameGenerator)
+- uid: Pandowdy.EmuCore.VA2M.Clock
+  commentId: M:Pandowdy.EmuCore.VA2M.Clock
+  id: Clock
+  parent: Pandowdy.EmuCore.VA2M
+  langs:
+  - csharp
+  - vb
+  name: Clock()
+  nameWithType: VA2M.Clock()
+  fullName: Pandowdy.EmuCore.VA2M.Clock()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Clock
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 545
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: >-
+    Advance one system clock (one CPU/bus cycle). If throttling is enabled,
+
+    the call will delay to keep approx TargetHz. Suitable for simple loops.
+  remarks: >-
+    <p>
+
+    <strong>Execution Sequence:</strong>
+
+    <ol><li>Process pending cross-thread commands (ProcessPending)</li><li>Execute one bus clock cycle (CPU + memory + I/O)</li><li>Increment throttle cycle counter</li><li>Apply throttling delay if enabled (ThrottleOneCycle)</li><li>Publish emulator state snapshot</li></ol>
+
+    </p>
+
+    <p>
+
+    <strong>Use Cases:</strong>
+
+    <ul><li>Single-step debugging (execute one instruction at a time)</li><li>Simple synchronous execution loops</li><li>Testing and verification scenarios</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Performance Note:</strong> For continuous operation, use <xref href="Pandowdy.EmuCore.VA2M.RunAsync(System.Threading.CancellationToken%2cSystem.Double)" data-throw-if-not-resolved="false"></xref>
+
+    instead as it batches cycles to reduce per-cycle overhead.
+
+    </p>
+  example: []
+  syntax:
+    content: public void Clock()
+    content.vb: Public Sub Clock()
+  overload: Pandowdy.EmuCore.VA2M.Clock*
+- uid: Pandowdy.EmuCore.VA2M.Reset
+  commentId: M:Pandowdy.EmuCore.VA2M.Reset
+  id: Reset
+  parent: Pandowdy.EmuCore.VA2M
+  langs:
+  - csharp
+  - vb
+  name: Reset()
+  nameWithType: VA2M.Reset()
+  fullName: Pandowdy.EmuCore.VA2M.Reset()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Reset
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 712
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Reset machine and system clock.
+  remarks: >-
+    <p>
+
+    <strong>Full System Reset (Power Cycle):</strong> This method performs a complete
+
+    hardware reset equivalent to powering off and on the Apple IIe.
+
+    </p>
+
+    <p>
+
+    <strong>Operations Performed:</strong>
+
+    <ul><li>Reset CPU registers (PC loaded from $FFFC/$FFFD, SP = $FF)</li><li>Reset all soft switches to power-on state</li><li>Reset memory bank mappings</li><li>Clear keyboard latch</li><li>Reset cycle counter to zero</li><li>Restart throttle stopwatch</li><li>Reset performance measurement counters</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Difference from UserReset:</strong> Reset() is a cold boot that initializes
+
+    everything. <xref href="Pandowdy.EmuCore.VA2M.UserReset" data-throw-if-not-resolved="false"></xref> is a warm reset that preserves memory contents
+
+    and only resets the CPU (Ctrl+Reset behavior).
+
+    </p>
+
+    <p>
+
+    <strong>Thread Safety:</strong> Should be called from the emulator thread.
+
+    For cross-thread reset, enqueue via command queue.
+
+    </p>
+  example: []
+  syntax:
+    content: public void Reset()
+    content.vb: Public Sub Reset()
+  overload: Pandowdy.EmuCore.VA2M.Reset*
+- uid: Pandowdy.EmuCore.VA2M.UserReset
+  commentId: M:Pandowdy.EmuCore.VA2M.UserReset
+  id: UserReset
+  parent: Pandowdy.EmuCore.VA2M
+  langs:
+  - csharp
+  - vb
+  name: UserReset()
+  nameWithType: VA2M.UserReset()
+  fullName: Pandowdy.EmuCore.VA2M.UserReset()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: UserReset
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 772
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Performs a warm reset (Ctrl+Reset) without clearing memory or resetting cycle counters.
+  remarks: >-
+    <p>
+
+    <strong>Warm Reset Behavior:</strong> Simulates pressing Ctrl+Reset on the Apple IIe,
+
+    which resets the CPU but preserves RAM contents and continues timing.
+
+    </p>
+
+    <p>
+
+    <strong>Operations Performed:</strong>
+
+    <ul><li>Reset CPU registers (PC loaded from $FFFC/$FFFD, SP reset)</li><li>Memory contents preserved (RAM, soft switches mostly unchanged)</li><li>Cycle counter continues (not reset)</li><li>Throttle timing continues (not restarted)</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Use Cases:</strong>
+
+    <ul><li>Break out of infinite loop without losing program in memory</li><li>Return to Monitor/BASIC prompt from running program</li><li>Recover from program hang while preserving state</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Difference from Reset:</strong> <xref href="Pandowdy.EmuCore.VA2M.Reset" data-throw-if-not-resolved="false"></xref> is a cold boot (power cycle).
+
+    UserReset() is a warm reset that preserves memory and timing state.
+
+    </p>
+
+    <p>
+
+    <strong>Thread Safety:</strong> This method is thread-safe. It enqueues the reset
+
+    operation which will be executed on the emulator thread at the next instruction boundary
+
+    (via ProcessPending). This ensures the reset doesn't interrupt a CPU instruction in progress,
+
+    maintaining 6502 atomic instruction guarantees.
+
+    </p>
+
+    <p>
+
+    <strong>Implementation Note:</strong> The reset command is enqueued and will be processed
+
+    at the next safe point (instruction boundary) on the emulator thread. This prevents
+
+    race conditions and undefined behavior from resetting the CPU mid-instruction.
+
+    </p>
+  example: []
+  syntax:
+    content: public void UserReset()
+    content.vb: Public Sub UserReset()
+  overload: Pandowdy.EmuCore.VA2M.UserReset*
+- uid: Pandowdy.EmuCore.VA2M.RunAsync(System.Threading.CancellationToken,System.Double)
+  commentId: M:Pandowdy.EmuCore.VA2M.RunAsync(System.Threading.CancellationToken,System.Double)
+  id: RunAsync(System.Threading.CancellationToken,System.Double)
+  parent: Pandowdy.EmuCore.VA2M
+  langs:
+  - csharp
+  - vb
+  name: RunAsync(CancellationToken, double)
+  nameWithType: VA2M.RunAsync(CancellationToken, double)
+  fullName: Pandowdy.EmuCore.VA2M.RunAsync(System.Threading.CancellationToken, double)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: RunAsync
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 834
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: >-
+    Run the emulator asynchronously with batched cycles and time slices.
+
+    Batches cycles per tick (e.g.,1 ms or 60 Hz) to reduce overhead of per-cycle waits.
+
+    When ThrottleEnabled is true, pacing uses the periodic timer to approximate TargetHz.
+
+    When false, runs fast batches without waiting.
+  remarks: >-
+    <p>
+
+    <strong>Throttled Mode (ThrottleEnabled = true):</strong>
+
+    <ul><li>Uses PeriodicTimer to wait for each tick (e.g., 1ms or ~16.67ms for 60 Hz)</li><li>Executes calculated number of cycles per tick (TargetHz / ticksPerSecond)</li><li>Accumulates fractional cycles to prevent drift over time</li><li>Processes pending commands before each batch</li><li>Publishes state after each batch</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Fast Mode (ThrottleEnabled = false):</strong>
+
+    <ul><li>Executes 10,000 cycle batches as fast as possible</li><li>No timer delays (runs full CPU speed)</li><li>Yields with Task.Delay(0) to remain responsive</li><li>Useful for loading programs quickly or testing</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Recommended ticksPerSecond Values:</strong>
+
+    <ul><li><strong>1000:</strong> 1ms time slices, ~1,023 cycles/tick (balanced)</li><li><strong>60:</strong> ~16.67ms slices, ~17,050 cycles/tick (matches VBlank)</li><li><strong>100:</strong> 10ms slices, ~10,230 cycles/tick (less frequent)</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Fractional Cycle Accumulation:</strong> The algorithm tracks fractional
+
+    cycles with a carry variable to prevent cumulative drift. For example, with
+
+    ticksPerSecond=1000, each tick should execute 1023 cycles, but the fractional
+
+    0.0 carry is accumulated so over time the average is exactly 1,023,000 Hz.
+
+    </p>
+
+    <p>
+
+    <strong>Cancellation:</strong> The loop checks the cancellation token after each
+
+    batch and breaks cleanly. OperationCanceledException is caught and handled gracefully.
+
+    </p>
+
+    <p>
+
+    <strong>ConfigureAwait(false):</strong> Used to avoid capturing synchronization
+
+    context, improving performance and preventing potential deadlocks in UI scenarios.
+
+    </p>
+  example: []
+  syntax:
+    content: public Task RunAsync(CancellationToken ct, double ticksPerSecond = 1000)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token to stop the runner.
+    - id: ticksPerSecond
+      type: System.Double
+      description: Time slice frequency. Use 1000 for 1ms slices or 60 for video-frame pacing.
+    return:
+      type: System.Threading.Tasks.Task
+      description: A task that completes when the cancellation token is triggered or the emulator stops.
+    content.vb: Public Function RunAsync(ct As CancellationToken, ticksPerSecond As Double = 1000) As Task
+  overload: Pandowdy.EmuCore.VA2M.RunAsync*
+  exceptions:
+  - type: System.ArgumentOutOfRangeException
+    commentId: T:System.ArgumentOutOfRangeException
+    description: Thrown if <code class="paramref">ticksPerSecond</code> is zero or negative.
+  nameWithType.vb: VA2M.RunAsync(CancellationToken, Double)
+  fullName.vb: Pandowdy.EmuCore.VA2M.RunAsync(System.Threading.CancellationToken, Double)
+  name.vb: RunAsync(CancellationToken, Double)
+- uid: Pandowdy.EmuCore.VA2M.InjectKey(System.Byte)
+  commentId: M:Pandowdy.EmuCore.VA2M.InjectKey(System.Byte)
+  id: InjectKey(System.Byte)
+  parent: Pandowdy.EmuCore.VA2M
+  langs:
+  - csharp
+  - vb
+  name: InjectKey(byte)
+  nameWithType: VA2M.InjectKey(byte)
+  fullName: Pandowdy.EmuCore.VA2M.InjectKey(byte)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: InjectKey
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 1056
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: >-
+    Inject a keyboard value into the machine as if a key was latched at $C000.
+
+    High bit must be set.  Cleared by access of $C010.
+  remarks: >-
+    <p>
+
+    <strong>Apple IIe Keyboard Protocol:</strong> The Apple IIe keyboard latch is a memory-mapped
+
+    register at $C000. When a key is pressed, the ASCII value with bit 7 set appears at this
+
+    address. Reading $C010 (KBDSTRB) clears bit 7, indicating the key has been read.
+
+    </p>
+
+    <p>
+
+    <strong>Thread Safety:</strong> This method is thread-safe. It enqueues the key injection
+
+    command which will be executed on the emulator thread at the next ProcessPending() call.
+
+    This allows UI threads to inject keyboard input without race conditions.
+
+    </p>
+
+    <p>
+
+    <strong>ASCII Codes:</strong>
+
+    <ul><li>0x20-0x7E: Standard printable ASCII characters</li><li>0x0D (13): Return/Enter key</li><li>0x08 (8): Backspace (sometimes)</li><li>0x15 (21): Right arrow (Apple IIe convention)</li><li>0x1B (27): Escape</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Implementation:</strong> The method automatically sets bit 7 (ORs with 0x80)
+
+    to match Apple IIe hardware behavior. The command is enqueued and executed via
+
+    Bus.SetKeyValue() on the emulator thread.
+
+    </p>
+  example: []
+  syntax:
+    content: public void InjectKey(byte ascii)
+    parameters:
+    - id: ascii
+      type: System.Byte
+      description: ASCII character code (0-127). High bit will be set automatically.
+    content.vb: Public Sub InjectKey(ascii As Byte)
+  overload: Pandowdy.EmuCore.VA2M.InjectKey*
+  nameWithType.vb: VA2M.InjectKey(Byte)
+  fullName.vb: Pandowdy.EmuCore.VA2M.InjectKey(Byte)
+  name.vb: InjectKey(Byte)
+- uid: Pandowdy.EmuCore.VA2M.SetPushButton(System.Byte,System.Boolean)
+  commentId: M:Pandowdy.EmuCore.VA2M.SetPushButton(System.Byte,System.Boolean)
+  id: SetPushButton(System.Byte,System.Boolean)
+  parent: Pandowdy.EmuCore.VA2M
+  langs:
+  - csharp
+  - vb
+  name: SetPushButton(byte, bool)
+  nameWithType: VA2M.SetPushButton(byte, bool)
+  fullName: Pandowdy.EmuCore.VA2M.SetPushButton(byte, bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetPushButton
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 1091
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Sets the state of an Apple IIe pushbutton (game controller button).
+  remarks: >-
+    <p>
+
+    <strong>Apple IIe Pushbutton Hardware:</strong> The Apple IIe has three pushbutton
+
+    inputs typically used for game controllers (joysticks/paddles). These are read from
+
+    I/O addresses $C061-$C063.
+
+    </p>
+
+    <p>
+
+    <strong>Button Mapping:</strong>
+
+    <ul><li><strong>Button 0 ($C061):</strong> Typically joystick/paddle button 0</li><li><strong>Button 1 ($C062):</strong> Typically joystick/paddle button 1</li><li><strong>Button 2 ($C063):</strong> Typically joystick/paddle button 2</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Reading Buttons:</strong> Software reads the button state by checking bit 7
+
+    of the corresponding I/O address. If bit 7 is set, the button is pressed.
+
+    </p>
+
+    <p>
+
+    <strong>Thread Safety:</strong> This method is thread-safe. It enqueues the button
+
+    state change which will be executed on the emulator thread at the next ProcessPending() call.
+
+    </p>
+  example: []
+  syntax:
+    content: public void SetPushButton(byte num, bool pressed)
+    parameters:
+    - id: num
+      type: System.Byte
+      description: Button number (0-2). Button 0 is typically button 0, buttons 1-2 are paddle buttons.
+    - id: pressed
+      type: System.Boolean
+      description: True if button is pressed, false if released.
+    content.vb: Public Sub SetPushButton(num As Byte, pressed As Boolean)
+  overload: Pandowdy.EmuCore.VA2M.SetPushButton*
+  nameWithType.vb: VA2M.SetPushButton(Byte, Boolean)
+  fullName.vb: Pandowdy.EmuCore.VA2M.SetPushButton(Byte, Boolean)
+  name.vb: SetPushButton(Byte, Boolean)
+- uid: Pandowdy.EmuCore.VA2M.GenerateStatusData
+  commentId: M:Pandowdy.EmuCore.VA2M.GenerateStatusData
+  id: GenerateStatusData
+  parent: Pandowdy.EmuCore.VA2M
+  langs:
+  - csharp
+  - vb
+  name: GenerateStatusData()
+  nameWithType: VA2M.GenerateStatusData()
+  fullName: Pandowdy.EmuCore.VA2M.GenerateStatusData()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: GenerateStatusData
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 1118
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Enqueues generation of a system status snapshot containing soft switch and button states.
+  remarks: >-
+    <p>
+
+    <strong>Purpose:</strong> Triggers creation of a comprehensive system status snapshot
+
+    that includes all soft switches (memory mapping, video modes, ROM, annunciators)
+
+    and pushbutton states.
+
+    </p>
+
+    <p>
+
+    <strong>Thread Safety:</strong> This method is thread-safe. It enqueues the status
+
+    generation command which will be executed on the emulator thread via <xref href="Pandowdy.EmuCore.VA2M.BuildStatusData" data-throw-if-not-resolved="false"></xref>.
+
+    </p>
+
+    <p>
+
+    <strong>Typical Usage:</strong> Called periodically (e.g., at frame boundaries or on-demand)
+
+    to update UI displays showing soft switch states, debug panels, or system status indicators.
+
+    </p>
+
+    <p>
+
+    <strong>Snapshot Contents:</strong> See <xref href="Pandowdy.EmuCore.VA2M.BuildStatusData" data-throw-if-not-resolved="false"></xref> for details
+
+    on what data is captured in the status snapshot.
+
+    </p>
+  example: []
+  syntax:
+    content: public void GenerateStatusData()
+    content.vb: Public Sub GenerateStatusData()
+  overload: Pandowdy.EmuCore.VA2M.GenerateStatusData*
+- uid: Pandowdy.EmuCore.VA2M.Dispose
+  commentId: M:Pandowdy.EmuCore.VA2M.Dispose
+  id: Dispose
+  parent: Pandowdy.EmuCore.VA2M
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: VA2M.Dispose()
+  fullName: Pandowdy.EmuCore.VA2M.Dispose()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/VA2M.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Dispose
+    path: ../Pandowdy.EmuCore/VA2M.cs
+    startLine: 1246
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Releases all resources used by the VA2M emulator instance.
+  remarks: >-
+    <p>
+
+    <strong>Cleanup Sequence:</strong>
+
+    <ol><li>Stop and dispose flash timer (~2.1 Hz cursor blink timer)</li><li>Clear pending command queue to release enqueued actions</li><li>Dispose bus (includes VBlank event cleanup)</li><li>Suppress finalization (no unmanaged resources)</li></ol>
+
+    </p>
+
+    <p>
+
+    <strong>Thread Safety:</strong> Should be called from the thread that owns the emulator
+
+    instance (typically the UI thread after stopping emulation). Do not call while RunAsync()
+
+    is executing.
+
+    </p>
+
+    <p>
+
+    <strong>MemoryPool Note:</strong> MemoryPool disposal is currently commented out as it
+
+    may be shared across multiple emulator instances or have external ownership. This should
+
+    be revisited if MemoryPool lifetime is clarified.
+
+    </p>
+
+    <p>
+
+    <strong>CPU Note:</strong> The legacy 6502.NET CPU library does not implement IDisposable,
+
+    so no explicit CPU cleanup is needed. The CPU instance is managed by the Bus.
+
+    </p>
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Pandowdy.EmuCore.VA2M.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Pandowdy.EmuCore
+  commentId: N:Pandowdy.EmuCore
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore
+  nameWithType: Pandowdy.EmuCore
+  fullName: Pandowdy.EmuCore
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.VA2M.MemoryPool*
+  commentId: Overload:Pandowdy.EmuCore.VA2M.MemoryPool
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_MemoryPool
+  name: MemoryPool
+  nameWithType: VA2M.MemoryPool
+  fullName: Pandowdy.EmuCore.VA2M.MemoryPool
+- uid: Pandowdy.EmuCore.MemoryPool
+  commentId: T:Pandowdy.EmuCore.MemoryPool
+  parent: Pandowdy.EmuCore
+  href: Pandowdy.EmuCore.MemoryPool.html
+  name: MemoryPool
+  nameWithType: MemoryPool
+  fullName: Pandowdy.EmuCore.MemoryPool
+- uid: Pandowdy.EmuCore.VA2M.Bus*
+  commentId: Overload:Pandowdy.EmuCore.VA2M.Bus
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_Bus
+  name: Bus
+  nameWithType: VA2M.Bus
+  fullName: Pandowdy.EmuCore.VA2M.Bus
+- uid: Pandowdy.EmuCore.Interfaces.IAppleIIBus
+  commentId: T:Pandowdy.EmuCore.Interfaces.IAppleIIBus
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IAppleIIBus.html
+  name: IAppleIIBus
+  nameWithType: IAppleIIBus
+  fullName: Pandowdy.EmuCore.Interfaces.IAppleIIBus
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.VA2M.ThrottleEnabled*
+  commentId: Overload:Pandowdy.EmuCore.VA2M.ThrottleEnabled
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_ThrottleEnabled
+  name: ThrottleEnabled
+  nameWithType: VA2M.ThrottleEnabled
+  fullName: Pandowdy.EmuCore.VA2M.ThrottleEnabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Pandowdy.EmuCore.VA2M.TargetHz*
+  commentId: Overload:Pandowdy.EmuCore.VA2M.TargetHz
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_TargetHz
+  name: TargetHz
+  nameWithType: VA2M.TargetHz
+  fullName: Pandowdy.EmuCore.VA2M.TargetHz
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Pandowdy.EmuCore.VA2M.SystemClock*
+  commentId: Overload:Pandowdy.EmuCore.VA2M.SystemClock
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_SystemClock
+  name: SystemClock
+  nameWithType: VA2M.SystemClock
+  fullName: Pandowdy.EmuCore.VA2M.SystemClock
+- uid: System.UInt64
+  commentId: T:System.UInt64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint64
+  name: ulong
+  nameWithType: ulong
+  fullName: ulong
+  nameWithType.vb: ULong
+  fullName.vb: ULong
+  name.vb: ULong
+- uid: System.ArgumentNullException
+  commentId: T:System.ArgumentNullException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.argumentnullexception
+  name: ArgumentNullException
+  nameWithType: ArgumentNullException
+  fullName: System.ArgumentNullException
+- uid: Pandowdy.EmuCore.VA2M.#ctor*
+  commentId: Overload:Pandowdy.EmuCore.VA2M.#ctor
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M__ctor_Pandowdy_EmuCore_Interfaces_IEmulatorState_Pandowdy_EmuCore_Interfaces_IFrameProvider_Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_Pandowdy_EmuCore_Interfaces_IAppleIIBus_Pandowdy_EmuCore_MemoryPool_Pandowdy_EmuCore_Interfaces_IFrameGenerator_
+  name: VA2M
+  nameWithType: VA2M.VA2M
+  fullName: Pandowdy.EmuCore.VA2M.VA2M
+  nameWithType.vb: VA2M.New
+  fullName.vb: Pandowdy.EmuCore.VA2M.New
+  name.vb: New
+- uid: Pandowdy.EmuCore.Interfaces.IEmulatorState
+  commentId: T:Pandowdy.EmuCore.Interfaces.IEmulatorState
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IEmulatorState.html
+  name: IEmulatorState
+  nameWithType: IEmulatorState
+  fullName: Pandowdy.EmuCore.Interfaces.IEmulatorState
+- uid: Pandowdy.EmuCore.Interfaces.IFrameProvider
+  commentId: T:Pandowdy.EmuCore.Interfaces.IFrameProvider
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html
+  name: IFrameProvider
+  nameWithType: IFrameProvider
+  fullName: Pandowdy.EmuCore.Interfaces.IFrameProvider
+- uid: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.html
+  name: ISystemStatusProvider
+  nameWithType: ISystemStatusProvider
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+- uid: Pandowdy.EmuCore.Interfaces.IFrameGenerator
+  commentId: T:Pandowdy.EmuCore.Interfaces.IFrameGenerator
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IFrameGenerator.html
+  name: IFrameGenerator
+  nameWithType: IFrameGenerator
+  fullName: Pandowdy.EmuCore.Interfaces.IFrameGenerator
+- uid: Pandowdy.EmuCore.VA2M.RunAsync(System.Threading.CancellationToken,System.Double)
+  commentId: M:Pandowdy.EmuCore.VA2M.RunAsync(System.Threading.CancellationToken,System.Double)
+  isExternal: true
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_RunAsync_System_Threading_CancellationToken_System_Double_
+  name: RunAsync(CancellationToken, double)
+  nameWithType: VA2M.RunAsync(CancellationToken, double)
+  fullName: Pandowdy.EmuCore.VA2M.RunAsync(System.Threading.CancellationToken, double)
+  nameWithType.vb: VA2M.RunAsync(CancellationToken, Double)
+  fullName.vb: Pandowdy.EmuCore.VA2M.RunAsync(System.Threading.CancellationToken, Double)
+  name.vb: RunAsync(CancellationToken, Double)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.VA2M.RunAsync(System.Threading.CancellationToken,System.Double)
+    name: RunAsync
+    href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_RunAsync_System_Threading_CancellationToken_System_Double_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.VA2M.RunAsync(System.Threading.CancellationToken,System.Double)
+    name: RunAsync
+    href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_RunAsync_System_Threading_CancellationToken_System_Double_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: )
+- uid: Pandowdy.EmuCore.VA2M.Clock*
+  commentId: Overload:Pandowdy.EmuCore.VA2M.Clock
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_Clock
+  name: Clock
+  nameWithType: VA2M.Clock
+  fullName: Pandowdy.EmuCore.VA2M.Clock
+- uid: Pandowdy.EmuCore.VA2M.UserReset
+  commentId: M:Pandowdy.EmuCore.VA2M.UserReset
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_UserReset
+  name: UserReset()
+  nameWithType: VA2M.UserReset()
+  fullName: Pandowdy.EmuCore.VA2M.UserReset()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.VA2M.UserReset
+    name: UserReset
+    href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_UserReset
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.VA2M.UserReset
+    name: UserReset
+    href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_UserReset
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.VA2M.Reset*
+  commentId: Overload:Pandowdy.EmuCore.VA2M.Reset
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_Reset
+  name: Reset
+  nameWithType: VA2M.Reset
+  fullName: Pandowdy.EmuCore.VA2M.Reset
+- uid: Pandowdy.EmuCore.VA2M.Reset
+  commentId: M:Pandowdy.EmuCore.VA2M.Reset
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_Reset
+  name: Reset()
+  nameWithType: VA2M.Reset()
+  fullName: Pandowdy.EmuCore.VA2M.Reset()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.VA2M.Reset
+    name: Reset
+    href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_Reset
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.VA2M.Reset
+    name: Reset
+    href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_Reset
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.VA2M.UserReset*
+  commentId: Overload:Pandowdy.EmuCore.VA2M.UserReset
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_UserReset
+  name: UserReset
+  nameWithType: VA2M.UserReset
+  fullName: Pandowdy.EmuCore.VA2M.UserReset
+- uid: System.ArgumentOutOfRangeException
+  commentId: T:System.ArgumentOutOfRangeException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception
+  name: ArgumentOutOfRangeException
+  nameWithType: ArgumentOutOfRangeException
+  fullName: System.ArgumentOutOfRangeException
+- uid: Pandowdy.EmuCore.VA2M.RunAsync*
+  commentId: Overload:Pandowdy.EmuCore.VA2M.RunAsync
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_RunAsync_System_Threading_CancellationToken_System_Double_
+  name: RunAsync
+  nameWithType: VA2M.RunAsync
+  fullName: Pandowdy.EmuCore.VA2M.RunAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Pandowdy.EmuCore.VA2M.InjectKey*
+  commentId: Overload:Pandowdy.EmuCore.VA2M.InjectKey
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_InjectKey_System_Byte_
+  name: InjectKey
+  nameWithType: VA2M.InjectKey
+  fullName: Pandowdy.EmuCore.VA2M.InjectKey
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte
+- uid: Pandowdy.EmuCore.VA2M.SetPushButton*
+  commentId: Overload:Pandowdy.EmuCore.VA2M.SetPushButton
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_SetPushButton_System_Byte_System_Boolean_
+  name: SetPushButton
+  nameWithType: VA2M.SetPushButton
+  fullName: Pandowdy.EmuCore.VA2M.SetPushButton
+- uid: Pandowdy.EmuCore.VA2M.BuildStatusData
+  commentId: M:Pandowdy.EmuCore.VA2M.BuildStatusData
+  name: BuildStatusData()
+  nameWithType: VA2M.BuildStatusData()
+  fullName: Pandowdy.EmuCore.VA2M.BuildStatusData()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.VA2M.BuildStatusData
+    name: BuildStatusData
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.VA2M.BuildStatusData
+    name: BuildStatusData
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.VA2M.GenerateStatusData*
+  commentId: Overload:Pandowdy.EmuCore.VA2M.GenerateStatusData
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_GenerateStatusData
+  name: GenerateStatusData
+  nameWithType: VA2M.GenerateStatusData
+  fullName: Pandowdy.EmuCore.VA2M.GenerateStatusData
+- uid: Pandowdy.EmuCore.VA2M.Dispose*
+  commentId: Overload:Pandowdy.EmuCore.VA2M.Dispose
+  href: Pandowdy.EmuCore.VA2M.html#Pandowdy_EmuCore_VA2M_Dispose
+  name: Dispose
+  nameWithType: VA2M.Dispose
+  fullName: Pandowdy.EmuCore.VA2M.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

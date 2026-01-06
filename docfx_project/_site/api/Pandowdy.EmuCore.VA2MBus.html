@@ -1,0 +1,4081 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class VA2MBus | Pandowdy Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class VA2MBus | Pandowdy Documentation ">
+      
+      <meta name="description" content="VA2M-specific system bus that coordinates CPU, memory, and I/O operations for Apple IIe emulation.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/markdavidlong/Pandowdy/new/refactor/apiSpec/new?filename=Pandowdy_EmuCore_VA2MBus.md&amp;value=---%0Auid%3A%20Pandowdy.EmuCore.VA2MBus%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="Pandowdy Apple IIe Emulator">
+            Pandowdy Apple IIe Emulator
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Pandowdy.EmuCore.VA2MBus">
+
+
+
+  <h1 id="Pandowdy_EmuCore_VA2MBus" data-uid="Pandowdy.EmuCore.VA2MBus" class="text-break">
+Class VA2MBus  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L43"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Pandowdy.html">Pandowdy</a>.<a class="xref" href="Pandowdy.EmuCore.html">EmuCore</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Pandowdy.EmuCore.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>VA2M-specific system bus that coordinates CPU, memory, and I/O operations for Apple IIe emulation.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class VA2MBus : IAppleIIBus, IBus, IDisposable</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">VA2MBus</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.IAppleIIBus.html">IAppleIIBus</a></div>
+      <div><span class="xref">IBus</span></div>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+  <h2 id="Pandowdy_EmuCore_VA2MBus_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+<strong>Responsibilities:</strong>
+<ul><li>CPU connection and cycle execution</li><li>Memory read/write routing to MemoryPool</li><li>I/O space address decoding ($C000-$CFFF)</li><li>Soft switch management and coordination</li><li>Language card banking logic</li><li>Keyboard input handling</li><li>Game controller pushbutton management</li><li>VBlank timing and event generation (~60 Hz)</li></ul>
+
+<p>
+<strong>Threading Model:</strong> All public methods (Connect, CpuRead/Write, Clock, Reset)
+must be called ONLY from the emulator worker thread. The VBlank event is raised on the
+emulator thread; UI subscribers MUST marshal to UI thread via dispatcher.
+</p>
+<p>
+<strong>VBlank Timing:</strong> Emits VBlank event every 17,063 cycles (~60 Hz at 1.023 MHz),
+matching the Apple IIe NTSC vertical blanking interval. The VBlank blackout period lasts
+4,550 cycles during which RD_VERTBLANK_ ($C019) reads as $80.
+</p>
+<p>
+<strong>Disposal:</strong> After disposal, no further events are raised and Clock() becomes
+a no-op. Proper disposal prevents event handler leaks and ensures clean shutdown.
+</p>
+<p>
+<strong>⚠️ PLANNED FOR REFACTORING:</strong> See Pandowdy.EmuCore/_docs_/VA2MBus-Refactoring-Notes.md
+for planned separation of concerns (slot bus system, floating bus emulation, etc.).
+</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus__ctor_" data-uid="Pandowdy.EmuCore.VA2MBus.#ctor*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus__ctor_Pandowdy_EmuCore_MemoryPool_Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_Pandowdy_EmuCore_Interfaces_ICpu_" data-uid="Pandowdy.EmuCore.VA2MBus.#ctor(Pandowdy.EmuCore.MemoryPool,Pandowdy.EmuCore.Interfaces.ISystemStatusProvider,Pandowdy.EmuCore.Interfaces.ICpu)">
+  VA2MBus(MemoryPool, ISystemStatusProvider, ICpu)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L489"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the VA2MBus class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public VA2MBus(MemoryPool mempool, ISystemStatusProvider statusProvider, ICpu cpu)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>mempool</code> <a class="xref" href="Pandowdy.EmuCore.MemoryPool.html">MemoryPool</a></dt>
+    <dd><p>Memory pool managing 128KB Apple IIe memory space.</p>
+</dd>
+    <dt><code>statusProvider</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.html">ISystemStatusProvider</a></dt>
+    <dd><p>System status provider implementing ISoftSwitchResponder for status updates.</p>
+</dd>
+    <dt><code>cpu</code> <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICpu.html">ICpu</a></dt>
+    <dd><p>CPU instance (6502 emulator) to connect to this bus.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2MBus__ctor_Pandowdy_EmuCore_MemoryPool_Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_Pandowdy_EmuCore_Interfaces_ICpu__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Initialization Sequence:</strong>
+<ol><li>Store dependency references</li><li>Initialize I/O read handler dictionary (InitIoReadHandlers)</li><li>Initialize I/O write handler dictionary (InitIoWriteHandlers)</li><li>Register MemoryPool as soft switch responder (for memory remapping)</li><li>Register SystemStatusProvider as soft switch responder (for UI updates)</li></ol>
+
+<p>
+<strong>I/O Handler Dictionaries:</strong> The bus maintains two dictionaries mapping I/O
+addresses to handler functions. This provides efficient dispatch and clear organization
+of I/O space behavior.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>Thrown if any parameter is null.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="fields">Fields
+</h2>
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_ALTZP_" data-uid="Pandowdy.EmuCore.VA2MBus.ALTZP_">
+  ALTZP_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L269"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Use auxiliary zero page/stack ($C009 write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort ALTZP_ = 49161</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B1_RD_RAM_NO_WRT_" data-uid="Pandowdy.EmuCore.VA2MBus.B1_RD_RAM_NO_WRT_">
+  B1_RD_RAM_NO_WRT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L409"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 1: Read RAM, no write ($C088).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B1_RD_RAM_NO_WRT_ = 49288</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B1_RD_RAM_NO_WRT_ALT_" data-uid="Pandowdy.EmuCore.VA2MBus.B1_RD_RAM_NO_WRT_ALT_">
+  B1_RD_RAM_NO_WRT_ALT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L411"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 1: Read RAM, no write (alternate) ($C08C).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B1_RD_RAM_NO_WRT_ALT_ = 49292</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B1_RD_RAM_WRT_RAM_" data-uid="Pandowdy.EmuCore.VA2MBus.B1_RD_RAM_WRT_RAM_">
+  B1_RD_RAM_WRT_RAM_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L421"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 1: Read RAM, write RAM ($C08B).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B1_RD_RAM_WRT_RAM_ = 49291</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B1_RD_RAM_WRT_RAM_ALT_" data-uid="Pandowdy.EmuCore.VA2MBus.B1_RD_RAM_WRT_RAM_ALT_">
+  B1_RD_RAM_WRT_RAM_ALT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L423"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 1: Read RAM, write RAM (alternate) ($C08F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B1_RD_RAM_WRT_RAM_ALT_ = 49295</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B1_RD_ROM_NO_WRT_" data-uid="Pandowdy.EmuCore.VA2MBus.B1_RD_ROM_NO_WRT_">
+  B1_RD_ROM_NO_WRT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L417"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 1: Read ROM, no write ($C08A).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B1_RD_ROM_NO_WRT_ = 49290</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B1_RD_ROM_NO_WRT_ALT_" data-uid="Pandowdy.EmuCore.VA2MBus.B1_RD_ROM_NO_WRT_ALT_">
+  B1_RD_ROM_NO_WRT_ALT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L419"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 1: Read ROM, no write (alternate) ($C08E).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B1_RD_ROM_NO_WRT_ALT_ = 49294</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B1_RD_ROM_WRT_RAM_" data-uid="Pandowdy.EmuCore.VA2MBus.B1_RD_ROM_WRT_RAM_">
+  B1_RD_ROM_WRT_RAM_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L413"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 1: Read ROM, write RAM ($C089).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B1_RD_ROM_WRT_RAM_ = 49289</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B1_RD_ROM_WRT_RAM_ALT_" data-uid="Pandowdy.EmuCore.VA2MBus.B1_RD_ROM_WRT_RAM_ALT_">
+  B1_RD_ROM_WRT_RAM_ALT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L415"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 1: Read ROM, write RAM (alternate) ($C08D).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B1_RD_ROM_WRT_RAM_ALT_ = 49293</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B2_RD_RAM_NO_WRT_" data-uid="Pandowdy.EmuCore.VA2MBus.B2_RD_RAM_NO_WRT_">
+  B2_RD_RAM_NO_WRT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L391"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 2: Read RAM, no write ($C080).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B2_RD_RAM_NO_WRT_ = 49280</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B2_RD_RAM_NO_WRT_ALT_" data-uid="Pandowdy.EmuCore.VA2MBus.B2_RD_RAM_NO_WRT_ALT_">
+  B2_RD_RAM_NO_WRT_ALT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L393"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 2: Read RAM, no write (alternate) ($C084).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B2_RD_RAM_NO_WRT_ALT_ = 49284</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B2_RD_RAM_WRT_RAM_" data-uid="Pandowdy.EmuCore.VA2MBus.B2_RD_RAM_WRT_RAM_">
+  B2_RD_RAM_WRT_RAM_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L403"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 2: Read RAM, write RAM ($C083).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B2_RD_RAM_WRT_RAM_ = 49283</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B2_RD_RAM_WRT_RAM_ALT_" data-uid="Pandowdy.EmuCore.VA2MBus.B2_RD_RAM_WRT_RAM_ALT_">
+  B2_RD_RAM_WRT_RAM_ALT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L405"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 2: Read RAM, write RAM (alternate) ($C087).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B2_RD_RAM_WRT_RAM_ALT_ = 49287</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B2_RD_ROM_NO_WRT_" data-uid="Pandowdy.EmuCore.VA2MBus.B2_RD_ROM_NO_WRT_">
+  B2_RD_ROM_NO_WRT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L399"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 2: Read ROM, no write ($C082).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B2_RD_ROM_NO_WRT_ = 49282</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B2_RD_ROM_NO_WRT_ALT_" data-uid="Pandowdy.EmuCore.VA2MBus.B2_RD_ROM_NO_WRT_ALT_">
+  B2_RD_ROM_NO_WRT_ALT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L401"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 2: Read ROM, no write (alternate) ($C086).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B2_RD_ROM_NO_WRT_ALT_ = 49286</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B2_RD_ROM_WRT_RAM_" data-uid="Pandowdy.EmuCore.VA2MBus.B2_RD_ROM_WRT_RAM_">
+  B2_RD_ROM_WRT_RAM_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L395"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 2: Read ROM, write RAM ($C081).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B2_RD_ROM_WRT_RAM_ = 49281</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_B2_RD_ROM_WRT_RAM_ALT_" data-uid="Pandowdy.EmuCore.VA2MBus.B2_RD_ROM_WRT_RAM_ALT_">
+  B2_RD_ROM_WRT_RAM_ALT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L397"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Bank 2: Read ROM, write RAM (alternate) ($C085).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort B2_RD_ROM_WRT_RAM_ALT_ = 49285</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_BUTTON0_" data-uid="Pandowdy.EmuCore.VA2MBus.BUTTON0_">
+  BUTTON0_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L365"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Pushbutton 0 status (read, bit 7 = pressed) ($C061).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort BUTTON0_ = 49249</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_BUTTON1_" data-uid="Pandowdy.EmuCore.VA2MBus.BUTTON1_">
+  BUTTON1_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L367"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Pushbutton 1 status (read, bit 7 = pressed) ($C062).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort BUTTON1_ = 49250</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_BUTTON2_" data-uid="Pandowdy.EmuCore.VA2MBus.BUTTON2_">
+  BUTTON2_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L369"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Pushbutton 2 status (read, bit 7 = pressed) ($C063).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort BUTTON2_ = 49251</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_CLR80STORE_" data-uid="Pandowdy.EmuCore.VA2MBus.CLR80STORE_">
+  CLR80STORE_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L253"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Set 80STORE switch on ($C001 write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort CLR80STORE_ = 49153</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_CLR80VID_" data-uid="Pandowdy.EmuCore.VA2MBus.CLR80VID_">
+  CLR80VID_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L275"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Turn off 80-column display ($C00C write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort CLR80VID_ = 49164</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_CLRALTCHAR_" data-uid="Pandowdy.EmuCore.VA2MBus.CLRALTCHAR_">
+  CLRALTCHAR_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L279"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Use primary character set ($C00E write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort CLRALTCHAR_ = 49166</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_CLRAN0_" data-uid="Pandowdy.EmuCore.VA2MBus.CLRAN0_">
+  CLRAN0_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L346"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clear annunciator 0 (read/write) ($C058).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort CLRAN0_ = 49240</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_CLRAN1_" data-uid="Pandowdy.EmuCore.VA2MBus.CLRAN1_">
+  CLRAN1_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L350"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clear annunciator 1 (read/write) ($C05A).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort CLRAN1_ = 49242</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_CLRAN2_" data-uid="Pandowdy.EmuCore.VA2MBus.CLRAN2_">
+  CLRAN2_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L354"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clear annunciator 2 (read/write) ($C05C).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort CLRAN2_ = 49244</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_CLRAN3_" data-uid="Pandowdy.EmuCore.VA2MBus.CLRAN3_">
+  CLRAN3_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L358"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clear annunciator 3 (read/write) ($C05E).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort CLRAN3_ = 49246</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_CLRHIRES_" data-uid="Pandowdy.EmuCore.VA2MBus.CLRHIRES_">
+  CLRHIRES_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L342"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Select low-res graphics (read/write) ($C056).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort CLRHIRES_ = 49238</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_CLRMIXED_" data-uid="Pandowdy.EmuCore.VA2MBus.CLRMIXED_">
+  CLRMIXED_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L334"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clear MIXED mode (read/write) ($C052).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort CLRMIXED_ = 49234</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_CLRPAGE2_" data-uid="Pandowdy.EmuCore.VA2MBus.CLRPAGE2_">
+  CLRPAGE2_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L338"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Display page 1 (read/write) ($C054).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort CLRPAGE2_ = 49236</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_CLRTXT_" data-uid="Pandowdy.EmuCore.VA2MBus.CLRTXT_">
+  CLRTXT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L330"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Clear TEXT mode (read/write) ($C050).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort CLRTXT_ = 49232</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_END_SPKR_RD_" data-uid="Pandowdy.EmuCore.VA2MBus.END_SPKR_RD_">
+  END_SPKR_RD_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L323"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Speaker toggle (read range end) ($C03F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort END_SPKR_RD_ = 49215</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_END_STROBE_RD_" data-uid="Pandowdy.EmuCore.VA2MBus.END_STROBE_RD_">
+  END_STROBE_RD_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L327"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Game controller strobe (read range end) ($C04F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort END_STROBE_RD_ = 49231</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_END_TAPEOUT_RD_" data-uid="Pandowdy.EmuCore.VA2MBus.END_TAPEOUT_RD_">
+  END_TAPEOUT_RD_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L319"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Cassette tape output (read range end) ($C02F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort END_TAPEOUT_RD_ = 49199</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_INTC3ROM_" data-uid="Pandowdy.EmuCore.VA2MBus.INTC3ROM_">
+  INTC3ROM_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L271"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Use internal slot 3 ROM ($C00A write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort INTC3ROM_ = 49162</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_INTCXROM_" data-uid="Pandowdy.EmuCore.VA2MBus.INTCXROM_">
+  INTCXROM_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L265"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Use internal ROMs ($C007 write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort INTCXROM_ = 49159</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_IOUDISABLE_" data-uid="Pandowdy.EmuCore.VA2MBus.IOUDISABLE_">
+  IOUDISABLE_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L384"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Disable IOU (write) ($C07E).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort IOUDISABLE_ = 49278</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_IOUENABLE_" data-uid="Pandowdy.EmuCore.VA2MBus.IOUENABLE_">
+  IOUENABLE_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L386"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Enable IOU (write) ($C07F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort IOUENABLE_ = 49279</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_IO_AREA_END" data-uid="Pandowdy.EmuCore.VA2MBus.IO_AREA_END">
+  IO_AREA_END
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L242"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>End of Apple IIe I/O address space ($CFFF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort IO_AREA_END = 53247</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_IO_AREA_START" data-uid="Pandowdy.EmuCore.VA2MBus.IO_AREA_START">
+  IO_AREA_START
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L240"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Start of Apple IIe I/O address space ($C000).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort IO_AREA_START = 49152</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_KBD_" data-uid="Pandowdy.EmuCore.VA2MBus.KBD_">
+  KBD_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L249"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Keyboard data register (read: returns last key + high bit if available) ($C000).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort KBD_ = 49152</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_KEYSTRB_" data-uid="Pandowdy.EmuCore.VA2MBus.KEYSTRB_">
+  KEYSTRB_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L284"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Keyboard strobe (read: clears keyboard high bit) ($C010).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort KEYSTRB_ = 49168</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_PADDLE0_" data-uid="Pandowdy.EmuCore.VA2MBus.PADDLE0_">
+  PADDLE0_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L371"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Paddle 0 analog value (read) ($C064).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort PADDLE0_ = 49252</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_PADDLE1_" data-uid="Pandowdy.EmuCore.VA2MBus.PADDLE1_">
+  PADDLE1_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L373"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Paddle 1 analog value (read) ($C065).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort PADDLE1_ = 49253</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_PADDLE2_" data-uid="Pandowdy.EmuCore.VA2MBus.PADDLE2_">
+  PADDLE2_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L375"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Paddle 2 analog value (read) ($C066).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort PADDLE2_ = 49254</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_PADDLE3_" data-uid="Pandowdy.EmuCore.VA2MBus.PADDLE3_">
+  PADDLE3_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L377"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Paddle 3 analog value (read) ($C067).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort PADDLE3_ = 49255</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_PTRIG_" data-uid="Pandowdy.EmuCore.VA2MBus.PTRIG_">
+  PTRIG_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L380"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Paddle timer trigger (read/write) ($C070).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort PTRIG_ = 49264</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RDCARDRAM_" data-uid="Pandowdy.EmuCore.VA2MBus.RDCARDRAM_">
+  RDCARDRAM_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L257"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read from auxiliary (card) RAM ($C003 write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RDCARDRAM_ = 49155</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RDMAINRAM_" data-uid="Pandowdy.EmuCore.VA2MBus.RDMAINRAM_">
+  RDMAINRAM_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L255"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read from main RAM ($C002 write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RDMAINRAM_ = 49154</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_80STORE_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_80STORE_">
+  RD_80STORE_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L300"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read 80STORE status ($C018).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_80STORE_ = 49176</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_80VID_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_80VID_">
+  RD_80VID_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L314"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read 80VID status ($C01F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_80VID_ = 49183</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_ALTCHAR_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_ALTCHAR_">
+  RD_ALTCHAR_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L312"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read ALTCHAR status ($C01E).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_ALTCHAR_ = 49182</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_ALTZP_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_ALTZP_">
+  RD_ALTZP_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L296"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read ALTZP status ($C016).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_ALTZP_ = 49174</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_HIRES_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_HIRES_">
+  RD_HIRES_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L310"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read HIRES status ($C01D).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_HIRES_ = 49181</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_INTCXROM_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_INTCXROM_">
+  RD_INTCXROM_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L294"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read INTCXROM status ($C015).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_INTCXROM_ = 49173</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_IOUDISABLE_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_IOUDISABLE_">
+  RD_IOUDISABLE_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L382"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read IOU disable status ($C07E).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_IOUDISABLE_ = 49278</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_LC_BANK1_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_LC_BANK1_">
+  RD_LC_BANK1_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L286"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read language card bank 1 status ($C011).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_LC_BANK1_ = 49169</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_LC_RAM" data-uid="Pandowdy.EmuCore.VA2MBus.RD_LC_RAM">
+  RD_LC_RAM
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L288"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read language card RAM read status ($C012).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_LC_RAM = 49170</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_MIXED_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_MIXED_">
+  RD_MIXED_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L306"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read MIXED mode status ($C01B).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_MIXED_ = 49179</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_PAGE2_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_PAGE2_">
+  RD_PAGE2_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L308"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read PAGE2 status ($C01C).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_PAGE2_ = 49180</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_RAMRD_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_RAMRD_">
+  RD_RAMRD_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L290"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read RAMRD status ($C013).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_RAMRD_ = 49171</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_RAMWRT_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_RAMWRT_">
+  RD_RAMWRT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L292"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read RAMWRT status ($C014).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_RAMWRT_ = 49172</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_SLOTC3ROM_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_SLOTC3ROM_">
+  RD_SLOTC3ROM_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L298"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read SLOTC3ROM status ($C017).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_SLOTC3ROM_ = 49175</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_TEXT_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_TEXT_">
+  RD_TEXT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L304"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read TEXT mode status ($C01A).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_TEXT_ = 49178</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RD_VERTBLANK_" data-uid="Pandowdy.EmuCore.VA2MBus.RD_VERTBLANK_">
+  RD_VERTBLANK_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L302"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Read vertical blanking status (bit 7 = 1 during VBlank) ($C019).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort RD_VERTBLANK_ = 49177</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SET80STORE_" data-uid="Pandowdy.EmuCore.VA2MBus.SET80STORE_">
+  SET80STORE_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L251"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Set 80STORE switch off ($C000 write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SET80STORE_ = 49152</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SET80VID_" data-uid="Pandowdy.EmuCore.VA2MBus.SET80VID_">
+  SET80VID_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L277"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Turn on 80-column display ($C00D write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SET80VID_ = 49165</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SETALTCHAR_" data-uid="Pandowdy.EmuCore.VA2MBus.SETALTCHAR_">
+  SETALTCHAR_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L281"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Use alternate character set ($C00F write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SETALTCHAR_ = 49167</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SETAN0_" data-uid="Pandowdy.EmuCore.VA2MBus.SETAN0_">
+  SETAN0_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L348"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Set annunciator 0 (read/write) ($C059).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SETAN0_ = 49241</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SETAN1_" data-uid="Pandowdy.EmuCore.VA2MBus.SETAN1_">
+  SETAN1_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L352"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Set annunciator 1 (read/write) ($C05B).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SETAN1_ = 49243</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SETAN2_" data-uid="Pandowdy.EmuCore.VA2MBus.SETAN2_">
+  SETAN2_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L356"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Set annunciator 2 (read/write) ($C05D).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SETAN2_ = 49245</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SETAN3_" data-uid="Pandowdy.EmuCore.VA2MBus.SETAN3_">
+  SETAN3_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L360"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Set annunciator 3 (read/write) ($C05F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SETAN3_ = 49247</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SETHIRES_" data-uid="Pandowdy.EmuCore.VA2MBus.SETHIRES_">
+  SETHIRES_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L344"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Select hi-res graphics (read/write) ($C057).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SETHIRES_ = 49239</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SETMIXED_" data-uid="Pandowdy.EmuCore.VA2MBus.SETMIXED_">
+  SETMIXED_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L336"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Set MIXED mode (read/write) ($C053).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SETMIXED_ = 49235</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SETPAGE2_" data-uid="Pandowdy.EmuCore.VA2MBus.SETPAGE2_">
+  SETPAGE2_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L340"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Display page 2 (read/write) ($C055).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SETPAGE2_ = 49237</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SETTXT_" data-uid="Pandowdy.EmuCore.VA2MBus.SETTXT_">
+  SETTXT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L332"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Set TEXT mode (read/write) ($C051).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SETTXT_ = 49233</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOT1_IO_SPACE" data-uid="Pandowdy.EmuCore.VA2MBus.SLOT1_IO_SPACE">
+  SLOT1_IO_SPACE
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L427"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Slot 1 I/O space start ($C090).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOT1_IO_SPACE = 49296</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOT1_IO_SPACE_END" data-uid="Pandowdy.EmuCore.VA2MBus.SLOT1_IO_SPACE_END">
+  SLOT1_IO_SPACE_END
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L429"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Slot 1 I/O space end ($C09F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOT1_IO_SPACE_END = 49311</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOT2_IO_SPACE" data-uid="Pandowdy.EmuCore.VA2MBus.SLOT2_IO_SPACE">
+  SLOT2_IO_SPACE
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L431"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Slot 2 I/O space start ($C0A0).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOT2_IO_SPACE = 49312</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOT2_IO_SPACE_END" data-uid="Pandowdy.EmuCore.VA2MBus.SLOT2_IO_SPACE_END">
+  SLOT2_IO_SPACE_END
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L433"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Slot 2 I/O space end ($C0AF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOT2_IO_SPACE_END = 49327</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOT3_IO_SPACE" data-uid="Pandowdy.EmuCore.VA2MBus.SLOT3_IO_SPACE">
+  SLOT3_IO_SPACE
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L435"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Slot 3 I/O space start ($C0B0).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOT3_IO_SPACE = 49328</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOT3_IO_SPACE_END" data-uid="Pandowdy.EmuCore.VA2MBus.SLOT3_IO_SPACE_END">
+  SLOT3_IO_SPACE_END
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L437"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Slot 3 I/O space end ($C0BF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOT3_IO_SPACE_END = 49343</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOT4_IO_SPACE" data-uid="Pandowdy.EmuCore.VA2MBus.SLOT4_IO_SPACE">
+  SLOT4_IO_SPACE
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L439"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Slot 4 I/O space start ($C0C0).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOT4_IO_SPACE = 49344</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOT4_IO_SPACE_END" data-uid="Pandowdy.EmuCore.VA2MBus.SLOT4_IO_SPACE_END">
+  SLOT4_IO_SPACE_END
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L441"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Slot 4 I/O space end ($C0CF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOT4_IO_SPACE_END = 49359</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOT5_IO_SPACE" data-uid="Pandowdy.EmuCore.VA2MBus.SLOT5_IO_SPACE">
+  SLOT5_IO_SPACE
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L443"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Slot 5 I/O space start ($C0D0).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOT5_IO_SPACE = 49360</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOT5_IO_SPACE_END" data-uid="Pandowdy.EmuCore.VA2MBus.SLOT5_IO_SPACE_END">
+  SLOT5_IO_SPACE_END
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L445"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Slot 5 I/O space end ($C0DF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOT5_IO_SPACE_END = 49375</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOT6_IO_SPACE" data-uid="Pandowdy.EmuCore.VA2MBus.SLOT6_IO_SPACE">
+  SLOT6_IO_SPACE
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L447"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Slot 6 I/O space start ($C0E0).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOT6_IO_SPACE = 49376</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOT6_IO_SPACE_END" data-uid="Pandowdy.EmuCore.VA2MBus.SLOT6_IO_SPACE_END">
+  SLOT6_IO_SPACE_END
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L449"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Slot 6 I/O space end ($C0EF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOT6_IO_SPACE_END = 49391</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOT7_IO_SPACE" data-uid="Pandowdy.EmuCore.VA2MBus.SLOT7_IO_SPACE">
+  SLOT7_IO_SPACE
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L451"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Slot 7 I/O space start ($C0F0).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOT7_IO_SPACE = 49392</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOT7_IO_SPACE_END" data-uid="Pandowdy.EmuCore.VA2MBus.SLOT7_IO_SPACE_END">
+  SLOT7_IO_SPACE_END
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L453"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Slot 7 I/O space end ($C0FF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOT7_IO_SPACE_END = 49407</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOTC3ROM_" data-uid="Pandowdy.EmuCore.VA2MBus.SLOTC3ROM_">
+  SLOTC3ROM_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L273"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Use slot 3 ROM ($C00B write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOTC3ROM_ = 49163</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SLOTCXROM_" data-uid="Pandowdy.EmuCore.VA2MBus.SLOTCXROM_">
+  SLOTCXROM_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L263"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Use slot ROMs ($C006 write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SLOTCXROM_ = 49158</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SPKR_" data-uid="Pandowdy.EmuCore.VA2MBus.SPKR_">
+  SPKR_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L321"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Speaker toggle (read/write range start) ($C030).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SPKR_ = 49200</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_STDZP_" data-uid="Pandowdy.EmuCore.VA2MBus.STDZP_">
+  STDZP_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L267"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Use main zero page/stack ($C008 write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort STDZP_ = 49160</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_STROBE_" data-uid="Pandowdy.EmuCore.VA2MBus.STROBE_">
+  STROBE_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L325"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Game controller strobe (read/write range start) ($C040).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort STROBE_ = 49216</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SYSTEM_IO_START" data-uid="Pandowdy.EmuCore.VA2MBus.SYSTEM_IO_START">
+  SYSTEM_IO_START
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L244"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Start of system I/O space ($C000).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SYSTEM_IO_START = 49152</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SYSTEM_UI_END" data-uid="Pandowdy.EmuCore.VA2MBus.SYSTEM_UI_END">
+  SYSTEM_UI_END
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L246"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>End of system I/O space ($C0FF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort SYSTEM_UI_END = 49407</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_TAPEIN_" data-uid="Pandowdy.EmuCore.VA2MBus.TAPEIN_">
+  TAPEIN_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L363"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Cassette tape input (read) ($C060).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort TAPEIN_ = 49248</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_TAPEOUT_" data-uid="Pandowdy.EmuCore.VA2MBus.TAPEOUT_">
+  TAPEOUT_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L317"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Cassette tape output (read/write range start) ($C020).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort TAPEOUT_ = 49184</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_WRCARDRAM_" data-uid="Pandowdy.EmuCore.VA2MBus.WRCARDRAM_">
+  WRCARDRAM_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L261"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Write to auxiliary (card) RAM ($C005 write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort WRCARDRAM_ = 49157</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_WRMAINRAM_" data-uid="Pandowdy.EmuCore.VA2MBus.WRMAINRAM_">
+  WRMAINRAM_
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L259"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Write to main RAM ($C004 write).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public const ushort WRMAINRAM_ = 49156</code></pre>
+  </div>
+
+
+
+
+  <h4 class="section">Field Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus_Cpu_" data-uid="Pandowdy.EmuCore.VA2MBus.Cpu*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_Cpu" data-uid="Pandowdy.EmuCore.VA2MBus.Cpu">
+  Cpu
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the CPU instance connected to this bus.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ICpu Cpu { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.ICpu.html">ICpu</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus_RAM_" data-uid="Pandowdy.EmuCore.VA2MBus.RAM*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_RAM" data-uid="Pandowdy.EmuCore.VA2MBus.RAM">
+  RAM
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the RAM (MemoryPool) for direct memory access.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IMemory RAM { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><span class="xref">IMemory</span></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2MBus_RAM_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Primarily used for testing and direct memory inspection. Normal CPU access
+should go through CpuRead/CpuWrite which handle I/O space routing.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus_Switches_" data-uid="Pandowdy.EmuCore.VA2MBus.Switches*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_Switches" data-uid="Pandowdy.EmuCore.VA2MBus.Switches">
+  Switches
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L463"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the soft switches managing memory mapping, video modes, ROM selection, and annunciators.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SoftSwitches Switches { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Pandowdy.EmuCore.SoftSwitches.html">SoftSwitches</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2MBus_Switches_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Provides access to the soft switch collection for querying states, registering responders,
+and debugging. The MemoryPool and SystemStatusProvider are automatically registered as
+responders during construction.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus_SystemClockCounter_" data-uid="Pandowdy.EmuCore.VA2MBus.SystemClockCounter*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SystemClockCounter" data-uid="Pandowdy.EmuCore.VA2MBus.SystemClockCounter">
+  SystemClockCounter
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the total number of CPU cycles executed since last reset.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public ulong SystemClockCounter { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint64">ulong</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus_Clock_" data-uid="Pandowdy.EmuCore.VA2MBus.Clock*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_Clock" data-uid="Pandowdy.EmuCore.VA2MBus.Clock">
+  Clock()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L1149"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Executes one CPU clock cycle and updates VBlank timing.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Clock()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2MBus_Clock_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Execution Sequence:</strong>
+<ol><li>Execute one CPU instruction (CPU.Clock)</li><li>Increment system clock counter</li><li>Decrement VBlank blackout counter</li><li>Check if VBlank cycle reached, fire event if so</li></ol>
+
+<p>
+<strong>VBlank Timing:</strong> When _systemClock reaches _nextVblankCycle (initially
+12,480, then 29,510, 46,540, ...), the VBlank event is fired and _nextVblankCycle is
+advanced by CyclesPerVBlank (17,030). The VBlank blackout counter is reset to 4,550 cycles.
+</p>
+<p>
+<strong>Frame Cycle Calculation:</strong>
+<pre><code class="lang-csharp">Frame 0: VBlank at cycle 12,480 (scanline 192)
+Frame 1: VBlank at cycle 29,510 (12,480 + 17,030)
+Frame 2: VBlank at cycle 46,540 (29,510 + 17,030)
+...and so on</code></pre>
+
+<p>
+<strong>Catch-Up Logic:</strong> If the emulator runs fast (unthrottled batches), multiple
+VBlank cycles may be skipped. The do-while loop ensures _nextVblankCycle catches up to
+_systemClock, preventing event spam while maintaining proper phase alignment.
+</p>
+<p>
+<strong>80-Column Synchronization:</strong> By firing VBlank at cycle 12,480 (not 0),
+we maintain synchronization with Apple IIe 80-column firmware which rapidly toggles
+PAGE2 during visible scanlines and relies on VBlank flag ($C019) for timing.
+</p>
+<p>
+<strong>Disposal Safety:</strong> If the bus has been disposed, Clock() returns immediately
+without executing CPU or firing events.
+</p>
+<p>
+<strong>Thread Context:</strong> Must be called from emulator thread only. VBlank event
+subscribers must marshal to UI thread if needed.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus_Connect_" data-uid="Pandowdy.EmuCore.VA2MBus.Connect*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_Connect_Emulator_CPU_" data-uid="Pandowdy.EmuCore.VA2MBus.Connect(Emulator.CPU)">
+  Connect(CPU)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L781"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Legacy CPU connection method. Not supported in VA2MBus.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Connect(CPU _)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>_</code> <span class="xref">CPU</span></dt>
+    <dd><p>CPU instance (ignored).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2MBus_Connect_Emulator_CPU__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>VA2MBus uses constructor injection for the CPU connection. The Connect method is
+deprecated and should not be called. This method exists only for IAppleIIBus interface
+compatibility.</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.notsupportedexception">NotSupportedException</a></dt>
+    <dd><p>Always thrown. VA2MBus requires CPU in constructor.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus_CpuRead_" data-uid="Pandowdy.EmuCore.VA2MBus.CpuRead*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_CpuRead_System_UInt16_System_Boolean_" data-uid="Pandowdy.EmuCore.VA2MBus.CpuRead(System.UInt16,System.Boolean)">
+  CpuRead(ushort, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L1060"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a byte from memory or I/O space, routing to appropriate handler.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public byte CpuRead(ushort address, bool readOnly = false)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>address</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>16-bit address to read from ($0000-$FFFF).</p>
+</dd>
+    <dt><code>readOnly</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>If true, indicates a non-mutating read (not currently used).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>Byte value from memory or I/O space.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2MBus_CpuRead_System_UInt16_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Routing:</strong>
+<ul><li>$C000-$C0FF: I/O space (ReadFromIOSpace)</li><li>All other addresses: MemoryPool.Read (RAM/ROM)</li></ul>
+
+<p>
+<strong>Thread Context:</strong> Must be called from emulator thread only.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>Thrown if the bus has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus_CpuWrite_" data-uid="Pandowdy.EmuCore.VA2MBus.CpuWrite*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_CpuWrite_System_UInt16_System_Byte_" data-uid="Pandowdy.EmuCore.VA2MBus.CpuWrite(System.UInt16,System.Byte)">
+  CpuWrite(ushort, byte)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L1092"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes a byte to memory or I/O space, routing to appropriate handler.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void CpuWrite(ushort address, byte data)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>address</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>16-bit address to write to ($0000-$FFFF).</p>
+</dd>
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>Byte value to write.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2MBus_CpuWrite_System_UInt16_System_Byte__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Routing:</strong>
+<ul><li>$C000-$C0FF: I/O space (WriteToIOSpace)</li><li>All other addresses: MemoryPool.Write (RAM, respecting write protection)</li></ul>
+
+<p>
+<strong>Write Protection:</strong> The MemoryPool enforces write protection based on
+soft switch states (ROM areas, language card write enable, etc.).
+</p>
+<p>
+<strong>Thread Context:</strong> Must be called from emulator thread only.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>Thrown if the bus has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus_Dispose_" data-uid="Pandowdy.EmuCore.VA2MBus.Dispose*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_Dispose" data-uid="Pandowdy.EmuCore.VA2MBus.Dispose">
+  Dispose()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L1291"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Disposes the bus, cleaning up resources and preventing further operation.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2MBus_Dispose_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Cleanup Operations:</strong>
+<ul><li>Set _disposed flag to true</li><li>Clear VBlank event subscribers (prevent event handler leaks)</li></ul>
+
+<p>
+<strong>Post-Disposal Behavior:</strong>
+<ul><li>Clock() becomes a no-op (returns immediately)</li><li>CpuRead/CpuWrite throw ObjectDisposedException</li><li>VBlank event is never fired again</li></ul>
+
+<p>
+<strong>Idempotent:</strong> Multiple calls to Dispose() are safe (no-op after first call).
+</p>
+<p>
+<strong>Thread Safety:</strong> Should be called from the thread that owns the bus instance
+(typically after stopping emulation).
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus_GetPushButton_" data-uid="Pandowdy.EmuCore.VA2MBus.GetPushButton*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_GetPushButton_System_Int32_" data-uid="Pandowdy.EmuCore.VA2MBus.GetPushButton(System.Int32)">
+  GetPushButton(int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L814"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the current state of a pushbutton.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool GetPushButton(int num)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>num</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Button number (0-2).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if button is pressed, false if released or invalid button number.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2MBus_GetPushButton_System_Int32__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Button states are readable at I/O addresses $C061-$C063 with bit 7 set when pressed.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus_Reset_" data-uid="Pandowdy.EmuCore.VA2MBus.Reset*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_Reset" data-uid="Pandowdy.EmuCore.VA2MBus.Reset">
+  Reset()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L1219"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Performs a full system reset (power cycle).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Reset()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2MBus_Reset_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Reset Operations:</strong>
+<ol><li>Reset memory ranges (MemoryPool.ResetRanges)</li><li>Reset all soft switches to power-on state</li><li>Reset CPU (PC loaded from $FFFC/$FFFD, SP = $FF)</li><li>Reset system clock to zero</li><li>Reset VBlank cycle counter</li></ol>
+
+<p>
+<strong>Difference from UserReset:</strong> Reset() is a cold boot that clears everything.
+<a class="xref" href="Pandowdy.EmuCore.VA2MBus.html#Pandowdy_EmuCore_VA2MBus_UserReset">UserReset()</a> is a warm reset that preserves more state.
+</p>
+<p>
+<strong>Thread Context:</strong> Must be called from emulator thread only.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>Thrown if the bus has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus_SetKeyValue_" data-uid="Pandowdy.EmuCore.VA2MBus.SetKeyValue*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SetKeyValue_System_Byte_" data-uid="Pandowdy.EmuCore.VA2MBus.SetKeyValue(System.Byte)">
+  SetKeyValue(byte)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L801"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the keyboard latch value as if a key was pressed.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetKeyValue(byte key)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>key</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>ASCII key value with bit 7 set (indicating key available).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2MBus_SetKeyValue_System_Byte__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Keyboard Latch:</strong> The Apple IIe keyboard latch appears at $C000. When a key
+is pressed, the ASCII value with bit 7 set appears at this address. Software reads $C010
+(KEYSTRB) to clear bit 7, indicating the key has been read.
+</p>
+<p>
+<strong>Thread Safety:</strong> Should be called only from the emulator thread. External
+threads should enqueue via VA2M.InjectKey().
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus_SetPushButton_" data-uid="Pandowdy.EmuCore.VA2MBus.SetPushButton*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_SetPushButton_System_Int32_System_Boolean_" data-uid="Pandowdy.EmuCore.VA2MBus.SetPushButton(System.Int32,System.Boolean)">
+  SetPushButton(int, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L839"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the state of a pushbutton.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void SetPushButton(int num, bool pressed)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>num</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Button number (0-2).</p>
+</dd>
+    <dt><code>pressed</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if button is pressed, false if released.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2MBus_SetPushButton_System_Int32_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Thread Safety:</strong> Should be called only from the emulator thread. External
+threads should enqueue via VA2M.SetPushButton().
+</p>
+<p>
+Invalid button numbers are silently ignored.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_VA2MBus_UserReset_" data-uid="Pandowdy.EmuCore.VA2MBus.UserReset*"></a>
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_UserReset" data-uid="Pandowdy.EmuCore.VA2MBus.UserReset">
+  UserReset()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L1253"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Performs a warm reset (Ctrl+Reset) without fully clearing state.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void UserReset()</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2MBus_UserReset_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Reset Operations:</strong>
+<ol><li>Reset all soft switches to power-on state</li><li>Reset memory ranges (MemoryPool.ResetRanges)</li><li>Reset CPU (PC loaded from $FFFC/$FFFD)</li><li>Reset system clock to zero</li><li>Reset VBlank cycle counter</li></ol>
+
+<p>
+<strong>Difference from Reset:</strong> In current implementation, UserReset() and Reset()
+are nearly identical. Future enhancements may preserve more state during UserReset (e.g.,
+RAM contents, some soft switches) to better match Apple IIe Ctrl+Reset behavior.
+</p>
+<p>
+<strong>Thread Context:</strong> Must be called from emulator thread only.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.objectdisposedexception">ObjectDisposedException</a></dt>
+    <dd><p>Thrown if the bus has been disposed.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="events">Events
+</h2>
+
+
+
+  <h3 id="Pandowdy_EmuCore_VA2MBus_VBlank" data-uid="Pandowdy.EmuCore.VA2MBus.VBlank">
+  VBlank
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L217"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Event raised every ~60 Hz (17,063 cycles) to signal vertical blanking interval.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event EventHandler? VBlank</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.eventhandler">EventHandler</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_VA2MBus_VBlank_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Timing:</strong> Fires at 1,023,000 Hz / 17,063 cycles ≈ 60.02 Hz (NTSC).
+</p>
+<p>
+<strong>Thread Context:</strong> Always raised on the emulator thread. UI subscribers
+must marshal to UI thread via Dispatcher.BeginInvoke or similar.
+</p>
+<p>
+<strong>Use Cases:</strong>
+<ul><li>Frame rendering synchronization</li><li>Cursor blink timing</li><li>Status snapshot generation</li><li>Audio buffer flushing</li></ul>
+
+</div>
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/VA2MBus.cs/#L43" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

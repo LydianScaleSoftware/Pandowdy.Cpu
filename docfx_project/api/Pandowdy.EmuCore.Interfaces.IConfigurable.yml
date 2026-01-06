@@ -1,0 +1,658 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Interfaces.IConfigurable
+  commentId: T:Pandowdy.EmuCore.Interfaces.IConfigurable
+  id: IConfigurable
+  parent: Pandowdy.EmuCore.Interfaces
+  children:
+  - Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+  - Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+  langs:
+  - csharp
+  - vb
+  name: IConfigurable
+  nameWithType: IConfigurable
+  fullName: Pandowdy.EmuCore.Interfaces.IConfigurable
+  type: Interface
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IConfigurable.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IConfigurable
+    path: ../Pandowdy.EmuCore/Interfaces/IConfigurable.cs
+    startLine: 209
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Represents an object that can persist and restore its configuration state via metadata strings.
+  remarks: >-
+    <p>
+
+    The <xref href="Pandowdy.EmuCore.Interfaces.IConfigurable" data-throw-if-not-resolved="false"></xref> interface provides a simple, format-agnostic mechanism for
+
+    objects to serialize and deserialize their configuration state. Implementers choose their
+
+    own metadata format (JSON, YAML, XML, binary, etc.) based on their complexity and requirements.
+
+    </p>
+
+    <p>
+
+    <strong>Design Philosophy:</strong>
+
+    </p>
+
+    <ul><li><strong>Format Freedom:</strong> Each implementation chooses its own serialization format</li><li><strong>Self-Contained:</strong> Metadata strings are opaque to consumers</li><li><strong>Fail-Safe:</strong> <xref href="Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)" data-throw-if-not-resolved="false"></xref> returns success status rather than throwing exceptions</li><li><strong>Stateless Protocol:</strong> No assumptions about when/how metadata is captured or applied</li><li><strong>Hierarchical Freedom:</strong> Objects may include child configurations or manage them separately</li></ul>
+
+    <p>
+
+    <strong>Common Use Cases:</strong>
+
+    </p>
+
+    <ul><li>Persisting peripheral card configurations (drives, settings, etc.)</li><li>Saving/loading emulator state snapshots</li><li>Cloning configured objects with preserved state</li><li>Exporting/importing configurations between sessions</li></ul>
+
+    <p>
+
+    <strong>Hierarchical Configuration:</strong><br />
+
+    Objects with child components (e.g., a disk controller with attached drives) have flexibility
+
+    in how they handle child configuration:
+
+    </p>
+
+    <ul><li><strong>Inclusive Approach:</strong> Parent includes child metadata within its own (recommended for tight coupling)</li><li><strong>Separate Approach:</strong> Parent and children managed independently (useful for loose coupling)</li><li><strong>Hybrid Approach:</strong> Some children included, others referenced externally</li></ul>
+
+    <p>
+
+    <strong>Example: Disk Controller with Drives</strong>
+
+    </p>
+
+
+    <pre><code class="lang-csharp">// Inclusive approach - controller includes drive configurations
+
+    {
+      "controllerSettings": { "motorSpeed": "normal" },
+      "drives": [
+        { "slot": 0, "imagePath": "System.dsk", "writeProtected": true },
+        { "slot": 1, "imagePath": "Data.dsk", "writeProtected": false }
+      ]
+    }
+
+
+    // When applying metadata, the controller:
+
+    // 1. Reads its own settings
+
+    // 2. Creates/configures child drives based on embedded configuration
+
+    // 3. Recursively applies metadata to each child</code></pre>
+
+    <p>
+
+    This approach keeps the configuration self-contained and ensures all related state
+
+    travels together. The parent is responsible for creating and initializing its children
+
+    during <xref href="Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)" data-throw-if-not-resolved="false"></xref>.
+
+    </p>
+
+    <p>
+
+    <strong>Implementation Guidelines:</strong>
+
+    </p>
+
+    <ol><li><xref href="Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata" data-throw-if-not-resolved="false"></xref> should never throw exceptions (return empty string on error)</li><li><xref href="Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)" data-throw-if-not-resolved="false"></xref> should validate input and return <code>false</code> on failure</li><li>Metadata format should be documented in implementing class remarks</li><li>Consider including version information in metadata for backward compatibility</li><li>Empty string metadata should represent default/unconfigured state</li><li>For hierarchical objects, decide whether children are included or referenced</li><li>Document the hierarchical strategy in the implementing class</li></ol>
+  example:
+  - >-
+    <p>
+
+    <strong>Simple Implementation (JSON-based):</strong>
+
+    </p>
+
+
+    <pre><code class="lang-csharp">public class SimpleDevice : IConfigurable
+
+    {
+        public string DeviceName { get; set; } = "Unnamed";
+        public bool IsEnabled { get; set; } = true;
+
+        public string GetMetadata()
+        {
+            try
+            {
+                return JsonSerializer.Serialize(new 
+                { 
+                    DeviceName, 
+                    IsEnabled 
+                });
+            }
+            catch
+            {
+                return string.Empty; // Fail-safe
+            }
+        }
+
+        public bool ApplyMetadata(string metadata)
+        {
+            if (string.IsNullOrWhiteSpace(metadata))
+            {
+                // Reset to defaults
+                DeviceName = "Unnamed";
+                IsEnabled = true;
+                return true;
+            }
+
+            try
+            {
+                var config = JsonSerializer.Deserialize&lt;dynamic&gt;(metadata);
+                DeviceName = config.DeviceName;
+                IsEnabled = config.IsEnabled;
+                return true;
+            }
+            catch
+            {
+                return false; // Invalid metadata
+            }
+        }
+    }
+
+
+    // Usage
+
+    var device = new SimpleDevice { DeviceName = "Serial Port", IsEnabled = false };
+
+    string metadata = device.GetMetadata();
+
+
+    var newDevice = new SimpleDevice();
+
+    if (newDevice.ApplyMetadata(metadata))
+
+    {
+        Console.WriteLine($"Restored: {newDevice.DeviceName}");
+    }</code></pre>
+
+    <p>
+
+    <strong>Hierarchical Implementation (Controller with Drives):</strong>
+
+    </p>
+
+
+    <pre><code class="lang-csharp">public class DiskController : IConfigurable
+
+    {
+        private List&lt;DiskDrive&gt; _drives = new();
+
+        public string GetMetadata()
+        {
+            try
+            {
+                var config = new
+                {
+                    Version = 1,
+                    ControllerSettings = new { /* controller-specific settings */ },
+                    Drives = _drives.Select(d =&gt; new
+                    {
+                        Slot = d.Slot,
+                        // Include child's metadata inline
+                        DriveConfig = d.GetMetadata()
+                    }).ToArray()
+                };
+
+                return JsonSerializer.Serialize(config);
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        public bool ApplyMetadata(string metadata)
+        {
+            if (string.IsNullOrWhiteSpace(metadata))
+            {
+                _drives.Clear();
+                return true;
+            }
+
+            try
+            {
+                var config = JsonSerializer.Deserialize&lt;dynamic&gt;(metadata);
+
+                // Apply controller settings first
+                // ... apply controller-specific configuration ...
+
+                // Recreate drives based on embedded configuration
+                _drives.Clear();
+                foreach (var driveConfig in config.Drives)
+                {
+                    var drive = new DiskDrive(driveConfig.Slot);
+
+                    // Recursively apply child metadata
+                    if (!drive.ApplyMetadata(driveConfig.DriveConfig.ToString()))
+                    {
+                        return false; // Child configuration failed
+                    }
+
+                    _drives.Add(drive);
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }</code></pre>
+  syntax:
+    content: public interface IConfigurable
+    content.vb: Public Interface IConfigurable
+  seealso:
+  - linkId: Pandowdy.EmuCore.Interfaces.ICard
+    commentId: T:Pandowdy.EmuCore.Interfaces.ICard
+- uid: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+  commentId: M:Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+  id: GetMetadata
+  parent: Pandowdy.EmuCore.Interfaces.IConfigurable
+  langs:
+  - csharp
+  - vb
+  name: GetMetadata()
+  nameWithType: IConfigurable.GetMetadata()
+  fullName: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IConfigurable.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: GetMetadata
+    path: ../Pandowdy.EmuCore/Interfaces/IConfigurable.cs
+    startLine: 260
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Gets the current configuration state as a metadata string.
+  remarks: >-
+    <p>
+
+    This method captures the current configuration state of the object in a format suitable
+
+    for persistence, transmission, or cloning. The format is entirely up to the implementer
+
+    and should be documented in the implementing class.
+
+    </p>
+
+    <p>
+
+    <strong>Format Examples:</strong>
+
+    </p>
+
+    <ul><li><strong>Simple objects:</strong> JSON or key-value pairs</li><li><strong>Complex objects:</strong> YAML, XML, or custom formats</li><li><strong>Binary data:</strong> Base64-encoded binary blob</li><li><strong>No state:</strong> Empty string</li><li><strong>Hierarchical objects:</strong> Nested structures with child configurations embedded</li></ul>
+
+    <p>
+
+    <strong>Hierarchical Objects:</strong><br />
+
+    Objects with child components that also implement <xref href="Pandowdy.EmuCore.Interfaces.IConfigurable" data-throw-if-not-resolved="false"></xref> may choose to:
+
+    </p>
+
+    <ul><li>Embed child metadata within the parent's metadata (keeps configuration self-contained)</li><li>Reference children externally (allows independent child management)</li><li>Use a hybrid approach based on business logic requirements</li></ul>
+
+    <p>
+
+    The choice depends on the relationship between parent and child—tightly coupled components
+
+    (like a controller and its drives) typically use embedded metadata, while loosely coupled
+
+    components might prefer external references.
+
+    </p>
+
+    <p>
+
+    <strong>Error Handling:</strong><br />
+
+    This method should never throw exceptions. If serialization fails for any reason,
+
+    return an empty string. The caller can choose to treat empty string as "no configuration"
+
+    or as an error condition.
+
+    </p>
+
+    <p>
+
+    <strong>Thread Safety:</strong><br />
+
+    Implementations should ensure this method is safe to call from any thread, though
+
+    concurrent modification during serialization may produce inconsistent results.
+
+    </p>
+  example: []
+  syntax:
+    content: string GetMetadata()
+    return:
+      type: System.String
+      description: >-
+        A string containing serialized configuration data in an implementation-specific format,
+
+        or an empty string if the object has no configuration state or if serialization fails.
+    content.vb: Function GetMetadata() As String
+  overload: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata*
+- uid: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+  commentId: M:Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+  id: ApplyMetadata(System.String)
+  parent: Pandowdy.EmuCore.Interfaces.IConfigurable
+  langs:
+  - csharp
+  - vb
+  name: ApplyMetadata(string)
+  nameWithType: IConfigurable.ApplyMetadata(string)
+  fullName: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(string)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IConfigurable.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ApplyMetadata
+    path: ../Pandowdy.EmuCore/Interfaces/IConfigurable.cs
+    startLine: 361
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Applies configuration metadata to this object, restoring its state.
+  remarks: >-
+    <p>
+
+    This method attempts to restore the object's configuration state from a metadata string.
+
+    The method should validate the metadata format and contents before applying any changes.
+
+    If validation fails at any point, the method should return <code>false</code> and leave the
+
+    object in a consistent state (preferably unchanged).
+
+    </p>
+
+    <p>
+
+    <strong>Empty String Handling:</strong><br />
+
+    Passing an empty or whitespace-only string should reset the object to its default
+
+    configuration state and return <code>true</code>. This provides a standard way to clear
+
+    configuration without needing format-specific knowledge.
+
+    </p>
+
+    <p>
+
+    <strong>Hierarchical Configuration:</strong><br />
+
+    For objects with child components, <xref href="Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)" data-throw-if-not-resolved="false"></xref> is responsible for:
+
+    </p>
+
+    <ol><li>Parsing the parent's configuration from metadata</li><li>Creating or locating child objects based on metadata</li><li>Recursively applying embedded child metadata to each child</li><li>Validating the entire configuration hierarchy</li></ol>
+
+    <p>
+
+    If any child fails to apply its metadata, the parent should return <code>false</code> and
+
+    either roll back all changes or leave the object in a consistent partial state
+
+    (documented by the implementing class).
+
+    </p>
+
+    <p>
+
+    <strong>Common Failure Scenarios:</strong>
+
+    </p>
+
+    <ul><li><strong>Format errors:</strong> Malformed JSON/XML, invalid syntax</li><li><strong>Schema mismatch:</strong> Missing required fields, unknown fields</li><li><strong>Version incompatibility:</strong> Metadata from newer version</li><li><strong>Resource errors:</strong> Referenced files don't exist, resources unavailable</li><li><strong>Validation errors:</strong> Values out of range, invalid combinations</li><li><strong>Child configuration failure:</strong> Child object failed to apply its embedded metadata</li></ul>
+
+    <p>
+
+    <strong>Partial Application:</strong><br />
+
+    Implementations should apply changes atomically when possible. If metadata contains
+
+    multiple settings and one fails validation, the implementation should either apply
+
+    none of them (transactional) or document which settings were applied (partial).
+
+    The return value indicates overall success/failure.
+
+    </p>
+
+    <p>
+
+    <strong>Error Handling:</strong><br />
+
+    This method should never throw exceptions. All errors should result in returning
+
+    <code>false</code>. Implementations may log errors for diagnostic purposes.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">// Successful application
+
+    var device = new Device();
+
+    if (device.ApplyMetadata("{\"name\":\"COM1\",\"baud\":9600}"))
+
+    {
+        Console.WriteLine("Configuration applied successfully");
+    }
+
+
+    // Reset to defaults
+
+    if (device.ApplyMetadata(string.Empty))
+
+    {
+        Console.WriteLine("Reset to default configuration");
+    }
+
+
+    // Handle failure
+
+    if (!device.ApplyMetadata("invalid metadata"))
+
+    {
+        Console.WriteLine("Failed to apply configuration");
+    }
+
+
+    // Hierarchical application
+
+    var controller = new DiskController();
+
+    string metadata = @"{
+        ""drives"": [
+            { ""slot"": 0, ""driveConfig"": ""{...}"" },
+            { ""slot"": 1, ""driveConfig"": ""{...}"" }
+        ]
+    }";
+
+
+    if (controller.ApplyMetadata(metadata))
+
+    {
+        // Controller and all drives configured successfully
+    }</code></pre>
+  syntax:
+    content: bool ApplyMetadata(string metadata)
+    parameters:
+    - id: metadata
+      type: System.String
+      description: >-
+        A metadata string previously obtained from <xref href="Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata" data-throw-if-not-resolved="false"></xref>, or an empty
+
+        string to reset to default configuration.
+    return:
+      type: System.Boolean
+      description: >-
+        <code>true</code> if the metadata was successfully parsed and applied; <code>false</code> if
+
+        the metadata was invalid, incompatible, or could not be applied for any reason.
+    content.vb: Function ApplyMetadata(metadata As String) As Boolean
+  overload: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata*
+  nameWithType.vb: IConfigurable.ApplyMetadata(String)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(String)
+  name.vb: ApplyMetadata(String)
+references:
+- uid: Pandowdy.EmuCore.Interfaces.ICard
+  commentId: T:Pandowdy.EmuCore.Interfaces.ICard
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ICard.html
+  name: ICard
+  nameWithType: ICard
+  fullName: Pandowdy.EmuCore.Interfaces.ICard
+- uid: Pandowdy.EmuCore.Interfaces.IConfigurable
+  commentId: T:Pandowdy.EmuCore.Interfaces.IConfigurable
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IConfigurable.html
+  name: IConfigurable
+  nameWithType: IConfigurable
+  fullName: Pandowdy.EmuCore.Interfaces.IConfigurable
+- uid: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+  commentId: M:Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+  parent: Pandowdy.EmuCore.Interfaces.IConfigurable
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_ApplyMetadata_System_String_
+  name: ApplyMetadata(string)
+  nameWithType: IConfigurable.ApplyMetadata(string)
+  fullName: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(string)
+  nameWithType.vb: IConfigurable.ApplyMetadata(String)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(String)
+  name.vb: ApplyMetadata(String)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+    name: ApplyMetadata
+    href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_ApplyMetadata_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata(System.String)
+    name: ApplyMetadata
+    href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_ApplyMetadata_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+  commentId: M:Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+  parent: Pandowdy.EmuCore.Interfaces.IConfigurable
+  href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_GetMetadata
+  name: GetMetadata()
+  nameWithType: IConfigurable.GetMetadata()
+  fullName: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+    name: GetMetadata
+    href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_GetMetadata
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+    name: GetMetadata
+    href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_GetMetadata
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+  href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_GetMetadata
+  name: GetMetadata
+  nameWithType: IConfigurable.GetMetadata
+  fullName: Pandowdy.EmuCore.Interfaces.IConfigurable.GetMetadata
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata
+  href: Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_ApplyMetadata_System_String_
+  name: ApplyMetadata
+  nameWithType: IConfigurable.ApplyMetadata
+  fullName: Pandowdy.EmuCore.Interfaces.IConfigurable.ApplyMetadata
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean

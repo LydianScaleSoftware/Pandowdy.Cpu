@@ -1,0 +1,250 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Interfaces.ISystemRamSelector
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISystemRamSelector
+  id: ISystemRamSelector
+  parent: Pandowdy.EmuCore.Interfaces
+  children: []
+  langs:
+  - csharp
+  - vb
+  name: ISystemRamSelector
+  nameWithType: ISystemRamSelector
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemRamSelector
+  type: Interface
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISystemRamSelector.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ISystemRamSelector
+    path: ../Pandowdy.EmuCore/Interfaces/ISystemRamSelector.cs
+    startLine: 4
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  syntax:
+    content: 'public interface ISystemRamSelector : IMemory, IDirectMemoryPoolReader'
+    content.vb: Public Interface ISystemRamSelector Inherits IMemory, IDirectMemoryPoolReader
+  inheritedMembers:
+  - Emulator.IMemory.Size
+  - Emulator.IMemory.Read(System.UInt16)
+  - Emulator.IMemory.Write(System.UInt16,System.Byte)
+  - Emulator.IMemory.Item(System.UInt16)
+  - Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(System.Int32)
+  - Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(System.Int32)
+references:
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Emulator.IMemory.Size
+  commentId: P:Emulator.IMemory.Size
+  parent: Emulator.IMemory
+  name: Size
+  nameWithType: IMemory.Size
+  fullName: Emulator.IMemory.Size
+- uid: Emulator.IMemory.Read(System.UInt16)
+  commentId: M:Emulator.IMemory.Read(System.UInt16)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: Read(ushort)
+  nameWithType: IMemory.Read(ushort)
+  fullName: Emulator.IMemory.Read(ushort)
+  nameWithType.vb: IMemory.Read(UShort)
+  fullName.vb: Emulator.IMemory.Read(UShort)
+  name.vb: Read(UShort)
+  spec.csharp:
+  - uid: Emulator.IMemory.Read(System.UInt16)
+    name: Read
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+  spec.vb:
+  - uid: Emulator.IMemory.Read(System.UInt16)
+    name: Read
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+- uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+  commentId: M:Emulator.IMemory.Write(System.UInt16,System.Byte)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: Write(ushort, byte)
+  nameWithType: IMemory.Write(ushort, byte)
+  fullName: Emulator.IMemory.Write(ushort, byte)
+  nameWithType.vb: IMemory.Write(UShort, Byte)
+  fullName.vb: Emulator.IMemory.Write(UShort, Byte)
+  name.vb: Write(UShort, Byte)
+  spec.csharp:
+  - uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+    name: Write
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+  spec.vb:
+  - uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+    name: Write
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+- uid: Emulator.IMemory.Item(System.UInt16)
+  commentId: P:Emulator.IMemory.Item(System.UInt16)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: this[ushort]
+  nameWithType: IMemory.this[ushort]
+  fullName: Emulator.IMemory.this[ushort]
+  nameWithType.vb: IMemory.this[](UShort)
+  fullName.vb: Emulator.IMemory.this[](UShort)
+  name.vb: this[](UShort)
+  spec.csharp:
+  - name: this
+  - name: '['
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ']'
+  spec.vb:
+  - uid: Emulator.IMemory.Item(System.UInt16)
+    name: this[]
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(System.Int32)
+  commentId: M:Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(System.Int32)
+  parent: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html#Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_ReadRawMain_System_Int32_
+  name: ReadRawMain(int)
+  nameWithType: IDirectMemoryPoolReader.ReadRawMain(int)
+  fullName: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(int)
+  nameWithType.vb: IDirectMemoryPoolReader.ReadRawMain(Integer)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(Integer)
+  name.vb: ReadRawMain(Integer)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(System.Int32)
+    name: ReadRawMain
+    href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html#Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_ReadRawMain_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(System.Int32)
+    name: ReadRawMain
+    href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html#Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_ReadRawMain_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(System.Int32)
+  commentId: M:Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(System.Int32)
+  parent: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html#Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_ReadRawAux_System_Int32_
+  name: ReadRawAux(int)
+  nameWithType: IDirectMemoryPoolReader.ReadRawAux(int)
+  fullName: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(int)
+  nameWithType.vb: IDirectMemoryPoolReader.ReadRawAux(Integer)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(Integer)
+  name.vb: ReadRawAux(Integer)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(System.Int32)
+    name: ReadRawAux
+    href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html#Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_ReadRawAux_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(System.Int32)
+    name: ReadRawAux
+    href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html#Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_ReadRawAux_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Emulator.IMemory
+  commentId: T:Emulator.IMemory
+  parent: Emulator
+  name: IMemory
+  nameWithType: IMemory
+  fullName: Emulator.IMemory
+- uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  commentId: T:Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html
+  name: IDirectMemoryPoolReader
+  nameWithType: IDirectMemoryPoolReader
+  fullName: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+- uid: Emulator
+  commentId: N:Emulator
+  name: Emulator
+  nameWithType: Emulator
+  fullName: Emulator

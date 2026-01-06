@@ -1,0 +1,1091 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  id: ISoftSwitchResponder
+  parent: Pandowdy.EmuCore.Interfaces
+  children:
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Store(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Vid(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltChar(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltZp(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn0(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn1(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn2(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn3(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetBank1(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHiRes(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighRead(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighWrite(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetIntCxRom(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetMixed(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPage2(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPreWrite(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamRd(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamWrt(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetSlotC3Rom(System.Boolean)
+  - Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetText(System.Boolean)
+  langs:
+  - csharp
+  - vb
+  name: ISoftSwitchResponder
+  nameWithType: ISoftSwitchResponder
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  type: Interface
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ISoftSwitchResponder
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 24
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Callback interface for components that need to respond to Apple II soft switch state changes.
+  remarks: >-
+    This interface is implemented by components that need to react to soft switch changes,
+
+    such as the system status provider, memory manager, or video renderer. The soft switch
+
+    manager calls these methods whenever a soft switch is toggled by CPU access to specific
+
+    I/O addresses ($C000-$C0FF range).
+
+    <p>
+
+    Apple II soft switches control various hardware features including:
+
+    <ul><li>Memory banking (main/auxiliary RAM, language card, ROM selection)</li><li>Video modes (text/graphics, mixed mode, page selection, 80-column)</li><li>Annunciators (general-purpose output signals)</li></ul>
+
+    </p>
+
+    <p>
+
+    Implementations should update their internal state to reflect the new switch settings
+
+    and adjust their behavior accordingly. Multiple responders can be registered to receive
+
+    the same notifications, allowing different subsystems to react independently.
+
+    </p>
+  example: []
+  syntax:
+    content: public interface ISoftSwitchResponder
+    content.vb: Public Interface ISoftSwitchResponder
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Store(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Store(System.Boolean)
+  id: Set80Store(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: Set80Store(bool)
+  nameWithType: ISoftSwitchResponder.Set80Store(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Store(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Set80Store
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 37
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the 80STORE soft switch is changed ($C000/$C001).
+  remarks: >-
+    When enabled, page 2 memory ($0800-$0BFF for text, $2000-$3FFF for hi-res)
+
+    is redirected to auxiliary memory when PAGE2 is set. This is used for 80-column
+
+    text mode and double hi-res graphics to provide independent main and aux video pages.
+  example: []
+  syntax:
+    content: void Set80Store(bool store80)
+    parameters:
+    - id: store80
+      type: System.Boolean
+      description: True if 80STORE is enabled; false if disabled
+    content.vb: Sub Set80Store(store80 As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Store*
+  nameWithType.vb: ISoftSwitchResponder.Set80Store(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Store(Boolean)
+  name.vb: Set80Store(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamRd(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamRd(System.Boolean)
+  id: SetRamRd(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetRamRd(bool)
+  nameWithType: ISoftSwitchResponder.SetRamRd(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamRd(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetRamRd
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 48
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the RAMRD soft switch is changed ($C002/$C003).
+  remarks: >-
+    Controls which 64KB bank (main or auxiliary) is read from for memory accesses.
+
+    This affects most memory regions except those controlled by other soft switches
+
+    (like 80STORE for video pages). Used for accessing the extended 128KB memory space.
+  example: []
+  syntax:
+    content: void SetRamRd(bool ramRd)
+    parameters:
+    - id: ramRd
+      type: System.Boolean
+      description: True to read from auxiliary memory; false to read from main memory
+    content.vb: Sub SetRamRd(ramRd As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamRd*
+  nameWithType.vb: ISoftSwitchResponder.SetRamRd(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamRd(Boolean)
+  name.vb: SetRamRd(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamWrt(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamWrt(System.Boolean)
+  id: SetRamWrt(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetRamWrt(bool)
+  nameWithType: ISoftSwitchResponder.SetRamWrt(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamWrt(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetRamWrt
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 59
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the RAMWRT soft switch is changed ($C004/$C005).
+  remarks: >-
+    Controls which 64KB bank (main or auxiliary) is written to for memory accesses.
+
+    Independent from RAMRD, allowing asymmetric configurations (e.g., read from main,
+
+    write to aux). Used for accessing the extended 128KB memory space.
+  example: []
+  syntax:
+    content: void SetRamWrt(bool ramWrt)
+    parameters:
+    - id: ramWrt
+      type: System.Boolean
+      description: True to write to auxiliary memory; false to write to main memory
+    content.vb: Sub SetRamWrt(ramWrt As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamWrt*
+  nameWithType.vb: ISoftSwitchResponder.SetRamWrt(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamWrt(Boolean)
+  name.vb: SetRamWrt(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetIntCxRom(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetIntCxRom(System.Boolean)
+  id: SetIntCxRom(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetIntCxRom(bool)
+  nameWithType: ISoftSwitchResponder.SetIntCxRom(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetIntCxRom(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetIntCxRom
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 70
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the INTCXROM soft switch is changed ($C006/$C007).
+  remarks: >-
+    Controls whether the $C100-$CFFF range accesses internal ROM or peripheral card
+
+    slot ROMs. When true (internal), the built-in ROM is used. When false, individual
+
+    slot ROMs can be accessed. Typically set by the monitor during initialization.
+  example: []
+  syntax:
+    content: void SetIntCxRom(bool intCxRom)
+    parameters:
+    - id: intCxRom
+      type: System.Boolean
+      description: True to use internal ROM; false to use slot ROMs
+    content.vb: Sub SetIntCxRom(intCxRom As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetIntCxRom*
+  nameWithType.vb: ISoftSwitchResponder.SetIntCxRom(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetIntCxRom(Boolean)
+  name.vb: SetIntCxRom(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltZp(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltZp(System.Boolean)
+  id: SetAltZp(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetAltZp(bool)
+  nameWithType: ISoftSwitchResponder.SetAltZp(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltZp(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetAltZp
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 81
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the ALTZP soft switch is changed ($C008/$C009).
+  remarks: >-
+    Controls whether zero page ($0000-$00FF) and stack ($0100-$01FF) access main
+
+    or auxiliary memory. When true, these critical CPU regions use auxiliary memory,
+
+    allowing programs to maintain separate zero page and stack contexts.
+  example: []
+  syntax:
+    content: void SetAltZp(bool altZp)
+    parameters:
+    - id: altZp
+      type: System.Boolean
+      description: True to use auxiliary zero page/stack; false for main
+    content.vb: Sub SetAltZp(altZp As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltZp*
+  nameWithType.vb: ISoftSwitchResponder.SetAltZp(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltZp(Boolean)
+  name.vb: SetAltZp(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetSlotC3Rom(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetSlotC3Rom(System.Boolean)
+  id: SetSlotC3Rom(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetSlotC3Rom(bool)
+  nameWithType: ISoftSwitchResponder.SetSlotC3Rom(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetSlotC3Rom(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetSlotC3Rom
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 92
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the SLOTC3ROM soft switch is changed ($C00A/$C00B).
+  remarks: >-
+    Controls whether the $C300-$C3FF range (slot 3) uses the peripheral card ROM
+
+    or internal ROM. Independent of INTCXROM, allowing slot 3 to be controlled
+
+    separately from other slots. Commonly used for 80-column card firmware.
+  example: []
+  syntax:
+    content: void SetSlotC3Rom(bool slotC3Rom)
+    parameters:
+    - id: slotC3Rom
+      type: System.Boolean
+      description: True to use slot C3 ROM; false to use internal ROM
+    content.vb: Sub SetSlotC3Rom(slotC3Rom As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetSlotC3Rom*
+  nameWithType.vb: ISoftSwitchResponder.SetSlotC3Rom(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetSlotC3Rom(Boolean)
+  name.vb: SetSlotC3Rom(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Vid(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Vid(System.Boolean)
+  id: Set80Vid(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: Set80Vid(bool)
+  nameWithType: ISoftSwitchResponder.Set80Vid(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Vid(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Set80Vid
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 105
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the 80VID soft switch is changed ($C00C/$C00D).
+  remarks: >-
+    Enables 80-column text mode, which uses both main and auxiliary memory to display
+
+    80 characters per line (alternating bytes from main and aux memory). When false,
+
+    standard 40-column text mode is used.
+  example: []
+  syntax:
+    content: void Set80Vid(bool vid)
+    parameters:
+    - id: vid
+      type: System.Boolean
+      description: True for 80-column mode; false for 40-column mode
+    content.vb: Sub Set80Vid(vid As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Vid*
+  nameWithType.vb: ISoftSwitchResponder.Set80Vid(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Vid(Boolean)
+  name.vb: Set80Vid(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltChar(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltChar(System.Boolean)
+  id: SetAltChar(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetAltChar(bool)
+  nameWithType: ISoftSwitchResponder.SetAltChar(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltChar(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetAltChar
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 116
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the ALTCHAR soft switch is changed ($C00E/$C00F).
+  remarks: >-
+    Selects between the standard Apple II character set and the alternate MouseText
+
+    character set. MouseText provides graphical symbols for building text-based UIs
+
+    (boxes, arrows, icons) in the $40-$5F character range.
+  example: []
+  syntax:
+    content: void SetAltChar(bool altChar)
+    parameters:
+    - id: altChar
+      type: System.Boolean
+      description: True for MouseText character set; false for standard
+    content.vb: Sub SetAltChar(altChar As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltChar*
+  nameWithType.vb: ISoftSwitchResponder.SetAltChar(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltChar(Boolean)
+  name.vb: SetAltChar(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetText(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetText(System.Boolean)
+  id: SetText(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetText(bool)
+  nameWithType: ISoftSwitchResponder.SetText(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetText(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetText
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 127
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the TEXT soft switch is changed ($C050/$C051).
+  remarks: >-
+    Controls the primary video mode. When true, displays 40-column or 80-column text.
+
+    When false, displays lo-res (40×48 color blocks) or hi-res (280×192 pixels)
+
+    graphics, depending on the HIRES switch.
+  example: []
+  syntax:
+    content: void SetText(bool text)
+    parameters:
+    - id: text
+      type: System.Boolean
+      description: True for text mode; false for graphics mode
+    content.vb: Sub SetText(text As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetText*
+  nameWithType.vb: ISoftSwitchResponder.SetText(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetText(Boolean)
+  name.vb: SetText(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetMixed(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetMixed(System.Boolean)
+  id: SetMixed(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetMixed(bool)
+  nameWithType: ISoftSwitchResponder.SetMixed(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetMixed(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetMixed
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 138
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the MIXED soft switch is changed ($C052/$C053).
+  remarks: >-
+    When true and in graphics mode, displays graphics on the top 20 rows (160 scanlines)
+
+    and text on the bottom 4 rows (32 scanlines). Commonly used in games to show
+
+    graphics with a text status line. Has no effect in text mode.
+  example: []
+  syntax:
+    content: void SetMixed(bool mixed)
+    parameters:
+    - id: mixed
+      type: System.Boolean
+      description: True for mixed mode; false for full-screen mode
+    content.vb: Sub SetMixed(mixed As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetMixed*
+  nameWithType.vb: ISoftSwitchResponder.SetMixed(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetMixed(Boolean)
+  name.vb: SetMixed(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPage2(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPage2(System.Boolean)
+  id: SetPage2(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetPage2(bool)
+  nameWithType: ISoftSwitchResponder.SetPage2(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPage2(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetPage2
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 150
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the PAGE2 soft switch is changed ($C054/$C055).
+  remarks: >-
+    Selects which video page is displayed. Page 1 uses $0400-$07FF (text) or
+
+    $2000-$3FFF (hi-res). Page 2 uses $0800-$0BFF (text) or $4000-$5FFF (hi-res).
+
+    Can be used for page flipping animation. Interaction with 80STORE affects
+
+    whether page 2 uses main or auxiliary memory.
+  example: []
+  syntax:
+    content: void SetPage2(bool page2)
+    parameters:
+    - id: page2
+      type: System.Boolean
+      description: True for page 2; false for page 1
+    content.vb: Sub SetPage2(page2 As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPage2*
+  nameWithType.vb: ISoftSwitchResponder.SetPage2(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPage2(Boolean)
+  name.vb: SetPage2(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHiRes(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHiRes(System.Boolean)
+  id: SetHiRes(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetHiRes(bool)
+  nameWithType: ISoftSwitchResponder.SetHiRes(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHiRes(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetHiRes
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 161
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the HIRES soft switch is changed ($C056/$C057).
+  remarks: >-
+    In graphics mode (TEXT off), controls whether to display hi-res graphics
+
+    (280×192 pixels, 6 colors) or lo-res graphics (40×48 color blocks, 16 colors).
+
+    Has no effect when TEXT mode is enabled.
+  example: []
+  syntax:
+    content: void SetHiRes(bool hires)
+    parameters:
+    - id: hires
+      type: System.Boolean
+      description: True for hi-res graphics; false for lo-res graphics
+    content.vb: Sub SetHiRes(hires As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHiRes*
+  nameWithType.vb: ISoftSwitchResponder.SetHiRes(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHiRes(Boolean)
+  name.vb: SetHiRes(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn0(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn0(System.Boolean)
+  id: SetAn0(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetAn0(bool)
+  nameWithType: ISoftSwitchResponder.SetAn0(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn0(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetAn0
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 174
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when annunciator 0 is changed ($C058/$C059).
+  remarks: >-
+    Annunciator 0 is a general-purpose output signal. Originally intended for
+
+    controlling external devices, rarely used in standard software. Some games
+
+    use annunciators for audio effects or peripheral control.
+  example: []
+  syntax:
+    content: void SetAn0(bool an0)
+    parameters:
+    - id: an0
+      type: System.Boolean
+      description: True if annunciator 0 is on; false if off
+    content.vb: Sub SetAn0(an0 As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn0*
+  nameWithType.vb: ISoftSwitchResponder.SetAn0(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn0(Boolean)
+  name.vb: SetAn0(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn1(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn1(System.Boolean)
+  id: SetAn1(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetAn1(bool)
+  nameWithType: ISoftSwitchResponder.SetAn1(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn1(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetAn1
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 184
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when annunciator 1 is changed ($C05A/$C05B).
+  remarks: >-
+    Annunciator 1 is a general-purpose output signal. Originally intended for
+
+    controlling external devices, rarely used in standard software.
+  example: []
+  syntax:
+    content: void SetAn1(bool an1)
+    parameters:
+    - id: an1
+      type: System.Boolean
+      description: True if annunciator 1 is on; false if off
+    content.vb: Sub SetAn1(an1 As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn1*
+  nameWithType.vb: ISoftSwitchResponder.SetAn1(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn1(Boolean)
+  name.vb: SetAn1(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn2(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn2(System.Boolean)
+  id: SetAn2(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetAn2(bool)
+  nameWithType: ISoftSwitchResponder.SetAn2(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn2(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetAn2
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 194
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when annunciator 2 is changed ($C05C/$C05D).
+  remarks: >-
+    Annunciator 2 is a general-purpose output signal. Originally intended for
+
+    controlling external devices, rarely used in standard software.
+  example: []
+  syntax:
+    content: void SetAn2(bool an2)
+    parameters:
+    - id: an2
+      type: System.Boolean
+      description: True if annunciator 2 is on; false if off
+    content.vb: Sub SetAn2(an2 As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn2*
+  nameWithType.vb: ISoftSwitchResponder.SetAn2(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn2(Boolean)
+  name.vb: SetAn2(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn3(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn3(System.Boolean)
+  id: SetAn3(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetAn3(bool)
+  nameWithType: ISoftSwitchResponder.SetAn3(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn3(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetAn3
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 214
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when annunciator 3 is changed ($C05E/$C05F).
+  remarks: >-
+    Annunciator 3 doubles as the double hi-res (DHR) enable switch. 
+
+    <p>
+
+    <strong>Important:</strong> The logic is inverted - when this annunciator is 
+
+    <em>off</em> (false), double hi-res mode is <em>enabled</em>. When the annunciator 
+
+    is <em>on</em> (true), double hi-res is <em>disabled</em>. This backwards behavior 
+
+    is a quirk of the Apple IIe hardware design.
+
+    </p>
+
+    <p>
+
+    Double hi-res mode (560×192 pixels, 16 colors) uses both main and auxiliary video 
+
+    pages. When not used for DHGR control, this functions as a general-purpose output 
+
+    signal like the other annunciators.
+
+    </p>
+  example: []
+  syntax:
+    content: void SetAn3(bool an3)
+    parameters:
+    - id: an3
+      type: System.Boolean
+      description: True if annunciator 3 is on; false if off
+    content.vb: Sub SetAn3(an3 As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn3*
+  nameWithType.vb: ISoftSwitchResponder.SetAn3(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn3(Boolean)
+  name.vb: SetAn3(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetBank1(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetBank1(System.Boolean)
+  id: SetBank1(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetBank1(bool)
+  nameWithType: ISoftSwitchResponder.SetBank1(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetBank1(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetBank1
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 228
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the language card bank selection changes ($C080-$C08F).
+  remarks: >-
+    The language card provides two 4KB RAM banks that can be mapped into the
+
+    $D000-$DFFF address space. Bank 1 is physically located at $C000-$CFFF,
+
+    while bank 2 is at $D000-$DFFF. This is often confusing because bank 1's
+
+    physical location overlaps with I/O space in the address map.
+  example: []
+  syntax:
+    content: void SetBank1(bool enabled)
+    parameters:
+    - id: enabled
+      type: System.Boolean
+      description: True for bank 1 (D000-DFFF physical at C000); false for bank 2 (at D000)
+    content.vb: Sub SetBank1(enabled As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetBank1*
+  nameWithType.vb: ISoftSwitchResponder.SetBank1(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetBank1(Boolean)
+  name.vb: SetBank1(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighWrite(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighWrite(System.Boolean)
+  id: SetHighWrite(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetHighWrite(bool)
+  nameWithType: ISoftSwitchResponder.SetHighWrite(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighWrite(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetHighWrite
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 240
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the language card write enable state changes ($C080-$C08F).
+  remarks: >-
+    Controls whether writes to the $D000-$FFFF range modify the language card RAM
+
+    or are ignored. Write protection is engaged through a two-access sequence to
+
+    prevent accidental modification of critical code. When false, writes to this
+
+    region have no effect (ROM remains visible during reads).
+  example: []
+  syntax:
+    content: void SetHighWrite(bool enabled)
+    parameters:
+    - id: enabled
+      type: System.Boolean
+      description: True if writing to language card RAM is enabled; false if write-protected
+    content.vb: Sub SetHighWrite(enabled As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighWrite*
+  nameWithType.vb: ISoftSwitchResponder.SetHighWrite(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighWrite(Boolean)
+  name.vb: SetHighWrite(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighRead(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighRead(System.Boolean)
+  id: SetHighRead(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetHighRead(bool)
+  nameWithType: ISoftSwitchResponder.SetHighRead(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighRead(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetHighRead
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 252
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the language card read enable state changes ($C080-$C08F).
+  remarks: >-
+    Controls whether reads from $D000-$FFFF access the language card RAM or the
+
+    built-in ROM. When true, the selected bank ($D000-$DFFF) and upper 8KB
+
+    ($E000-$FFFF) are read from RAM. When false, ROM is visible instead.
+
+    Independent of write enable, allowing read-from-ROM, write-to-RAM configurations.
+  example: []
+  syntax:
+    content: void SetHighRead(bool enabled)
+    parameters:
+    - id: enabled
+      type: System.Boolean
+      description: True to read from language card RAM; false to read from ROM
+    content.vb: Sub SetHighRead(enabled As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighRead*
+  nameWithType.vb: ISoftSwitchResponder.SetHighRead(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighRead(Boolean)
+  name.vb: SetHighRead(Boolean)
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPreWrite(System.Boolean)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPreWrite(System.Boolean)
+  id: SetPreWrite(System.Boolean)
+  parent: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder
+  langs:
+  - csharp
+  - vb
+  name: SetPreWrite(bool)
+  nameWithType: ISoftSwitchResponder.SetPreWrite(bool)
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPreWrite(bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetPreWrite
+    path: ../Pandowdy.EmuCore/Interfaces/ISoftSwitchResponder.cs
+    startLine: 265
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Called when the language card pre-write state changes ($C080-$C08F).
+  remarks: >-
+    The language card uses a two-access sequence to enable writing, preventing
+
+    accidental modification. The first access to certain addresses sets pre-write
+
+    mode. A second consecutive access to the same address enables write mode.
+
+    Any other memory access clears pre-write. This is an internal state used
+
+    to implement the write protection mechanism.
+  example: []
+  syntax:
+    content: void SetPreWrite(bool enabled)
+    parameters:
+    - id: enabled
+      type: System.Boolean
+      description: True if pre-write sequence is active; false otherwise
+    content.vb: Sub SetPreWrite(enabled As Boolean)
+  overload: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPreWrite*
+  nameWithType.vb: ISoftSwitchResponder.SetPreWrite(Boolean)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPreWrite(Boolean)
+  name.vb: SetPreWrite(Boolean)
+references:
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Store*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Store
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_Set80Store_System_Boolean_
+  name: Set80Store
+  nameWithType: ISoftSwitchResponder.Set80Store
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Store
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamRd*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamRd
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetRamRd_System_Boolean_
+  name: SetRamRd
+  nameWithType: ISoftSwitchResponder.SetRamRd
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamRd
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamWrt*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamWrt
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetRamWrt_System_Boolean_
+  name: SetRamWrt
+  nameWithType: ISoftSwitchResponder.SetRamWrt
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetRamWrt
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetIntCxRom*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetIntCxRom
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetIntCxRom_System_Boolean_
+  name: SetIntCxRom
+  nameWithType: ISoftSwitchResponder.SetIntCxRom
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetIntCxRom
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltZp*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltZp
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAltZp_System_Boolean_
+  name: SetAltZp
+  nameWithType: ISoftSwitchResponder.SetAltZp
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltZp
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetSlotC3Rom*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetSlotC3Rom
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetSlotC3Rom_System_Boolean_
+  name: SetSlotC3Rom
+  nameWithType: ISoftSwitchResponder.SetSlotC3Rom
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetSlotC3Rom
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Vid*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Vid
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_Set80Vid_System_Boolean_
+  name: Set80Vid
+  nameWithType: ISoftSwitchResponder.Set80Vid
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.Set80Vid
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltChar*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltChar
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAltChar_System_Boolean_
+  name: SetAltChar
+  nameWithType: ISoftSwitchResponder.SetAltChar
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAltChar
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetText*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetText
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetText_System_Boolean_
+  name: SetText
+  nameWithType: ISoftSwitchResponder.SetText
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetText
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetMixed*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetMixed
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetMixed_System_Boolean_
+  name: SetMixed
+  nameWithType: ISoftSwitchResponder.SetMixed
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetMixed
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPage2*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPage2
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetPage2_System_Boolean_
+  name: SetPage2
+  nameWithType: ISoftSwitchResponder.SetPage2
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPage2
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHiRes*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHiRes
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetHiRes_System_Boolean_
+  name: SetHiRes
+  nameWithType: ISoftSwitchResponder.SetHiRes
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHiRes
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn0*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn0
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn0_System_Boolean_
+  name: SetAn0
+  nameWithType: ISoftSwitchResponder.SetAn0
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn0
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn1*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn1
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn1_System_Boolean_
+  name: SetAn1
+  nameWithType: ISoftSwitchResponder.SetAn1
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn1
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn2*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn2
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn2_System_Boolean_
+  name: SetAn2
+  nameWithType: ISoftSwitchResponder.SetAn2
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn2
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn3*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn3
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetAn3_System_Boolean_
+  name: SetAn3
+  nameWithType: ISoftSwitchResponder.SetAn3
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetAn3
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetBank1*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetBank1
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetBank1_System_Boolean_
+  name: SetBank1
+  nameWithType: ISoftSwitchResponder.SetBank1
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetBank1
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighWrite*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighWrite
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetHighWrite_System_Boolean_
+  name: SetHighWrite
+  nameWithType: ISoftSwitchResponder.SetHighWrite
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighWrite
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighRead*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighRead
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetHighRead_System_Boolean_
+  name: SetHighRead
+  nameWithType: ISoftSwitchResponder.SetHighRead
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetHighRead
+- uid: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPreWrite*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPreWrite
+  href: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html#Pandowdy_EmuCore_Interfaces_ISoftSwitchResponder_SetPreWrite_System_Boolean_
+  name: SetPreWrite
+  nameWithType: ISoftSwitchResponder.SetPreWrite
+  fullName: Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.SetPreWrite

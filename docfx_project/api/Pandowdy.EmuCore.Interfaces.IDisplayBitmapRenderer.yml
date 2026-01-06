@@ -1,0 +1,177 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer
+  commentId: T:Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer
+  id: IDisplayBitmapRenderer
+  parent: Pandowdy.EmuCore.Interfaces
+  children:
+  - Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer.Render(Pandowdy.EmuCore.RenderContext)
+  langs:
+  - csharp
+  - vb
+  name: IDisplayBitmapRenderer
+  nameWithType: IDisplayBitmapRenderer
+  fullName: Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer
+  type: Interface
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IDisplayBitmapRenderer.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IDisplayBitmapRenderer
+    path: ../Pandowdy.EmuCore/Interfaces/IDisplayBitmapRenderer.cs
+    startLine: 22
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Defines a renderer capable of converting Apple IIe video memory into a displayable bitmap.
+  remarks: >-
+    This interface abstracts the process of rendering Apple IIe video modes (text mode,
+
+    lo-res graphics, hi-res graphics, and mixed modes) into a bitmap format suitable for
+
+    display. Implementations read directly from the video memory pages, interpret the
+
+    video mode soft switches, and produce a pixel-accurate representation of what would
+
+    appear on an Apple IIe monitor.
+
+    <p>
+
+    The Apple IIe supports several video modes:
+
+    <ul><li>Text Mode: 40-column or 80-column text with 24 rows</li><li>Lo-Res Graphics: 40x48 color blocks (16 colors)</li><li>Hi-Res Graphics: 280x192 pixels (6 colors plus black and white)</li><li>Mixed Mode: Graphics on top 20 rows, text on bottom 4 rows</li></ul>
+
+    Each mode may use page 1 ($0400/$2000) or page 2 ($0800/$4000) video memory.
+
+    </p>
+  example: []
+  syntax:
+    content: public interface IDisplayBitmapRenderer
+    content.vb: Public Interface IDisplayBitmapRenderer
+- uid: Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer.Render(Pandowdy.EmuCore.RenderContext)
+  commentId: M:Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer.Render(Pandowdy.EmuCore.RenderContext)
+  id: Render(Pandowdy.EmuCore.RenderContext)
+  parent: Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer
+  langs:
+  - csharp
+  - vb
+  name: Render(RenderContext)
+  nameWithType: IDisplayBitmapRenderer.Render(RenderContext)
+  fullName: Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer.Render(Pandowdy.EmuCore.RenderContext)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IDisplayBitmapRenderer.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Render
+    path: ../Pandowdy.EmuCore/Interfaces/IDisplayBitmapRenderer.cs
+    startLine: 48
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Renders the current Apple IIe video state into the provided frame buffer.
+  remarks: >-
+    This method examines the video mode flags in the context (text/graphics, mixed mode,
+
+    hi-res/lo-res, page selection) and renders the appropriate video content:
+
+    <ul><li>Reads from the correct video memory page (page 1 or page 2) based on soft switches</li><li>Interprets memory contents according to the active video mode</li><li>Handles character ROM lookups for text mode, including flashing characters and MouseText</li><li>Applies Apple IIe color generation rules for graphics modes</li><li>Renders mixed mode by combining graphics and text regions</li><li>Outputs pixels to the frame buffer in a format ready for display</li></ul>
+
+    <p>
+
+    This method should be called once per video frame (typically 60 times per second)
+
+    to keep the display synchronized with video memory changes. The rendering process
+
+    directly reads memory through <xref href="Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader" data-throw-if-not-resolved="false"></xref> to access both
+
+    main and auxiliary video pages without going through the CPU bus.
+
+    </p>
+  example: []
+  syntax:
+    content: void Render(RenderContext context)
+    parameters:
+    - id: context
+      type: Pandowdy.EmuCore.RenderContext
+      description: >-
+        A <xref href="Pandowdy.EmuCore.RenderContext" data-throw-if-not-resolved="false"></xref> containing the frame buffer
+            to render into, direct memory access for reading video RAM, and system status
+            information including video mode soft switches.
+    content.vb: Sub Render(context As RenderContext)
+  overload: Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer.Render*
+references:
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.RenderContext
+  commentId: T:Pandowdy.EmuCore.RenderContext
+  parent: Pandowdy.EmuCore
+  href: Pandowdy.EmuCore.RenderContext.html
+  name: RenderContext
+  nameWithType: RenderContext
+  fullName: Pandowdy.EmuCore.RenderContext
+- uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  commentId: T:Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html
+  name: IDirectMemoryPoolReader
+  nameWithType: IDirectMemoryPoolReader
+  fullName: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+- uid: Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer.Render*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer.Render
+  href: Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer.html#Pandowdy_EmuCore_Interfaces_IDisplayBitmapRenderer_Render_Pandowdy_EmuCore_RenderContext_
+  name: Render
+  nameWithType: IDisplayBitmapRenderer.Render
+  fullName: Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer.Render
+- uid: Pandowdy.EmuCore
+  commentId: N:Pandowdy.EmuCore
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore
+  nameWithType: Pandowdy.EmuCore
+  fullName: Pandowdy.EmuCore
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html

@@ -10,25 +10,25 @@
 // to prevent accidental reuse. This design prevents several categories of bugs:
 //
 // 1. **Buffer Recycling Errors:**
-///    After RenderFrame commits the buffer, it may be recycled for the next frame.
-///    Using the old context would write to a buffer that's now in use elsewhere.
-///
-/// 2. **State Consistency:**
-///    The context captures soft switch states at allocation time. Reusing it after
-///    switches change would produce incorrect rendering.
-///
-/// 3. **Clear Ownership:**
-///    One-shot semantics make it obvious when a context is "consumed" and who owns
-///    the underlying resources.
-///
-/// THREAD SAFETY:
-/// Not thread-safe. Each context should be used by a single thread from allocation
-/// through commit. Multiple threads can allocate separate contexts concurrently.
-///
-/// PERFORMANCE:
-/// The invalidation checks add minimal overhead (single bool check per access).
-/// This cost is negligible compared to rendering work and provides strong safety
-/// guarantees.
+//    After RenderFrame commits the buffer, it may be recycled for the next frame.
+//    Using the old context would write to a buffer that's now in use elsewhere.
+//
+// 2. **State Consistency:**
+//    The context captures soft switch states at allocation time. Reusing it after
+//    switches change would produce incorrect rendering.
+//
+// 3. **Clear Ownership:**
+//    One-shot semantics make it obvious when a context is "consumed" and who owns
+//    the underlying resources.
+//
+// THREAD SAFETY:
+// Not thread-safe. Each context should be used by a single thread from allocation
+// through commit. Multiple threads can allocate separate contexts concurrently.
+//
+// PERFORMANCE:
+// The invalidation checks add minimal overhead (single bool check per access).
+// This cost is negligible compared to rendering work and provides strong safety
+// guarantees.
 //------------------------------------------------------------------------------
 
 using Pandowdy.EmuCore.DataTypes;
@@ -211,7 +211,7 @@ public class RenderContext(
     /// Invalidates this context, preventing further use.
     /// </summary>
     /// <remarks>
-    /// This method is called internally by <see cref="FrameGenerator.RenderFrame"/> after
+    /// This method is called internally by <see cref="FrameGenerator.RenderFrame(RenderContext)"/> after
     /// committing the frame buffer. Once invalidated, the context cannot be reused.
     /// </remarks>
     /// <exception cref="InvalidOperationException">

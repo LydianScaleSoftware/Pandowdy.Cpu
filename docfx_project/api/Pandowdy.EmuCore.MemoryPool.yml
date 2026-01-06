@@ -1,0 +1,1563 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.MemoryPool
+  commentId: T:Pandowdy.EmuCore.MemoryPool
+  id: MemoryPool
+  parent: Pandowdy.EmuCore
+  children:
+  - Pandowdy.EmuCore.MemoryPool.#ctor(Pandowdy.EmuCore.Interfaces.ISystemStatusProvider,Pandowdy.EmuCore.Interfaces.ILanguageCard,Pandowdy.EmuCore.Interfaces.ISystemRamSelector,System.Int32,System.Boolean)
+  - Pandowdy.EmuCore.MemoryPool.Dispose
+  - Pandowdy.EmuCore.MemoryPool.InstallApple2ROM(System.Byte[])
+  - Pandowdy.EmuCore.MemoryPool.Item(System.UInt16)
+  - Pandowdy.EmuCore.MemoryPool.MemoryRead
+  - Pandowdy.EmuCore.MemoryPool.MemoryWritten
+  - Pandowdy.EmuCore.MemoryPool.Read(System.UInt16)
+  - Pandowdy.EmuCore.MemoryPool.ReadMapped(System.UInt16)
+  - Pandowdy.EmuCore.MemoryPool.ReadPool(System.Int32)
+  - Pandowdy.EmuCore.MemoryPool.ReadRawAux(System.Int32)
+  - Pandowdy.EmuCore.MemoryPool.ReadRawMain(System.Int32)
+  - Pandowdy.EmuCore.MemoryPool.ResetRanges
+  - Pandowdy.EmuCore.MemoryPool.Size
+  - Pandowdy.EmuCore.MemoryPool.UpdateMemoryMappings
+  - Pandowdy.EmuCore.MemoryPool.Write(System.UInt16,System.Byte)
+  - Pandowdy.EmuCore.MemoryPool.WriteMapped(System.UInt16,System.Byte)
+  - Pandowdy.EmuCore.MemoryPool.WritePool(System.Int32,System.Byte)
+  langs:
+  - csharp
+  - vb
+  name: MemoryPool
+  nameWithType: MemoryPool
+  fullName: Pandowdy.EmuCore.MemoryPool
+  type: Class
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: MemoryPool
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 28
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  syntax:
+    content: 'public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPoolReader, IDisposable'
+    content.vb: Public NotInheritable Class MemoryPool Implements IMemory, IMemoryAccessNotifier, IDirectMemoryPoolReader, IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - Emulator.IMemory
+  - Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+  - Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Pandowdy.EmuCore.MemoryPool.Size
+  commentId: P:Pandowdy.EmuCore.MemoryPool.Size
+  id: Size
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: MemoryPool.Size
+  fullName: Pandowdy.EmuCore.MemoryPool.Size
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Size
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 41
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Gets the size of the addressable memory space (always 64KB for 6502).
+  remarks: >-
+    The 6502 has a 16-bit address bus, providing 64KB of address space. The actual
+
+    physical memory may be larger (128KB main+aux + ROM), but it's accessed through
+
+    this 64KB window via soft switch-controlled bank switching.
+  example: []
+  syntax:
+    content: public int Size { get; }
+    parameters: []
+    return:
+      type: System.Int32
+      description: 65,536 bytes ($0000-$FFFF).
+    content.vb: Public ReadOnly Property Size As Integer
+  overload: Pandowdy.EmuCore.MemoryPool.Size*
+  implements:
+  - Emulator.IMemory.Size
+- uid: Pandowdy.EmuCore.MemoryPool.Read(System.UInt16)
+  commentId: M:Pandowdy.EmuCore.MemoryPool.Read(System.UInt16)
+  id: Read(System.UInt16)
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: Read(ushort)
+  nameWithType: MemoryPool.Read(ushort)
+  fullName: Pandowdy.EmuCore.MemoryPool.Read(ushort)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Read
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 53
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Reads a byte from the specified address in the mapped memory space.
+  remarks: >-
+    The physical memory accessed depends on current soft switch states (RAMRD, ALTZP,
+
+    etc.). This method delegates to <xref href="Pandowdy.EmuCore.MemoryPool.ReadMapped(System.UInt16)" data-throw-if-not-resolved="false"></xref> which performs the
+
+    region-based lookup.
+  example: []
+  syntax:
+    content: public byte Read(ushort address)
+    parameters:
+    - id: address
+      type: System.UInt16
+      description: 16-bit address to read from ($0000-$FFFF).
+    return:
+      type: System.Byte
+      description: Byte value at the mapped physical location for this address.
+    content.vb: Public Function Read(address As UShort) As Byte
+  overload: Pandowdy.EmuCore.MemoryPool.Read*
+  implements:
+  - Emulator.IMemory.Read(System.UInt16)
+  nameWithType.vb: MemoryPool.Read(UShort)
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.Read(UShort)
+  name.vb: Read(UShort)
+- uid: Pandowdy.EmuCore.MemoryPool.Write(System.UInt16,System.Byte)
+  commentId: M:Pandowdy.EmuCore.MemoryPool.Write(System.UInt16,System.Byte)
+  id: Write(System.UInt16,System.Byte)
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: Write(ushort, byte)
+  nameWithType: MemoryPool.Write(ushort, byte)
+  fullName: Pandowdy.EmuCore.MemoryPool.Write(ushort, byte)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Write
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 65
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Writes a byte to the specified address in the mapped memory space.
+  remarks: >-
+    The physical memory accessed depends on current soft switch states (RAMWRT, ALTZP,
+
+    etc.). Write-protected regions (ROM, unmapped I/O) are silently ignored. This method
+
+    delegates to <xref href="Pandowdy.EmuCore.MemoryPool.WriteMapped(System.UInt16%2cSystem.Byte)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public void Write(ushort address, byte value)
+    parameters:
+    - id: address
+      type: System.UInt16
+      description: 16-bit address to write to ($0000-$FFFF).
+    - id: value
+      type: System.Byte
+      description: Byte value to write.
+    content.vb: Public Sub Write(address As UShort, value As Byte)
+  overload: Pandowdy.EmuCore.MemoryPool.Write*
+  implements:
+  - Emulator.IMemory.Write(System.UInt16,System.Byte)
+  nameWithType.vb: MemoryPool.Write(UShort, Byte)
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.Write(UShort, Byte)
+  name.vb: Write(UShort, Byte)
+- uid: Pandowdy.EmuCore.MemoryPool.Item(System.UInt16)
+  commentId: P:Pandowdy.EmuCore.MemoryPool.Item(System.UInt16)
+  id: Item(System.UInt16)
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: this[ushort]
+  nameWithType: MemoryPool.this[ushort]
+  fullName: Pandowdy.EmuCore.MemoryPool.this[ushort]
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: this[]
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 76
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Gets or sets a byte at the specified address (indexer syntax).
+  remarks: >-
+    Provides array-like syntax for memory access: <code>memory[0x1000] = 0x42;</code>
+
+    Delegates to <xref href="Pandowdy.EmuCore.MemoryPool.ReadMapped(System.UInt16)" data-throw-if-not-resolved="false"></xref> and <xref href="Pandowdy.EmuCore.MemoryPool.WriteMapped(System.UInt16%2cSystem.Byte)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public byte this[ushort address] { get; set; }
+    parameters:
+    - id: address
+      type: System.UInt16
+      description: 16-bit address ($0000-$FFFF).
+    return:
+      type: System.Byte
+      description: Byte value at the mapped physical location.
+    content.vb: Public Default Property this[](address As UShort) As Byte
+  overload: Pandowdy.EmuCore.MemoryPool.Item*
+  implements:
+  - Emulator.IMemory.Item(System.UInt16)
+  nameWithType.vb: MemoryPool.this[](UShort)
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.this[](UShort)
+  name.vb: this[](UShort)
+- uid: Pandowdy.EmuCore.MemoryPool.MemoryWritten
+  commentId: E:Pandowdy.EmuCore.MemoryPool.MemoryWritten
+  id: MemoryWritten
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: MemoryWritten
+  nameWithType: MemoryPool.MemoryWritten
+  fullName: Pandowdy.EmuCore.MemoryPool.MemoryWritten
+  type: Event
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: MemoryWritten
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 92
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Event raised when memory is written to.
+  remarks: >-
+    Consumers (debuggers, trace logs, memory viewers) can subscribe to this event
+
+    to monitor memory writes. The event includes the address and value written.
+
+    Only fires for successful writes (not write-protected regions).
+  example: []
+  syntax:
+    content: public event EventHandler<MemoryAccessEventArgs>? MemoryWritten
+    return:
+      type: System.EventHandler{Pandowdy.EmuCore.MemoryAccessEventArgs}
+    content.vb: Public Event MemoryWritten As EventHandler(Of MemoryAccessEventArgs)
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryWritten
+- uid: Pandowdy.EmuCore.MemoryPool.MemoryRead
+  commentId: E:Pandowdy.EmuCore.MemoryPool.MemoryRead
+  id: MemoryRead
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: MemoryRead
+  nameWithType: MemoryPool.MemoryRead
+  fullName: Pandowdy.EmuCore.MemoryPool.MemoryRead
+  type: Event
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: MemoryRead
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 102
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Event raised when memory is read from.
+  remarks: >-
+    Currently not implemented (no reads trigger this event). Reserved for future
+
+    use by debuggers or profilers that need to track memory access patterns.
+  example: []
+  syntax:
+    content: public event EventHandler<MemoryAccessEventArgs>? MemoryRead
+    return:
+      type: System.EventHandler{Pandowdy.EmuCore.MemoryAccessEventArgs}
+    content.vb: Public Event MemoryRead As EventHandler(Of MemoryAccessEventArgs)
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryRead
+- uid: Pandowdy.EmuCore.MemoryPool.ReadRawMain(System.Int32)
+  commentId: M:Pandowdy.EmuCore.MemoryPool.ReadRawMain(System.Int32)
+  id: ReadRawMain(System.Int32)
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: ReadRawMain(int)
+  nameWithType: MemoryPool.ReadRawMain(int)
+  fullName: Pandowdy.EmuCore.MemoryPool.ReadRawMain(int)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ReadRawMain
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 125
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Reads directly from the main memory bank, bypassing soft switch mapping.
+  remarks: >-
+    <p>
+
+    <strong>Direct Access:</strong> This method bypasses the soft switch mapping system
+
+    and reads directly from the physical main memory bank. Used by debuggers, memory
+
+    viewers, and video renderers that need to see actual RAM contents regardless of
+
+    current bank switching.
+
+    </p>
+
+    <p>
+
+    <strong>Example:</strong> The video renderer needs to read from hi-res page 2 even
+
+    if PAGE2 is off, so it uses this method instead of the normal <xref href="Pandowdy.EmuCore.MemoryPool.Read(System.UInt16)" data-throw-if-not-resolved="false"></xref> method.
+
+    </p>
+  example: []
+  syntax:
+    content: public byte ReadRawMain(int address)
+    parameters:
+    - id: address
+      type: System.Int32
+      description: Physical address in the pool (0-65535 for main bank).
+    return:
+      type: System.Byte
+      description: Byte value at the physical location.
+    content.vb: Public Function ReadRawMain(address As Integer) As Byte
+  overload: Pandowdy.EmuCore.MemoryPool.ReadRawMain*
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(System.Int32)
+  nameWithType.vb: MemoryPool.ReadRawMain(Integer)
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.ReadRawMain(Integer)
+  name.vb: ReadRawMain(Integer)
+- uid: Pandowdy.EmuCore.MemoryPool.ReadRawAux(System.Int32)
+  commentId: M:Pandowdy.EmuCore.MemoryPool.ReadRawAux(System.Int32)
+  id: ReadRawAux(System.Int32)
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: ReadRawAux(int)
+  nameWithType: MemoryPool.ReadRawAux(int)
+  fullName: Pandowdy.EmuCore.MemoryPool.ReadRawAux(int)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ReadRawAux
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 144
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Reads directly from the auxiliary memory bank, bypassing soft switch mapping.
+  remarks: >-
+    <p>
+
+    <strong>Direct Access:</strong> Reads from the auxiliary 64KB bank (offset 0x10000
+
+    in the pool). Used for 80-column display, double hi-res graphics, and debugging.
+
+    </p>
+
+    <p>
+
+    <strong>Example:</strong> 80-column text mode interleaves main and auxiliary memory
+
+    for each character position, so the renderer uses this method to access aux memory
+
+    directly.
+
+    </p>
+  example: []
+  syntax:
+    content: public byte ReadRawAux(int address)
+    parameters:
+    - id: address
+      type: System.Int32
+      description: Physical address in the pool (0-65535 for aux bank).
+    return:
+      type: System.Byte
+      description: Byte value at the physical location.
+    content.vb: Public Function ReadRawAux(address As Integer) As Byte
+  overload: Pandowdy.EmuCore.MemoryPool.ReadRawAux*
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(System.Int32)
+  nameWithType.vb: MemoryPool.ReadRawAux(Integer)
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.ReadRawAux(Integer)
+  name.vb: ReadRawAux(Integer)
+- uid: Pandowdy.EmuCore.MemoryPool.#ctor(Pandowdy.EmuCore.Interfaces.ISystemStatusProvider,Pandowdy.EmuCore.Interfaces.ILanguageCard,Pandowdy.EmuCore.Interfaces.ISystemRamSelector,System.Int32,System.Boolean)
+  commentId: M:Pandowdy.EmuCore.MemoryPool.#ctor(Pandowdy.EmuCore.Interfaces.ISystemStatusProvider,Pandowdy.EmuCore.Interfaces.ILanguageCard,Pandowdy.EmuCore.Interfaces.ISystemRamSelector,System.Int32,System.Boolean)
+  id: '#ctor(Pandowdy.EmuCore.Interfaces.ISystemStatusProvider,Pandowdy.EmuCore.Interfaces.ILanguageCard,Pandowdy.EmuCore.Interfaces.ISystemRamSelector,System.Int32,System.Boolean)'
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: MemoryPool(ISystemStatusProvider, ILanguageCard, ISystemRamSelector, int, bool)
+  nameWithType: MemoryPool.MemoryPool(ISystemStatusProvider, ILanguageCard, ISystemRamSelector, int, bool)
+  fullName: Pandowdy.EmuCore.MemoryPool.MemoryPool(Pandowdy.EmuCore.Interfaces.ISystemStatusProvider, Pandowdy.EmuCore.Interfaces.ILanguageCard, Pandowdy.EmuCore.Interfaces.ISystemRamSelector, int, bool)
+  type: Constructor
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: .ctor
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 239
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  syntax:
+    content: public MemoryPool(ISystemStatusProvider status, ILanguageCard langCard, ISystemRamSelector systemRam, int poolSize = 163584, bool randomInit = false)
+    parameters:
+    - id: status
+      type: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+    - id: langCard
+      type: Pandowdy.EmuCore.Interfaces.ILanguageCard
+    - id: systemRam
+      type: Pandowdy.EmuCore.Interfaces.ISystemRamSelector
+    - id: poolSize
+      type: System.Int32
+    - id: randomInit
+      type: System.Boolean
+    content.vb: Public Sub New(status As ISystemStatusProvider, langCard As ILanguageCard, systemRam As ISystemRamSelector, poolSize As Integer = 163584, randomInit As Boolean = False)
+  overload: Pandowdy.EmuCore.MemoryPool.#ctor*
+  nameWithType.vb: MemoryPool.New(ISystemStatusProvider, ILanguageCard, ISystemRamSelector, Integer, Boolean)
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.New(Pandowdy.EmuCore.Interfaces.ISystemStatusProvider, Pandowdy.EmuCore.Interfaces.ILanguageCard, Pandowdy.EmuCore.Interfaces.ISystemRamSelector, Integer, Boolean)
+  name.vb: New(ISystemStatusProvider, ILanguageCard, ISystemRamSelector, Integer, Boolean)
+- uid: Pandowdy.EmuCore.MemoryPool.ResetRanges
+  commentId: M:Pandowdy.EmuCore.MemoryPool.ResetRanges
+  id: ResetRanges
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: ResetRanges()
+  nameWithType: MemoryPool.ResetRanges()
+  fullName: Pandowdy.EmuCore.MemoryPool.ResetRanges()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ResetRanges
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 328
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  syntax:
+    content: public void ResetRanges()
+    content.vb: Public Sub ResetRanges()
+  overload: Pandowdy.EmuCore.MemoryPool.ResetRanges*
+- uid: Pandowdy.EmuCore.MemoryPool.ReadPool(System.Int32)
+  commentId: M:Pandowdy.EmuCore.MemoryPool.ReadPool(System.Int32)
+  id: ReadPool(System.Int32)
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: ReadPool(int)
+  nameWithType: MemoryPool.ReadPool(int)
+  fullName: Pandowdy.EmuCore.MemoryPool.ReadPool(int)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ReadPool
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 364
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  syntax:
+    content: public byte ReadPool(int address)
+    parameters:
+    - id: address
+      type: System.Int32
+    return:
+      type: System.Byte
+    content.vb: Public Function ReadPool(address As Integer) As Byte
+  overload: Pandowdy.EmuCore.MemoryPool.ReadPool*
+  nameWithType.vb: MemoryPool.ReadPool(Integer)
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.ReadPool(Integer)
+  name.vb: ReadPool(Integer)
+- uid: Pandowdy.EmuCore.MemoryPool.WritePool(System.Int32,System.Byte)
+  commentId: M:Pandowdy.EmuCore.MemoryPool.WritePool(System.Int32,System.Byte)
+  id: WritePool(System.Int32,System.Byte)
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: WritePool(int, byte)
+  nameWithType: MemoryPool.WritePool(int, byte)
+  fullName: Pandowdy.EmuCore.MemoryPool.WritePool(int, byte)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: WritePool
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 366
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  syntax:
+    content: public void WritePool(int address, byte value)
+    parameters:
+    - id: address
+      type: System.Int32
+    - id: value
+      type: System.Byte
+    content.vb: Public Sub WritePool(address As Integer, value As Byte)
+  overload: Pandowdy.EmuCore.MemoryPool.WritePool*
+  nameWithType.vb: MemoryPool.WritePool(Integer, Byte)
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.WritePool(Integer, Byte)
+  name.vb: WritePool(Integer, Byte)
+- uid: Pandowdy.EmuCore.MemoryPool.ReadMapped(System.UInt16)
+  commentId: M:Pandowdy.EmuCore.MemoryPool.ReadMapped(System.UInt16)
+  id: ReadMapped(System.UInt16)
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: ReadMapped(ushort)
+  nameWithType: MemoryPool.ReadMapped(ushort)
+  fullName: Pandowdy.EmuCore.MemoryPool.ReadMapped(ushort)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ReadMapped
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 417
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  syntax:
+    content: public byte ReadMapped(ushort address)
+    parameters:
+    - id: address
+      type: System.UInt16
+    return:
+      type: System.Byte
+    content.vb: Public Function ReadMapped(address As UShort) As Byte
+  overload: Pandowdy.EmuCore.MemoryPool.ReadMapped*
+  nameWithType.vb: MemoryPool.ReadMapped(UShort)
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.ReadMapped(UShort)
+  name.vb: ReadMapped(UShort)
+- uid: Pandowdy.EmuCore.MemoryPool.WriteMapped(System.UInt16,System.Byte)
+  commentId: M:Pandowdy.EmuCore.MemoryPool.WriteMapped(System.UInt16,System.Byte)
+  id: WriteMapped(System.UInt16,System.Byte)
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: WriteMapped(ushort, byte)
+  nameWithType: MemoryPool.WriteMapped(ushort, byte)
+  fullName: Pandowdy.EmuCore.MemoryPool.WriteMapped(ushort, byte)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: WriteMapped
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 440
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  syntax:
+    content: public void WriteMapped(ushort address, byte value)
+    parameters:
+    - id: address
+      type: System.UInt16
+    - id: value
+      type: System.Byte
+    content.vb: Public Sub WriteMapped(address As UShort, value As Byte)
+  overload: Pandowdy.EmuCore.MemoryPool.WriteMapped*
+  nameWithType.vb: MemoryPool.WriteMapped(UShort, Byte)
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.WriteMapped(UShort, Byte)
+  name.vb: WriteMapped(UShort, Byte)
+- uid: Pandowdy.EmuCore.MemoryPool.UpdateMemoryMappings
+  commentId: M:Pandowdy.EmuCore.MemoryPool.UpdateMemoryMappings
+  id: UpdateMemoryMappings
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: UpdateMemoryMappings()
+  nameWithType: MemoryPool.UpdateMemoryMappings()
+  fullName: Pandowdy.EmuCore.MemoryPool.UpdateMemoryMappings()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: UpdateMemoryMappings
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 487
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  syntax:
+    content: public void UpdateMemoryMappings()
+    content.vb: Public Sub UpdateMemoryMappings()
+  overload: Pandowdy.EmuCore.MemoryPool.UpdateMemoryMappings*
+- uid: Pandowdy.EmuCore.MemoryPool.Dispose
+  commentId: M:Pandowdy.EmuCore.MemoryPool.Dispose
+  id: Dispose
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: MemoryPool.Dispose()
+  fullName: Pandowdy.EmuCore.MemoryPool.Dispose()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Dispose
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 521
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Pandowdy.EmuCore.MemoryPool.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+- uid: Pandowdy.EmuCore.MemoryPool.InstallApple2ROM(System.Byte[])
+  commentId: M:Pandowdy.EmuCore.MemoryPool.InstallApple2ROM(System.Byte[])
+  id: InstallApple2ROM(System.Byte[])
+  parent: Pandowdy.EmuCore.MemoryPool
+  langs:
+  - csharp
+  - vb
+  name: InstallApple2ROM(byte[])
+  nameWithType: MemoryPool.InstallApple2ROM(byte[])
+  fullName: Pandowdy.EmuCore.MemoryPool.InstallApple2ROM(byte[])
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/MemoryPool.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: InstallApple2ROM
+    path: ../Pandowdy.EmuCore/MemoryPool.cs
+    startLine: 533
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  syntax:
+    content: public void InstallApple2ROM(byte[] rom)
+    parameters:
+    - id: rom
+      type: System.Byte[]
+    content.vb: Public Sub InstallApple2ROM(rom As Byte())
+  overload: Pandowdy.EmuCore.MemoryPool.InstallApple2ROM*
+  nameWithType.vb: MemoryPool.InstallApple2ROM(Byte())
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.InstallApple2ROM(Byte())
+  name.vb: InstallApple2ROM(Byte())
+references:
+- uid: Pandowdy.EmuCore
+  commentId: N:Pandowdy.EmuCore
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore
+  nameWithType: Pandowdy.EmuCore
+  fullName: Pandowdy.EmuCore
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Emulator.IMemory
+  commentId: T:Emulator.IMemory
+  parent: Emulator
+  name: IMemory
+  nameWithType: IMemory
+  fullName: Emulator.IMemory
+- uid: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+  commentId: T:Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.html
+  name: IMemoryAccessNotifier
+  nameWithType: IMemoryAccessNotifier
+  fullName: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+- uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  commentId: T:Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html
+  name: IDirectMemoryPoolReader
+  nameWithType: IDirectMemoryPoolReader
+  fullName: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Emulator
+  commentId: N:Emulator
+  name: Emulator
+  nameWithType: Emulator
+  fullName: Emulator
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.MemoryPool.Size*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.Size
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_Size
+  name: Size
+  nameWithType: MemoryPool.Size
+  fullName: Pandowdy.EmuCore.MemoryPool.Size
+- uid: Emulator.IMemory.Size
+  commentId: P:Emulator.IMemory.Size
+  parent: Emulator.IMemory
+  name: Size
+  nameWithType: IMemory.Size
+  fullName: Emulator.IMemory.Size
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Pandowdy.EmuCore.MemoryPool.ReadMapped(System.UInt16)
+  commentId: M:Pandowdy.EmuCore.MemoryPool.ReadMapped(System.UInt16)
+  isExternal: true
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_ReadMapped_System_UInt16_
+  name: ReadMapped(ushort)
+  nameWithType: MemoryPool.ReadMapped(ushort)
+  fullName: Pandowdy.EmuCore.MemoryPool.ReadMapped(ushort)
+  nameWithType.vb: MemoryPool.ReadMapped(UShort)
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.ReadMapped(UShort)
+  name.vb: ReadMapped(UShort)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.MemoryPool.ReadMapped(System.UInt16)
+    name: ReadMapped
+    href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_ReadMapped_System_UInt16_
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.MemoryPool.ReadMapped(System.UInt16)
+    name: ReadMapped
+    href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_ReadMapped_System_UInt16_
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+- uid: Pandowdy.EmuCore.MemoryPool.Read*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.Read
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_Read_System_UInt16_
+  name: Read
+  nameWithType: MemoryPool.Read
+  fullName: Pandowdy.EmuCore.MemoryPool.Read
+- uid: Emulator.IMemory.Read(System.UInt16)
+  commentId: M:Emulator.IMemory.Read(System.UInt16)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: Read(ushort)
+  nameWithType: IMemory.Read(ushort)
+  fullName: Emulator.IMemory.Read(ushort)
+  nameWithType.vb: IMemory.Read(UShort)
+  fullName.vb: Emulator.IMemory.Read(UShort)
+  name.vb: Read(UShort)
+  spec.csharp:
+  - uid: Emulator.IMemory.Read(System.UInt16)
+    name: Read
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+  spec.vb:
+  - uid: Emulator.IMemory.Read(System.UInt16)
+    name: Read
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+- uid: System.UInt16
+  commentId: T:System.UInt16
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: ushort
+  nameWithType: ushort
+  fullName: ushort
+  nameWithType.vb: UShort
+  fullName.vb: UShort
+  name.vb: UShort
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte
+- uid: Pandowdy.EmuCore.MemoryPool.WriteMapped(System.UInt16,System.Byte)
+  commentId: M:Pandowdy.EmuCore.MemoryPool.WriteMapped(System.UInt16,System.Byte)
+  isExternal: true
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_WriteMapped_System_UInt16_System_Byte_
+  name: WriteMapped(ushort, byte)
+  nameWithType: MemoryPool.WriteMapped(ushort, byte)
+  fullName: Pandowdy.EmuCore.MemoryPool.WriteMapped(ushort, byte)
+  nameWithType.vb: MemoryPool.WriteMapped(UShort, Byte)
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.WriteMapped(UShort, Byte)
+  name.vb: WriteMapped(UShort, Byte)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.MemoryPool.WriteMapped(System.UInt16,System.Byte)
+    name: WriteMapped
+    href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_WriteMapped_System_UInt16_System_Byte_
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.MemoryPool.WriteMapped(System.UInt16,System.Byte)
+    name: WriteMapped
+    href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_WriteMapped_System_UInt16_System_Byte_
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+- uid: Pandowdy.EmuCore.MemoryPool.Write*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.Write
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_Write_System_UInt16_System_Byte_
+  name: Write
+  nameWithType: MemoryPool.Write
+  fullName: Pandowdy.EmuCore.MemoryPool.Write
+- uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+  commentId: M:Emulator.IMemory.Write(System.UInt16,System.Byte)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: Write(ushort, byte)
+  nameWithType: IMemory.Write(ushort, byte)
+  fullName: Emulator.IMemory.Write(ushort, byte)
+  nameWithType.vb: IMemory.Write(UShort, Byte)
+  fullName.vb: Emulator.IMemory.Write(UShort, Byte)
+  name.vb: Write(UShort, Byte)
+  spec.csharp:
+  - uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+    name: Write
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+  spec.vb:
+  - uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+    name: Write
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+- uid: Pandowdy.EmuCore.MemoryPool.Item*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.Item
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_Item_System_UInt16_
+  name: this
+  nameWithType: MemoryPool.this
+  fullName: Pandowdy.EmuCore.MemoryPool.this
+  nameWithType.vb: MemoryPool.this[]
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.this[]
+  name.vb: this[]
+- uid: Emulator.IMemory.Item(System.UInt16)
+  commentId: P:Emulator.IMemory.Item(System.UInt16)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: this[ushort]
+  nameWithType: IMemory.this[ushort]
+  fullName: Emulator.IMemory.this[ushort]
+  nameWithType.vb: IMemory.this[](UShort)
+  fullName.vb: Emulator.IMemory.this[](UShort)
+  name.vb: this[](UShort)
+  spec.csharp:
+  - name: this
+  - name: '['
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ']'
+  spec.vb:
+  - uid: Emulator.IMemory.Item(System.UInt16)
+    name: this[]
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryWritten
+  commentId: E:Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryWritten
+  parent: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+  href: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.html#Pandowdy_EmuCore_Interfaces_IMemoryAccessNotifier_MemoryWritten
+  name: MemoryWritten
+  nameWithType: IMemoryAccessNotifier.MemoryWritten
+  fullName: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryWritten
+- uid: System.EventHandler{Pandowdy.EmuCore.MemoryAccessEventArgs}
+  commentId: T:System.EventHandler{Pandowdy.EmuCore.MemoryAccessEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<MemoryAccessEventArgs>
+  nameWithType: EventHandler<MemoryAccessEventArgs>
+  fullName: System.EventHandler<Pandowdy.EmuCore.MemoryAccessEventArgs>
+  nameWithType.vb: EventHandler(Of MemoryAccessEventArgs)
+  fullName.vb: System.EventHandler(Of Pandowdy.EmuCore.MemoryAccessEventArgs)
+  name.vb: EventHandler(Of MemoryAccessEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Pandowdy.EmuCore.MemoryAccessEventArgs
+    name: MemoryAccessEventArgs
+    href: Pandowdy.EmuCore.MemoryAccessEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Pandowdy.EmuCore.MemoryAccessEventArgs
+    name: MemoryAccessEventArgs
+    href: Pandowdy.EmuCore.MemoryAccessEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryRead
+  commentId: E:Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryRead
+  parent: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+  href: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.html#Pandowdy_EmuCore_Interfaces_IMemoryAccessNotifier_MemoryRead
+  name: MemoryRead
+  nameWithType: IMemoryAccessNotifier.MemoryRead
+  fullName: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryRead
+- uid: Pandowdy.EmuCore.MemoryPool.Read(System.UInt16)
+  commentId: M:Pandowdy.EmuCore.MemoryPool.Read(System.UInt16)
+  isExternal: true
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_Read_System_UInt16_
+  name: Read(ushort)
+  nameWithType: MemoryPool.Read(ushort)
+  fullName: Pandowdy.EmuCore.MemoryPool.Read(ushort)
+  nameWithType.vb: MemoryPool.Read(UShort)
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.Read(UShort)
+  name.vb: Read(UShort)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.MemoryPool.Read(System.UInt16)
+    name: Read
+    href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_Read_System_UInt16_
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.MemoryPool.Read(System.UInt16)
+    name: Read
+    href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_Read_System_UInt16_
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+- uid: Pandowdy.EmuCore.MemoryPool.ReadRawMain*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.ReadRawMain
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_ReadRawMain_System_Int32_
+  name: ReadRawMain
+  nameWithType: MemoryPool.ReadRawMain
+  fullName: Pandowdy.EmuCore.MemoryPool.ReadRawMain
+- uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(System.Int32)
+  commentId: M:Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(System.Int32)
+  parent: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html#Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_ReadRawMain_System_Int32_
+  name: ReadRawMain(int)
+  nameWithType: IDirectMemoryPoolReader.ReadRawMain(int)
+  fullName: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(int)
+  nameWithType.vb: IDirectMemoryPoolReader.ReadRawMain(Integer)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(Integer)
+  name.vb: ReadRawMain(Integer)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(System.Int32)
+    name: ReadRawMain
+    href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html#Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_ReadRawMain_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(System.Int32)
+    name: ReadRawMain
+    href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html#Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_ReadRawMain_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Pandowdy.EmuCore.MemoryPool.ReadRawAux*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.ReadRawAux
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_ReadRawAux_System_Int32_
+  name: ReadRawAux
+  nameWithType: MemoryPool.ReadRawAux
+  fullName: Pandowdy.EmuCore.MemoryPool.ReadRawAux
+- uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(System.Int32)
+  commentId: M:Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(System.Int32)
+  parent: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html#Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_ReadRawAux_System_Int32_
+  name: ReadRawAux(int)
+  nameWithType: IDirectMemoryPoolReader.ReadRawAux(int)
+  fullName: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(int)
+  nameWithType.vb: IDirectMemoryPoolReader.ReadRawAux(Integer)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(Integer)
+  name.vb: ReadRawAux(Integer)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(System.Int32)
+    name: ReadRawAux
+    href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html#Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_ReadRawAux_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(System.Int32)
+    name: ReadRawAux
+    href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html#Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_ReadRawAux_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Pandowdy.EmuCore.MemoryPool.#ctor*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.#ctor
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool__ctor_Pandowdy_EmuCore_Interfaces_ISystemStatusProvider_Pandowdy_EmuCore_Interfaces_ILanguageCard_Pandowdy_EmuCore_Interfaces_ISystemRamSelector_System_Int32_System_Boolean_
+  name: MemoryPool
+  nameWithType: MemoryPool.MemoryPool
+  fullName: Pandowdy.EmuCore.MemoryPool.MemoryPool
+  nameWithType.vb: MemoryPool.New
+  fullName.vb: Pandowdy.EmuCore.MemoryPool.New
+  name.vb: New
+- uid: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.html
+  name: ISystemStatusProvider
+  nameWithType: ISystemStatusProvider
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemStatusProvider
+- uid: Pandowdy.EmuCore.Interfaces.ILanguageCard
+  commentId: T:Pandowdy.EmuCore.Interfaces.ILanguageCard
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ILanguageCard.html
+  name: ILanguageCard
+  nameWithType: ILanguageCard
+  fullName: Pandowdy.EmuCore.Interfaces.ILanguageCard
+- uid: Pandowdy.EmuCore.Interfaces.ISystemRamSelector
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISystemRamSelector
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ISystemRamSelector.html
+  name: ISystemRamSelector
+  nameWithType: ISystemRamSelector
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemRamSelector
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Pandowdy.EmuCore.MemoryPool.ResetRanges*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.ResetRanges
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_ResetRanges
+  name: ResetRanges
+  nameWithType: MemoryPool.ResetRanges
+  fullName: Pandowdy.EmuCore.MemoryPool.ResetRanges
+- uid: Pandowdy.EmuCore.MemoryPool.ReadPool*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.ReadPool
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_ReadPool_System_Int32_
+  name: ReadPool
+  nameWithType: MemoryPool.ReadPool
+  fullName: Pandowdy.EmuCore.MemoryPool.ReadPool
+- uid: Pandowdy.EmuCore.MemoryPool.WritePool*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.WritePool
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_WritePool_System_Int32_System_Byte_
+  name: WritePool
+  nameWithType: MemoryPool.WritePool
+  fullName: Pandowdy.EmuCore.MemoryPool.WritePool
+- uid: Pandowdy.EmuCore.MemoryPool.ReadMapped*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.ReadMapped
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_ReadMapped_System_UInt16_
+  name: ReadMapped
+  nameWithType: MemoryPool.ReadMapped
+  fullName: Pandowdy.EmuCore.MemoryPool.ReadMapped
+- uid: Pandowdy.EmuCore.MemoryPool.WriteMapped*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.WriteMapped
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_WriteMapped_System_UInt16_System_Byte_
+  name: WriteMapped
+  nameWithType: MemoryPool.WriteMapped
+  fullName: Pandowdy.EmuCore.MemoryPool.WriteMapped
+- uid: Pandowdy.EmuCore.MemoryPool.UpdateMemoryMappings*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.UpdateMemoryMappings
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_UpdateMemoryMappings
+  name: UpdateMemoryMappings
+  nameWithType: MemoryPool.UpdateMemoryMappings
+  fullName: Pandowdy.EmuCore.MemoryPool.UpdateMemoryMappings
+- uid: Pandowdy.EmuCore.MemoryPool.Dispose*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.Dispose
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_Dispose
+  name: Dispose
+  nameWithType: MemoryPool.Dispose
+  fullName: Pandowdy.EmuCore.MemoryPool.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.MemoryPool.InstallApple2ROM*
+  commentId: Overload:Pandowdy.EmuCore.MemoryPool.InstallApple2ROM
+  href: Pandowdy.EmuCore.MemoryPool.html#Pandowdy_EmuCore_MemoryPool_InstallApple2ROM_System_Byte___
+  name: InstallApple2ROM
+  nameWithType: MemoryPool.InstallApple2ROM
+  fullName: Pandowdy.EmuCore.MemoryPool.InstallApple2ROM
+- uid: System.Byte[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte[]
+  nameWithType: byte[]
+  fullName: byte[]
+  nameWithType.vb: Byte()
+  fullName.vb: Byte()
+  name.vb: Byte()
+  spec.csharp:
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: (
+  - name: )

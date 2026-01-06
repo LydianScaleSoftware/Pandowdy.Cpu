@@ -1,0 +1,255 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  commentId: T:Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  id: IDirectMemoryPoolReader
+  parent: Pandowdy.EmuCore.Interfaces
+  children:
+  - Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(System.Int32)
+  - Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: IDirectMemoryPoolReader
+  nameWithType: IDirectMemoryPoolReader
+  fullName: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  type: Interface
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IDirectMemoryPoolReader.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IDirectMemoryPoolReader
+    path: ../Pandowdy.EmuCore/Interfaces/IDirectMemoryPoolReader.cs
+    startLine: 28
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: >-
+    Provides direct access to the physical memory pools, bypassing the bus mapping
+
+    and soft switch logic used during normal CPU access.
+  remarks: >-
+    This interface is intended for components that need to read the raw physical memory
+
+    banks (main and auxiliary RAM) without the address translation, bank switching, and
+
+    soft switch logic that the bus normally applies. This is useful for:
+
+    <ul><li>Video rendering code that needs to scan video memory pages directly</li><li>Debugging tools that need to inspect physical memory layout</li><li>Memory dump utilities that need raw memory contents</li></ul>
+
+    <p>
+
+    <strong>Important Memory Banking Detail:</strong> The Apple IIe language card provides
+
+    two 4KB banks of RAM that can be mapped into the $D000-$DFFF address range. However,
+
+    in physical memory layout:
+
+    <ul><li>Bank 1 is physically stored at $C000-$CFFF</li><li>Bank 2 is physically stored at $D000-$DFFF</li></ul>
+
+    When reading directly using this interface, you must account for this physical layout.
+
+    If you want to read from language card bank 1 at logical address $D000, you must
+
+    physically read from $C000.
+
+    </p>
+  example: []
+  syntax:
+    content: public interface IDirectMemoryPoolReader
+    content.vb: Public Interface IDirectMemoryPoolReader
+- uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(System.Int32)
+  commentId: M:Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(System.Int32)
+  id: ReadRawMain(System.Int32)
+  parent: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  langs:
+  - csharp
+  - vb
+  name: ReadRawMain(int)
+  nameWithType: IDirectMemoryPoolReader.ReadRawMain(int)
+  fullName: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(int)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IDirectMemoryPoolReader.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ReadRawMain
+    path: ../Pandowdy.EmuCore/Interfaces/IDirectMemoryPoolReader.cs
+    startLine: 48
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Reads a byte from the main memory pool, bypassing all bus mapping and soft switches.
+  remarks: >-
+    This method reads directly from the main 64KB memory pool without any address
+
+    translation, auxiliary memory selection, or bank switching logic. It always reads
+
+    from main memory, never auxiliary memory, and ignores all soft switch states
+
+    (RAMRD, RAMWRT, 80STORE, etc.).
+
+    <p>
+
+    Use this when you need to access the actual physical memory layout, such as when
+
+    rendering video from specific memory pages or debugging memory contents.
+
+    </p>
+  example: []
+  syntax:
+    content: byte ReadRawMain(int address)
+    parameters:
+    - id: address
+      type: System.Int32
+      description: >-
+        The physical address to read from ($0000-$FFFF). Note that
+            for the language card region, bank 1 ($D000-$DFFF logical) is physically located
+            at $C000-$CFFF, while bank 2 ($D000-$DFFF logical) is at $D000-$DFFF physical.
+    return:
+      type: System.Byte
+      description: >-
+        The byte value at the specified physical address in main memory, or 0
+            if the address is not available (e.g., ROM regions with no RAM underneath).
+    content.vb: Function ReadRawMain(address As Integer) As Byte
+  overload: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain*
+  nameWithType.vb: IDirectMemoryPoolReader.ReadRawMain(Integer)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain(Integer)
+  name.vb: ReadRawMain(Integer)
+- uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(System.Int32)
+  commentId: M:Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(System.Int32)
+  id: ReadRawAux(System.Int32)
+  parent: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader
+  langs:
+  - csharp
+  - vb
+  name: ReadRawAux(int)
+  nameWithType: IDirectMemoryPoolReader.ReadRawAux(int)
+  fullName: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(int)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IDirectMemoryPoolReader.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ReadRawAux
+    path: ../Pandowdy.EmuCore/Interfaces/IDirectMemoryPoolReader.cs
+    startLine: 70
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Reads a byte from the auxiliary memory pool, bypassing all bus mapping and soft switches.
+  remarks: >-
+    This method reads directly from the auxiliary 64KB memory pool without any address
+
+    translation, auxiliary memory selection, or bank switching logic. It always reads
+
+    from auxiliary memory, never main memory, and ignores all soft switch states
+
+    (RAMRD, RAMWRT, 80STORE, etc.).
+
+    <p>
+
+    The Apple IIe's auxiliary memory is primarily used for 80-column text mode,
+
+    double hi-res graphics, and extended memory for programs. Use this method when
+
+    you need direct access to the auxiliary memory bank, such as when rendering
+
+    80-column text or double hi-res graphics.
+
+    </p>
+  example: []
+  syntax:
+    content: byte ReadRawAux(int address)
+    parameters:
+    - id: address
+      type: System.Int32
+      description: >-
+        The physical address to read from ($0000-$FFFF). Note that
+            for the language card region, bank 1 ($D000-$DFFF logical) is physically located
+            at $C000-$CFFF, while bank 2 ($D000-$DFFF logical) is at $D000-$DFFF physical.
+    return:
+      type: System.Byte
+      description: >-
+        The byte value at the specified physical address in auxiliary memory, or 0
+            if the address is not available (e.g., addresses where no auxiliary RAM exists).
+    content.vb: Function ReadRawAux(address As Integer) As Byte
+  overload: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux*
+  nameWithType.vb: IDirectMemoryPoolReader.ReadRawAux(Integer)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux(Integer)
+  name.vb: ReadRawAux(Integer)
+references:
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain
+  href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html#Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_ReadRawMain_System_Int32_
+  name: ReadRawMain
+  nameWithType: IDirectMemoryPoolReader.ReadRawMain
+  fullName: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawMain
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux
+  href: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html#Pandowdy_EmuCore_Interfaces_IDirectMemoryPoolReader_ReadRawAux_System_Int32_
+  name: ReadRawAux
+  nameWithType: IDirectMemoryPoolReader.ReadRawAux
+  fullName: Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.ReadRawAux

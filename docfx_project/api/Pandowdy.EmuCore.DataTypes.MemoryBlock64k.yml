@@ -1,0 +1,648 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.DataTypes.MemoryBlock64k
+  commentId: T:Pandowdy.EmuCore.DataTypes.MemoryBlock64k
+  id: MemoryBlock64k
+  parent: Pandowdy.EmuCore.DataTypes
+  children:
+  - Pandowdy.EmuCore.DataTypes.MemoryBlock64k.#ctor
+  langs:
+  - csharp
+  - vb
+  name: MemoryBlock64k
+  nameWithType: MemoryBlock64k
+  fullName: Pandowdy.EmuCore.DataTypes.MemoryBlock64k
+  type: Class
+  source:
+    remote:
+      path: Pandowdy.EmuCore/DataTypes/MemoryBlock.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: MemoryBlock64k
+    path: ../Pandowdy.EmuCore/DataTypes/MemoryBlock.cs
+    startLine: 223
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.DataTypes
+  summary: Convenience class that creates a 64KB (0x10000 bytes) memory block - the full 6502 address space.
+  remarks: >-
+    <p>
+
+    <strong>Purpose:</strong> Provides a simple way to create a full-sized memory block without
+
+    specifying the size parameter. Equivalent to <code>new MemoryBlock(0x10000)</code>.
+
+    </p>
+
+    <p>
+
+    <strong>6502 Address Space:</strong> The 6502 processor uses 16-bit addresses (ushort),
+
+    allowing access to 65,536 bytes (64KB) of memory from $0000 to $FFFF. This class creates
+
+    a memory block that covers the entire addressable range.
+
+    </p>
+
+    <p>
+
+    <strong>Usage Example:</strong>
+
+
+    <pre><code class="lang-csharp">// Create full 64KB memory - no size parameter needed
+
+    var memory = new MemoryBlock64k();
+
+
+    // Can address the entire 6502 range
+
+    memory[0x0000] = 0xFF; // Zero page
+
+    memory[0x0100] = 0xFF; // Stack
+
+    memory[0xFFFF] = 0xFF; // End of memory
+
+
+    // Size property returns 65,536
+
+    int size = memory.Size; // Returns 0x10000</code></pre>
+
+    </p>
+
+    <p>
+
+    <strong>Performance:</strong> Identical to <xref href="Pandowdy.EmuCore.DataTypes.MemoryBlock" data-throw-if-not-resolved="false"></xref>. This is purely
+
+    a convenience wrapper with no additional overhead or functionality.
+
+    </p>
+
+    <p>
+
+    <strong>Common Use Cases:</strong>
+
+    <ul><li>CPU instruction testing with full address space</li><li>ROM/RAM simulation for 6502-based systems</li><li>Retro computer emulation (Apple II, Commodore 64, NES, etc.)</li><li>6502 programming education and experimentation</li><li>Rapid prototyping of memory-mapped I/O systems</li></ul>
+
+    </p>
+  example: []
+  syntax:
+    content: 'public class MemoryBlock64k : MemoryBlock, ISystemRam, IMemory'
+    content.vb: Public Class MemoryBlock64k Inherits MemoryBlock Implements ISystemRam, IMemory
+  inheritance:
+  - System.Object
+  - Pandowdy.EmuCore.DataTypes.MemoryBlock
+  implements:
+  - Pandowdy.EmuCore.Interfaces.ISystemRam
+  - Emulator.IMemory
+  inheritedMembers:
+  - Pandowdy.EmuCore.DataTypes.MemoryBlock.MaxSize
+  - Pandowdy.EmuCore.DataTypes.MemoryBlock.Size
+  - Pandowdy.EmuCore.DataTypes.MemoryBlock.Read(System.UInt16)
+  - Pandowdy.EmuCore.DataTypes.MemoryBlock.Write(System.UInt16,System.Byte)
+  - Pandowdy.EmuCore.DataTypes.MemoryBlock.Item(System.UInt16)
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Pandowdy.EmuCore.DataTypes.MemoryBlock64k.#ctor
+  commentId: M:Pandowdy.EmuCore.DataTypes.MemoryBlock64k.#ctor
+  id: '#ctor'
+  parent: Pandowdy.EmuCore.DataTypes.MemoryBlock64k
+  langs:
+  - csharp
+  - vb
+  name: MemoryBlock64k()
+  nameWithType: MemoryBlock64k.MemoryBlock64k()
+  fullName: Pandowdy.EmuCore.DataTypes.MemoryBlock64k.MemoryBlock64k()
+  type: Constructor
+  source:
+    remote:
+      path: Pandowdy.EmuCore/DataTypes/MemoryBlock.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: .ctor
+    path: ../Pandowdy.EmuCore/DataTypes/MemoryBlock.cs
+    startLine: 223
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.DataTypes
+  summary: Convenience class that creates a 64KB (0x10000 bytes) memory block - the full 6502 address space.
+  remarks: >-
+    <p>
+
+    <strong>Purpose:</strong> Provides a simple way to create a full-sized memory block without
+
+    specifying the size parameter. Equivalent to <code>new MemoryBlock(0x10000)</code>.
+
+    </p>
+
+    <p>
+
+    <strong>6502 Address Space:</strong> The 6502 processor uses 16-bit addresses (ushort),
+
+    allowing access to 65,536 bytes (64KB) of memory from $0000 to $FFFF. This class creates
+
+    a memory block that covers the entire addressable range.
+
+    </p>
+
+    <p>
+
+    <strong>Usage Example:</strong>
+
+
+    <pre><code class="lang-csharp">// Create full 64KB memory - no size parameter needed
+
+    var memory = new MemoryBlock64k();
+
+
+    // Can address the entire 6502 range
+
+    memory[0x0000] = 0xFF; // Zero page
+
+    memory[0x0100] = 0xFF; // Stack
+
+    memory[0xFFFF] = 0xFF; // End of memory
+
+
+    // Size property returns 65,536
+
+    int size = memory.Size; // Returns 0x10000</code></pre>
+
+    </p>
+
+    <p>
+
+    <strong>Performance:</strong> Identical to <xref href="Pandowdy.EmuCore.DataTypes.MemoryBlock" data-throw-if-not-resolved="false"></xref>. This is purely
+
+    a convenience wrapper with no additional overhead or functionality.
+
+    </p>
+
+    <p>
+
+    <strong>Common Use Cases:</strong>
+
+    <ul><li>CPU instruction testing with full address space</li><li>ROM/RAM simulation for 6502-based systems</li><li>Retro computer emulation (Apple II, Commodore 64, NES, etc.)</li><li>6502 programming education and experimentation</li><li>Rapid prototyping of memory-mapped I/O systems</li></ul>
+
+    </p>
+  example: []
+  syntax:
+    content: public MemoryBlock64k()
+    content.vb: Public Sub New()
+  overload: Pandowdy.EmuCore.DataTypes.MemoryBlock64k.#ctor*
+  nameWithType.vb: MemoryBlock64k.New()
+  fullName.vb: Pandowdy.EmuCore.DataTypes.MemoryBlock64k.New()
+  name.vb: New()
+references:
+- uid: Pandowdy.EmuCore.DataTypes.MemoryBlock
+  commentId: T:Pandowdy.EmuCore.DataTypes.MemoryBlock
+  parent: Pandowdy.EmuCore.DataTypes
+  href: Pandowdy.EmuCore.DataTypes.MemoryBlock.html
+  name: MemoryBlock
+  nameWithType: MemoryBlock
+  fullName: Pandowdy.EmuCore.DataTypes.MemoryBlock
+- uid: Pandowdy.EmuCore.DataTypes
+  commentId: N:Pandowdy.EmuCore.DataTypes
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.DataTypes
+  nameWithType: Pandowdy.EmuCore.DataTypes
+  fullName: Pandowdy.EmuCore.DataTypes
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.DataTypes
+    name: DataTypes
+    href: Pandowdy.EmuCore.DataTypes.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.DataTypes
+    name: DataTypes
+    href: Pandowdy.EmuCore.DataTypes.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Pandowdy.EmuCore.Interfaces.ISystemRam
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISystemRam
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ISystemRam.html
+  name: ISystemRam
+  nameWithType: ISystemRam
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemRam
+- uid: Emulator.IMemory
+  commentId: T:Emulator.IMemory
+  parent: Emulator
+  name: IMemory
+  nameWithType: IMemory
+  fullName: Emulator.IMemory
+- uid: Pandowdy.EmuCore.DataTypes.MemoryBlock.MaxSize
+  commentId: F:Pandowdy.EmuCore.DataTypes.MemoryBlock.MaxSize
+  parent: Pandowdy.EmuCore.DataTypes.MemoryBlock
+  href: Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_MaxSize
+  name: MaxSize
+  nameWithType: MemoryBlock.MaxSize
+  fullName: Pandowdy.EmuCore.DataTypes.MemoryBlock.MaxSize
+- uid: Pandowdy.EmuCore.DataTypes.MemoryBlock.Size
+  commentId: P:Pandowdy.EmuCore.DataTypes.MemoryBlock.Size
+  parent: Pandowdy.EmuCore.DataTypes.MemoryBlock
+  href: Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_Size
+  name: Size
+  nameWithType: MemoryBlock.Size
+  fullName: Pandowdy.EmuCore.DataTypes.MemoryBlock.Size
+- uid: Pandowdy.EmuCore.DataTypes.MemoryBlock.Read(System.UInt16)
+  commentId: M:Pandowdy.EmuCore.DataTypes.MemoryBlock.Read(System.UInt16)
+  parent: Pandowdy.EmuCore.DataTypes.MemoryBlock
+  isExternal: true
+  href: Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_Read_System_UInt16_
+  name: Read(ushort)
+  nameWithType: MemoryBlock.Read(ushort)
+  fullName: Pandowdy.EmuCore.DataTypes.MemoryBlock.Read(ushort)
+  nameWithType.vb: MemoryBlock.Read(UShort)
+  fullName.vb: Pandowdy.EmuCore.DataTypes.MemoryBlock.Read(UShort)
+  name.vb: Read(UShort)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.DataTypes.MemoryBlock.Read(System.UInt16)
+    name: Read
+    href: Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_Read_System_UInt16_
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.DataTypes.MemoryBlock.Read(System.UInt16)
+    name: Read
+    href: Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_Read_System_UInt16_
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+- uid: Pandowdy.EmuCore.DataTypes.MemoryBlock.Write(System.UInt16,System.Byte)
+  commentId: M:Pandowdy.EmuCore.DataTypes.MemoryBlock.Write(System.UInt16,System.Byte)
+  parent: Pandowdy.EmuCore.DataTypes.MemoryBlock
+  isExternal: true
+  href: Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_Write_System_UInt16_System_Byte_
+  name: Write(ushort, byte)
+  nameWithType: MemoryBlock.Write(ushort, byte)
+  fullName: Pandowdy.EmuCore.DataTypes.MemoryBlock.Write(ushort, byte)
+  nameWithType.vb: MemoryBlock.Write(UShort, Byte)
+  fullName.vb: Pandowdy.EmuCore.DataTypes.MemoryBlock.Write(UShort, Byte)
+  name.vb: Write(UShort, Byte)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.DataTypes.MemoryBlock.Write(System.UInt16,System.Byte)
+    name: Write
+    href: Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_Write_System_UInt16_System_Byte_
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.DataTypes.MemoryBlock.Write(System.UInt16,System.Byte)
+    name: Write
+    href: Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_Write_System_UInt16_System_Byte_
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+- uid: Pandowdy.EmuCore.DataTypes.MemoryBlock.Item(System.UInt16)
+  commentId: P:Pandowdy.EmuCore.DataTypes.MemoryBlock.Item(System.UInt16)
+  parent: Pandowdy.EmuCore.DataTypes.MemoryBlock
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: this[ushort]
+  nameWithType: MemoryBlock.this[ushort]
+  fullName: Pandowdy.EmuCore.DataTypes.MemoryBlock.this[ushort]
+  nameWithType.vb: MemoryBlock.this[](UShort)
+  fullName.vb: Pandowdy.EmuCore.DataTypes.MemoryBlock.this[](UShort)
+  name.vb: this[](UShort)
+  spec.csharp:
+  - name: this
+  - name: '['
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ']'
+  spec.vb:
+  - uid: Pandowdy.EmuCore.DataTypes.MemoryBlock.Item(System.UInt16)
+    name: this[]
+    href: Pandowdy.EmuCore.DataTypes.MemoryBlock.html#Pandowdy_EmuCore_DataTypes_MemoryBlock_Item_System_UInt16_
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Emulator
+  commentId: N:Emulator
+  name: Emulator
+  nameWithType: Emulator
+  fullName: Emulator
+- uid: Pandowdy.EmuCore.DataTypes.MemoryBlock64k.#ctor*
+  commentId: Overload:Pandowdy.EmuCore.DataTypes.MemoryBlock64k.#ctor
+  href: Pandowdy.EmuCore.DataTypes.MemoryBlock64k.html#Pandowdy_EmuCore_DataTypes_MemoryBlock64k__ctor
+  name: MemoryBlock64k
+  nameWithType: MemoryBlock64k.MemoryBlock64k
+  fullName: Pandowdy.EmuCore.DataTypes.MemoryBlock64k.MemoryBlock64k
+  nameWithType.vb: MemoryBlock64k.New
+  fullName.vb: Pandowdy.EmuCore.DataTypes.MemoryBlock64k.New
+  name.vb: New

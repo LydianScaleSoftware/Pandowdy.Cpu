@@ -1,0 +1,35 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "taskLabel": "Start DocFX Server",
+      "appliesTo": "Pandowdy.sln",
+      "type": "launch",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceRoot}\\misc_utils\\start-docfx-server.ps1"
+      ],
+      "contextType": "build",
+      "output": "DocFX Server"
+    },
+    {
+      "taskLabel": "Build DocFX Documentation",
+      "appliesTo": "Pandowdy.sln",
+      "type": "launch",
+      "command": "powershell.exe",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${workspaceRoot}\\misc_utils\\build-docs.ps1"
+      ],
+      "contextType": "build",
+      "output": "DocFX Build"
+    }
+  ]
+}

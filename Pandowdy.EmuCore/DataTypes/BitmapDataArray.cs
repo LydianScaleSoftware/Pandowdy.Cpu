@@ -117,7 +117,7 @@ namespace Pandowdy.EmuCore.DataTypes
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <strong>Operation:</strong> Uses <see cref="Array.Clear"/> to zero out the entire
+        /// <strong>Operation:</strong> Uses <see cref="Array.Clear(Array, int, int)"/> to zero out the entire
         /// 107,520-element array. This is more efficient than looping through each pixel manually.
         /// </para>
         /// <para>

@@ -1,0 +1,1265 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.CardFactory
+  commentId: T:Pandowdy.EmuCore.CardFactory
+  id: CardFactory
+  parent: Pandowdy.EmuCore
+  children:
+  - Pandowdy.EmuCore.CardFactory.#ctor(System.Collections.Generic.IEnumerable{Pandowdy.EmuCore.Interfaces.ICard})
+  - Pandowdy.EmuCore.CardFactory.GetAllCardTypes
+  - Pandowdy.EmuCore.CardFactory.GetCardWithId(System.Int32)
+  - Pandowdy.EmuCore.CardFactory.GetCardWithName(System.String)
+  - Pandowdy.EmuCore.CardFactory.GetNullCard
+  langs:
+  - csharp
+  - vb
+  name: CardFactory
+  nameWithType: CardFactory
+  fullName: Pandowdy.EmuCore.CardFactory
+  type: Class
+  source:
+    remote:
+      path: Pandowdy.EmuCore/CardFactory.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: CardFactory
+    path: ../Pandowdy.EmuCore/CardFactory.cs
+    startLine: 5
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  syntax:
+    content: 'public class CardFactory : ICardFactory'
+    content.vb: Public Class CardFactory Implements ICardFactory
+  inheritance:
+  - System.Object
+  implements:
+  - Pandowdy.EmuCore.Interfaces.ICardFactory
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Pandowdy.EmuCore.CardFactory.#ctor(System.Collections.Generic.IEnumerable{Pandowdy.EmuCore.Interfaces.ICard})
+  commentId: M:Pandowdy.EmuCore.CardFactory.#ctor(System.Collections.Generic.IEnumerable{Pandowdy.EmuCore.Interfaces.ICard})
+  id: '#ctor(System.Collections.Generic.IEnumerable{Pandowdy.EmuCore.Interfaces.ICard})'
+  parent: Pandowdy.EmuCore.CardFactory
+  langs:
+  - csharp
+  - vb
+  name: CardFactory(IEnumerable<ICard>)
+  nameWithType: CardFactory.CardFactory(IEnumerable<ICard>)
+  fullName: Pandowdy.EmuCore.CardFactory.CardFactory(System.Collections.Generic.IEnumerable<Pandowdy.EmuCore.Interfaces.ICard>)
+  type: Constructor
+  source:
+    remote:
+      path: Pandowdy.EmuCore/CardFactory.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: .ctor
+    path: ../Pandowdy.EmuCore/CardFactory.cs
+    startLine: 9
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  syntax:
+    content: public CardFactory(IEnumerable<ICard> cards)
+    parameters:
+    - id: cards
+      type: System.Collections.Generic.IEnumerable{Pandowdy.EmuCore.Interfaces.ICard}
+    content.vb: Public Sub New(cards As IEnumerable(Of ICard))
+  overload: Pandowdy.EmuCore.CardFactory.#ctor*
+  nameWithType.vb: CardFactory.New(IEnumerable(Of ICard))
+  fullName.vb: Pandowdy.EmuCore.CardFactory.New(System.Collections.Generic.IEnumerable(Of Pandowdy.EmuCore.Interfaces.ICard))
+  name.vb: New(IEnumerable(Of ICard))
+- uid: Pandowdy.EmuCore.CardFactory.GetCardWithId(System.Int32)
+  commentId: M:Pandowdy.EmuCore.CardFactory.GetCardWithId(System.Int32)
+  id: GetCardWithId(System.Int32)
+  parent: Pandowdy.EmuCore.CardFactory
+  langs:
+  - csharp
+  - vb
+  name: GetCardWithId(int)
+  nameWithType: CardFactory.GetCardWithId(int)
+  fullName: Pandowdy.EmuCore.CardFactory.GetCardWithId(int)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/CardFactory.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: GetCardWithId
+    path: ../Pandowdy.EmuCore/CardFactory.cs
+    startLine: 59
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Creates a new instance of a card by its numeric identifier.
+  remarks: >-
+    <p>
+
+    This method is the fastest retrieval option since it uses direct numeric comparison.
+
+    It's ideal for:
+
+    </p>
+
+    <ul><li>Deserializing saved configurations (IDs are stable)</li><li>Programmatic card installation where IDs are known</li><li>Performance-critical card lookups</li></ul>
+
+    <p>
+
+    <strong>Return Value:</strong><br />
+
+    The method returns <code>null</code> if the ID is not found, allowing callers to detect
+
+    and handle missing cards. The <xref href="Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32%2cPandowdy.EmuCore.Interfaces.SlotNumber)" data-throw-if-not-resolved="false"></xref>
+
+    method converts this <code>null</code> into an <xref href="System.InvalidOperationException" data-throw-if-not-resolved="false"></xref>.
+
+    </p>
+
+    <p>
+
+    Each call creates a new, independent instance via <xref href="Pandowdy.EmuCore.Interfaces.ICard.Clone" data-throw-if-not-resolved="false"></xref>, ensuring
+
+    that slots don't share card state.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">// Install a Disk II controller (ID = 1) in slot 6
+
+    slots.InstallCard(1, SlotNumber.Slot6);
+
+
+    // Check if a card type is available
+
+    ICard? serialCard = factory.GetCardWithId(2);
+
+    if (serialCard != null)
+
+    {
+        // Serial card is available
+    }</code></pre>
+  syntax:
+    content: public ICard? GetCardWithId(int internalId)
+    parameters:
+    - id: internalId
+      type: System.Int32
+      description: >-
+        The unique numeric ID of the card type (see <xref href="Pandowdy.EmuCore.Interfaces.ICard.Id" data-throw-if-not-resolved="false"></xref>).
+
+        Common values: 0 = NullCard, 1 = Disk II, 2 = Serial Card, etc.
+    return:
+      type: Pandowdy.EmuCore.Interfaces.ICard
+      description: >-
+        A new independent instance of the requested card type via <xref href="Pandowdy.EmuCore.Interfaces.ICard.Clone" data-throw-if-not-resolved="false"></xref>,
+
+        or <code>null</code> if no card with the specified ID is registered.
+    content.vb: Public Function GetCardWithId(internalId As Integer) As ICard
+  overload: Pandowdy.EmuCore.CardFactory.GetCardWithId*
+  seealso:
+  - linkId: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(System.String)
+    commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(System.String)
+  - linkId: Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard
+    commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard
+  implements:
+  - Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+  nameWithType.vb: CardFactory.GetCardWithId(Integer)
+  fullName.vb: Pandowdy.EmuCore.CardFactory.GetCardWithId(Integer)
+  name.vb: GetCardWithId(Integer)
+- uid: Pandowdy.EmuCore.CardFactory.GetCardWithName(System.String)
+  commentId: M:Pandowdy.EmuCore.CardFactory.GetCardWithName(System.String)
+  id: GetCardWithName(System.String)
+  parent: Pandowdy.EmuCore.CardFactory
+  langs:
+  - csharp
+  - vb
+  name: GetCardWithName(string)
+  nameWithType: CardFactory.GetCardWithName(string)
+  fullName: Pandowdy.EmuCore.CardFactory.GetCardWithName(string)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/CardFactory.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: GetCardWithName
+    path: ../Pandowdy.EmuCore/CardFactory.cs
+    startLine: 64
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Creates a new instance of a card by its human-readable name.
+  remarks: >-
+    <p>
+
+    This method provides a user-friendly way to create cards using their display names
+
+    instead of numeric IDs. The name comparison is case-insensitive to accommodate
+
+    user input and configuration files. It's ideal for:
+
+    </p>
+
+    <ul><li>User configuration interfaces (card selection dialogs)</li><li>Text-based configuration files (JSON, XML, INI)</li><li>Command-line arguments and scripts</li></ul>
+
+    <p>
+
+    <strong>Return Value:</strong><br />
+
+    The method returns <code>null</code> if the name is not found (or doesn't match any
+
+    registered card after case-insensitive comparison). The <xref href="Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String%2cPandowdy.EmuCore.Interfaces.SlotNumber)" data-throw-if-not-resolved="false"></xref>
+
+    method converts this <code>null</code> into an <xref href="System.InvalidOperationException" data-throw-if-not-resolved="false"></xref>.
+
+    </p>
+
+    <p>
+
+    Each call creates a new, independent instance via <xref href="Pandowdy.EmuCore.Interfaces.ICard.Clone" data-throw-if-not-resolved="false"></xref>, ensuring
+
+    that slots don't share card state.
+
+    </p>
+
+    <p>
+
+    <strong>Name Uniqueness:</strong><br />
+
+    The factory validates during construction that no two cards share the same name
+
+    (case-insensitive). This ensures that name-based lookup is unambiguous.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">// Install a Disk II controller by name
+
+    slots.InstallCard("Disk II Controller", SlotNumber.Slot6);
+
+
+    // Case-insensitive lookup works
+
+    slots.InstallCard("disk ii controller", SlotNumber.Slot5); // Also works
+
+
+    // Check if a card type is available
+
+    ICard? serialCard = factory.GetCardWithName("Super Serial Card");
+
+    if (serialCard != null)
+
+    {
+        // Serial card is available
+    }</code></pre>
+  syntax:
+    content: public ICard? GetCardWithName(string name)
+    parameters:
+    - id: name
+      type: System.String
+      description: >-
+        The display name of the card type (see <xref href="Pandowdy.EmuCore.Interfaces.ICard.Name" data-throw-if-not-resolved="false"></xref>).
+
+        Comparison is case-insensitive. Examples: "Disk II Controller", "Super Serial Card".
+    return:
+      type: Pandowdy.EmuCore.Interfaces.ICard
+      description: >-
+        A new independent instance of the requested card type via <xref href="Pandowdy.EmuCore.Interfaces.ICard.Clone" data-throw-if-not-resolved="false"></xref>,
+
+        or <code>null</code> if no card with the specified name is registered.
+    content.vb: Public Function GetCardWithName(name As String) As ICard
+  overload: Pandowdy.EmuCore.CardFactory.GetCardWithName*
+  seealso:
+  - linkId: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+    commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+  - linkId: Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard
+    commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard
+  implements:
+  - Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(System.String)
+  nameWithType.vb: CardFactory.GetCardWithName(String)
+  fullName.vb: Pandowdy.EmuCore.CardFactory.GetCardWithName(String)
+  name.vb: GetCardWithName(String)
+- uid: Pandowdy.EmuCore.CardFactory.GetNullCard
+  commentId: M:Pandowdy.EmuCore.CardFactory.GetNullCard
+  id: GetNullCard
+  parent: Pandowdy.EmuCore.CardFactory
+  langs:
+  - csharp
+  - vb
+  name: GetNullCard()
+  nameWithType: CardFactory.GetNullCard()
+  fullName: Pandowdy.EmuCore.CardFactory.GetNullCard()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/CardFactory.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: GetNullCard
+    path: ../Pandowdy.EmuCore/CardFactory.cs
+    startLine: 69
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Retrieves a new instance of the <xref href="Pandowdy.EmuCore.NullCard" data-throw-if-not-resolved="false"></xref> placeholder.
+  remarks: >-
+    <p>
+
+    This is a convenience method equivalent to <code>GetCardWithId(0)</code>. It provides
+
+    a clear, semantic way to obtain the empty slot placeholder without hard-coding the
+
+    NullCard ID.
+
+    </p>
+
+    <p>
+
+    <strong>Critical Requirement:</strong><br />
+
+    This method must never return <code>null</code> in a properly configured emulator. The
+
+    <xref href="Pandowdy.EmuCore.NullCard" data-throw-if-not-resolved="false"></xref> is required for:
+
+    </p>
+
+    <ul><li>Initializing all slots during <xref href="Pandowdy.EmuCore.Slots" data-throw-if-not-resolved="false"></xref> construction</li><li>Replacing removed cards via <xref href="Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)" data-throw-if-not-resolved="false"></xref></li><li>Providing a safe fallback when card creation fails</li></ul>
+
+    <p>
+
+    Both <xref href="Pandowdy.EmuCore.Slots" data-throw-if-not-resolved="false"></xref> constructor and <xref href="Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)" data-throw-if-not-resolved="false"></xref> throw
+
+    <xref href="System.InvalidOperationException" data-throw-if-not-resolved="false"></xref> if this method returns <code>null</code>.
+
+    </p>
+  example: []
+  syntax:
+    content: public ICard? GetNullCard()
+    return:
+      type: Pandowdy.EmuCore.Interfaces.ICard
+      description: >-
+        A new <xref href="Pandowdy.EmuCore.NullCard" data-throw-if-not-resolved="false"></xref> instance, or <code>null</code> if NullCard is not registered
+
+        (which indicates a critical factory configuration error).
+    content.vb: Public Function GetNullCard() As ICard
+  overload: Pandowdy.EmuCore.CardFactory.GetNullCard*
+  seealso:
+  - linkId: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+    commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+  - linkId: Pandowdy.EmuCore.NullCard
+    commentId: T:Pandowdy.EmuCore.NullCard
+  implements:
+  - Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard
+- uid: Pandowdy.EmuCore.CardFactory.GetAllCardTypes
+  commentId: M:Pandowdy.EmuCore.CardFactory.GetAllCardTypes
+  id: GetAllCardTypes
+  parent: Pandowdy.EmuCore.CardFactory
+  langs:
+  - csharp
+  - vb
+  name: GetAllCardTypes()
+  nameWithType: CardFactory.GetAllCardTypes()
+  fullName: Pandowdy.EmuCore.CardFactory.GetAllCardTypes()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/CardFactory.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: GetAllCardTypes
+    path: ../Pandowdy.EmuCore/CardFactory.cs
+    startLine: 74
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore
+  summary: Retrieves a list of all registered card types with their IDs and names.
+  remarks: >-
+    <p>
+
+    This method provides a catalog of all available card types, useful for:
+
+    </p>
+
+    <ul><li>Populating UI card selection dropdowns/lists</li><li>Generating configuration documentation</li><li>Debugging and diagnostic tools</li><li>Validating configuration files against available cards</li></ul>
+
+    <p>
+
+    <strong>Ordering:</strong><br />
+
+    The list is sorted by card ID in ascending order, placing <xref href="Pandowdy.EmuCore.NullCard" data-throw-if-not-resolved="false"></xref> (ID = 0)
+
+    first, followed by actual peripheral cards in ID order.
+
+    </p>
+
+    <p>
+
+    <strong>List Content:</strong><br />
+
+    Each tuple contains:
+
+    </p>
+
+    <ul><li><strong>Item1 (int):</strong> The card's unique ID from <xref href="Pandowdy.EmuCore.Interfaces.ICard.Id" data-throw-if-not-resolved="false"></xref></li><li><strong>Item2 (string):</strong> The card's display name from <xref href="Pandowdy.EmuCore.Interfaces.ICard.Name" data-throw-if-not-resolved="false"></xref></li></ul>
+
+    <p>
+
+    The returned list is a new collection that can be freely modified without affecting
+
+    the factory's internal state.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">// Display all available card types
+
+    var cardTypes = factory.GetAllCardTypes();
+
+    Console.WriteLine("Available cards:");
+
+    foreach (var (id, name) in cardTypes)
+
+    {
+        Console.WriteLine($"  [{id}] {name}");
+    }
+
+    // Output:
+
+    //   [0] Empty Slot
+
+    //   [1] Disk II Controller
+
+    //   [2] Super Serial Card
+
+    //   [3] Thundercard Controller
+
+
+    // Populate a UI dropdown
+
+    cardListBox.ItemsSource = factory.GetAllCardTypes()
+        .Where(card =&gt; card.Item1 != 0) // Exclude NullCard
+        .Select(card =&gt; card.Item2);</code></pre>
+  syntax:
+    content: public List<(int, string)> GetAllCardTypes()
+    return:
+      type: System.Collections.Generic.List{System.ValueTuple{System.Int32,System.String}}
+      description: >-
+        A list of tuples containing (ID, Name) pairs for all registered cards, sorted by ID.
+
+        Always includes at least the <xref href="Pandowdy.EmuCore.NullCard" data-throw-if-not-resolved="false"></xref> (0, "Empty Slot").
+    content.vb: Public Function GetAllCardTypes() As List(Of (Integer, String))
+  overload: Pandowdy.EmuCore.CardFactory.GetAllCardTypes*
+  seealso:
+  - linkId: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+    commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+  - linkId: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(System.String)
+    commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(System.String)
+  implements:
+  - Pandowdy.EmuCore.Interfaces.ICardFactory.GetAllCardTypes
+references:
+- uid: Pandowdy.EmuCore
+  commentId: N:Pandowdy.EmuCore
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore
+  nameWithType: Pandowdy.EmuCore
+  fullName: Pandowdy.EmuCore
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Pandowdy.EmuCore.Interfaces.ICardFactory
+  commentId: T:Pandowdy.EmuCore.Interfaces.ICardFactory
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ICardFactory.html
+  name: ICardFactory
+  nameWithType: ICardFactory
+  fullName: Pandowdy.EmuCore.Interfaces.ICardFactory
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.CardFactory.#ctor*
+  commentId: Overload:Pandowdy.EmuCore.CardFactory.#ctor
+  href: Pandowdy.EmuCore.CardFactory.html#Pandowdy_EmuCore_CardFactory__ctor_System_Collections_Generic_IEnumerable_Pandowdy_EmuCore_Interfaces_ICard__
+  name: CardFactory
+  nameWithType: CardFactory.CardFactory
+  fullName: Pandowdy.EmuCore.CardFactory.CardFactory
+  nameWithType.vb: CardFactory.New
+  fullName.vb: Pandowdy.EmuCore.CardFactory.New
+  name.vb: New
+- uid: System.Collections.Generic.IEnumerable{Pandowdy.EmuCore.Interfaces.ICard}
+  commentId: T:System.Collections.Generic.IEnumerable{Pandowdy.EmuCore.Interfaces.ICard}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<ICard>
+  nameWithType: IEnumerable<ICard>
+  fullName: System.Collections.Generic.IEnumerable<Pandowdy.EmuCore.Interfaces.ICard>
+  nameWithType.vb: IEnumerable(Of ICard)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Pandowdy.EmuCore.Interfaces.ICard)
+  name.vb: IEnumerable(Of ICard)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Pandowdy.EmuCore.Interfaces.ICard
+    name: ICard
+    href: Pandowdy.EmuCore.Interfaces.ICard.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Pandowdy.EmuCore.Interfaces.ICard
+    name: ICard
+    href: Pandowdy.EmuCore.Interfaces.ICard.html
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(System.String)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(System.String)
+  parent: Pandowdy.EmuCore.Interfaces.ICardFactory
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithName_System_String_
+  name: GetCardWithName(string)
+  nameWithType: ICardFactory.GetCardWithName(string)
+  fullName: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(string)
+  nameWithType.vb: ICardFactory.GetCardWithName(String)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(String)
+  name.vb: GetCardWithName(String)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(System.String)
+    name: GetCardWithName
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithName_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithName(System.String)
+    name: GetCardWithName
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithName_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard
+  parent: Pandowdy.EmuCore.Interfaces.ICardFactory
+  href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetNullCard
+  name: GetNullCard()
+  nameWithType: ICardFactory.GetNullCard()
+  fullName: Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard
+    name: GetNullCard
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetNullCard
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetNullCard
+    name: GetNullCard
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetNullCard
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.ICard.Id
+  commentId: P:Pandowdy.EmuCore.Interfaces.ICard.Id
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Id
+  name: Id
+  nameWithType: ICard.Id
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.Id
+- uid: Pandowdy.EmuCore.Interfaces.ICard.Clone
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICard.Clone
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Clone
+  name: Clone()
+  nameWithType: ICard.Clone()
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.Clone()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ICard.Clone
+    name: Clone
+    href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Clone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ICard.Clone
+    name: Clone
+    href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Clone
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  parent: Pandowdy.EmuCore.Interfaces.ISlots
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_Int32_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  name: InstallCard(int, SlotNumber)
+  nameWithType: ISlots.InstallCard(int, SlotNumber)
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(int, Pandowdy.EmuCore.Interfaces.SlotNumber)
+  nameWithType.vb: ISlots.InstallCard(Integer, SlotNumber)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(Integer, Pandowdy.EmuCore.Interfaces.SlotNumber)
+  name.vb: InstallCard(Integer, SlotNumber)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+    name: InstallCard
+    href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_Int32_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+    name: SlotNumber
+    href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.Int32,Pandowdy.EmuCore.Interfaces.SlotNumber)
+    name: InstallCard
+    href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_Int32_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+    name: SlotNumber
+    href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  - name: )
+- uid: System.InvalidOperationException
+  commentId: T:System.InvalidOperationException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.invalidoperationexception
+  name: InvalidOperationException
+  nameWithType: InvalidOperationException
+  fullName: System.InvalidOperationException
+- uid: Pandowdy.EmuCore.CardFactory.GetCardWithId*
+  commentId: Overload:Pandowdy.EmuCore.CardFactory.GetCardWithId
+  href: Pandowdy.EmuCore.CardFactory.html#Pandowdy_EmuCore_CardFactory_GetCardWithId_System_Int32_
+  name: GetCardWithId
+  nameWithType: CardFactory.GetCardWithId
+  fullName: Pandowdy.EmuCore.CardFactory.GetCardWithId
+- uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+  parent: Pandowdy.EmuCore.Interfaces.ICardFactory
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithId_System_Int32_
+  name: GetCardWithId(int)
+  nameWithType: ICardFactory.GetCardWithId(int)
+  fullName: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(int)
+  nameWithType.vb: ICardFactory.GetCardWithId(Integer)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(Integer)
+  name.vb: GetCardWithId(Integer)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+    name: GetCardWithId
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithId_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetCardWithId(System.Int32)
+    name: GetCardWithId
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithId_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Pandowdy.EmuCore.Interfaces.ICard
+  commentId: T:Pandowdy.EmuCore.Interfaces.ICard
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ICard.html
+  name: ICard
+  nameWithType: ICard
+  fullName: Pandowdy.EmuCore.Interfaces.ICard
+- uid: Pandowdy.EmuCore.Interfaces.ISlots
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISlots
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html
+  name: ISlots
+  nameWithType: ISlots
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots
+- uid: Pandowdy.EmuCore.Interfaces.ICard.Name
+  commentId: P:Pandowdy.EmuCore.Interfaces.ICard.Name
+  parent: Pandowdy.EmuCore.Interfaces.ICard
+  href: Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Name
+  name: Name
+  nameWithType: ICard.Name
+  fullName: Pandowdy.EmuCore.Interfaces.ICard.Name
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+  parent: Pandowdy.EmuCore.Interfaces.ISlots
+  isExternal: true
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_String_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  name: InstallCard(string, SlotNumber)
+  nameWithType: ISlots.InstallCard(string, SlotNumber)
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(string, Pandowdy.EmuCore.Interfaces.SlotNumber)
+  nameWithType.vb: ISlots.InstallCard(String, SlotNumber)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(String, Pandowdy.EmuCore.Interfaces.SlotNumber)
+  name.vb: InstallCard(String, SlotNumber)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+    name: InstallCard
+    href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_String_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+    name: SlotNumber
+    href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ISlots.InstallCard(System.String,Pandowdy.EmuCore.Interfaces.SlotNumber)
+    name: InstallCard
+    href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_InstallCard_System_String_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+    name: SlotNumber
+    href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  - name: )
+- uid: Pandowdy.EmuCore.CardFactory.GetCardWithName*
+  commentId: Overload:Pandowdy.EmuCore.CardFactory.GetCardWithName
+  href: Pandowdy.EmuCore.CardFactory.html#Pandowdy_EmuCore_CardFactory_GetCardWithName_System_String_
+  name: GetCardWithName
+  nameWithType: CardFactory.GetCardWithName
+  fullName: Pandowdy.EmuCore.CardFactory.GetCardWithName
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Pandowdy.EmuCore.NullCard
+  commentId: T:Pandowdy.EmuCore.NullCard
+  href: Pandowdy.EmuCore.NullCard.html
+  name: NullCard
+  nameWithType: NullCard
+  fullName: Pandowdy.EmuCore.NullCard
+- uid: Pandowdy.EmuCore.Slots
+  commentId: T:Pandowdy.EmuCore.Slots
+  href: Pandowdy.EmuCore.Slots.html
+  name: Slots
+  nameWithType: Slots
+  fullName: Pandowdy.EmuCore.Slots
+- uid: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  parent: Pandowdy.EmuCore.Interfaces.ISlots
+  href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_RemoveCard_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  name: RemoveCard(SlotNumber)
+  nameWithType: ISlots.RemoveCard(SlotNumber)
+  fullName: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+    name: RemoveCard
+    href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_RemoveCard_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  - name: (
+  - uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+    name: SlotNumber
+    href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ISlots.RemoveCard(Pandowdy.EmuCore.Interfaces.SlotNumber)
+    name: RemoveCard
+    href: Pandowdy.EmuCore.Interfaces.ISlots.html#Pandowdy_EmuCore_Interfaces_ISlots_RemoveCard_Pandowdy_EmuCore_Interfaces_SlotNumber_
+  - name: (
+  - uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+    name: SlotNumber
+    href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  - name: )
+- uid: Pandowdy.EmuCore.CardFactory.GetNullCard*
+  commentId: Overload:Pandowdy.EmuCore.CardFactory.GetNullCard
+  href: Pandowdy.EmuCore.CardFactory.html#Pandowdy_EmuCore_CardFactory_GetNullCard
+  name: GetNullCard
+  nameWithType: CardFactory.GetNullCard
+  fullName: Pandowdy.EmuCore.CardFactory.GetNullCard
+- uid: Pandowdy.EmuCore.CardFactory.GetAllCardTypes*
+  commentId: Overload:Pandowdy.EmuCore.CardFactory.GetAllCardTypes
+  href: Pandowdy.EmuCore.CardFactory.html#Pandowdy_EmuCore_CardFactory_GetAllCardTypes
+  name: GetAllCardTypes
+  nameWithType: CardFactory.GetAllCardTypes
+  fullName: Pandowdy.EmuCore.CardFactory.GetAllCardTypes
+- uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetAllCardTypes
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICardFactory.GetAllCardTypes
+  parent: Pandowdy.EmuCore.Interfaces.ICardFactory
+  href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetAllCardTypes
+  name: GetAllCardTypes()
+  nameWithType: ICardFactory.GetAllCardTypes()
+  fullName: Pandowdy.EmuCore.Interfaces.ICardFactory.GetAllCardTypes()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetAllCardTypes
+    name: GetAllCardTypes
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetAllCardTypes
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.ICardFactory.GetAllCardTypes
+    name: GetAllCardTypes
+    href: Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetAllCardTypes
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.List{System.ValueTuple{System.Int32,System.String}}
+  commentId: T:System.Collections.Generic.List{System.ValueTuple{System.Int32,System.String}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<(int, string)>
+  nameWithType: List<(int, string)>
+  fullName: System.Collections.Generic.List<(int, string)>
+  nameWithType.vb: List(Of (Integer, String))
+  fullName.vb: System.Collections.Generic.List(Of (Integer, String))
+  name.vb: List(Of (Integer, String))
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

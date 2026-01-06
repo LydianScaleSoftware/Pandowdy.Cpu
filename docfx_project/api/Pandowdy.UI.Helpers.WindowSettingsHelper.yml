@@ -1,0 +1,571 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.UI.Helpers.WindowSettingsHelper
+  commentId: T:Pandowdy.UI.Helpers.WindowSettingsHelper
+  id: WindowSettingsHelper
+  parent: Pandowdy.UI.Helpers
+  children:
+  - Pandowdy.UI.Helpers.WindowSettingsHelper.Load
+  - Pandowdy.UI.Helpers.WindowSettingsHelper.Restore(Avalonia.Controls.Window,Pandowdy.UI.Models.WindowSettings)
+  - Pandowdy.UI.Helpers.WindowSettingsHelper.Save(Avalonia.Controls.Window)
+  langs:
+  - csharp
+  - vb
+  name: WindowSettingsHelper
+  nameWithType: WindowSettingsHelper
+  fullName: Pandowdy.UI.Helpers.WindowSettingsHelper
+  type: Class
+  source:
+    remote:
+      path: Pandowdy.UI/Helpers/WindowSettingsHelper.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: WindowSettingsHelper
+    path: ../Pandowdy.UI/Helpers/WindowSettingsHelper.cs
+    startLine: 28
+  assemblies:
+  - Pandowdy.UI
+  namespace: Pandowdy.UI.Helpers
+  summary: Utility class for saving and restoring window position and size settings.
+  remarks: >-
+    <p>
+
+    <strong>Windows 11 Compatibility:</strong> Implements workarounds for Windows 11's
+
+    aggressive window placement algorithm that overrides saved positions.
+
+    </p>
+
+    <p>
+
+    <strong>Multi-Monitor Support:</strong> Tracks which monitor the window was on and
+
+    validates that saved positions are still on-screen when monitors are reconfigured.
+
+    </p>
+
+    <p>
+
+    <strong>DPI Awareness:</strong> Stores positions in pixel coordinates which Avalonia
+
+    automatically adjusts for DPI scaling.
+
+    </p>
+  example: []
+  syntax:
+    content: public static class WindowSettingsHelper
+    content.vb: Public Module WindowSettingsHelper
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Pandowdy.UI.Helpers.WindowSettingsHelper.Load
+  commentId: M:Pandowdy.UI.Helpers.WindowSettingsHelper.Load
+  id: Load
+  parent: Pandowdy.UI.Helpers.WindowSettingsHelper
+  langs:
+  - csharp
+  - vb
+  name: Load()
+  nameWithType: WindowSettingsHelper.Load()
+  fullName: Pandowdy.UI.Helpers.WindowSettingsHelper.Load()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.UI/Helpers/WindowSettingsHelper.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Load
+    path: ../Pandowdy.UI/Helpers/WindowSettingsHelper.cs
+    startLine: 52
+  assemblies:
+  - Pandowdy.UI
+  namespace: Pandowdy.UI.Helpers
+  summary: Loads window settings from the application's configuration directory.
+  remarks: >-
+    Performs validation to ensure loaded settings represent a valid on-screen position.
+
+    Returns null if settings file is missing, corrupted, or contains invalid positions.
+  example: []
+  syntax:
+    content: public static WindowSettings? Load()
+    return:
+      type: Pandowdy.UI.Models.WindowSettings
+      description: >-
+        WindowSettings if successfully loaded and validated, null if file doesn't exist
+
+        or settings are invalid.
+    content.vb: Public Shared Function Load() As WindowSettings
+  overload: Pandowdy.UI.Helpers.WindowSettingsHelper.Load*
+- uid: Pandowdy.UI.Helpers.WindowSettingsHelper.Save(Avalonia.Controls.Window)
+  commentId: M:Pandowdy.UI.Helpers.WindowSettingsHelper.Save(Avalonia.Controls.Window)
+  id: Save(Avalonia.Controls.Window)
+  parent: Pandowdy.UI.Helpers.WindowSettingsHelper
+  langs:
+  - csharp
+  - vb
+  name: Save(Window)
+  nameWithType: WindowSettingsHelper.Save(Window)
+  fullName: Pandowdy.UI.Helpers.WindowSettingsHelper.Save(Avalonia.Controls.Window)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.UI/Helpers/WindowSettingsHelper.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Save
+    path: ../Pandowdy.UI/Helpers/WindowSettingsHelper.cs
+    startLine: 114
+  assemblies:
+  - Pandowdy.UI
+  namespace: Pandowdy.UI.Helpers
+  summary: Saves window settings to the application's configuration directory.
+  remarks: >-
+    <p>
+
+    Captures current position, size, maximized state, and monitor information.
+
+    </p>
+
+    <p>
+
+    <strong>Important:</strong> If the window is maximized, this saves the "restore bounds"
+
+    (the size the window will be when un-maximized), not the maximized size. This ensures
+
+    that when the window is restored next time, it has a reasonable normal size even if
+
+    it was closed while maximized.
+
+    </p>
+
+    <p>
+
+    Creates configuration directory if it doesn't exist.
+
+    Silently ignores save errors to prevent application crashes.
+
+    </p>
+  example: []
+  syntax:
+    content: public static void Save(Window window)
+    parameters:
+    - id: window
+      type: Avalonia.Controls.Window
+      description: Window to save settings from.
+    content.vb: Public Shared Sub Save(window As Window)
+  overload: Pandowdy.UI.Helpers.WindowSettingsHelper.Save*
+- uid: Pandowdy.UI.Helpers.WindowSettingsHelper.Restore(Avalonia.Controls.Window,Pandowdy.UI.Models.WindowSettings)
+  commentId: M:Pandowdy.UI.Helpers.WindowSettingsHelper.Restore(Avalonia.Controls.Window,Pandowdy.UI.Models.WindowSettings)
+  id: Restore(Avalonia.Controls.Window,Pandowdy.UI.Models.WindowSettings)
+  parent: Pandowdy.UI.Helpers.WindowSettingsHelper
+  langs:
+  - csharp
+  - vb
+  name: Restore(Window, WindowSettings?)
+  nameWithType: WindowSettingsHelper.Restore(Window, WindowSettings?)
+  fullName: Pandowdy.UI.Helpers.WindowSettingsHelper.Restore(Avalonia.Controls.Window, Pandowdy.UI.Models.WindowSettings?)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.UI/Helpers/WindowSettingsHelper.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Restore
+    path: ../Pandowdy.UI/Helpers/WindowSettingsHelper.cs
+    startLine: 185
+  assemblies:
+  - Pandowdy.UI
+  namespace: Pandowdy.UI.Helpers
+  summary: Restores window position and size from saved settings.
+  remarks: >-
+    <p>
+
+    <strong>Validation:</strong> Checks that the saved position is still on a visible screen.
+
+    If the monitor was disconnected or position is off-screen, uses default centered position.
+
+    </p>
+
+    <p>
+
+    <strong>Windows 11 Note:</strong> This method should be called BEFORE window.Show() for
+
+    best results. Windows 11 is less likely to override positions set before the window
+
+    becomes visible.
+
+    </p>
+  example: []
+  syntax:
+    content: public static void Restore(Window window, WindowSettings? settings)
+    parameters:
+    - id: window
+      type: Avalonia.Controls.Window
+      description: Window to restore settings to.
+    - id: settings
+      type: Pandowdy.UI.Models.WindowSettings
+      description: Previously saved settings, or null to use defaults.
+    content.vb: Public Shared Sub Restore(window As Window, settings As WindowSettings)
+  overload: Pandowdy.UI.Helpers.WindowSettingsHelper.Restore*
+  nameWithType.vb: WindowSettingsHelper.Restore(Window, WindowSettings)
+  fullName.vb: Pandowdy.UI.Helpers.WindowSettingsHelper.Restore(Avalonia.Controls.Window, Pandowdy.UI.Models.WindowSettings)
+  name.vb: Restore(Window, WindowSettings)
+references:
+- uid: Pandowdy.UI.Helpers
+  commentId: N:Pandowdy.UI.Helpers
+  href: Pandowdy.html
+  name: Pandowdy.UI.Helpers
+  nameWithType: Pandowdy.UI.Helpers
+  fullName: Pandowdy.UI.Helpers
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.UI
+    name: UI
+    href: Pandowdy.UI.html
+  - name: .
+  - uid: Pandowdy.UI.Helpers
+    name: Helpers
+    href: Pandowdy.UI.Helpers.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.UI
+    name: UI
+    href: Pandowdy.UI.html
+  - name: .
+  - uid: Pandowdy.UI.Helpers
+    name: Helpers
+    href: Pandowdy.UI.Helpers.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.UI.Helpers.WindowSettingsHelper.Load*
+  commentId: Overload:Pandowdy.UI.Helpers.WindowSettingsHelper.Load
+  href: Pandowdy.UI.Helpers.WindowSettingsHelper.html#Pandowdy_UI_Helpers_WindowSettingsHelper_Load
+  name: Load
+  nameWithType: WindowSettingsHelper.Load
+  fullName: Pandowdy.UI.Helpers.WindowSettingsHelper.Load
+- uid: Pandowdy.UI.Models.WindowSettings
+  commentId: T:Pandowdy.UI.Models.WindowSettings
+  parent: Pandowdy.UI.Models
+  href: Pandowdy.UI.Models.WindowSettings.html
+  name: WindowSettings
+  nameWithType: WindowSettings
+  fullName: Pandowdy.UI.Models.WindowSettings
+- uid: Pandowdy.UI.Models
+  commentId: N:Pandowdy.UI.Models
+  href: Pandowdy.html
+  name: Pandowdy.UI.Models
+  nameWithType: Pandowdy.UI.Models
+  fullName: Pandowdy.UI.Models
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.UI
+    name: UI
+    href: Pandowdy.UI.html
+  - name: .
+  - uid: Pandowdy.UI.Models
+    name: Models
+    href: Pandowdy.UI.Models.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.UI
+    name: UI
+    href: Pandowdy.UI.html
+  - name: .
+  - uid: Pandowdy.UI.Models
+    name: Models
+    href: Pandowdy.UI.Models.html
+- uid: Pandowdy.UI.Helpers.WindowSettingsHelper.Save*
+  commentId: Overload:Pandowdy.UI.Helpers.WindowSettingsHelper.Save
+  href: Pandowdy.UI.Helpers.WindowSettingsHelper.html#Pandowdy_UI_Helpers_WindowSettingsHelper_Save_Avalonia_Controls_Window_
+  name: Save
+  nameWithType: WindowSettingsHelper.Save
+  fullName: Pandowdy.UI.Helpers.WindowSettingsHelper.Save
+- uid: Avalonia.Controls.Window
+  commentId: T:Avalonia.Controls.Window
+  parent: Avalonia.Controls
+  isExternal: true
+  name: Window
+  nameWithType: Window
+  fullName: Avalonia.Controls.Window
+- uid: Avalonia.Controls
+  commentId: N:Avalonia.Controls
+  isExternal: true
+  name: Avalonia.Controls
+  nameWithType: Avalonia.Controls
+  fullName: Avalonia.Controls
+  spec.csharp:
+  - uid: Avalonia
+    name: Avalonia
+    isExternal: true
+  - name: .
+  - uid: Avalonia.Controls
+    name: Controls
+    isExternal: true
+  spec.vb:
+  - uid: Avalonia
+    name: Avalonia
+    isExternal: true
+  - name: .
+  - uid: Avalonia.Controls
+    name: Controls
+    isExternal: true
+- uid: Pandowdy.UI.Helpers.WindowSettingsHelper.Restore*
+  commentId: Overload:Pandowdy.UI.Helpers.WindowSettingsHelper.Restore
+  href: Pandowdy.UI.Helpers.WindowSettingsHelper.html#Pandowdy_UI_Helpers_WindowSettingsHelper_Restore_Avalonia_Controls_Window_Pandowdy_UI_Models_WindowSettings_
+  name: Restore
+  nameWithType: WindowSettingsHelper.Restore
+  fullName: Pandowdy.UI.Helpers.WindowSettingsHelper.Restore

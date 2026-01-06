@@ -1,0 +1,1112 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Services.FrameProvider
+  commentId: T:Pandowdy.EmuCore.Services.FrameProvider
+  id: FrameProvider
+  parent: Pandowdy.EmuCore.Services
+  children:
+  - Pandowdy.EmuCore.Services.FrameProvider.#ctor
+  - Pandowdy.EmuCore.Services.FrameProvider.BorrowWritable
+  - Pandowdy.EmuCore.Services.FrameProvider.CommitWritable
+  - Pandowdy.EmuCore.Services.FrameProvider.FrameAvailable
+  - Pandowdy.EmuCore.Services.FrameProvider.GetFrame
+  - Pandowdy.EmuCore.Services.FrameProvider.Height
+  - Pandowdy.EmuCore.Services.FrameProvider.IsGraphics
+  - Pandowdy.EmuCore.Services.FrameProvider.IsMixed
+  - Pandowdy.EmuCore.Services.FrameProvider.Width
+  langs:
+  - csharp
+  - vb
+  name: FrameProvider
+  nameWithType: FrameProvider
+  fullName: Pandowdy.EmuCore.Services.FrameProvider
+  type: Class
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/FrameProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: FrameProvider
+    path: ../Pandowdy.EmuCore/Services/FrameProvider.cs
+    startLine: 39
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Provides double-buffered frame management for Apple II display with dimension validation.
+  remarks: >-
+    <p>
+
+    <strong>Implementation:</strong> This class manages two <xref href="Pandowdy.EmuCore.DataTypes.BitmapDataArray" data-throw-if-not-resolved="false"></xref> instances
+
+    as front and back buffers. Frame dimensions are derived from <xref href="Pandowdy.EmuCore.DataTypes.BitmapDataArray.Width" data-throw-if-not-resolved="false"></xref>
+
+    and <xref href="Pandowdy.EmuCore.DataTypes.BitmapDataArray.Height" data-throw-if-not-resolved="false"></xref> static properties and validated at construction.
+
+    </p>
+
+    <p>
+
+    <strong>Buffer Swap:</strong> Uses C# tuple swap pattern <code>(_back, _front) = (_front, _back)</code>
+
+    for atomic buffer exchange. This ensures thread-safe swapping without intermediate variables.
+
+    </p>
+
+    <p>
+
+    <strong>Validation:</strong> Constructor performs strict validation to ensure:
+
+    <ul><li>Front and back buffers have matching dimensions</li><li>Dimensions match Apple IIe standard (560×192 pixels)</li></ul>
+
+    These checks catch configuration errors early and prevent rendering corruption.
+
+    </p>
+
+    <p>
+
+    <strong>Thread Safety:</strong> The buffer swap in <xref href="Pandowdy.EmuCore.Services.FrameProvider.CommitWritable" data-throw-if-not-resolved="false"></xref> is atomic,
+
+    but the caller must ensure only one thread calls rendering methods. The front buffer
+
+    can be safely read by the UI thread while the back buffer is being written by the
+
+    rendering thread.
+
+    </p>
+
+    <p>
+
+    <strong>Display Mode Metadata:</strong> <xref href="Pandowdy.EmuCore.Services.FrameProvider.IsGraphics" data-throw-if-not-resolved="false"></xref> and <xref href="Pandowdy.EmuCore.Services.FrameProvider.IsMixed" data-throw-if-not-resolved="false"></xref>
+
+    properties are set by <xref href="Pandowdy.EmuCore.Services.FrameGenerator" data-throw-if-not-resolved="false"></xref> after rendering to provide hints to
+
+    downstream consumers (NTSC color generation, display adapters). These are not thread-safe
+
+    and should only be set by the rendering thread.
+
+    </p>
+  example: []
+  syntax:
+    content: 'public sealed class FrameProvider : IFrameProvider'
+    content.vb: Public NotInheritable Class FrameProvider Implements IFrameProvider
+  inheritance:
+  - System.Object
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IFrameProvider
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Pandowdy.EmuCore.Services.FrameProvider.Width
+  commentId: P:Pandowdy.EmuCore.Services.FrameProvider.Width
+  id: Width
+  parent: Pandowdy.EmuCore.Services.FrameProvider
+  langs:
+  - csharp
+  - vb
+  name: Width
+  nameWithType: FrameProvider.Width
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.Width
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/FrameProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Width
+    path: ../Pandowdy.EmuCore/Services/FrameProvider.cs
+    startLine: 45
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Gets the width of the frame in pixels.
+  remarks: >-
+    Currently, this value is determined by the default implementation of
+
+    <xref href="Pandowdy.EmuCore.DataTypes.BitmapDataArray" data-throw-if-not-resolved="false"></xref>. In a future refactoring, the frame provider may
+
+    dictate dimensions at creation time to support additional graphics modes.
+
+    The pixel width represents the final rendered output width, which may include
+
+    horizontal doubling to achieve proper aspect ratio on square-pixel displays.
+  example: []
+  syntax:
+    content: public int Width { get; }
+    parameters: []
+    return:
+      type: System.Int32
+      description: >-
+        The frame width in pixels. For Apple IIe standard modes, this is typically 560 pixels
+
+        (280 pixels doubled for HGR, individual for DHGR, 14 (or 7) pixels per
+
+        character × 40 (or 80) columns).
+    content.vb: Public ReadOnly Property Width As Integer
+  overload: Pandowdy.EmuCore.Services.FrameProvider.Width*
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IFrameProvider.Width
+- uid: Pandowdy.EmuCore.Services.FrameProvider.Height
+  commentId: P:Pandowdy.EmuCore.Services.FrameProvider.Height
+  id: Height
+  parent: Pandowdy.EmuCore.Services.FrameProvider
+  langs:
+  - csharp
+  - vb
+  name: Height
+  nameWithType: FrameProvider.Height
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.Height
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/FrameProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Height
+    path: ../Pandowdy.EmuCore/Services/FrameProvider.cs
+    startLine: 48
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Gets the height of the frame in scanlines.
+  example: []
+  syntax:
+    content: public int Height { get; }
+    parameters: []
+    return:
+      type: System.Int32
+      description: >-
+        The frame height in scanlines. For Apple IIe, this is 192 scanlines (24 text rows
+
+        × 8 scanlines per row).
+    content.vb: Public ReadOnly Property Height As Integer
+  overload: Pandowdy.EmuCore.Services.FrameProvider.Height*
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IFrameProvider.Height
+- uid: Pandowdy.EmuCore.Services.FrameProvider.FrameAvailable
+  commentId: E:Pandowdy.EmuCore.Services.FrameProvider.FrameAvailable
+  id: FrameAvailable
+  parent: Pandowdy.EmuCore.Services.FrameProvider
+  langs:
+  - csharp
+  - vb
+  name: FrameAvailable
+  nameWithType: FrameProvider.FrameAvailable
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.FrameAvailable
+  type: Event
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/FrameProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: FrameAvailable
+    path: ../Pandowdy.EmuCore/Services/FrameProvider.cs
+    startLine: 51
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Raised after a new frame has been committed and is available for display.
+  remarks: >-
+    This event is fired by <xref href="Pandowdy.EmuCore.Interfaces.IFrameProvider.CommitWritable" data-throw-if-not-resolved="false"></xref> after the front and back buffers
+
+    have been swapped. Subscribers (typically the UI layer) should respond by reading
+
+    the front buffer via <xref href="Pandowdy.EmuCore.Interfaces.IFrameProvider.GetFrame" data-throw-if-not-resolved="false"></xref> and updating the display. This event
+
+    is typically raised at the video refresh rate (approximately 60 Hz for Apple IIe).
+  example: []
+  syntax:
+    content: public event EventHandler? FrameAvailable
+    return:
+      type: System.EventHandler
+    content.vb: Public Event FrameAvailable As EventHandler
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IFrameProvider.FrameAvailable
+- uid: Pandowdy.EmuCore.Services.FrameProvider.IsGraphics
+  commentId: P:Pandowdy.EmuCore.Services.FrameProvider.IsGraphics
+  id: IsGraphics
+  parent: Pandowdy.EmuCore.Services.FrameProvider
+  langs:
+  - csharp
+  - vb
+  name: IsGraphics
+  nameWithType: FrameProvider.IsGraphics
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.IsGraphics
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/FrameProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IsGraphics
+    path: ../Pandowdy.EmuCore/Services/FrameProvider.cs
+    startLine: 59
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Gets or sets whether the emulator is in graphics mode (as opposed to text mode).
+  remarks: >-
+    This property reflects the state of the TEXT soft switch. When false (text mode),
+
+    the display shows 40-column or 80-column text. When true (graphics mode), the
+
+    display shows lo-res (40×48 color blocks) or hi-res (280×192 pixels) graphics.
+
+    The primary purpose of this flag is to give the UI renderer a hint to use NTSC
+
+    color generation and fringing when applicable.
+  example: []
+  syntax:
+    content: public bool IsGraphics { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+      description: True if displaying graphics (lo-res or hi-res); false if displaying text mode.
+    content.vb: Public Property IsGraphics As Boolean
+  overload: Pandowdy.EmuCore.Services.FrameProvider.IsGraphics*
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IFrameProvider.IsGraphics
+- uid: Pandowdy.EmuCore.Services.FrameProvider.IsMixed
+  commentId: P:Pandowdy.EmuCore.Services.FrameProvider.IsMixed
+  id: IsMixed
+  parent: Pandowdy.EmuCore.Services.FrameProvider
+  langs:
+  - csharp
+  - vb
+  name: IsMixed
+  nameWithType: FrameProvider.IsMixed
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.IsMixed
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/FrameProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IsMixed
+    path: ../Pandowdy.EmuCore/Services/FrameProvider.cs
+    startLine: 67
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Gets or sets whether the emulator is in mixed text/graphics mode.
+  remarks: >-
+    This property reflects the state of the MIXED soft switch. When true, the top
+
+    160 scanlines display graphics content and the bottom 32 scanlines (4 text rows)
+
+    display text. This mode is commonly used in Apple II games to show graphics with
+
+    a text status line at the bottom.
+
+    The primary purpose of this flag is to give the UI renderer a hint that the bottom
+
+    4 lines of the display are text and can optionally be excluded from NTSC color generation
+
+    to reduce fringing of the text.
+  example: []
+  syntax:
+    content: public bool IsMixed { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+      description: >-
+        True if displaying mixed mode (graphics on top 20 rows, text on bottom 4 rows);
+
+        false if displaying pure text or pure graphics.
+    content.vb: Public Property IsMixed As Boolean
+  overload: Pandowdy.EmuCore.Services.FrameProvider.IsMixed*
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IFrameProvider.IsMixed
+- uid: Pandowdy.EmuCore.Services.FrameProvider.#ctor
+  commentId: M:Pandowdy.EmuCore.Services.FrameProvider.#ctor
+  id: '#ctor'
+  parent: Pandowdy.EmuCore.Services.FrameProvider
+  langs:
+  - csharp
+  - vb
+  name: FrameProvider()
+  nameWithType: FrameProvider.FrameProvider()
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.FrameProvider()
+  type: Constructor
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/FrameProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: .ctor
+    path: ../Pandowdy.EmuCore/Services/FrameProvider.cs
+    startLine: 102
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Initializes a new instance of the <xref href="Pandowdy.EmuCore.Services.FrameProvider" data-throw-if-not-resolved="false"></xref> class with dimension validation.
+  remarks: >-
+    <p>
+
+    <strong>Initialization Sequence:</strong>
+
+    <ol><li>Allocates front and back <xref href="Pandowdy.EmuCore.DataTypes.BitmapDataArray" data-throw-if-not-resolved="false"></xref> buffers</li><li>Queries buffer dimensions from static properties</li><li>Validates front and back buffers have matching dimensions</li><li>Validates dimensions match Apple IIe standard (560×192)</li><li>Sets <xref href="Pandowdy.EmuCore.Services.FrameProvider.Width" data-throw-if-not-resolved="false"></xref> and <xref href="Pandowdy.EmuCore.Services.FrameProvider.Height" data-throw-if-not-resolved="false"></xref> properties</li></ol>
+
+    </p>
+
+    <p>
+
+    <strong>Why Validate?</strong> Although the dimensions are determined by
+
+    <xref href="Pandowdy.EmuCore.DataTypes.BitmapDataArray" data-throw-if-not-resolved="false"></xref> constants, explicit validation:
+
+    <ul><li>Catches bugs if BitmapDataArray is refactored incorrectly</li><li>Documents the expected dimensions (560×192) for Apple IIe</li><li>Provides clear error messages if configuration is wrong</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Performance:</strong> All validation happens once at construction.
+
+    Runtime frame operations have no validation overhead.
+
+    </p>
+  example: []
+  syntax:
+    content: public FrameProvider()
+    content.vb: Public Sub New()
+  overload: Pandowdy.EmuCore.Services.FrameProvider.#ctor*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: >-
+      Thrown if front and back buffer dimensions don't match, or if dimensions don't match
+
+      Apple IIe standard (560×192). These exceptions indicate a configuration error in
+
+      <xref href="Pandowdy.EmuCore.DataTypes.BitmapDataArray" data-throw-if-not-resolved="false"></xref> and should never occur in production with correct constants.
+  nameWithType.vb: FrameProvider.New()
+  fullName.vb: Pandowdy.EmuCore.Services.FrameProvider.New()
+  name.vb: New()
+- uid: Pandowdy.EmuCore.Services.FrameProvider.GetFrame
+  commentId: M:Pandowdy.EmuCore.Services.FrameProvider.GetFrame
+  id: GetFrame
+  parent: Pandowdy.EmuCore.Services.FrameProvider
+  langs:
+  - csharp
+  - vb
+  name: GetFrame()
+  nameWithType: FrameProvider.GetFrame()
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.GetFrame()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/FrameProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: GetFrame
+    path: ../Pandowdy.EmuCore/Services/FrameProvider.cs
+    startLine: 155
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Gets the current front buffer for reading and displaying.
+  remarks: >-
+    This method is typically called by the UI layer in response to the
+
+    <xref href="Pandowdy.EmuCore.Interfaces.IFrameProvider.FrameAvailable" data-throw-if-not-resolved="false"></xref> event to retrieve the completed frame for display.
+
+    The returned buffer should be treated as read-only to prevent race conditions
+
+    with the rendering thread.
+  example: []
+  syntax:
+    content: public BitmapDataArray GetFrame()
+    return:
+      type: Pandowdy.EmuCore.DataTypes.BitmapDataArray
+      description: >-
+        A <xref href="Pandowdy.EmuCore.DataTypes.BitmapDataArray" data-throw-if-not-resolved="false"></xref> containing the most recently committed frame,
+
+        ready for display. This buffer is stable and will not change until the next
+
+        call to <xref href="Pandowdy.EmuCore.Interfaces.IFrameProvider.CommitWritable" data-throw-if-not-resolved="false"></xref>.
+    content.vb: Public Function GetFrame() As BitmapDataArray
+  overload: Pandowdy.EmuCore.Services.FrameProvider.GetFrame*
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IFrameProvider.GetFrame
+- uid: Pandowdy.EmuCore.Services.FrameProvider.BorrowWritable
+  commentId: M:Pandowdy.EmuCore.Services.FrameProvider.BorrowWritable
+  id: BorrowWritable
+  parent: Pandowdy.EmuCore.Services.FrameProvider
+  langs:
+  - csharp
+  - vb
+  name: BorrowWritable()
+  nameWithType: FrameProvider.BorrowWritable()
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.BorrowWritable()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/FrameProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: BorrowWritable
+    path: ../Pandowdy.EmuCore/Services/FrameProvider.cs
+    startLine: 162
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Gets the back buffer for writing and composing the next frame.
+  remarks: >-
+    This method is typically called by the rendering subsystem at the start of each
+
+    frame generation cycle. The caller should render the complete frame into this buffer,
+
+    then call <xref href="Pandowdy.EmuCore.Interfaces.IFrameProvider.CommitWritable" data-throw-if-not-resolved="false"></xref> to make it visible. The term "Borrow" indicates
+
+    that the caller has temporary exclusive access to this buffer for rendering purposes.
+  example: []
+  syntax:
+    content: public BitmapDataArray BorrowWritable()
+    return:
+      type: Pandowdy.EmuCore.DataTypes.BitmapDataArray
+      description: >-
+        A <xref href="Pandowdy.EmuCore.DataTypes.BitmapDataArray" data-throw-if-not-resolved="false"></xref> that can be written to for composing the next frame.
+
+        This buffer is not visible to the display until <xref href="Pandowdy.EmuCore.Interfaces.IFrameProvider.CommitWritable" data-throw-if-not-resolved="false"></xref> is called.
+    content.vb: Public Function BorrowWritable() As BitmapDataArray
+  overload: Pandowdy.EmuCore.Services.FrameProvider.BorrowWritable*
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IFrameProvider.BorrowWritable
+- uid: Pandowdy.EmuCore.Services.FrameProvider.CommitWritable
+  commentId: M:Pandowdy.EmuCore.Services.FrameProvider.CommitWritable
+  id: CommitWritable
+  parent: Pandowdy.EmuCore.Services.FrameProvider
+  langs:
+  - csharp
+  - vb
+  name: CommitWritable()
+  nameWithType: FrameProvider.CommitWritable()
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.CommitWritable()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/FrameProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: CommitWritable
+    path: ../Pandowdy.EmuCore/Services/FrameProvider.cs
+    startLine: 185
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Swaps the front and back buffers and raises the <xref href="Pandowdy.EmuCore.Interfaces.IFrameProvider.FrameAvailable" data-throw-if-not-resolved="false"></xref> event.
+  remarks: >-
+    This method atomically swaps the front and back buffers, making the newly rendered
+
+    frame visible while providing the previous front buffer as the new back buffer for
+
+    the next frame. After the swap, the <xref href="Pandowdy.EmuCore.Interfaces.IFrameProvider.FrameAvailable" data-throw-if-not-resolved="false"></xref> event is raised to
+
+    notify the UI layer that a new frame is ready for display.
+
+    <p>
+
+    This method should be called by the rendering subsystem after completing a frame
+
+    (typically once per VBlank period, approximately 60 times per second for Apple IIe).
+
+    </p>
+  example: []
+  syntax:
+    content: public void CommitWritable()
+    content.vb: Public Sub CommitWritable()
+  overload: Pandowdy.EmuCore.Services.FrameProvider.CommitWritable*
+  implements:
+  - Pandowdy.EmuCore.Interfaces.IFrameProvider.CommitWritable
+references:
+- uid: Pandowdy.EmuCore.DataTypes.BitmapDataArray
+  commentId: T:Pandowdy.EmuCore.DataTypes.BitmapDataArray
+  parent: Pandowdy.EmuCore.DataTypes
+  href: Pandowdy.EmuCore.DataTypes.BitmapDataArray.html
+  name: BitmapDataArray
+  nameWithType: BitmapDataArray
+  fullName: Pandowdy.EmuCore.DataTypes.BitmapDataArray
+- uid: Pandowdy.EmuCore.DataTypes.BitmapDataArray.Width
+  commentId: P:Pandowdy.EmuCore.DataTypes.BitmapDataArray.Width
+  href: Pandowdy.EmuCore.DataTypes.BitmapDataArray.html#Pandowdy_EmuCore_DataTypes_BitmapDataArray_Width
+  name: Width
+  nameWithType: BitmapDataArray.Width
+  fullName: Pandowdy.EmuCore.DataTypes.BitmapDataArray.Width
+- uid: Pandowdy.EmuCore.DataTypes.BitmapDataArray.Height
+  commentId: P:Pandowdy.EmuCore.DataTypes.BitmapDataArray.Height
+  href: Pandowdy.EmuCore.DataTypes.BitmapDataArray.html#Pandowdy_EmuCore_DataTypes_BitmapDataArray_Height
+  name: Height
+  nameWithType: BitmapDataArray.Height
+  fullName: Pandowdy.EmuCore.DataTypes.BitmapDataArray.Height
+- uid: Pandowdy.EmuCore.Services.FrameProvider.CommitWritable
+  commentId: M:Pandowdy.EmuCore.Services.FrameProvider.CommitWritable
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_CommitWritable
+  name: CommitWritable()
+  nameWithType: FrameProvider.CommitWritable()
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.CommitWritable()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Services.FrameProvider.CommitWritable
+    name: CommitWritable
+    href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_CommitWritable
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Services.FrameProvider.CommitWritable
+    name: CommitWritable
+    href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_CommitWritable
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.Services.FrameProvider.IsGraphics
+  commentId: P:Pandowdy.EmuCore.Services.FrameProvider.IsGraphics
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_IsGraphics
+  name: IsGraphics
+  nameWithType: FrameProvider.IsGraphics
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.IsGraphics
+- uid: Pandowdy.EmuCore.Services.FrameProvider.IsMixed
+  commentId: P:Pandowdy.EmuCore.Services.FrameProvider.IsMixed
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_IsMixed
+  name: IsMixed
+  nameWithType: FrameProvider.IsMixed
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.IsMixed
+- uid: Pandowdy.EmuCore.Services.FrameGenerator
+  commentId: T:Pandowdy.EmuCore.Services.FrameGenerator
+  href: Pandowdy.EmuCore.Services.FrameGenerator.html
+  name: FrameGenerator
+  nameWithType: FrameGenerator
+  fullName: Pandowdy.EmuCore.Services.FrameGenerator
+- uid: Pandowdy.EmuCore.Services
+  commentId: N:Pandowdy.EmuCore.Services
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Services
+  nameWithType: Pandowdy.EmuCore.Services
+  fullName: Pandowdy.EmuCore.Services
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Services
+    name: Services
+    href: Pandowdy.EmuCore.Services.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Services
+    name: Services
+    href: Pandowdy.EmuCore.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Pandowdy.EmuCore.Interfaces.IFrameProvider
+  commentId: T:Pandowdy.EmuCore.Interfaces.IFrameProvider
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html
+  name: IFrameProvider
+  nameWithType: IFrameProvider
+  fullName: Pandowdy.EmuCore.Interfaces.IFrameProvider
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.DataTypes
+  commentId: N:Pandowdy.EmuCore.DataTypes
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.DataTypes
+  nameWithType: Pandowdy.EmuCore.DataTypes
+  fullName: Pandowdy.EmuCore.DataTypes
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.DataTypes
+    name: DataTypes
+    href: Pandowdy.EmuCore.DataTypes.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.DataTypes
+    name: DataTypes
+    href: Pandowdy.EmuCore.DataTypes.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.Services.FrameProvider.Width*
+  commentId: Overload:Pandowdy.EmuCore.Services.FrameProvider.Width
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_Width
+  name: Width
+  nameWithType: FrameProvider.Width
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.Width
+- uid: Pandowdy.EmuCore.Interfaces.IFrameProvider.Width
+  commentId: P:Pandowdy.EmuCore.Interfaces.IFrameProvider.Width
+  parent: Pandowdy.EmuCore.Interfaces.IFrameProvider
+  href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html#Pandowdy_EmuCore_Interfaces_IFrameProvider_Width
+  name: Width
+  nameWithType: IFrameProvider.Width
+  fullName: Pandowdy.EmuCore.Interfaces.IFrameProvider.Width
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Pandowdy.EmuCore.Services.FrameProvider.Height*
+  commentId: Overload:Pandowdy.EmuCore.Services.FrameProvider.Height
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_Height
+  name: Height
+  nameWithType: FrameProvider.Height
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.Height
+- uid: Pandowdy.EmuCore.Interfaces.IFrameProvider.Height
+  commentId: P:Pandowdy.EmuCore.Interfaces.IFrameProvider.Height
+  parent: Pandowdy.EmuCore.Interfaces.IFrameProvider
+  href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html#Pandowdy_EmuCore_Interfaces_IFrameProvider_Height
+  name: Height
+  nameWithType: IFrameProvider.Height
+  fullName: Pandowdy.EmuCore.Interfaces.IFrameProvider.Height
+- uid: Pandowdy.EmuCore.Interfaces.IFrameProvider.CommitWritable
+  commentId: M:Pandowdy.EmuCore.Interfaces.IFrameProvider.CommitWritable
+  parent: Pandowdy.EmuCore.Interfaces.IFrameProvider
+  href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html#Pandowdy_EmuCore_Interfaces_IFrameProvider_CommitWritable
+  name: CommitWritable()
+  nameWithType: IFrameProvider.CommitWritable()
+  fullName: Pandowdy.EmuCore.Interfaces.IFrameProvider.CommitWritable()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IFrameProvider.CommitWritable
+    name: CommitWritable
+    href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html#Pandowdy_EmuCore_Interfaces_IFrameProvider_CommitWritable
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IFrameProvider.CommitWritable
+    name: CommitWritable
+    href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html#Pandowdy_EmuCore_Interfaces_IFrameProvider_CommitWritable
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.IFrameProvider.GetFrame
+  commentId: M:Pandowdy.EmuCore.Interfaces.IFrameProvider.GetFrame
+  parent: Pandowdy.EmuCore.Interfaces.IFrameProvider
+  href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html#Pandowdy_EmuCore_Interfaces_IFrameProvider_GetFrame
+  name: GetFrame()
+  nameWithType: IFrameProvider.GetFrame()
+  fullName: Pandowdy.EmuCore.Interfaces.IFrameProvider.GetFrame()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IFrameProvider.GetFrame
+    name: GetFrame
+    href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html#Pandowdy_EmuCore_Interfaces_IFrameProvider_GetFrame
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IFrameProvider.GetFrame
+    name: GetFrame
+    href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html#Pandowdy_EmuCore_Interfaces_IFrameProvider_GetFrame
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.Interfaces.IFrameProvider.FrameAvailable
+  commentId: E:Pandowdy.EmuCore.Interfaces.IFrameProvider.FrameAvailable
+  parent: Pandowdy.EmuCore.Interfaces.IFrameProvider
+  href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html#Pandowdy_EmuCore_Interfaces_IFrameProvider_FrameAvailable
+  name: FrameAvailable
+  nameWithType: IFrameProvider.FrameAvailable
+  fullName: Pandowdy.EmuCore.Interfaces.IFrameProvider.FrameAvailable
+- uid: System.EventHandler
+  commentId: T:System.EventHandler
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler
+  name: EventHandler
+  nameWithType: EventHandler
+  fullName: System.EventHandler
+- uid: Pandowdy.EmuCore.Services.FrameProvider.IsGraphics*
+  commentId: Overload:Pandowdy.EmuCore.Services.FrameProvider.IsGraphics
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_IsGraphics
+  name: IsGraphics
+  nameWithType: FrameProvider.IsGraphics
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.IsGraphics
+- uid: Pandowdy.EmuCore.Interfaces.IFrameProvider.IsGraphics
+  commentId: P:Pandowdy.EmuCore.Interfaces.IFrameProvider.IsGraphics
+  parent: Pandowdy.EmuCore.Interfaces.IFrameProvider
+  href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html#Pandowdy_EmuCore_Interfaces_IFrameProvider_IsGraphics
+  name: IsGraphics
+  nameWithType: IFrameProvider.IsGraphics
+  fullName: Pandowdy.EmuCore.Interfaces.IFrameProvider.IsGraphics
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Pandowdy.EmuCore.Services.FrameProvider.IsMixed*
+  commentId: Overload:Pandowdy.EmuCore.Services.FrameProvider.IsMixed
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_IsMixed
+  name: IsMixed
+  nameWithType: FrameProvider.IsMixed
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.IsMixed
+- uid: Pandowdy.EmuCore.Interfaces.IFrameProvider.IsMixed
+  commentId: P:Pandowdy.EmuCore.Interfaces.IFrameProvider.IsMixed
+  parent: Pandowdy.EmuCore.Interfaces.IFrameProvider
+  href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html#Pandowdy_EmuCore_Interfaces_IFrameProvider_IsMixed
+  name: IsMixed
+  nameWithType: IFrameProvider.IsMixed
+  fullName: Pandowdy.EmuCore.Interfaces.IFrameProvider.IsMixed
+- uid: Pandowdy.EmuCore.Services.FrameProvider
+  commentId: T:Pandowdy.EmuCore.Services.FrameProvider
+  href: Pandowdy.EmuCore.Services.FrameProvider.html
+  name: FrameProvider
+  nameWithType: FrameProvider
+  fullName: Pandowdy.EmuCore.Services.FrameProvider
+- uid: Pandowdy.EmuCore.Services.FrameProvider.Width
+  commentId: P:Pandowdy.EmuCore.Services.FrameProvider.Width
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_Width
+  name: Width
+  nameWithType: FrameProvider.Width
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.Width
+- uid: Pandowdy.EmuCore.Services.FrameProvider.Height
+  commentId: P:Pandowdy.EmuCore.Services.FrameProvider.Height
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_Height
+  name: Height
+  nameWithType: FrameProvider.Height
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.Height
+- uid: System.InvalidOperationException
+  commentId: T:System.InvalidOperationException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.invalidoperationexception
+  name: InvalidOperationException
+  nameWithType: InvalidOperationException
+  fullName: System.InvalidOperationException
+- uid: Pandowdy.EmuCore.Services.FrameProvider.#ctor*
+  commentId: Overload:Pandowdy.EmuCore.Services.FrameProvider.#ctor
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider__ctor
+  name: FrameProvider
+  nameWithType: FrameProvider.FrameProvider
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.FrameProvider
+  nameWithType.vb: FrameProvider.New
+  fullName.vb: Pandowdy.EmuCore.Services.FrameProvider.New
+  name.vb: New
+- uid: Pandowdy.EmuCore.Services.FrameProvider.GetFrame*
+  commentId: Overload:Pandowdy.EmuCore.Services.FrameProvider.GetFrame
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_GetFrame
+  name: GetFrame
+  nameWithType: FrameProvider.GetFrame
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.GetFrame
+- uid: Pandowdy.EmuCore.Services.FrameProvider.BorrowWritable*
+  commentId: Overload:Pandowdy.EmuCore.Services.FrameProvider.BorrowWritable
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_BorrowWritable
+  name: BorrowWritable
+  nameWithType: FrameProvider.BorrowWritable
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.BorrowWritable
+- uid: Pandowdy.EmuCore.Interfaces.IFrameProvider.BorrowWritable
+  commentId: M:Pandowdy.EmuCore.Interfaces.IFrameProvider.BorrowWritable
+  parent: Pandowdy.EmuCore.Interfaces.IFrameProvider
+  href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html#Pandowdy_EmuCore_Interfaces_IFrameProvider_BorrowWritable
+  name: BorrowWritable()
+  nameWithType: IFrameProvider.BorrowWritable()
+  fullName: Pandowdy.EmuCore.Interfaces.IFrameProvider.BorrowWritable()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Interfaces.IFrameProvider.BorrowWritable
+    name: BorrowWritable
+    href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html#Pandowdy_EmuCore_Interfaces_IFrameProvider_BorrowWritable
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Interfaces.IFrameProvider.BorrowWritable
+    name: BorrowWritable
+    href: Pandowdy.EmuCore.Interfaces.IFrameProvider.html#Pandowdy_EmuCore_Interfaces_IFrameProvider_BorrowWritable
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.Services.FrameProvider.BorrowWritable
+  commentId: M:Pandowdy.EmuCore.Services.FrameProvider.BorrowWritable
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_BorrowWritable
+  name: BorrowWritable()
+  nameWithType: FrameProvider.BorrowWritable()
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.BorrowWritable()
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.Services.FrameProvider.BorrowWritable
+    name: BorrowWritable
+    href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_BorrowWritable
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.Services.FrameProvider.BorrowWritable
+    name: BorrowWritable
+    href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_BorrowWritable
+  - name: (
+  - name: )
+- uid: Pandowdy.EmuCore.Services.FrameProvider.FrameAvailable
+  commentId: E:Pandowdy.EmuCore.Services.FrameProvider.FrameAvailable
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_FrameAvailable
+  name: FrameAvailable
+  nameWithType: FrameProvider.FrameAvailable
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.FrameAvailable
+- uid: Pandowdy.EmuCore.Services.FrameProvider.CommitWritable*
+  commentId: Overload:Pandowdy.EmuCore.Services.FrameProvider.CommitWritable
+  href: Pandowdy.EmuCore.Services.FrameProvider.html#Pandowdy_EmuCore_Services_FrameProvider_CommitWritable
+  name: CommitWritable
+  nameWithType: FrameProvider.CommitWritable
+  fullName: Pandowdy.EmuCore.Services.FrameProvider.CommitWritable

@@ -18,41 +18,41 @@
 // DESIGN PATTERN: Observable + Command Pattern
 // This implementation uses two complementary patterns:
 //
-/// **Responder Pattern:**
-///    Components (MemoryPool, video renderer) register as ISoftSwitchResponder
-///    and receive notifications when switches change. This decouples the soft
-///    switch management from the components that react to switch changes.
+// **Responder Pattern:**
+//   Components (MemoryPool, video renderer) register as ISoftSwitchResponder
+//    and receive notifications when switches change. This decouples the soft
+//    switch management from the components that react to switch changes.
 //
 // **Current Use:**
-/// - DumpSoftSwitchStatus() shows which switches are active and how often they change
-/// - Useful for verifying emulator behavior during development
+// - DumpSoftSwitchStatus() shows which switches are active and how often they change
+// - Useful for verifying emulator behavior during development
 //
 // **Planned/Future Use:**
-/// - **Performance Profiling:** Identify switches that toggle excessively, causing
-///   unnecessary memory remapping overhead (RAMRD/RAMWRT thrashing)
-/// - **Compatibility Testing:** Compare switch usage patterns between programs to
-///   detect emulation inaccuracies
-/// - **Regression Detection:** Track switch usage during test runs; changes in
-///   patterns may indicate bugs introduced
-/// - **UI Visualization:** Display real-time switch activity in debugger panel
-///   (blinking indicators for frequently-toggled switches)
-/// - **Save State Validation:** Include change counts in save states to detect
-///   desync issues during replay
-///
-/// While this violates YAGNI (You Aren't Gonna Need It), the minimal cost
-/// (single int increment per change) is justified by the anticipated debugging
-/// value. The feature is passive and can be completely ignored when not needed.
-///
-/// THREAD SAFETY:
-/// Not thread-safe. Soft switches are accessed from the CPU thread and should
-/// not be modified from multiple threads concurrently. The responder pattern
-/// assumes single-threaded CPU execution.
-///
-/// PERFORMANCE:
-/// Switch changes trigger responder callbacks immediately. For switches that
-/// affect memory mapping (RAMRD, RAMWRT, etc.), this causes UpdateMemoryMappings()
-/// to run, which has a write-lock cost. However, soft switch changes are
-/// relatively infrequent compared to memory accesses.
+// - **Performance Profiling:** Identify switches that toggle excessively, causing
+//   unnecessary memory remapping overhead (RAMRD/RAMWRT thrashing)
+// - **Compatibility Testing:** Compare switch usage patterns between programs to
+//   detect emulation inaccuracies
+// - **Regression Detection:** Track switch usage during test runs; changes in
+//   patterns may indicate bugs introduced
+// - **UI Visualization:** Display real-time switch activity in debugger panel
+//   (blinking indicators for frequently-toggled switches)
+// - **Save State Validation:** Include change counts in save states to detect
+//   desync issues during replay
+//
+// While this violates YAGNI (You Aren't Gonna Need It), the minimal cost
+// (single int increment per change) is justified by the anticipated debugging
+// value. The feature is passive and can be completely ignored when not needed.
+//
+// THREAD SAFETY:
+// Not thread-safe. Soft switches are accessed from the CPU thread and should
+// not be modified from multiple threads concurrently. The responder pattern
+// assumes single-threaded CPU execution.
+//
+// PERFORMANCE:
+// Switch changes trigger responder callbacks immediately. For switches that
+// affect memory mapping (RAMRD, RAMWRT, etc.), this causes UpdateMemoryMappings()
+// to run, which has a write-lock cost. However, soft switch changes are
+// relatively infrequent compared to memory accesses.
 //------------------------------------------------------------------------------
 
 using System.Diagnostics;
@@ -289,8 +289,8 @@ public sealed class SoftSwitches
     }
 
     /// <summary>
-    /// Collection of registered responders that receive notifications when switches change.
-    /// </summary>
+       /// Collection of registered responders that receive notifications when switches change.
+ /// </summary>
     private HashSet<ISoftSwitchResponder> _responders = [];
 
     /// <summary>

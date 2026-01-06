@@ -1,0 +1,279 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+  commentId: T:Pandowdy.EmuCore.Interfaces.SlotNumber
+  id: SlotNumber
+  parent: Pandowdy.EmuCore.Interfaces
+  children:
+  - Pandowdy.EmuCore.Interfaces.SlotNumber.Slot1
+  - Pandowdy.EmuCore.Interfaces.SlotNumber.Slot2
+  - Pandowdy.EmuCore.Interfaces.SlotNumber.Slot3
+  - Pandowdy.EmuCore.Interfaces.SlotNumber.Slot4
+  - Pandowdy.EmuCore.Interfaces.SlotNumber.Slot5
+  - Pandowdy.EmuCore.Interfaces.SlotNumber.Slot6
+  - Pandowdy.EmuCore.Interfaces.SlotNumber.Slot7
+  langs:
+  - csharp
+  - vb
+  name: SlotNumber
+  nameWithType: SlotNumber
+  fullName: Pandowdy.EmuCore.Interfaces.SlotNumber
+  type: Enum
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SlotNumber
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 13
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Defines the slot numbers for Apple IIe expansion cards.
+  remarks: >-
+    The Apple IIe provides seven expansion slots numbered 1 through 7. Slot 0 is
+
+    reserved for system use and is not accessible to expansion cards. Each slot
+
+    provides access to three address spaces: I/O ($C0x0-$C0xF), ROM ($Cx00-$CxFF),
+
+    and shared extended ROM ($C800-$CFFF).
+  example: []
+  syntax:
+    content: public enum SlotNumber
+    content.vb: Public Enum SlotNumber
+- uid: Pandowdy.EmuCore.Interfaces.SlotNumber.Slot1
+  commentId: F:Pandowdy.EmuCore.Interfaces.SlotNumber.Slot1
+  id: Slot1
+  parent: Pandowdy.EmuCore.Interfaces.SlotNumber
+  langs:
+  - csharp
+  - vb
+  name: Slot1
+  nameWithType: SlotNumber.Slot1
+  fullName: Pandowdy.EmuCore.Interfaces.SlotNumber.Slot1
+  type: Field
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Slot1
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 16
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Expansion slot 1.
+  example: []
+  syntax:
+    content: Slot1 = 0
+    return:
+      type: Pandowdy.EmuCore.Interfaces.SlotNumber
+- uid: Pandowdy.EmuCore.Interfaces.SlotNumber.Slot2
+  commentId: F:Pandowdy.EmuCore.Interfaces.SlotNumber.Slot2
+  id: Slot2
+  parent: Pandowdy.EmuCore.Interfaces.SlotNumber
+  langs:
+  - csharp
+  - vb
+  name: Slot2
+  nameWithType: SlotNumber.Slot2
+  fullName: Pandowdy.EmuCore.Interfaces.SlotNumber.Slot2
+  type: Field
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Slot2
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 18
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Expansion slot 2.
+  example: []
+  syntax:
+    content: Slot2 = 1
+    return:
+      type: Pandowdy.EmuCore.Interfaces.SlotNumber
+- uid: Pandowdy.EmuCore.Interfaces.SlotNumber.Slot3
+  commentId: F:Pandowdy.EmuCore.Interfaces.SlotNumber.Slot3
+  id: Slot3
+  parent: Pandowdy.EmuCore.Interfaces.SlotNumber
+  langs:
+  - csharp
+  - vb
+  name: Slot3
+  nameWithType: SlotNumber.Slot3
+  fullName: Pandowdy.EmuCore.Interfaces.SlotNumber.Slot3
+  type: Field
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Slot3
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 20
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Expansion slot 3 (typically 80-column card).
+  example: []
+  syntax:
+    content: Slot3 = 2
+    return:
+      type: Pandowdy.EmuCore.Interfaces.SlotNumber
+- uid: Pandowdy.EmuCore.Interfaces.SlotNumber.Slot4
+  commentId: F:Pandowdy.EmuCore.Interfaces.SlotNumber.Slot4
+  id: Slot4
+  parent: Pandowdy.EmuCore.Interfaces.SlotNumber
+  langs:
+  - csharp
+  - vb
+  name: Slot4
+  nameWithType: SlotNumber.Slot4
+  fullName: Pandowdy.EmuCore.Interfaces.SlotNumber.Slot4
+  type: Field
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Slot4
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 22
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Expansion slot 4.
+  example: []
+  syntax:
+    content: Slot4 = 3
+    return:
+      type: Pandowdy.EmuCore.Interfaces.SlotNumber
+- uid: Pandowdy.EmuCore.Interfaces.SlotNumber.Slot5
+  commentId: F:Pandowdy.EmuCore.Interfaces.SlotNumber.Slot5
+  id: Slot5
+  parent: Pandowdy.EmuCore.Interfaces.SlotNumber
+  langs:
+  - csharp
+  - vb
+  name: Slot5
+  nameWithType: SlotNumber.Slot5
+  fullName: Pandowdy.EmuCore.Interfaces.SlotNumber.Slot5
+  type: Field
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Slot5
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 24
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Expansion slot 5.
+  example: []
+  syntax:
+    content: Slot5 = 4
+    return:
+      type: Pandowdy.EmuCore.Interfaces.SlotNumber
+- uid: Pandowdy.EmuCore.Interfaces.SlotNumber.Slot6
+  commentId: F:Pandowdy.EmuCore.Interfaces.SlotNumber.Slot6
+  id: Slot6
+  parent: Pandowdy.EmuCore.Interfaces.SlotNumber
+  langs:
+  - csharp
+  - vb
+  name: Slot6
+  nameWithType: SlotNumber.Slot6
+  fullName: Pandowdy.EmuCore.Interfaces.SlotNumber.Slot6
+  type: Field
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Slot6
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 26
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Expansion slot 6 (typically disk controller).
+  example: []
+  syntax:
+    content: Slot6 = 5
+    return:
+      type: Pandowdy.EmuCore.Interfaces.SlotNumber
+- uid: Pandowdy.EmuCore.Interfaces.SlotNumber.Slot7
+  commentId: F:Pandowdy.EmuCore.Interfaces.SlotNumber.Slot7
+  id: Slot7
+  parent: Pandowdy.EmuCore.Interfaces.SlotNumber
+  langs:
+  - csharp
+  - vb
+  name: Slot7
+  nameWithType: SlotNumber.Slot7
+  fullName: Pandowdy.EmuCore.Interfaces.SlotNumber.Slot7
+  type: Field
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ISlots.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Slot7
+    path: ../Pandowdy.EmuCore/Interfaces/ISlots.cs
+    startLine: 28
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Expansion slot 7.
+  example: []
+  syntax:
+    content: Slot7 = 6
+    return:
+      type: Pandowdy.EmuCore.Interfaces.SlotNumber
+references:
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.Interfaces.SlotNumber
+  commentId: T:Pandowdy.EmuCore.Interfaces.SlotNumber
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.SlotNumber.html
+  name: SlotNumber
+  nameWithType: SlotNumber
+  fullName: Pandowdy.EmuCore.Interfaces.SlotNumber

@@ -1,0 +1,827 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Services.SystemRomProvider
+  commentId: T:Pandowdy.EmuCore.Services.SystemRomProvider
+  id: SystemRomProvider
+  parent: Pandowdy.EmuCore.Services
+  children:
+  - Pandowdy.EmuCore.Services.SystemRomProvider.#ctor(System.String)
+  - Pandowdy.EmuCore.Services.SystemRomProvider.Item(System.UInt16)
+  - Pandowdy.EmuCore.Services.SystemRomProvider.Read(System.UInt16)
+  - Pandowdy.EmuCore.Services.SystemRomProvider.Size
+  - Pandowdy.EmuCore.Services.SystemRomProvider.Write(System.UInt16,System.Byte)
+  langs:
+  - csharp
+  - vb
+  name: SystemRomProvider
+  nameWithType: SystemRomProvider
+  fullName: Pandowdy.EmuCore.Services.SystemRomProvider
+  type: Class
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/SystemRomProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SystemRomProvider
+    path: ../Pandowdy.EmuCore/Services/SystemRomProvider.cs
+    startLine: 36
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Provides Apple IIe system ROM storage and access.
+  remarks: >-
+    <p>
+
+    Manages the 16KB system ROM ($C000-$FFFF) including I/O firmware, peripheral ROMs,
+
+    Monitor ROM, and Applesoft BASIC. The ROM can be loaded from either a file or an embedded resource.
+
+    </p>
+
+    <p>
+
+    <strong>ROM Layout (16KB):</strong>
+
+
+    <pre><code class="lang-csharp">$C000-$C0FF (256 bytes)  - I/O space firmware
+
+    $C100-$C7FF (1792 bytes) - Internal peripheral ROM (7 x 256 bytes)
+
+    $C800-$CFFF (2KB)        - Extended internal ROM
+
+    $D000-$DFFF (4KB)        - Monitor ROM / Language Card bank switching area
+
+    $E000-$FFFF (8KB)        - Applesoft BASIC + reset vector / Language Card common area</code></pre>
+
+    </p>
+
+    <p>
+
+    <strong>Loading Sources:</strong>
+
+    <ul><li><strong>File System:</strong> Standard file path (e.g., "roms/AppleIIe.rom")</li><li><strong>Embedded Resource:</strong> Use "res:" prefix (e.g., "res:Pandowdy.EmuCore.Resources.a2e_enh_c-f.rom")</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Address Mapping:</strong> The ROM provider's address space starts at offset 0,
+
+    representing $C000. To access $D000, use offset 0x1000. To access $FFFF, use offset 0x3FFF.
+
+    </p>
+  example: []
+  syntax:
+    content: 'public sealed class SystemRomProvider : ISystemRomProvider, IMemory'
+    content.vb: Public NotInheritable Class SystemRomProvider Implements ISystemRomProvider, IMemory
+  inheritance:
+  - System.Object
+  implements:
+  - Pandowdy.EmuCore.Interfaces.ISystemRomProvider
+  - Emulator.IMemory
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Pandowdy.EmuCore.Services.SystemRomProvider.#ctor(System.String)
+  commentId: M:Pandowdy.EmuCore.Services.SystemRomProvider.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Pandowdy.EmuCore.Services.SystemRomProvider
+  langs:
+  - csharp
+  - vb
+  name: SystemRomProvider(string)
+  nameWithType: SystemRomProvider.SystemRomProvider(string)
+  fullName: Pandowdy.EmuCore.Services.SystemRomProvider.SystemRomProvider(string)
+  type: Constructor
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/SystemRomProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: .ctor
+    path: ../Pandowdy.EmuCore/Services/SystemRomProvider.cs
+    startLine: 68
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Initializes a new instance of the SystemRomProvider class and loads ROM.
+  remarks: >-
+    <p>
+
+    <strong>File System Example:</strong>
+
+
+    <pre><code class="lang-csharp">var rom = new SystemRomProvider("roms/AppleIIe.rom");</code></pre>
+
+    </p>
+
+    <p>
+
+    <strong>Embedded Resource Example:</strong>
+
+
+    <pre><code class="lang-csharp">var rom = new SystemRomProvider("res:Pandowdy.EmuCore.Resources.a2e_enh_c-f.rom");</code></pre>
+
+    </p>
+  example: []
+  syntax:
+    content: public SystemRomProvider(string filename)
+    parameters:
+    - id: filename
+      type: System.String
+      description: >-
+        Path to the ROM file or resource identifier. Must be exactly 16KB (16,384 bytes).
+
+        Use "res:" prefix for embedded resources (e.g., "res:Pandowdy.EmuCore.Resources.a2e_enh_c-f.rom").
+    content.vb: Public Sub New(filename As String)
+  overload: Pandowdy.EmuCore.Services.SystemRomProvider.#ctor*
+  exceptions:
+  - type: System.ArgumentNullException
+    commentId: T:System.ArgumentNullException
+    description: Thrown if filename is null.
+  - type: System.IO.FileNotFoundException
+    commentId: T:System.IO.FileNotFoundException
+    description: Thrown if the ROM file/resource cannot be found.
+  - type: System.IO.InvalidDataException
+    commentId: T:System.IO.InvalidDataException
+    description: Thrown if the ROM is not exactly 16KB or cannot be read.
+  nameWithType.vb: SystemRomProvider.New(String)
+  fullName.vb: Pandowdy.EmuCore.Services.SystemRomProvider.New(String)
+  name.vb: New(String)
+- uid: Pandowdy.EmuCore.Services.SystemRomProvider.Size
+  commentId: P:Pandowdy.EmuCore.Services.SystemRomProvider.Size
+  id: Size
+  parent: Pandowdy.EmuCore.Services.SystemRomProvider
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: SystemRomProvider.Size
+  fullName: Pandowdy.EmuCore.Services.SystemRomProvider.Size
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/SystemRomProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Size
+    path: ../Pandowdy.EmuCore/Services/SystemRomProvider.cs
+    startLine: 78
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Gets the size of the ROM in bytes (always 16KB).
+  example: []
+  syntax:
+    content: public int Size { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property Size As Integer
+  overload: Pandowdy.EmuCore.Services.SystemRomProvider.Size*
+  implements:
+  - Emulator.IMemory.Size
+- uid: Pandowdy.EmuCore.Services.SystemRomProvider.Read(System.UInt16)
+  commentId: M:Pandowdy.EmuCore.Services.SystemRomProvider.Read(System.UInt16)
+  id: Read(System.UInt16)
+  parent: Pandowdy.EmuCore.Services.SystemRomProvider
+  langs:
+  - csharp
+  - vb
+  name: Read(ushort)
+  nameWithType: SystemRomProvider.Read(ushort)
+  fullName: Pandowdy.EmuCore.Services.SystemRomProvider.Read(ushort)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/SystemRomProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Read
+    path: ../Pandowdy.EmuCore/Services/SystemRomProvider.cs
+    startLine: 99
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Reads a byte from the ROM at the specified address.
+  remarks: >-
+    <p>
+
+    <strong>Address Mapping:</strong>
+
+    <ul><li>0x0000 = $C000 (I/O firmware start)</li><li>0x1000 = $D000 (Monitor ROM start / Language Card bank area)</li><li>0x2000 = $E000 (BASIC ROM start / Language Card common area)</li><li>0x3FFF = $FFFF (End of ROM / Reset vector high byte)</li></ul>
+
+    </p>
+  example: []
+  syntax:
+    content: public byte Read(ushort address)
+    parameters:
+    - id: address
+      type: System.UInt16
+      description: Address within the ROM (0x0000-0x3FFF representing $C000-$FFFF).
+    return:
+      type: System.Byte
+      description: Byte value at the specified address.
+    content.vb: Public Function Read(address As UShort) As Byte
+  overload: Pandowdy.EmuCore.Services.SystemRomProvider.Read*
+  exceptions:
+  - type: System.IndexOutOfRangeException
+    commentId: T:System.IndexOutOfRangeException
+    description: Thrown if address is beyond ROM size.
+  implements:
+  - Emulator.IMemory.Read(System.UInt16)
+  nameWithType.vb: SystemRomProvider.Read(UShort)
+  fullName.vb: Pandowdy.EmuCore.Services.SystemRomProvider.Read(UShort)
+  name.vb: Read(UShort)
+- uid: Pandowdy.EmuCore.Services.SystemRomProvider.Write(System.UInt16,System.Byte)
+  commentId: M:Pandowdy.EmuCore.Services.SystemRomProvider.Write(System.UInt16,System.Byte)
+  id: Write(System.UInt16,System.Byte)
+  parent: Pandowdy.EmuCore.Services.SystemRomProvider
+  langs:
+  - csharp
+  - vb
+  name: Write(ushort, byte)
+  nameWithType: SystemRomProvider.Write(ushort, byte)
+  fullName: Pandowdy.EmuCore.Services.SystemRomProvider.Write(ushort, byte)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/SystemRomProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Write
+    path: ../Pandowdy.EmuCore/Services/SystemRomProvider.cs
+    startLine: 114
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Write operation - ROM is read-only, this is a no-op.
+  remarks: >-
+    ROM is read-only. Writes are silently ignored to maintain IMemory compatibility.
+
+    In real hardware, ROM writes have no effect.
+  example: []
+  syntax:
+    content: public void Write(ushort address, byte data)
+    parameters:
+    - id: address
+      type: System.UInt16
+      description: Address (ignored).
+    - id: data
+      type: System.Byte
+      description: Data (ignored).
+    content.vb: Public Sub Write(address As UShort, data As Byte)
+  overload: Pandowdy.EmuCore.Services.SystemRomProvider.Write*
+  implements:
+  - Emulator.IMemory.Write(System.UInt16,System.Byte)
+  nameWithType.vb: SystemRomProvider.Write(UShort, Byte)
+  fullName.vb: Pandowdy.EmuCore.Services.SystemRomProvider.Write(UShort, Byte)
+  name.vb: Write(UShort, Byte)
+- uid: Pandowdy.EmuCore.Services.SystemRomProvider.Item(System.UInt16)
+  commentId: P:Pandowdy.EmuCore.Services.SystemRomProvider.Item(System.UInt16)
+  id: Item(System.UInt16)
+  parent: Pandowdy.EmuCore.Services.SystemRomProvider
+  langs:
+  - csharp
+  - vb
+  name: this[ushort]
+  nameWithType: SystemRomProvider.this[ushort]
+  fullName: Pandowdy.EmuCore.Services.SystemRomProvider.this[ushort]
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Services/SystemRomProvider.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: this[]
+    path: ../Pandowdy.EmuCore/Services/SystemRomProvider.cs
+    startLine: 125
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Services
+  summary: Gets or sets a byte at the specified address. Setter is a no-op (ROM is read-only).
+  example: []
+  syntax:
+    content: public byte this[ushort address] { get; set; }
+    parameters:
+    - id: address
+      type: System.UInt16
+      description: Address within the ROM (0x0000-0x3FFF).
+    return:
+      type: System.Byte
+      description: Byte value at the specified address.
+    content.vb: Public Default Property this[](address As UShort) As Byte
+  overload: Pandowdy.EmuCore.Services.SystemRomProvider.Item*
+  implements:
+  - Emulator.IMemory.Item(System.UInt16)
+  nameWithType.vb: SystemRomProvider.this[](UShort)
+  fullName.vb: Pandowdy.EmuCore.Services.SystemRomProvider.this[](UShort)
+  name.vb: this[](UShort)
+references:
+- uid: Pandowdy.EmuCore.Services
+  commentId: N:Pandowdy.EmuCore.Services
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Services
+  nameWithType: Pandowdy.EmuCore.Services
+  fullName: Pandowdy.EmuCore.Services
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Services
+    name: Services
+    href: Pandowdy.EmuCore.Services.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Services
+    name: Services
+    href: Pandowdy.EmuCore.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Pandowdy.EmuCore.Interfaces.ISystemRomProvider
+  commentId: T:Pandowdy.EmuCore.Interfaces.ISystemRomProvider
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.ISystemRomProvider.html
+  name: ISystemRomProvider
+  nameWithType: ISystemRomProvider
+  fullName: Pandowdy.EmuCore.Interfaces.ISystemRomProvider
+- uid: Emulator.IMemory
+  commentId: T:Emulator.IMemory
+  parent: Emulator
+  name: IMemory
+  nameWithType: IMemory
+  fullName: Emulator.IMemory
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Emulator
+  commentId: N:Emulator
+  name: Emulator
+  nameWithType: Emulator
+  fullName: Emulator
+- uid: System.ArgumentNullException
+  commentId: T:System.ArgumentNullException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.argumentnullexception
+  name: ArgumentNullException
+  nameWithType: ArgumentNullException
+  fullName: System.ArgumentNullException
+- uid: System.IO.FileNotFoundException
+  commentId: T:System.IO.FileNotFoundException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.io.filenotfoundexception
+  name: FileNotFoundException
+  nameWithType: FileNotFoundException
+  fullName: System.IO.FileNotFoundException
+- uid: System.IO.InvalidDataException
+  commentId: T:System.IO.InvalidDataException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.io.invaliddataexception
+  name: InvalidDataException
+  nameWithType: InvalidDataException
+  fullName: System.IO.InvalidDataException
+- uid: Pandowdy.EmuCore.Services.SystemRomProvider.#ctor*
+  commentId: Overload:Pandowdy.EmuCore.Services.SystemRomProvider.#ctor
+  href: Pandowdy.EmuCore.Services.SystemRomProvider.html#Pandowdy_EmuCore_Services_SystemRomProvider__ctor_System_String_
+  name: SystemRomProvider
+  nameWithType: SystemRomProvider.SystemRomProvider
+  fullName: Pandowdy.EmuCore.Services.SystemRomProvider.SystemRomProvider
+  nameWithType.vb: SystemRomProvider.New
+  fullName.vb: Pandowdy.EmuCore.Services.SystemRomProvider.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Pandowdy.EmuCore.Services.SystemRomProvider.Size*
+  commentId: Overload:Pandowdy.EmuCore.Services.SystemRomProvider.Size
+  href: Pandowdy.EmuCore.Services.SystemRomProvider.html#Pandowdy_EmuCore_Services_SystemRomProvider_Size
+  name: Size
+  nameWithType: SystemRomProvider.Size
+  fullName: Pandowdy.EmuCore.Services.SystemRomProvider.Size
+- uid: Emulator.IMemory.Size
+  commentId: P:Emulator.IMemory.Size
+  parent: Emulator.IMemory
+  name: Size
+  nameWithType: IMemory.Size
+  fullName: Emulator.IMemory.Size
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.IndexOutOfRangeException
+  commentId: T:System.IndexOutOfRangeException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.indexoutofrangeexception
+  name: IndexOutOfRangeException
+  nameWithType: IndexOutOfRangeException
+  fullName: System.IndexOutOfRangeException
+- uid: Pandowdy.EmuCore.Services.SystemRomProvider.Read*
+  commentId: Overload:Pandowdy.EmuCore.Services.SystemRomProvider.Read
+  href: Pandowdy.EmuCore.Services.SystemRomProvider.html#Pandowdy_EmuCore_Services_SystemRomProvider_Read_System_UInt16_
+  name: Read
+  nameWithType: SystemRomProvider.Read
+  fullName: Pandowdy.EmuCore.Services.SystemRomProvider.Read
+- uid: Emulator.IMemory.Read(System.UInt16)
+  commentId: M:Emulator.IMemory.Read(System.UInt16)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: Read(ushort)
+  nameWithType: IMemory.Read(ushort)
+  fullName: Emulator.IMemory.Read(ushort)
+  nameWithType.vb: IMemory.Read(UShort)
+  fullName.vb: Emulator.IMemory.Read(UShort)
+  name.vb: Read(UShort)
+  spec.csharp:
+  - uid: Emulator.IMemory.Read(System.UInt16)
+    name: Read
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+  spec.vb:
+  - uid: Emulator.IMemory.Read(System.UInt16)
+    name: Read
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )
+- uid: System.UInt16
+  commentId: T:System.UInt16
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: ushort
+  nameWithType: ushort
+  fullName: ushort
+  nameWithType.vb: UShort
+  fullName.vb: UShort
+  name.vb: UShort
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte
+- uid: Pandowdy.EmuCore.Services.SystemRomProvider.Write*
+  commentId: Overload:Pandowdy.EmuCore.Services.SystemRomProvider.Write
+  href: Pandowdy.EmuCore.Services.SystemRomProvider.html#Pandowdy_EmuCore_Services_SystemRomProvider_Write_System_UInt16_System_Byte_
+  name: Write
+  nameWithType: SystemRomProvider.Write
+  fullName: Pandowdy.EmuCore.Services.SystemRomProvider.Write
+- uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+  commentId: M:Emulator.IMemory.Write(System.UInt16,System.Byte)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: Write(ushort, byte)
+  nameWithType: IMemory.Write(ushort, byte)
+  fullName: Emulator.IMemory.Write(ushort, byte)
+  nameWithType.vb: IMemory.Write(UShort, Byte)
+  fullName.vb: Emulator.IMemory.Write(UShort, Byte)
+  name.vb: Write(UShort, Byte)
+  spec.csharp:
+  - uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+    name: Write
+  - name: (
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+  spec.vb:
+  - uid: Emulator.IMemory.Write(System.UInt16,System.Byte)
+    name: Write
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ','
+  - name: " "
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+- uid: Pandowdy.EmuCore.Services.SystemRomProvider.Item*
+  commentId: Overload:Pandowdy.EmuCore.Services.SystemRomProvider.Item
+  href: Pandowdy.EmuCore.Services.SystemRomProvider.html#Pandowdy_EmuCore_Services_SystemRomProvider_Item_System_UInt16_
+  name: this
+  nameWithType: SystemRomProvider.this
+  fullName: Pandowdy.EmuCore.Services.SystemRomProvider.this
+  nameWithType.vb: SystemRomProvider.this[]
+  fullName.vb: Pandowdy.EmuCore.Services.SystemRomProvider.this[]
+  name.vb: this[]
+- uid: Emulator.IMemory.Item(System.UInt16)
+  commentId: P:Emulator.IMemory.Item(System.UInt16)
+  parent: Emulator.IMemory
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: this[ushort]
+  nameWithType: IMemory.this[ushort]
+  fullName: Emulator.IMemory.this[ushort]
+  nameWithType.vb: IMemory.this[](UShort)
+  fullName.vb: Emulator.IMemory.this[](UShort)
+  name.vb: this[](UShort)
+  spec.csharp:
+  - name: this
+  - name: '['
+  - uid: System.UInt16
+    name: ushort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: ']'
+  spec.vb:
+  - uid: Emulator.IMemory.Item(System.UInt16)
+    name: this[]
+  - name: (
+  - uid: System.UInt16
+    name: UShort
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.uint16
+  - name: )

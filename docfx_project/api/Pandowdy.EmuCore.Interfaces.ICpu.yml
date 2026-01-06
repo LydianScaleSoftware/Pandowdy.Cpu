@@ -1,0 +1,717 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Interfaces.ICpu
+  commentId: T:Pandowdy.EmuCore.Interfaces.ICpu
+  id: ICpu
+  parent: Pandowdy.EmuCore.Interfaces
+  children:
+  - Pandowdy.EmuCore.Interfaces.ICpu.A
+  - Pandowdy.EmuCore.Interfaces.ICpu.Clock(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  - Pandowdy.EmuCore.Interfaces.ICpu.InterruptRequest(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  - Pandowdy.EmuCore.Interfaces.ICpu.IsInstructionComplete
+  - Pandowdy.EmuCore.Interfaces.ICpu.NonMaskableInterrupt(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  - Pandowdy.EmuCore.Interfaces.ICpu.PC
+  - Pandowdy.EmuCore.Interfaces.ICpu.Read(System.UInt16)
+  - Pandowdy.EmuCore.Interfaces.ICpu.Reset(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  - Pandowdy.EmuCore.Interfaces.ICpu.SP
+  - Pandowdy.EmuCore.Interfaces.ICpu.Status
+  - Pandowdy.EmuCore.Interfaces.ICpu.Write(System.UInt16,System.Byte)
+  - Pandowdy.EmuCore.Interfaces.ICpu.X
+  - Pandowdy.EmuCore.Interfaces.ICpu.Y
+  langs:
+  - csharp
+  - vb
+  name: ICpu
+  nameWithType: ICpu
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu
+  type: Interface
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICpu.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: ICpu
+    path: ../Pandowdy.EmuCore/Interfaces/ICpu.cs
+    startLine: 14
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Represents a 6502 microprocessor and its associated registers and operations.
+  remarks: >-
+    The 6502 is an 8-bit processor used in the Apple IIe and many other computers
+
+    of the 1970s-1980s era. It features a 16-bit address bus (64KB address space),
+
+    three general-purpose registers (A, X, Y), an 8-bit stack pointer, and a status
+
+    register with condition flags. This interface provides access to all registers
+
+    and methods for executing instructions, handling interrupts, and managing CPU state.
+  example: []
+  syntax:
+    content: public interface ICpu
+    content.vb: Public Interface ICpu
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.PC
+  commentId: P:Pandowdy.EmuCore.Interfaces.ICpu.PC
+  id: PC
+  parent: Pandowdy.EmuCore.Interfaces.ICpu
+  langs:
+  - csharp
+  - vb
+  name: PC
+  nameWithType: ICpu.PC
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.PC
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICpu.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: PC
+    path: ../Pandowdy.EmuCore/Interfaces/ICpu.cs
+    startLine: 23
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Gets the Program Counter register, which points to the next instruction to execute.
+  example: []
+  syntax:
+    content: ushort PC { get; }
+    parameters: []
+    return:
+      type: System.UInt16
+      description: >-
+        A 16-bit address ($0000-$FFFF) indicating the memory location of the next
+
+        instruction byte to be fetched and executed.
+    content.vb: ReadOnly Property PC As UShort
+  overload: Pandowdy.EmuCore.Interfaces.ICpu.PC*
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.SP
+  commentId: P:Pandowdy.EmuCore.Interfaces.ICpu.SP
+  id: SP
+  parent: Pandowdy.EmuCore.Interfaces.ICpu
+  langs:
+  - csharp
+  - vb
+  name: SP
+  nameWithType: ICpu.SP
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.SP
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICpu.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SP
+    path: ../Pandowdy.EmuCore/Interfaces/ICpu.cs
+    startLine: 32
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Gets the Stack Pointer register, which points to the current top of the stack.
+  example: []
+  syntax:
+    content: byte SP { get; }
+    parameters: []
+    return:
+      type: System.Byte
+      description: >-
+        An 8-bit offset ($00-$FF) within the stack page ($0100-$01FF). The actual
+
+        stack address is $0100 + SP. The stack grows downward (SP decrements on push).
+    content.vb: ReadOnly Property SP As Byte
+  overload: Pandowdy.EmuCore.Interfaces.ICpu.SP*
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.A
+  commentId: P:Pandowdy.EmuCore.Interfaces.ICpu.A
+  id: A
+  parent: Pandowdy.EmuCore.Interfaces.ICpu
+  langs:
+  - csharp
+  - vb
+  name: A
+  nameWithType: ICpu.A
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.A
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICpu.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: A
+    path: ../Pandowdy.EmuCore/Interfaces/ICpu.cs
+    startLine: 41
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Gets the Accumulator register, the primary register for arithmetic and logic operations.
+  example: []
+  syntax:
+    content: byte A { get; }
+    parameters: []
+    return:
+      type: System.Byte
+      description: >-
+        An 8-bit value used as the primary operand for ALU operations, loads, stores,
+
+        and comparisons. Most 6502 instructions operate on or with the accumulator.
+    content.vb: ReadOnly Property A As Byte
+  overload: Pandowdy.EmuCore.Interfaces.ICpu.A*
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.X
+  commentId: P:Pandowdy.EmuCore.Interfaces.ICpu.X
+  id: X
+  parent: Pandowdy.EmuCore.Interfaces.ICpu
+  langs:
+  - csharp
+  - vb
+  name: X
+  nameWithType: ICpu.X
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.X
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICpu.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: X
+    path: ../Pandowdy.EmuCore/Interfaces/ICpu.cs
+    startLine: 50
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Gets the X Index register, used for indexed addressing modes and counters.
+  example: []
+  syntax:
+    content: byte X { get; }
+    parameters: []
+    return:
+      type: System.Byte
+      description: >-
+        An 8-bit value commonly used for indexed addressing (e.g., "LDA $1000,X"),
+
+        loop counters, and temporary storage.
+    content.vb: ReadOnly Property X As Byte
+  overload: Pandowdy.EmuCore.Interfaces.ICpu.X*
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.Y
+  commentId: P:Pandowdy.EmuCore.Interfaces.ICpu.Y
+  id: Y
+  parent: Pandowdy.EmuCore.Interfaces.ICpu
+  langs:
+  - csharp
+  - vb
+  name: Y
+  nameWithType: ICpu.Y
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.Y
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICpu.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Y
+    path: ../Pandowdy.EmuCore/Interfaces/ICpu.cs
+    startLine: 59
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Gets the Y Index register, used for indexed addressing modes and counters.
+  example: []
+  syntax:
+    content: byte Y { get; }
+    parameters: []
+    return:
+      type: System.Byte
+      description: >-
+        An 8-bit value commonly used for indexed addressing (e.g., "LDA $1000,Y"),
+
+        loop counters, and temporary storage. Similar to X but with fewer addressing modes.
+    content.vb: ReadOnly Property Y As Byte
+  overload: Pandowdy.EmuCore.Interfaces.ICpu.Y*
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.Status
+  commentId: P:Pandowdy.EmuCore.Interfaces.ICpu.Status
+  id: Status
+  parent: Pandowdy.EmuCore.Interfaces.ICpu
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: ICpu.Status
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.Status
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICpu.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Status
+    path: ../Pandowdy.EmuCore/Interfaces/ICpu.cs
+    startLine: 77
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Gets the Processor Status register containing condition flags.
+  example: []
+  syntax:
+    content: ProcessorStatus Status { get; }
+    parameters: []
+    return:
+      type: Emulator.ProcessorStatus
+      description: >-
+        An 8-bit register containing seven status flags:
+
+        <ul><li>Bit 7 (N): Negative flag - Set if result is negative (bit 7 = 1)</li><li>Bit 6 (V): Overflow flag - Set if signed arithmetic overflow occurred</li><li>Bit 5: Unused (always 1)</li><li>Bit 4 (B): Break flag - Set if interrupt was caused by BRK instruction</li><li>Bit 3 (D): Decimal mode flag - Enables BCD arithmetic (not used on Apple II)</li><li>Bit 2 (I): Interrupt disable flag - When set, IRQ interrupts are ignored</li><li>Bit 1 (Z): Zero flag - Set if result is zero</li><li>Bit 0 (C): Carry flag - Set by arithmetic operations and shifts</li></ul>
+    content.vb: ReadOnly Property Status As ProcessorStatus
+  overload: Pandowdy.EmuCore.Interfaces.ICpu.Status*
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.Clock(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICpu.Clock(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  id: Clock(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  parent: Pandowdy.EmuCore.Interfaces.ICpu
+  langs:
+  - csharp
+  - vb
+  name: Clock(IAppleIIBus)
+  nameWithType: ICpu.Clock(IAppleIIBus)
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.Clock(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICpu.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Clock
+    path: ../Pandowdy.EmuCore/Interfaces/ICpu.cs
+    startLine: 90
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Executes one clock cycle of the CPU.
+  remarks: >-
+    The 6502 is a multi-cycle processor where each instruction takes 2-7 cycles
+
+    to complete. This method advances the CPU by one cycle, fetching instruction
+
+    bytes, calculating addresses, and executing operations as appropriate for the
+
+    current cycle of the instruction being executed. Call this method repeatedly
+
+    (typically at 1.023 MHz for Apple IIe timing) to execute the program.
+  example: []
+  syntax:
+    content: void Clock(IAppleIIBus bus)
+    parameters:
+    - id: bus
+      type: Pandowdy.EmuCore.Interfaces.IAppleIIBus
+      description: The system bus for memory and I/O access
+    content.vb: Sub Clock(bus As IAppleIIBus)
+  overload: Pandowdy.EmuCore.Interfaces.ICpu.Clock*
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.InterruptRequest(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICpu.InterruptRequest(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  id: InterruptRequest(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  parent: Pandowdy.EmuCore.Interfaces.ICpu
+  langs:
+  - csharp
+  - vb
+  name: InterruptRequest(IAppleIIBus)
+  nameWithType: ICpu.InterruptRequest(IAppleIIBus)
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.InterruptRequest(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICpu.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: InterruptRequest
+    path: ../Pandowdy.EmuCore/Interfaces/ICpu.cs
+    startLine: 108
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Triggers an Interrupt Request (IRQ), causing the CPU to jump to the IRQ handler.
+  remarks: >-
+    IRQ is a maskable hardware interrupt that can be disabled by setting the I flag
+
+    in the Status register. When triggered and not masked, the CPU:
+
+    <ol><li>Finishes the current instruction</li><li>Pushes PC (high byte, then low byte) onto the stack</li><li>Pushes Status register onto the stack</li><li>Sets the I flag to disable further IRQs</li><li>Loads PC from the IRQ vector at $FFFE-$FFFF</li></ol>
+
+    On the Apple IIe, IRQ is not commonly used.
+  example: []
+  syntax:
+    content: void InterruptRequest(IAppleIIBus bus)
+    parameters:
+    - id: bus
+      type: Pandowdy.EmuCore.Interfaces.IAppleIIBus
+      description: The system bus for memory and I/O access
+    content.vb: Sub InterruptRequest(bus As IAppleIIBus)
+  overload: Pandowdy.EmuCore.Interfaces.ICpu.InterruptRequest*
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.IsInstructionComplete
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICpu.IsInstructionComplete
+  id: IsInstructionComplete
+  parent: Pandowdy.EmuCore.Interfaces.ICpu
+  langs:
+  - csharp
+  - vb
+  name: IsInstructionComplete()
+  nameWithType: ICpu.IsInstructionComplete()
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.IsInstructionComplete()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICpu.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IsInstructionComplete
+    path: ../Pandowdy.EmuCore/Interfaces/ICpu.cs
+    startLine: 120
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Checks whether the current instruction has completed execution.
+  remarks: >-
+    Since 6502 instructions take multiple clock cycles, this method allows external
+
+    code to determine when an instruction boundary has been reached, which is useful
+
+    for debugging, breakpoints, and cycle-accurate timing.
+  example: []
+  syntax:
+    content: bool IsInstructionComplete()
+    return:
+      type: System.Boolean
+      description: >-
+        True if the current instruction is complete and the CPU is ready
+            to fetch the next instruction; false if the instruction is still executing.
+    content.vb: Function IsInstructionComplete() As Boolean
+  overload: Pandowdy.EmuCore.Interfaces.ICpu.IsInstructionComplete*
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.NonMaskableInterrupt(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICpu.NonMaskableInterrupt(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  id: NonMaskableInterrupt(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  parent: Pandowdy.EmuCore.Interfaces.ICpu
+  langs:
+  - csharp
+  - vb
+  name: NonMaskableInterrupt(IAppleIIBus)
+  nameWithType: ICpu.NonMaskableInterrupt(IAppleIIBus)
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.NonMaskableInterrupt(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICpu.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: NonMaskableInterrupt
+    path: ../Pandowdy.EmuCore/Interfaces/ICpu.cs
+    startLine: 137
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Triggers a Non-Maskable Interrupt (NMI), causing the CPU to jump to the NMI handler.
+  remarks: >-
+    NMI is a high-priority hardware interrupt that cannot be disabled. When triggered,
+
+    the CPU behaves similarly to IRQ but uses the NMI vector at $FFFA-$FFFB:
+
+    <ol><li>Finishes the current instruction</li><li>Pushes PC (high byte, then low byte) onto the stack</li><li>Pushes Status register onto the stack</li><li>Sets the I flag to disable IRQs</li><li>Loads PC from the NMI vector at $FFFA-$FFFB</li></ol>
+  example: []
+  syntax:
+    content: void NonMaskableInterrupt(IAppleIIBus bus)
+    parameters:
+    - id: bus
+      type: Pandowdy.EmuCore.Interfaces.IAppleIIBus
+      description: The system bus for memory and I/O access
+    content.vb: Sub NonMaskableInterrupt(bus As IAppleIIBus)
+  overload: Pandowdy.EmuCore.Interfaces.ICpu.NonMaskableInterrupt*
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.Read(System.UInt16)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICpu.Read(System.UInt16)
+  id: Read(System.UInt16)
+  parent: Pandowdy.EmuCore.Interfaces.ICpu
+  langs:
+  - csharp
+  - vb
+  name: Read(ushort)
+  nameWithType: ICpu.Read(ushort)
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.Read(ushort)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICpu.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Read
+    path: ../Pandowdy.EmuCore/Interfaces/ICpu.cs
+    startLine: 149
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Reads a byte from memory at the specified address.
+  remarks: >-
+    This method provides direct memory access for the CPU, typically delegating
+
+    to the bus's CpuRead method. Used internally during instruction execution
+
+    for operand fetches and data loads.
+  example: []
+  syntax:
+    content: byte Read(ushort address)
+    parameters:
+    - id: address
+      type: System.UInt16
+      description: The 16-bit memory address to read from ($0000-$FFFF)
+    return:
+      type: System.Byte
+      description: The byte value at the specified address
+    content.vb: Function Read(address As UShort) As Byte
+  overload: Pandowdy.EmuCore.Interfaces.ICpu.Read*
+  nameWithType.vb: ICpu.Read(UShort)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ICpu.Read(UShort)
+  name.vb: Read(UShort)
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.Reset(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICpu.Reset(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  id: Reset(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  parent: Pandowdy.EmuCore.Interfaces.ICpu
+  langs:
+  - csharp
+  - vb
+  name: Reset(IAppleIIBus)
+  nameWithType: ICpu.Reset(IAppleIIBus)
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.Reset(Pandowdy.EmuCore.Interfaces.IAppleIIBus)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICpu.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Reset
+    path: ../Pandowdy.EmuCore/Interfaces/ICpu.cs
+    startLine: 166
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Resets the CPU to its power-on state.
+  remarks: >-
+    Reset initializes the CPU to a known state:
+
+    <ul><li>PC is loaded from the reset vector at $FFFC-$FFFD</li><li>SP is set to $FD (or $FF on some implementations)</li><li>Status register is initialized with I flag set (interrupts disabled)</li><li>A, X, Y registers are not initialized (undefined state)</li></ul>
+
+    This simulates powering on the computer or pressing the reset key.
+
+    On the Apple IIe, the reset vector typically points to the monitor ROM at $FF59.
+  example: []
+  syntax:
+    content: void Reset(IAppleIIBus bus)
+    parameters:
+    - id: bus
+      type: Pandowdy.EmuCore.Interfaces.IAppleIIBus
+      description: The system bus for memory and I/O access
+    content.vb: Sub Reset(bus As IAppleIIBus)
+  overload: Pandowdy.EmuCore.Interfaces.ICpu.Reset*
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.Write(System.UInt16,System.Byte)
+  commentId: M:Pandowdy.EmuCore.Interfaces.ICpu.Write(System.UInt16,System.Byte)
+  id: Write(System.UInt16,System.Byte)
+  parent: Pandowdy.EmuCore.Interfaces.ICpu
+  langs:
+  - csharp
+  - vb
+  name: Write(ushort, byte)
+  nameWithType: ICpu.Write(ushort, byte)
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.Write(ushort, byte)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/ICpu.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Write
+    path: ../Pandowdy.EmuCore/Interfaces/ICpu.cs
+    startLine: 178
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Writes a byte to memory at the specified address.
+  remarks: >-
+    This method provides direct memory access for the CPU, typically delegating
+
+    to the bus's CpuWrite method. Used internally during instruction execution
+
+    for data stores and stack operations.
+  example: []
+  syntax:
+    content: void Write(ushort address, byte data)
+    parameters:
+    - id: address
+      type: System.UInt16
+      description: The 16-bit memory address to write to ($0000-$FFFF)
+    - id: data
+      type: System.Byte
+      description: The byte value to write
+    content.vb: Sub Write(address As UShort, data As Byte)
+  overload: Pandowdy.EmuCore.Interfaces.ICpu.Write*
+  nameWithType.vb: ICpu.Write(UShort, Byte)
+  fullName.vb: Pandowdy.EmuCore.Interfaces.ICpu.Write(UShort, Byte)
+  name.vb: Write(UShort, Byte)
+references:
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.PC*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICpu.PC
+  href: Pandowdy.EmuCore.Interfaces.ICpu.html#Pandowdy_EmuCore_Interfaces_ICpu_PC
+  name: PC
+  nameWithType: ICpu.PC
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.PC
+- uid: System.UInt16
+  commentId: T:System.UInt16
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: ushort
+  nameWithType: ushort
+  fullName: ushort
+  nameWithType.vb: UShort
+  fullName.vb: UShort
+  name.vb: UShort
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.SP*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICpu.SP
+  href: Pandowdy.EmuCore.Interfaces.ICpu.html#Pandowdy_EmuCore_Interfaces_ICpu_SP
+  name: SP
+  nameWithType: ICpu.SP
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.SP
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.A*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICpu.A
+  href: Pandowdy.EmuCore.Interfaces.ICpu.html#Pandowdy_EmuCore_Interfaces_ICpu_A
+  name: A
+  nameWithType: ICpu.A
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.A
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.X*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICpu.X
+  href: Pandowdy.EmuCore.Interfaces.ICpu.html#Pandowdy_EmuCore_Interfaces_ICpu_X
+  name: X
+  nameWithType: ICpu.X
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.X
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.Y*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICpu.Y
+  href: Pandowdy.EmuCore.Interfaces.ICpu.html#Pandowdy_EmuCore_Interfaces_ICpu_Y
+  name: Y
+  nameWithType: ICpu.Y
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.Y
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.Status*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICpu.Status
+  href: Pandowdy.EmuCore.Interfaces.ICpu.html#Pandowdy_EmuCore_Interfaces_ICpu_Status
+  name: Status
+  nameWithType: ICpu.Status
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.Status
+- uid: Emulator.ProcessorStatus
+  commentId: T:Emulator.ProcessorStatus
+  parent: Emulator
+  name: ProcessorStatus
+  nameWithType: ProcessorStatus
+  fullName: Emulator.ProcessorStatus
+- uid: Emulator
+  commentId: N:Emulator
+  name: Emulator
+  nameWithType: Emulator
+  fullName: Emulator
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.Clock*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICpu.Clock
+  href: Pandowdy.EmuCore.Interfaces.ICpu.html#Pandowdy_EmuCore_Interfaces_ICpu_Clock_Pandowdy_EmuCore_Interfaces_IAppleIIBus_
+  name: Clock
+  nameWithType: ICpu.Clock
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.Clock
+- uid: Pandowdy.EmuCore.Interfaces.IAppleIIBus
+  commentId: T:Pandowdy.EmuCore.Interfaces.IAppleIIBus
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IAppleIIBus.html
+  name: IAppleIIBus
+  nameWithType: IAppleIIBus
+  fullName: Pandowdy.EmuCore.Interfaces.IAppleIIBus
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.InterruptRequest*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICpu.InterruptRequest
+  href: Pandowdy.EmuCore.Interfaces.ICpu.html#Pandowdy_EmuCore_Interfaces_ICpu_InterruptRequest_Pandowdy_EmuCore_Interfaces_IAppleIIBus_
+  name: InterruptRequest
+  nameWithType: ICpu.InterruptRequest
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.InterruptRequest
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.IsInstructionComplete*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICpu.IsInstructionComplete
+  href: Pandowdy.EmuCore.Interfaces.ICpu.html#Pandowdy_EmuCore_Interfaces_ICpu_IsInstructionComplete
+  name: IsInstructionComplete
+  nameWithType: ICpu.IsInstructionComplete
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.IsInstructionComplete
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.NonMaskableInterrupt*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICpu.NonMaskableInterrupt
+  href: Pandowdy.EmuCore.Interfaces.ICpu.html#Pandowdy_EmuCore_Interfaces_ICpu_NonMaskableInterrupt_Pandowdy_EmuCore_Interfaces_IAppleIIBus_
+  name: NonMaskableInterrupt
+  nameWithType: ICpu.NonMaskableInterrupt
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.NonMaskableInterrupt
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.Read*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICpu.Read
+  href: Pandowdy.EmuCore.Interfaces.ICpu.html#Pandowdy_EmuCore_Interfaces_ICpu_Read_System_UInt16_
+  name: Read
+  nameWithType: ICpu.Read
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.Read
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.Reset*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICpu.Reset
+  href: Pandowdy.EmuCore.Interfaces.ICpu.html#Pandowdy_EmuCore_Interfaces_ICpu_Reset_Pandowdy_EmuCore_Interfaces_IAppleIIBus_
+  name: Reset
+  nameWithType: ICpu.Reset
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.Reset
+- uid: Pandowdy.EmuCore.Interfaces.ICpu.Write*
+  commentId: Overload:Pandowdy.EmuCore.Interfaces.ICpu.Write
+  href: Pandowdy.EmuCore.Interfaces.ICpu.html#Pandowdy_EmuCore_Interfaces_ICpu_Write_System_UInt16_System_Byte_
+  name: Write
+  nameWithType: ICpu.Write
+  fullName: Pandowdy.EmuCore.Interfaces.ICpu.Write

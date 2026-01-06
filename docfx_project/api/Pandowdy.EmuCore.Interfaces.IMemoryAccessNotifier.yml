@@ -1,0 +1,288 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+  commentId: T:Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+  id: IMemoryAccessNotifier
+  parent: Pandowdy.EmuCore.Interfaces
+  children:
+  - Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryRead
+  - Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryWritten
+  langs:
+  - csharp
+  - vb
+  name: IMemoryAccessNotifier
+  nameWithType: IMemoryAccessNotifier
+  fullName: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+  type: Interface
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IMemoryAccessNotifier.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IMemoryAccessNotifier
+    path: ../Pandowdy.EmuCore/Interfaces/IMemoryAccessNotifier.cs
+    startLine: 21
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Provides memory access notifications for debugging and monitoring purposes.
+  remarks: >-
+    This interface is designed for components that need to monitor memory access,
+
+    such as debuggers, memory viewers, and watchpoint systems. It provides events
+
+    that fire when memory is read from or written to, allowing external tools to
+
+    track program behavior, detect specific memory accesses, and implement breakpoint
+
+    and watchpoint functionality.
+
+    <p>
+
+    The interface provides two notification events:
+
+    <ul><li><xref href="Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryRead" data-throw-if-not-resolved="false"></xref>: Fired when a byte is read from memory</li><li><xref href="Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryWritten" data-throw-if-not-resolved="false"></xref>: Fired when a byte is written to memory</li></ul>
+
+    Both events fire for individual byte operations, allowing precise tracking of
+
+    memory access patterns during program execution.
+
+    </p>
+  example: []
+  syntax:
+    content: public interface IMemoryAccessNotifier
+    content.vb: Public Interface IMemoryAccessNotifier
+- uid: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryWritten
+  commentId: E:Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryWritten
+  id: MemoryWritten
+  parent: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+  langs:
+  - csharp
+  - vb
+  name: MemoryWritten
+  nameWithType: IMemoryAccessNotifier.MemoryWritten
+  fullName: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryWritten
+  type: Event
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IMemoryAccessNotifier.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: MemoryWritten
+    path: ../Pandowdy.EmuCore/Interfaces/IMemoryAccessNotifier.cs
+    startLine: 45
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Raised when a byte is written to memory.
+  remarks: >-
+    This event fires whenever a byte of memory is modified through CPU
+
+    operations or direct memory writes. The <xref href="Pandowdy.EmuCore.MemoryAccessEventArgs" data-throw-if-not-resolved="false"></xref>
+
+    contains the address written to and the new value at that address.
+
+    <p>
+
+    Typical uses include:
+
+    <ul><li>Implementing memory write watchpoints in a debugger</li><li>Tracking changes to specific memory locations</li><li>Logging memory write patterns for analysis</li><li>Triggering breakpoints when specific values are written to specific addresses</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Performance Note:</strong> This event can fire very frequently during
+
+    program execution (potentially millions of times per second). Subscribers should
+
+    minimize processing time to avoid impacting emulation performance.
+
+    </p>
+  example: []
+  syntax:
+    content: event EventHandler<MemoryAccessEventArgs> MemoryWritten
+    return:
+      type: System.EventHandler{Pandowdy.EmuCore.MemoryAccessEventArgs}
+    content.vb: Event MemoryWritten As EventHandler(Of MemoryAccessEventArgs)
+- uid: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryRead
+  commentId: E:Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryRead
+  id: MemoryRead
+  parent: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+  langs:
+  - csharp
+  - vb
+  name: MemoryRead
+  nameWithType: IMemoryAccessNotifier.MemoryRead
+  fullName: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryRead
+  type: Event
+  source:
+    remote:
+      path: Pandowdy.EmuCore/Interfaces/IMemoryAccessNotifier.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: MemoryRead
+    path: ../Pandowdy.EmuCore/Interfaces/IMemoryAccessNotifier.cs
+    startLine: 70
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.Interfaces
+  summary: Raised when a byte is read from memory.
+  remarks: >-
+    This event fires whenever a byte of memory is accessed through CPU
+
+    operations or direct memory reads. The <xref href="Pandowdy.EmuCore.MemoryAccessEventArgs" data-throw-if-not-resolved="false"></xref>
+
+    contains the address read from and the value at that address.
+
+    <p>
+
+    Typical uses include:
+
+    <ul><li>Implementing memory read watchpoints in a debugger</li><li>Tracking which memory locations a program accesses</li><li>Detecting access to memory-mapped I/O registers</li><li>Profiling memory access patterns for optimization analysis</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Performance Note:</strong> This event fires even more frequently than
+
+    <xref href="Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryWritten" data-throw-if-not-resolved="false"></xref> since programs typically read memory more often
+
+    than they write it. Subscribers should be extremely efficient to avoid
+
+    significantly impacting emulation performance.
+
+    </p>
+  example: []
+  syntax:
+    content: event EventHandler<MemoryAccessEventArgs> MemoryRead
+    return:
+      type: System.EventHandler{Pandowdy.EmuCore.MemoryAccessEventArgs}
+    content.vb: Event MemoryRead As EventHandler(Of MemoryAccessEventArgs)
+references:
+- uid: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryRead
+  commentId: E:Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryRead
+  parent: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+  href: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.html#Pandowdy_EmuCore_Interfaces_IMemoryAccessNotifier_MemoryRead
+  name: MemoryRead
+  nameWithType: IMemoryAccessNotifier.MemoryRead
+  fullName: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryRead
+- uid: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryWritten
+  commentId: E:Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryWritten
+  parent: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+  href: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.html#Pandowdy_EmuCore_Interfaces_IMemoryAccessNotifier_MemoryWritten
+  name: MemoryWritten
+  nameWithType: IMemoryAccessNotifier.MemoryWritten
+  fullName: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.MemoryWritten
+- uid: Pandowdy.EmuCore.Interfaces
+  commentId: N:Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Interfaces
+  nameWithType: Pandowdy.EmuCore.Interfaces
+  fullName: Pandowdy.EmuCore.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Interfaces
+    name: Interfaces
+    href: Pandowdy.EmuCore.Interfaces.html
+- uid: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+  commentId: T:Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+  parent: Pandowdy.EmuCore.Interfaces
+  href: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.html
+  name: IMemoryAccessNotifier
+  nameWithType: IMemoryAccessNotifier
+  fullName: Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier
+- uid: Pandowdy.EmuCore.MemoryAccessEventArgs
+  commentId: T:Pandowdy.EmuCore.MemoryAccessEventArgs
+  href: Pandowdy.EmuCore.MemoryAccessEventArgs.html
+  name: MemoryAccessEventArgs
+  nameWithType: MemoryAccessEventArgs
+  fullName: Pandowdy.EmuCore.MemoryAccessEventArgs
+- uid: System.EventHandler{Pandowdy.EmuCore.MemoryAccessEventArgs}
+  commentId: T:System.EventHandler{Pandowdy.EmuCore.MemoryAccessEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<MemoryAccessEventArgs>
+  nameWithType: EventHandler<MemoryAccessEventArgs>
+  fullName: System.EventHandler<Pandowdy.EmuCore.MemoryAccessEventArgs>
+  nameWithType.vb: EventHandler(Of MemoryAccessEventArgs)
+  fullName.vb: System.EventHandler(Of Pandowdy.EmuCore.MemoryAccessEventArgs)
+  name.vb: EventHandler(Of MemoryAccessEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Pandowdy.EmuCore.MemoryAccessEventArgs
+    name: MemoryAccessEventArgs
+    href: Pandowdy.EmuCore.MemoryAccessEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Pandowdy.EmuCore.MemoryAccessEventArgs
+    name: MemoryAccessEventArgs
+    href: Pandowdy.EmuCore.MemoryAccessEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System

@@ -1,0 +1,1250 @@
+{
+  "source_base_path": "E:/develop/Pandowdy/docfx_project",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "Resource",
+      "output": {
+        "resource": {
+          "relative_path": "index.json"
+        }
+      }
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.App.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.App.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.App",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.DesktopServiceProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.DesktopServiceProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.DesktopServiceProvider",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.AppleSoftHookTable.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.AppleSoftHookTable.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.AppleSoftHookTable",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.AppleSoftHookTable.yml\" sourcestartlinenumber=\"1\">Holds AppleSoft ROM hook actions for high-level BASIC debugging.\nEach hook has an intrinsic verbosity level; invocation supplies a targetLevel.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.CPUAdapter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.CPUAdapter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.CPUAdapter",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.CPUAdapter.yml\" sourcestartlinenumber=\"1\">Adapter wrapping a third-party 6502 CPU emulator for Pandowdy compatibility (stopgap implementation).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.CardFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.CardFactory.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.CardFactory",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.DataTypes.BitField16.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.DataTypes.BitField16.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.DataTypes.BitField16",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.DataTypes.BitField16.yml\" sourcestartlinenumber=\"1\">Provides bit-level access to a 16-bit unsigned integer value.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.DataTypes.BitmapDataArray.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.DataTypes.BitmapDataArray.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.DataTypes.BitmapDataArray",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.DataTypes.BitmapDataArray.yml\" sourcestartlinenumber=\"1\">Multi-bitplane bitmap storage for Apple IIe display rendering (560×192 pixels, 16 bitplanes).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.DataTypes.MemoryBlock.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.DataTypes.MemoryBlock.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.DataTypes.MemoryBlock",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.DataTypes.MemoryBlock.yml\" sourcestartlinenumber=\"1\">Simple contiguous memory block implementation for testing and basic memory emulation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.DataTypes.MemoryBlock64k.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.DataTypes.MemoryBlock64k.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.DataTypes.MemoryBlock64k",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.DataTypes.MemoryBlock64k.yml\" sourcestartlinenumber=\"1\">Convenience class that creates a 64KB (0x10000 bytes) memory block - the full 6502 address space.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.DataTypes.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.DataTypes.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.DataTypes",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.IAppleIIBus.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.IAppleIIBus.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.IAppleIIBus",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.IAppleIIBus.yml\" sourcestartlinenumber=\"1\">Apple II specific bus interface that extends the base IBus with\nkeyboard input and pushbutton (game controller) functionality.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.ICard.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.ICard.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.ICard",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.ICard.yml\" sourcestartlinenumber=\"1\">Represents an Apple II peripheral card that can be installed in expansion slots 1-7.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.ICardFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.ICardFactory.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.ICardFactory",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.ICardFactory.yml\" sourcestartlinenumber=\"1\">Factory for creating instances of peripheral cards from registered prototypes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.ICharacterRomProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.ICharacterRomProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.ICharacterRomProvider",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.ICharacterRomProvider.yml\" sourcestartlinenumber=\"1\">Provides access to the Apple IIe character ROM for text rendering.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.IConfigurable.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.IConfigurable.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.IConfigurable",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.IConfigurable.yml\" sourcestartlinenumber=\"1\">Represents an object that can persist and restore its configuration state via metadata strings.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.ICpu.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.ICpu.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.ICpu",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.ICpu.yml\" sourcestartlinenumber=\"1\">Represents a 6502 microprocessor and its associated registers and operations.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.IDirectMemoryPoolReader.yml\" sourcestartlinenumber=\"1\">Provides direct access to the physical memory pools, bypassing the bus mapping\nand soft switch logic used during normal CPU access.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.IDisplayBitmapRenderer.yml\" sourcestartlinenumber=\"1\">Defines a renderer capable of converting Apple IIe video memory into a displayable bitmap.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.IEmulatorState.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.IEmulatorState.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.IEmulatorState",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.IEmulatorState.yml\" sourcestartlinenumber=\"1\">Provides access to the emulator's execution state (PC, SP, cycle count, etc.).\nSupports reactive subscriptions and control operations (pause, continue, step).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.IFloatingBusProvider",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.IFloatingBusProvider.yml\" sourcestartlinenumber=\"1\">Provides floating bus data for unmapped or undriven memory/I/O reads.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.IFrameGenerator.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.IFrameGenerator.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.IFrameGenerator",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.IFrameGenerator.yml\" sourcestartlinenumber=\"1\">Coordinates the generation of video frames from Apple IIe system state.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.IFrameProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.IFrameProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.IFrameProvider",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.IFrameProvider.yml\" sourcestartlinenumber=\"1\">Provides access to the emulator's frame buffer for rendering with double-buffering support.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.ILanguageCard.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.ILanguageCard.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.ILanguageCard",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.IMemoryAccessNotifier.yml\" sourcestartlinenumber=\"1\">Provides memory access notifications for debugging and monitoring purposes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.ISlots.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.ISlots.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.ISlots",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.ISlots.yml\" sourcestartlinenumber=\"1\">Manages Apple IIe expansion slots and coordinates peripheral card I/O and ROM access.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.ISoftSwitchResponder.yml\" sourcestartlinenumber=\"1\">Callback interface for components that need to respond to Apple II soft switch state changes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.ISystemRam.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.ISystemRam.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.ISystemRam",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.ISystemRamSelector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.ISystemRamSelector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.ISystemRamSelector",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.ISystemRomProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.ISystemRomProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.ISystemRomProvider",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.ISystemStatusProvider",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.ISystemStatusProvider.yml\" sourcestartlinenumber=\"1\">Provides read-only access to the current state of Apple IIe system status and soft switches.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.SlotNumber.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.SlotNumber.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces.SlotNumber",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Interfaces.SlotNumber.yml\" sourcestartlinenumber=\"1\">Defines the slot numbers for Apple IIe expansion cards.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Interfaces.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Interfaces.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Interfaces",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.LanguageCard.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.LanguageCard.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.LanguageCard",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.LanguageCard.yml\" sourcestartlinenumber=\"1\">Manages the Apple IIe Language Card memory banking for the $D000-$FFFF address space.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.MemoryAccessEventArgs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.MemoryAccessEventArgs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.MemoryAccessEventArgs",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.MemoryAccessEventArgs.yml\" sourcestartlinenumber=\"1\">Event arguments for memory access notifications to non-UI consumers.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.MemoryPool.Ranges.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.MemoryPool.Ranges.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.MemoryPool.Ranges",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.MemoryPool.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.MemoryPool.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.MemoryPool",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.NullCard.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.NullCard.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.NullCard",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.NullCard.yml\" sourcestartlinenumber=\"1\">Represents an empty expansion slot in the Apple IIe, providing no functionality.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.RenderContext.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.RenderContext.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.RenderContext",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.RenderContext.yml\" sourcestartlinenumber=\"1\">Context for rendering a single video frame, containing frame buffer, memory access, and system status.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Services.CharacterRomProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Services.CharacterRomProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Services.CharacterRomProvider",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Services.CharacterRomProvider.yml\" sourcestartlinenumber=\"1\">Loads Apple IIe enhanced character ROM from embedded resources and provides glyph access.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Services.EmulatorStateProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Services.EmulatorStateProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Services.EmulatorStateProvider",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Services.EmulatorStateProvider.yml\" sourcestartlinenumber=\"1\">Reactive provider for emulator execution state, using a BehaviorSubject to publish state changes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Services.FrameGenerator.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Services.FrameGenerator.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Services.FrameGenerator",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Services.FrameGenerator.yml\" sourcestartlinenumber=\"1\">Generates Apple II video frames by coordinating bitmap rendering,\nmemory access, and system status. Produces annotated frames for\ndownstream consumers (e.g., NTSC post-processing, GUI display).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Services.FrameProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Services.FrameProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Services.FrameProvider",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Services.FrameProvider.yml\" sourcestartlinenumber=\"1\">Provides double-buffered frame management for Apple II display with dimension validation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Services.LegacyBitmapRenderer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Services.LegacyBitmapRenderer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Services.LegacyBitmapRenderer",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Services.LegacyBitmapRenderer.yml\" sourcestartlinenumber=\"1\">Basic monochrome bitmap renderer for Apple IIe video modes (stopgap implementation).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Services.NullFloatingBusProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Services.NullFloatingBusProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Services.NullFloatingBusProvider",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Services.NullFloatingBusProvider.yml\" sourcestartlinenumber=\"1\">Simple floating bus provider that always returns zero.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Services.RandomFloatingBusProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Services.RandomFloatingBusProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Services.RandomFloatingBusProvider",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Services.RandomFloatingBusProvider.yml\" sourcestartlinenumber=\"1\">Floating bus provider that returns random values for each read.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Services.StateSnapshot.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Services.StateSnapshot.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Services.StateSnapshot",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Services.StateSnapshot.yml\" sourcestartlinenumber=\"1\">Immutable snapshot of the emulator's execution state at a specific point in time.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Services.SystemRomProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Services.SystemRomProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Services.SystemRomProvider",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Services.SystemRomProvider.yml\" sourcestartlinenumber=\"1\">Provides Apple IIe system ROM storage and access.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Services.SystemStatusProvider.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Services.SystemStatusProvider.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Services.SystemStatusProvider",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Services.SystemStatusProvider.yml\" sourcestartlinenumber=\"1\">Provides observable system status tracking with soft switch response integration.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Services.SystemStatusSnapshot.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Services.SystemStatusSnapshot.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Services.SystemStatusSnapshot",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Services.SystemStatusSnapshot.yml\" sourcestartlinenumber=\"1\">Immutable snapshot of all Apple IIe system status flags and soft switch states.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Services.SystemStatusSnapshotBuilder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Services.SystemStatusSnapshotBuilder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Services.SystemStatusSnapshotBuilder",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Services.SystemStatusSnapshotBuilder.yml\" sourcestartlinenumber=\"1\">Mutable builder for creating <xref href=\"Pandowdy.EmuCore.Services.SystemStatusSnapshot\" data-throw-if-not-resolved=\"false\"></xref> instances.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Services.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Services.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Services",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Slots.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Slots.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Slots",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.Slots.yml\" sourcestartlinenumber=\"1\">Implements the Apple IIe expansion slot system, managing peripheral cards and their I/O and ROM access.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.SoftSwitch.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.SoftSwitch.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.SoftSwitch",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.SoftSwitch.yml\" sourcestartlinenumber=\"1\">Represents a single Apple IIe soft switch with a name and boolean state.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.SoftSwitches.SoftSwitchId.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.SoftSwitches.SoftSwitchId.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.SoftSwitches.SoftSwitchId",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.SoftSwitches.SoftSwitchId.yml\" sourcestartlinenumber=\"1\">Identifies specific Apple IIe soft switches for type-safe access.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.SoftSwitches.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.SoftSwitches.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.SoftSwitches",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.SoftSwitches.yml\" sourcestartlinenumber=\"1\">Manages all Apple IIe soft switches and notifies responders when switches change.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.SystemRamSelector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.SystemRamSelector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.SystemRamSelector",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.Utility.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.Utility.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.Utility",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.VA2M.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.VA2M.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.VA2M",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.VA2M.yml\" sourcestartlinenumber=\"1\">Main Apple IIe emulator orchestrator coordinating CPU, bus, memory, and timing.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.VA2MBus.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.VA2MBus.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore.VA2MBus",
+      "Summary": "<p sourcefile=\"api/Pandowdy.EmuCore.VA2MBus.yml\" sourcestartlinenumber=\"1\">VA2M-specific system bus that coordinates CPU, memory, and I/O operations for Apple IIe emulation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.EmuCore.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.EmuCore.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.EmuCore",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.Program.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.Program.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.Program",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.Apple2Display.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.Apple2Display.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.Apple2Display",
+      "Summary": "<p sourcefile=\"api/Pandowdy.UI.Apple2Display.yml\" sourcestartlinenumber=\"1\">Custom Avalonia control for rendering Apple IIe video output with NTSC color emulation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.Apple2Font.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.Apple2Font.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.Apple2Font",
+      "Summary": "<p sourcefile=\"api/Pandowdy.UI.Apple2Font.yml\" sourcestartlinenumber=\"1\">Apple II Enhanced Video ROM font data.\nContains the character bitmaps for the Apple II 40/80 column text modes.\nSource: a2e_enh_video.rom (4096 bytes, but using first 2048 bytes)</p>\n<p sourcefile=\"api/Pandowdy.UI.Apple2Font.yml\" sourcestartlinenumber=\"5\">The ROM file contains two font sets (4096 bytes total):</p>\n<ul sourcefile=\"api/Pandowdy.UI.Apple2Font.yml\" sourcestartlinenumber=\"6\">\n<li sourcefile=\"api/Pandowdy.UI.Apple2Font.yml\" sourcestartlinenumber=\"6\">First half (0-2047): 256 characters × 8 bytes = 2048 bytes (used)</li>\n<li sourcefile=\"api/Pandowdy.UI.Apple2Font.yml\" sourcestartlinenumber=\"7\">Second half (2048-4095): 256 characters × 8 bytes = 2048 bytes (reserved)</li>\n</ul>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.AvaloniaRefreshTicker.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.AvaloniaRefreshTicker.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.AvaloniaRefreshTicker",
+      "Summary": "<p sourcefile=\"api/Pandowdy.UI.AvaloniaRefreshTicker.yml\" sourcestartlinenumber=\"1\">Avalonia-based implementation of <xref href=\"Pandowdy.UI.Interfaces.IRefreshTicker\" data-throw-if-not-resolved=\"false\"></xref> providing 60 Hz UI refresh timing.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.Helpers.WindowSettingsHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.Helpers.WindowSettingsHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.Helpers.WindowSettingsHelper",
+      "Summary": "<p sourcefile=\"api/Pandowdy.UI.Helpers.WindowSettingsHelper.yml\" sourcestartlinenumber=\"1\">Utility class for saving and restoring window position and size settings.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.Helpers.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.Helpers.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.Helpers",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.Interfaces.IMainWindowFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.Interfaces.IMainWindowFactory.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.Interfaces.IMainWindowFactory",
+      "Summary": "<p sourcefile=\"api/Pandowdy.UI.Interfaces.IMainWindowFactory.yml\" sourcestartlinenumber=\"1\">Factory for creating and initializing MainWindow instances with proper dependency injection.\nEncapsulates the two-phase initialization required by Avalonia's parameterless constructor constraint.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.Interfaces.IRefreshTicker.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.Interfaces.IRefreshTicker.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.Interfaces.IRefreshTicker",
+      "Summary": "<p sourcefile=\"api/Pandowdy.UI.Interfaces.IRefreshTicker.yml\" sourcestartlinenumber=\"1\">Provides a 60 Hz refresh signal for driving UI-based frame rendering and updates.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.Interfaces.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.Interfaces.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.Interfaces",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.MainWindow.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.MainWindow.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.MainWindow",
+      "Summary": "<p sourcefile=\"api/Pandowdy.UI.MainWindow.yml\" sourcestartlinenumber=\"1\">Main application window for the Pandowdy Apple IIe emulator.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.MainWindowFactory.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.MainWindowFactory.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.MainWindowFactory",
+      "Summary": "<p sourcefile=\"api/Pandowdy.UI.MainWindowFactory.yml\" sourcestartlinenumber=\"1\">Factory for creating fully-initialized <xref href=\"Pandowdy.UI.MainWindow\" data-throw-if-not-resolved=\"false\"></xref> instances with proper dependency injection.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.Models.WindowSettings.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.Models.WindowSettings.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.Models.WindowSettings",
+      "Summary": "<p sourcefile=\"api/Pandowdy.UI.Models.WindowSettings.yml\" sourcestartlinenumber=\"1\">Represents saved window position, size, and state information.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.Models.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.Models.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.Models",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.SoftSwitchStatusPanel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.SoftSwitchStatusPanel.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.SoftSwitchStatusPanel",
+      "Summary": "<p sourcefile=\"api/Pandowdy.UI.SoftSwitchStatusPanel.yml\" sourcestartlinenumber=\"1\">User control that displays Apple IIe soft switch status information in real-time.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.ViewModels.EmulatorStateViewModel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.ViewModels.EmulatorStateViewModel.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.ViewModels.EmulatorStateViewModel",
+      "Summary": "<p sourcefile=\"api/Pandowdy.UI.ViewModels.EmulatorStateViewModel.yml\" sourcestartlinenumber=\"1\">View model for displaying real-time Apple IIe emulator state (PC, cycles, BASIC line number).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.ViewModels.MainWindowViewModel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.ViewModels.MainWindowViewModel.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.ViewModels.MainWindowViewModel",
+      "Summary": "<p sourcefile=\"api/Pandowdy.UI.ViewModels.MainWindowViewModel.yml\" sourcestartlinenumber=\"1\">Main view model for the application window, coordinating child view models and UI state.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.ViewModels.SystemStatusViewModel.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.ViewModels.SystemStatusViewModel.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.ViewModels.SystemStatusViewModel",
+      "Summary": "<p sourcefile=\"api/Pandowdy.UI.ViewModels.SystemStatusViewModel.yml\" sourcestartlinenumber=\"1\">View model for displaying Apple IIe system status including soft switches and pushbutton states.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.ViewModels.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.ViewModels.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI.ViewModels",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI._hold_.DiskReadTestTemp.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI._hold_.DiskReadTestTemp.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI._hold_.DiskReadTestTemp",
+      "Summary": "<p sourcefile=\"api/Pandowdy.UI._hold_.DiskReadTestTemp.yml\" sourcestartlinenumber=\"1\">Temporary class for testing disk read functionality.\nContains methods extracted from MainWindow for testing purposes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI._hold_.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI._hold_.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI._hold_",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UI.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UI.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UI",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.UiBootstrap.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.UiBootstrap.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy.UiBootstrap",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/Pandowdy.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Pandowdy.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "Pandowdy",
+      "Summary": null
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/getting-started.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/getting-started.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "docs/introduction.md",
+      "output": {
+        ".html": {
+          "relative_path": "docs/introduction.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "docs/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "docs/toc.html"
+        },
+        ".json": {
+          "relative_path": "docs/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}

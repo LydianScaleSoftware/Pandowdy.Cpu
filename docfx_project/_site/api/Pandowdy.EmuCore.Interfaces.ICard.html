@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Interface ICard | Pandowdy Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Interface ICard | Pandowdy Documentation ">
+      
+      <meta name="description" content="Represents an Apple II peripheral card that can be installed in expansion slots 1-7.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/markdavidlong/Pandowdy/new/refactor/apiSpec/new?filename=Pandowdy_EmuCore_Interfaces_ICard.md&amp;value=---%0Auid%3A%20Pandowdy.EmuCore.Interfaces.ICard%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="Pandowdy Apple IIe Emulator">
+            Pandowdy Apple IIe Emulator
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Pandowdy.EmuCore.Interfaces.ICard">
+
+
+
+  <h1 id="Pandowdy_EmuCore_Interfaces_ICard" data-uid="Pandowdy.EmuCore.Interfaces.ICard" class="text-break">
+Interface ICard  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ICard.cs/#L37"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Pandowdy.html">Pandowdy</a>.<a class="xref" href="Pandowdy.EmuCore.html">EmuCore</a>.<a class="xref" href="Pandowdy.EmuCore.Interfaces.html">Interfaces</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Pandowdy.EmuCore.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Represents an Apple II peripheral card that can be installed in expansion slots 1-7.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public interface ICard : IConfigurable</code></pre>
+  </div>
+
+
+
+
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_GetMetadata">IConfigurable.GetMetadata()</a>
+    </div>
+    <div>
+      <a class="xref" href="Pandowdy.EmuCore.Interfaces.IConfigurable.html#Pandowdy_EmuCore_Interfaces_IConfigurable_ApplyMetadata_System_String_">IConfigurable.ApplyMetadata(string)</a>
+    </div>
+  </dd></dl>
+
+
+
+
+  <h2 id="Pandowdy_EmuCore_Interfaces_ICard_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+The Apple IIe provides seven expansion slots, each offering three distinct address spaces
+that cards can use for I/O operations, firmware, and extended functionality:
+</p>
+<ul><li><b>Card I/O</b> ($C0x0-$C0xF): 16 bytes for hardware control registers</li><li><b>Card ROM</b> ($Cx00-$CxFF): 256 bytes for boot/driver firmware</li><li><b>Extended ROM</b> ($C800-$CFFF): 2KB shared space for extended firmware</li></ul>
+<p>
+All read methods return nullable bytes (<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.nullable-1">Nullable&lt;T&gt;</a>). A <code>null</code> return
+indicates the card did not respond at that address, allowing the system to return floating
+bus values or fall back to system ROM.
+</p>
+<p>
+Each card type must implement the <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Clone">Clone()</a> method to support multiple instances
+being created from a single registered prototype in the <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICardFactory.html">ICardFactory</a>.
+</p>
+<p>
+<strong>Configuration Management:</strong><br>
+Cards implement <a class="xref" href="Pandowdy.EmuCore.Interfaces.IConfigurable.html">IConfigurable</a>, enabling save/restore of card-specific
+configuration (drive images, serial port settings, etc.). The metadata format is
+card-specific, but cards with child components (like drives) should use the hierarchical
+configuration pattern, embedding child metadata within their own. See <a class="xref" href="Pandowdy.EmuCore.Interfaces.IConfigurable.html">IConfigurable</a>
+for detailed guidance on configuration strategies.
+</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ICard_Description_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.Description*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ICard_Description" data-uid="Pandowdy.EmuCore.Interfaces.ICard.Description">
+  Description
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ICard.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a detailed description of the card's functionality and features.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">string Description { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ICard_Description_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>This description can be displayed in tooltips, help text, or card selection dialogs
+to help users understand what the card does.</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ICard_Id_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.Id*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ICard_Id" data-uid="Pandowdy.EmuCore.Interfaces.ICard.Id">
+  Id
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ICard.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the unique numeric identifier for this card type.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">int Id { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ICard_Id_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+While implemented as an instance property, this should return a constant value
+for all instances of the same card type. Each card implementation should use
+a unique ID (e.g., NullCard = 0, Disk II = 1, Serial = 2).
+</p>
+<p>
+The <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICardFactory.html">ICardFactory</a> validates that no two card types share the same ID
+during registration and will throw an exception if duplicates are detected.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ICard_Name_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.Name*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ICard_Name" data-uid="Pandowdy.EmuCore.Interfaces.ICard.Name">
+  Name
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ICard.cs/#L46"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the human-readable name of the card (e.g., &quot;Disk II Controller&quot;, &quot;Super Serial Card&quot;).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">string Name { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ICard_Name_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>This name is used for display in UI and configuration. Card names should be unique
+across all card types to prevent ambiguity during card selection.</p>
+</div>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ICard_Clone_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.Clone*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ICard_Clone" data-uid="Pandowdy.EmuCore.Interfaces.ICard.Clone">
+  Clone()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ICard.cs/#L242"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a new independent copy of this card instance.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">ICard Clone()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html">ICard</a></dt>
+    <dd><p>A new <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html">ICard</a> instance with the same type and configuration as this card.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ICard_Clone_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+The <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICardFactory.html">ICardFactory</a> maintains a single prototype instance of each card type.
+When a card is requested (via <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithId_System_Int32_">GetCardWithId(int)</a> or
+<a class="xref" href="Pandowdy.EmuCore.Interfaces.ICardFactory.html#Pandowdy_EmuCore_Interfaces_ICardFactory_GetCardWithName_System_String_">GetCardWithName(string)</a>), the factory calls <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_Clone">Clone()</a>
+to create a fresh, independent instance for the requesting slot.
+</p>
+<p>
+This ensures that:
+<ul><li>Each slot gets its own card instance with independent state</li><li>Multiple slots can use the same card type without interference</li><li>Removing a card from one slot doesn't affect cards in other slots</li></ul>
+
+<p>
+Implementation should typically return a new instance via constructor:
+<pre><code class="lang-csharp">public ICard Clone() =&gt; new MyCard();</code></pre>
+If the card has configurable state, that state may need to be copied to the clone
+depending on the desired behavior.
+
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ICard_ReadExtendedRom_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.ReadExtendedRom*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ICard_ReadExtendedRom_System_UInt16_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.ReadExtendedRom(System.UInt16)">
+  ReadExtendedRom(ushort)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ICard.cs/#L194"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a byte from the card's extended ROM address space ($C800-$CFFF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">byte? ReadExtendedRom(ushort offset)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>offset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The offset within the 2KB extended ROM space (valid range: 0x0000-0x07FF / 0-2047).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>?</dt>
+    <dd><p>The ROM byte if the card provides extended firmware at this address, or <code>null</code>
+if the card does not implement extended ROM. A <code>null</code> return allows the
+system to return floating bus values.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ICard_ReadExtendedRom_System_UInt16__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+The extended ROM space ($C800-$CFFF) is a 2KB region shared among all slots
+via bank switching. Only one card's extended ROM can be active at a time.
+The active card is determined by which slot last accessed address $CFFF.
+</p>
+<p>
+Extended ROM is typically used for:
+<ul><li>Additional driver code that doesn't fit in the 256-byte card ROM</li><li>Enhanced features and utilities</li><li>Configuration and diagnostic code</li></ul>
+
+<p>
+The <a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html">ISlots</a> implementation manages the bank selection mechanism,
+so individual cards only need to return their ROM data when queried.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ICard_ReadIO_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.ReadIO*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ICard_ReadIO_System_Byte_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.ReadIO(System.Byte)">
+  ReadIO(byte)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ICard.cs/#L99"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a byte from the card's I/O address space ($C0x0-$C0xF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">byte? ReadIO(byte offset)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>offset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>The offset within the 16-byte I/O space (valid range: 0x00-0x0F).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>?</dt>
+    <dd><p>The byte value if the card responds at this address, or <code>null</code> if the card
+does not implement this I/O address. A <code>null</code> return allows the system to
+return floating bus values.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ICard_ReadIO_System_Byte__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+The I/O space maps to addresses $C0x0-$C0xF where 'x' represents the slot number plus 8
+(slot 1 = $C090-$C09F, slot 2 = $C0A0-$C0AF, etc.). This space is typically used for
+hardware control registers, device status, and triggering operations.
+</p>
+<p>
+Common usage patterns:
+<ul><li>Reading device status flags</li><li>Receiving data from the peripheral</li><li>Triggering actions via read-triggered soft switches</li></ul>
+
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ICard_ReadRom_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.ReadRom*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ICard_ReadRom_System_Byte_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.ReadRom(System.Byte)">
+  ReadRom(byte)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ICard.cs/#L146"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Reads a byte from the card's ROM address space ($Cx00-$CxFF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">byte? ReadRom(byte offset)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>offset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>The offset within the 256-byte ROM space (valid range: 0x00-0xFF).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a>?</dt>
+    <dd><p>The ROM byte if the card provides firmware at this address, or <code>null</code> if the
+card does not implement ROM or does not respond at this specific offset. A <code>null</code>
+return allows the system to fall back to internal ROM.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ICard_ReadRom_System_Byte__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+The card ROM space maps to $Cx00-$CxFF where 'x' is the slot number (1-7).
+This space typically contains:
+<ul><li>Boot ROM code that the system executes during slot scanning</li><li>Driver routines for the peripheral</li><li>Interface tables and vectors</li></ul>
+
+<p>
+The first few bytes ($Cx00-$Cx0F) are special:
+<ul><li>$Cx01: Must be $20, $00, $03, or $3C to be recognized during boot scan</li><li>$Cx03, $Cx05, $Cx07: May contain entry point code</li></ul>
+
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ICard_WriteExtendedRom_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.WriteExtendedRom*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ICard_WriteExtendedRom_System_UInt16_System_Byte_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.WriteExtendedRom(System.UInt16,System.Byte)">
+  WriteExtendedRom(ushort, byte)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ICard.cs/#L212"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes a byte to the card's extended ROM address space ($C800-$CFFF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void WriteExtendedRom(ushort offset, byte value)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>offset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.uint16">ushort</a></dt>
+    <dd><p>The offset within the 2KB extended ROM space (valid range: 0x0000-0x07FF / 0-2047).</p>
+</dd>
+    <dt><code>value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>The byte value to write.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ICard_WriteExtendedRom_System_UInt16_System_Byte__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+Like <a class="xref" href="Pandowdy.EmuCore.Interfaces.ICard.html#Pandowdy_EmuCore_Interfaces_ICard_WriteRom_System_Byte_System_Byte_">WriteRom(byte, byte)</a>, this is typically a no-op since extended ROM is
+usually read-only firmware. However, some cards may use this address range
+for writeable RAM or memory-mapped hardware.
+</p>
+<p>
+If the card does not support writes to extended ROM space, this method should
+perform no operation rather than throwing an exception.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ICard_WriteIO_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.WriteIO*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ICard_WriteIO_System_Byte_System_Byte_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.WriteIO(System.Byte,System.Byte)">
+  WriteIO(byte, byte)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ICard.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes a byte to the card's I/O address space ($C0x0-$C0xF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void WriteIO(byte offset, byte value)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>offset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>The offset within the 16-byte I/O space (valid range: 0x00-0x0F).</p>
+</dd>
+    <dt><code>value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>The byte value to write to the card.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ICard_WriteIO_System_Byte_System_Byte__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+The I/O space is used for sending commands and data to the peripheral device.
+Common operations include setting control flags, sending data bytes, and
+triggering hardware operations.
+</p>
+<p>
+If the card does not implement a particular I/O address, this method should
+perform no operation (no-op) rather than throwing an exception.
+</p>
+</div>
+
+
+
+
+  <a id="Pandowdy_EmuCore_Interfaces_ICard_WriteRom_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.WriteRom*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Interfaces_ICard_WriteRom_System_Byte_System_Byte_" data-uid="Pandowdy.EmuCore.Interfaces.ICard.WriteRom(System.Byte,System.Byte)">
+  WriteRom(byte, byte)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ICard.cs/#L164"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Writes a byte to the card's ROM address space ($Cx00-$CxFF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void WriteRom(byte offset, byte value)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>offset</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>The offset within the 256-byte ROM space (valid range: 0x00-0xFF).</p>
+</dd>
+    <dt><code>value</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.byte">byte</a></dt>
+    <dd><p>The byte value to write.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Interfaces_ICard_WriteRom_System_Byte_System_Byte__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+In most cases, this is a no-op since card ROM is typically read-only firmware.
+However, some specialized cards may use this address space for writeable RAM
+or configuration registers.
+</p>
+<p>
+If the card does not support writes to ROM space, this method should perform
+no operation rather than throwing an exception.
+</p>
+</div>
+
+
+
+
+  <h2 id="seealso">See Also</h2>
+  <div class="seealso">
+      <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.IConfigurable.html">IConfigurable</a></div>
+      <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.ICardFactory.html">ICardFactory</a></div>
+      <div><a class="xref" href="Pandowdy.EmuCore.Interfaces.ISlots.html">ISlots</a></div>
+  </div>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Interfaces/ICard.cs/#L37" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

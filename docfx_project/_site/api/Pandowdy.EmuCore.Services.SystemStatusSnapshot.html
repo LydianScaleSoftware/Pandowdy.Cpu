@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class SystemStatusSnapshot | Pandowdy Documentation </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class SystemStatusSnapshot | Pandowdy Documentation ">
+      
+      <meta name="description" content="Immutable snapshot of all Apple IIe system status flags and soft switch states.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/markdavidlong/Pandowdy/new/refactor/apiSpec/new?filename=Pandowdy_EmuCore_Services_SystemStatusSnapshot.md&amp;value=---%0Auid%3A%20Pandowdy.EmuCore.Services.SystemStatusSnapshot%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="Pandowdy Apple IIe Emulator">
+            Pandowdy Apple IIe Emulator
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot">
+
+
+
+  <h1 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot" class="text-break">
+Class SystemStatusSnapshot  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="Pandowdy.html">Pandowdy</a>.<a class="xref" href="Pandowdy.EmuCore.html">EmuCore</a>.<a class="xref" href="Pandowdy.EmuCore.Services.html">Services</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>Pandowdy.EmuCore.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Immutable snapshot of all Apple IIe system status flags and soft switch states.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public record SystemStatusSnapshot : IEquatable&lt;SystemStatusSnapshot&gt;</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">SystemStatusSnapshot</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.iequatable-1">IEquatable</a>&lt;<a class="xref" href="Pandowdy.EmuCore.Services.SystemStatusSnapshot.html">SystemStatusSnapshot</a>&gt;</div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+  <h2 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+<strong>Immutability:</strong> This record is immutable - once created, its state cannot change.
+Any modification requires creating a new snapshot via <a class="xref" href="Pandowdy.EmuCore.Services.SystemStatusSnapshotBuilder.html">SystemStatusSnapshotBuilder</a>.
+This ensures thread-safe reads and clear change tracking through the observable pattern.
+</p>
+<p>
+<strong>Complete State Capture:</strong> Contains all 24 soft switch states for a single
+point in time, including memory configuration, video modes, and I/O settings. This allows
+consumers (renderers, debuggers, UI) to work with a consistent view of system state.
+</p>
+<p>
+<strong>Apple IIe Context:</strong> These flags directly correspond to Apple IIe hardware
+soft switches and annunciators, providing authentic emulation of the system's state
+management. See Apple IIe Technical Reference Manual for detailed switch descriptions.
+</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot__ctor_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.#ctor*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot__ctor_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.#ctor(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+  SystemStatusSnapshot(bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Immutable snapshot of all Apple IIe system status flags and soft switch states.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public SystemStatusSnapshot(bool State80Store, bool StateRamRd, bool StateRamWrt, bool StateIntCxRom, bool StateAltZp, bool StateSlotC3Rom, bool StatePb0, bool StatePb1, bool StatePb2, bool StateAnn0, bool StateAnn1, bool StateAnn2, bool StateAnn3_DGR, bool StatePage2, bool StateHiRes, bool StateMixed, bool StateTextMode, bool StateShow80Col, bool StateAltCharSet, bool StateFlashOn, bool StatePrewrite, bool StateUseBank1, bool StateHighRead, bool StateHighWrite)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>State80Store</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>80STORE switch - redirects page 2 to aux memory ($C000/$C001).</p>
+</dd>
+    <dt><code>StateRamRd</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>RAMRD switch - reads from aux memory ($C002/$C003).</p>
+</dd>
+    <dt><code>StateRamWrt</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>RAMWRT switch - writes to aux memory ($C004/$C005).</p>
+</dd>
+    <dt><code>StateIntCxRom</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>INTCXROM switch - uses internal ROM vs slot ROMs ($C006/$C007).</p>
+</dd>
+    <dt><code>StateAltZp</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>ALTZP switch - uses aux zero page and stack ($C008/$C009).</p>
+</dd>
+    <dt><code>StateSlotC3Rom</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>SLOTC3ROM switch - enables slot 3 ROM ($C00A/$C00B).</p>
+</dd>
+    <dt><code>StatePb0</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Paddle button 0 state.</p>
+</dd>
+    <dt><code>StatePb1</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Paddle button 1 state.</p>
+</dd>
+    <dt><code>StatePb2</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Paddle button 2 state.</p>
+</dd>
+    <dt><code>StateAnn0</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Annunciator 0 state ($C058/$C059).</p>
+</dd>
+    <dt><code>StateAnn1</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Annunciator 1 state ($C05A/$C05B).</p>
+</dd>
+    <dt><code>StateAnn2</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Annunciator 2 state ($C05C/$C05D).</p>
+</dd>
+    <dt><code>StateAnn3_DGR</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Annunciator 3 / Double Graphics state ($C05E/$C05F).</p>
+</dd>
+    <dt><code>StatePage2</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>PAGE2 switch - selects page 1 or 2 ($C054/$C055).</p>
+</dd>
+    <dt><code>StateHiRes</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>HIRES switch - graphics vs text ($C056/$C057).</p>
+</dd>
+    <dt><code>StateMixed</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>MIXED switch - mixed graphics and text ($C052/$C053).</p>
+</dd>
+    <dt><code>StateTextMode</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>TEXT switch - text mode on/off ($C050/$C051).</p>
+</dd>
+    <dt><code>StateShow80Col</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>80COL switch - 80-column display ($C00C/$C00D).</p>
+</dd>
+    <dt><code>StateAltCharSet</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>ALTCHARSET switch - alternate character set ($C00E/$C00F).</p>
+</dd>
+    <dt><code>StateFlashOn</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Flash state for inverse/flashing characters (timing-based).</p>
+</dd>
+    <dt><code>StatePrewrite</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>PREWRITE flag for language card bank switching.</p>
+</dd>
+    <dt><code>StateUseBank1</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Language card bank selection (bank 1 vs bank 2).</p>
+</dd>
+    <dt><code>StateHighRead</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Language card read enable ($D000-$FFFF).</p>
+</dd>
+    <dt><code>StateHighWrite</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Language card write enable ($D000-$FFFF).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="Pandowdy_EmuCore_Services_SystemStatusSnapshot__ctor_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+<strong>Immutability:</strong> This record is immutable - once created, its state cannot change.
+Any modification requires creating a new snapshot via <a class="xref" href="Pandowdy.EmuCore.Services.SystemStatusSnapshotBuilder.html">SystemStatusSnapshotBuilder</a>.
+This ensures thread-safe reads and clear change tracking through the observable pattern.
+</p>
+<p>
+<strong>Complete State Capture:</strong> Contains all 24 soft switch states for a single
+point in time, including memory configuration, video modes, and I/O settings. This allows
+consumers (renderers, debuggers, UI) to work with a consistent view of system state.
+</p>
+<p>
+<strong>Apple IIe Context:</strong> These flags directly correspond to Apple IIe hardware
+soft switches and annunciators, providing authentic emulation of the system's state
+management. See Apple IIe Technical Reference Manual for detailed switch descriptions.
+</p>
+</div>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_State80Store_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.State80Store*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_State80Store" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.State80Store">
+  State80Store
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L50"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>80STORE switch - redirects page 2 to aux memory ($C000/$C001).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool State80Store { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateAltCharSet_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateAltCharSet*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateAltCharSet" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateAltCharSet">
+  StateAltCharSet
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L68"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>ALTCHARSET switch - alternate character set ($C00E/$C00F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateAltCharSet { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateAltZp_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateAltZp*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateAltZp" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateAltZp">
+  StateAltZp
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>ALTZP switch - uses aux zero page and stack ($C008/$C009).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateAltZp { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateAnn0_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateAnn0*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateAnn0" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateAnn0">
+  StateAnn0
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Annunciator 0 state ($C058/$C059).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateAnn0 { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateAnn1_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateAnn1*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateAnn1" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateAnn1">
+  StateAnn1
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L60"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Annunciator 1 state ($C05A/$C05B).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateAnn1 { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateAnn2_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateAnn2*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateAnn2" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateAnn2">
+  StateAnn2
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L61"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Annunciator 2 state ($C05C/$C05D).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateAnn2 { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateAnn3_DGR_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateAnn3_DGR*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateAnn3_DGR" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateAnn3_DGR">
+  StateAnn3_DGR
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L62"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Annunciator 3 / Double Graphics state ($C05E/$C05F).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateAnn3_DGR { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateFlashOn_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateFlashOn*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateFlashOn" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateFlashOn">
+  StateFlashOn
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L69"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Flash state for inverse/flashing characters (timing-based).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateFlashOn { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateHiRes_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateHiRes*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateHiRes" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateHiRes">
+  StateHiRes
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L64"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>HIRES switch - graphics vs text ($C056/$C057).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateHiRes { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateHighRead_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateHighRead*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateHighRead" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateHighRead">
+  StateHighRead
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L72"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Language card read enable ($D000-$FFFF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateHighRead { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateHighWrite_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateHighWrite*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateHighWrite" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateHighWrite">
+  StateHighWrite
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Language card write enable ($D000-$FFFF).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateHighWrite { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateIntCxRom_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateIntCxRom*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateIntCxRom" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateIntCxRom">
+  StateIntCxRom
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>INTCXROM switch - uses internal ROM vs slot ROMs ($C006/$C007).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateIntCxRom { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateMixed_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateMixed*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateMixed" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateMixed">
+  StateMixed
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L65"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>MIXED switch - mixed graphics and text ($C052/$C053).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateMixed { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StatePage2_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StatePage2*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StatePage2" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StatePage2">
+  StatePage2
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L63"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>PAGE2 switch - selects page 1 or 2 ($C054/$C055).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StatePage2 { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StatePb0_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StatePb0*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StatePb0" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StatePb0">
+  StatePb0
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Paddle button 0 state.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StatePb0 { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StatePb1_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StatePb1*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StatePb1" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StatePb1">
+  StatePb1
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Paddle button 1 state.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StatePb1 { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StatePb2_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StatePb2*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StatePb2" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StatePb2">
+  StatePb2
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Paddle button 2 state.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StatePb2 { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StatePrewrite_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StatePrewrite*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StatePrewrite" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StatePrewrite">
+  StatePrewrite
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>PREWRITE flag for language card bank switching.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StatePrewrite { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateRamRd_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateRamRd*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateRamRd" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateRamRd">
+  StateRamRd
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L51"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>RAMRD switch - reads from aux memory ($C002/$C003).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateRamRd { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateRamWrt_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateRamWrt*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateRamWrt" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateRamWrt">
+  StateRamWrt
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L52"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>RAMWRT switch - writes to aux memory ($C004/$C005).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateRamWrt { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateShow80Col_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateShow80Col*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateShow80Col" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateShow80Col">
+  StateShow80Col
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L67"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>80COL switch - 80-column display ($C00C/$C00D).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateShow80Col { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateSlotC3Rom_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateSlotC3Rom*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateSlotC3Rom" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateSlotC3Rom">
+  StateSlotC3Rom
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L55"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>SLOTC3ROM switch - enables slot 3 ROM ($C00A/$C00B).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateSlotC3Rom { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateTextMode_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateTextMode*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateTextMode" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateTextMode">
+  StateTextMode
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L66"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>TEXT switch - text mode on/off ($C050/$C051).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateTextMode { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <a id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateUseBank1_" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateUseBank1*"></a>
+
+  <h3 id="Pandowdy_EmuCore_Services_SystemStatusSnapshot_StateUseBank1" data-uid="Pandowdy.EmuCore.Services.SystemStatusSnapshot.StateUseBank1">
+  StateUseBank1
+  <a class="header-action link-secondary" title="View source" href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Language card bank selection (bank 1 vs bank 2).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool StateUseBank1 { get; init; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/markdavidlong/Pandowdy/blob/refactor/Pandowdy.EmuCore/Services/SystemStatusServices.cs/#L49" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

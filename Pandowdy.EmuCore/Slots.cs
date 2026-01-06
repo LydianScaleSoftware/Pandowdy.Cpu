@@ -58,6 +58,13 @@ namespace Pandowdy.EmuCore;
 /// </remarks>
 public class Slots : ISlots
 {
+    /// <summary>
+    /// Cached JsonSerializerOptions for configuration serialization to avoid allocation overhead.
+    /// </summary>
+    private static readonly System.Text.Json.JsonSerializerOptions s_jsonOptions = new()
+    {
+        WriteIndented = true
+    };
 
 
     /// <summary>
@@ -556,10 +563,7 @@ public class Slots : ISlots
                     .ToArray()
             };
 
-            return System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
+            return System.Text.Json.JsonSerializer.Serialize(config, s_jsonOptions);
         }
         catch
         {

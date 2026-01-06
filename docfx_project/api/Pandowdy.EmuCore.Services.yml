@@ -1,0 +1,132 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.Services
+  commentId: N:Pandowdy.EmuCore.Services
+  id: Pandowdy.EmuCore.Services
+  children:
+  - Pandowdy.EmuCore.Services.CharacterRomProvider
+  - Pandowdy.EmuCore.Services.EmulatorStateProvider
+  - Pandowdy.EmuCore.Services.FrameGenerator
+  - Pandowdy.EmuCore.Services.FrameProvider
+  - Pandowdy.EmuCore.Services.LegacyBitmapRenderer
+  - Pandowdy.EmuCore.Services.NullFloatingBusProvider
+  - Pandowdy.EmuCore.Services.RandomFloatingBusProvider
+  - Pandowdy.EmuCore.Services.StateSnapshot
+  - Pandowdy.EmuCore.Services.SystemRomProvider
+  - Pandowdy.EmuCore.Services.SystemStatusProvider
+  - Pandowdy.EmuCore.Services.SystemStatusSnapshot
+  - Pandowdy.EmuCore.Services.SystemStatusSnapshotBuilder
+  langs:
+  - csharp
+  - vb
+  name: Pandowdy.EmuCore.Services
+  nameWithType: Pandowdy.EmuCore.Services
+  fullName: Pandowdy.EmuCore.Services
+  type: Namespace
+  assemblies:
+  - Pandowdy.EmuCore
+references:
+- uid: Pandowdy.EmuCore.Services.CharacterRomProvider
+  commentId: T:Pandowdy.EmuCore.Services.CharacterRomProvider
+  href: Pandowdy.EmuCore.Services.CharacterRomProvider.html
+  name: CharacterRomProvider
+  nameWithType: CharacterRomProvider
+  fullName: Pandowdy.EmuCore.Services.CharacterRomProvider
+- uid: Pandowdy.EmuCore.Services.StateSnapshot
+  commentId: T:Pandowdy.EmuCore.Services.StateSnapshot
+  parent: Pandowdy.EmuCore.Services
+  href: Pandowdy.EmuCore.Services.StateSnapshot.html
+  name: StateSnapshot
+  nameWithType: StateSnapshot
+  fullName: Pandowdy.EmuCore.Services.StateSnapshot
+- uid: Pandowdy.EmuCore.Services.EmulatorStateProvider
+  commentId: T:Pandowdy.EmuCore.Services.EmulatorStateProvider
+  href: Pandowdy.EmuCore.Services.EmulatorStateProvider.html
+  name: EmulatorStateProvider
+  nameWithType: EmulatorStateProvider
+  fullName: Pandowdy.EmuCore.Services.EmulatorStateProvider
+- uid: Pandowdy.EmuCore.Services.FrameGenerator
+  commentId: T:Pandowdy.EmuCore.Services.FrameGenerator
+  href: Pandowdy.EmuCore.Services.FrameGenerator.html
+  name: FrameGenerator
+  nameWithType: FrameGenerator
+  fullName: Pandowdy.EmuCore.Services.FrameGenerator
+- uid: Pandowdy.EmuCore.Services.FrameProvider
+  commentId: T:Pandowdy.EmuCore.Services.FrameProvider
+  href: Pandowdy.EmuCore.Services.FrameProvider.html
+  name: FrameProvider
+  nameWithType: FrameProvider
+  fullName: Pandowdy.EmuCore.Services.FrameProvider
+- uid: Pandowdy.EmuCore.Services.LegacyBitmapRenderer
+  commentId: T:Pandowdy.EmuCore.Services.LegacyBitmapRenderer
+  href: Pandowdy.EmuCore.Services.LegacyBitmapRenderer.html
+  name: LegacyBitmapRenderer
+  nameWithType: LegacyBitmapRenderer
+  fullName: Pandowdy.EmuCore.Services.LegacyBitmapRenderer
+- uid: Pandowdy.EmuCore.Services.NullFloatingBusProvider
+  commentId: T:Pandowdy.EmuCore.Services.NullFloatingBusProvider
+  href: Pandowdy.EmuCore.Services.NullFloatingBusProvider.html
+  name: NullFloatingBusProvider
+  nameWithType: NullFloatingBusProvider
+  fullName: Pandowdy.EmuCore.Services.NullFloatingBusProvider
+- uid: Pandowdy.EmuCore.Services.RandomFloatingBusProvider
+  commentId: T:Pandowdy.EmuCore.Services.RandomFloatingBusProvider
+  href: Pandowdy.EmuCore.Services.RandomFloatingBusProvider.html
+  name: RandomFloatingBusProvider
+  nameWithType: RandomFloatingBusProvider
+  fullName: Pandowdy.EmuCore.Services.RandomFloatingBusProvider
+- uid: Pandowdy.EmuCore.Services.SystemRomProvider
+  commentId: T:Pandowdy.EmuCore.Services.SystemRomProvider
+  href: Pandowdy.EmuCore.Services.SystemRomProvider.html
+  name: SystemRomProvider
+  nameWithType: SystemRomProvider
+  fullName: Pandowdy.EmuCore.Services.SystemRomProvider
+- uid: Pandowdy.EmuCore.Services.SystemStatusSnapshot
+  commentId: T:Pandowdy.EmuCore.Services.SystemStatusSnapshot
+  parent: Pandowdy.EmuCore.Services
+  href: Pandowdy.EmuCore.Services.SystemStatusSnapshot.html
+  name: SystemStatusSnapshot
+  nameWithType: SystemStatusSnapshot
+  fullName: Pandowdy.EmuCore.Services.SystemStatusSnapshot
+- uid: Pandowdy.EmuCore.Services.SystemStatusProvider
+  commentId: T:Pandowdy.EmuCore.Services.SystemStatusProvider
+  href: Pandowdy.EmuCore.Services.SystemStatusProvider.html
+  name: SystemStatusProvider
+  nameWithType: SystemStatusProvider
+  fullName: Pandowdy.EmuCore.Services.SystemStatusProvider
+- uid: Pandowdy.EmuCore.Services.SystemStatusSnapshotBuilder
+  commentId: T:Pandowdy.EmuCore.Services.SystemStatusSnapshotBuilder
+  href: Pandowdy.EmuCore.Services.SystemStatusSnapshotBuilder.html
+  name: SystemStatusSnapshotBuilder
+  nameWithType: SystemStatusSnapshotBuilder
+  fullName: Pandowdy.EmuCore.Services.SystemStatusSnapshotBuilder
+- uid: Pandowdy.EmuCore.Services
+  commentId: N:Pandowdy.EmuCore.Services
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.Services
+  nameWithType: Pandowdy.EmuCore.Services
+  fullName: Pandowdy.EmuCore.Services
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Services
+    name: Services
+    href: Pandowdy.EmuCore.Services.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.Services
+    name: Services
+    href: Pandowdy.EmuCore.Services.html

@@ -1,0 +1,644 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.EmuCore.DataTypes.BitField16
+  commentId: T:Pandowdy.EmuCore.DataTypes.BitField16
+  id: BitField16
+  parent: Pandowdy.EmuCore.DataTypes
+  children:
+  - Pandowdy.EmuCore.DataTypes.BitField16.GetBit(System.Int32)
+  - Pandowdy.EmuCore.DataTypes.BitField16.SetBit(System.Int32,System.Boolean)
+  - Pandowdy.EmuCore.DataTypes.BitField16.Value
+  langs:
+  - csharp
+  - vb
+  name: BitField16
+  nameWithType: BitField16
+  fullName: Pandowdy.EmuCore.DataTypes.BitField16
+  type: Struct
+  source:
+    remote:
+      path: Pandowdy.EmuCore/DataTypes/BitField16.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: BitField16
+    path: ../Pandowdy.EmuCore/DataTypes/BitField16.cs
+    startLine: 39
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.DataTypes
+  summary: Provides bit-level access to a 16-bit unsigned integer value.
+  remarks: >-
+    <p>
+
+    <strong>Purpose:</strong> This struct wraps a <xref href="System.UInt16" data-throw-if-not-resolved="false"></xref> and provides
+
+    methods to get and set individual bits by index (0-15). This is useful for
+
+    managing packed bit flags, hardware registers, or bitmap data where individual
+
+    bits have specific meanings.
+
+    </p>
+
+    <p>
+
+    <strong>Value Type Semantics:</strong> As a struct, <xref href="Pandowdy.EmuCore.DataTypes.BitField16" data-throw-if-not-resolved="false"></xref> is
+
+    a value type with copy-by-value semantics. Each assignment creates an independent
+
+    copy. This is appropriate for small data structures like this where reference
+
+    overhead would be wasteful.
+
+    </p>
+
+    <p>
+
+    <strong>Bit Indexing:</strong> Bits are indexed from 0 (LSB, least significant bit)
+
+    to 15 (MSB, most significant bit), matching standard binary digit positions:
+
+    <pre><code class="lang-csharp">Bit:   15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+
+    Value:  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  1  = 0x0001</code></pre>
+
+    </p>
+
+    <p>
+
+    <strong>Thread Safety:</strong> Not thread-safe for writes. If multiple threads
+
+    need to modify the same <xref href="Pandowdy.EmuCore.DataTypes.BitField16" data-throw-if-not-resolved="false"></xref> instance, external synchronization
+
+    is required. Reads via <xref href="Pandowdy.EmuCore.DataTypes.BitField16.GetBit(System.Int32)" data-throw-if-not-resolved="false"></xref> are safe as long as no concurrent writes occur.
+
+    </p>
+
+    <p>
+
+    <strong>Usage in Pandowdy:</strong> Used by <xref href="Pandowdy.EmuCore.DataTypes.BitmapDataArray" data-throw-if-not-resolved="false"></xref> to
+
+    manage per-pixel flags across 16 bitplanes, enabling efficient packed storage
+
+    of multiple boolean attributes per pixel (e.g., color, intensity, visibility).
+
+    </p>
+  example: []
+  syntax:
+    content: public struct BitField16
+    content.vb: Public Structure BitField16
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Pandowdy.EmuCore.DataTypes.BitField16.Value
+  commentId: P:Pandowdy.EmuCore.DataTypes.BitField16.Value
+  id: Value
+  parent: Pandowdy.EmuCore.DataTypes.BitField16
+  langs:
+  - csharp
+  - vb
+  name: Value
+  nameWithType: BitField16.Value
+  fullName: Pandowdy.EmuCore.DataTypes.BitField16.Value
+  type: Property
+  source:
+    remote:
+      path: Pandowdy.EmuCore/DataTypes/BitField16.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Value
+    path: ../Pandowdy.EmuCore/DataTypes/BitField16.cs
+    startLine: 63
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.DataTypes
+  summary: Gets or sets the complete 16-bit value.
+  remarks: >-
+    <p>
+
+    <strong>Direct Access:</strong> This property allows direct manipulation of
+
+    the entire 16-bit value without going through bit-by-bit operations. Useful
+
+    when initializing, copying, or comparing entire bitfields.
+
+    </p>
+
+    <p>
+
+    <strong>Performance:</strong> More efficient than setting 16 individual bits
+
+    when you need to initialize or bulk-update the entire value.
+
+    </p>
+  example: []
+  syntax:
+    content: public ushort Value { readonly get; set; }
+    parameters: []
+    return:
+      type: System.UInt16
+      description: The current 16-bit value with all bits packed together.
+    content.vb: Public Property Value As UShort
+  overload: Pandowdy.EmuCore.DataTypes.BitField16.Value*
+- uid: Pandowdy.EmuCore.DataTypes.BitField16.GetBit(System.Int32)
+  commentId: M:Pandowdy.EmuCore.DataTypes.BitField16.GetBit(System.Int32)
+  id: GetBit(System.Int32)
+  parent: Pandowdy.EmuCore.DataTypes.BitField16
+  langs:
+  - csharp
+  - vb
+  name: GetBit(int)
+  nameWithType: BitField16.GetBit(int)
+  fullName: Pandowdy.EmuCore.DataTypes.BitField16.GetBit(int)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/DataTypes/BitField16.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: GetBit
+    path: ../Pandowdy.EmuCore/DataTypes/BitField16.cs
+    startLine: 138
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.DataTypes
+  summary: Gets the value of a specific bit.
+  remarks: >-
+    <p>
+
+    <strong>Algorithm:</strong>
+
+    <ol><li>Validates index is in range 0-15</li><li>Creates a mask with only the target bit set: <code>1 &lt;&lt; index</code></li><li>Performs bitwise AND with the value: <code>_value &amp; mask</code></li><li>Returns true if result is non-zero (bit is set)</li></ol>
+
+    </p>
+
+    <p>
+
+    <strong>Example:</strong>
+
+
+    <pre><code class="lang-csharp">var bf = new BitField16 { Value = 0b0000_0000_0000_1010 }; // bits 1 and 3 set
+
+    bool bit1 = bf.GetBit(1);  // true  (bit 1 is set)
+
+    bool bit2 = bf.GetBit(2);  // false (bit 2 is clear)
+
+    bool bit3 = bf.GetBit(3);  // true  (bit 3 is set)</code></pre>
+
+    </p>
+  example: []
+  syntax:
+    content: public readonly bool GetBit(int index)
+    parameters:
+    - id: index
+      type: System.Int32
+      description: The zero-based index of the bit to retrieve (0-15).
+    return:
+      type: System.Boolean
+      description: >-
+        <code>true</code> if the bit at <code class="paramref">index</code> is set (1);
+
+        <code>false</code> if the bit is clear (0).
+    content.vb: Public Function GetBit(index As Integer) As Boolean
+  overload: Pandowdy.EmuCore.DataTypes.BitField16.GetBit*
+  exceptions:
+  - type: System.ArgumentOutOfRangeException
+    commentId: T:System.ArgumentOutOfRangeException
+    description: Thrown if <code class="paramref">index</code> is less than 0 or greater than 15.
+  nameWithType.vb: BitField16.GetBit(Integer)
+  fullName.vb: Pandowdy.EmuCore.DataTypes.BitField16.GetBit(Integer)
+  name.vb: GetBit(Integer)
+- uid: Pandowdy.EmuCore.DataTypes.BitField16.SetBit(System.Int32,System.Boolean)
+  commentId: M:Pandowdy.EmuCore.DataTypes.BitField16.SetBit(System.Int32,System.Boolean)
+  id: SetBit(System.Int32,System.Boolean)
+  parent: Pandowdy.EmuCore.DataTypes.BitField16
+  langs:
+  - csharp
+  - vb
+  name: SetBit(int, bool)
+  nameWithType: BitField16.SetBit(int, bool)
+  fullName: Pandowdy.EmuCore.DataTypes.BitField16.SetBit(int, bool)
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.EmuCore/DataTypes/BitField16.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: SetBit
+    path: ../Pandowdy.EmuCore/DataTypes/BitField16.cs
+    startLine: 187
+  assemblies:
+  - Pandowdy.EmuCore
+  namespace: Pandowdy.EmuCore.DataTypes
+  summary: Sets or clears a specific bit.
+  remarks: >-
+    <p>
+
+    <strong>Algorithm:</strong>
+
+    <ol><li>Validates index is in range 0-15</li><li>Creates a mask with only the target bit set: <code>1 &lt;&lt; index</code></li><li>If <code class="paramref">state</code> is true: performs OR to set bit: <code>_value |= mask</code></li><li>If <code class="paramref">state</code> is false: performs AND with inverted mask to clear bit: <code>_value &amp;= ~mask</code></li></ol>
+
+    </p>
+
+    <p>
+
+    <strong>Bit Manipulation:</strong>
+
+    <ul><li><strong>Set bit:</strong> OR operation (<code>|=</code>) turns on the target bit without affecting others</li><li><strong>Clear bit:</strong> AND with complement (<code>&amp;= ~mask</code>) turns off the target bit without affecting others</li></ul>
+
+    </p>
+
+    <p>
+
+    <strong>Example:</strong>
+
+
+    <pre><code class="lang-csharp">var bf = new BitField16 { Value = 0b0000_0000_0000_0000 };
+
+    bf.SetBit(1, true);   // Value is now 0b0000_0000_0000_0010
+
+    bf.SetBit(3, true);   // Value is now 0b0000_0000_0000_1010
+
+    bf.SetBit(1, false);  // Value is now 0b0000_0000_0000_1000 (bit 1 cleared)</code></pre>
+
+    </p>
+
+    <p>
+
+    <strong>Performance:</strong> Uses direct bit manipulation (shift, OR, AND) which
+
+    compiles to a handful of CPU instructions. Highly efficient for managing packed flags.
+
+    </p>
+  example: []
+  syntax:
+    content: public void SetBit(int index, bool state)
+    parameters:
+    - id: index
+      type: System.Int32
+      description: The zero-based index of the bit to modify (0-15).
+    - id: state
+      type: System.Boolean
+      description: <code>true</code> to set the bit to 1; <code>false</code> to clear the bit to 0.
+    content.vb: Public Sub SetBit(index As Integer, state As Boolean)
+  overload: Pandowdy.EmuCore.DataTypes.BitField16.SetBit*
+  exceptions:
+  - type: System.ArgumentOutOfRangeException
+    commentId: T:System.ArgumentOutOfRangeException
+    description: Thrown if <code class="paramref">index</code> is less than 0 or greater than 15.
+  nameWithType.vb: BitField16.SetBit(Integer, Boolean)
+  fullName.vb: Pandowdy.EmuCore.DataTypes.BitField16.SetBit(Integer, Boolean)
+  name.vb: SetBit(Integer, Boolean)
+references:
+- uid: System.UInt16
+  commentId: T:System.UInt16
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: ushort
+  nameWithType: ushort
+  fullName: ushort
+  nameWithType.vb: UShort
+  fullName.vb: UShort
+  name.vb: UShort
+- uid: Pandowdy.EmuCore.DataTypes.BitField16
+  commentId: T:Pandowdy.EmuCore.DataTypes.BitField16
+  href: Pandowdy.EmuCore.DataTypes.BitField16.html
+  name: BitField16
+  nameWithType: BitField16
+  fullName: Pandowdy.EmuCore.DataTypes.BitField16
+- uid: Pandowdy.EmuCore.DataTypes.BitField16.GetBit(System.Int32)
+  commentId: M:Pandowdy.EmuCore.DataTypes.BitField16.GetBit(System.Int32)
+  isExternal: true
+  href: Pandowdy.EmuCore.DataTypes.BitField16.html#Pandowdy_EmuCore_DataTypes_BitField16_GetBit_System_Int32_
+  name: GetBit(int)
+  nameWithType: BitField16.GetBit(int)
+  fullName: Pandowdy.EmuCore.DataTypes.BitField16.GetBit(int)
+  nameWithType.vb: BitField16.GetBit(Integer)
+  fullName.vb: Pandowdy.EmuCore.DataTypes.BitField16.GetBit(Integer)
+  name.vb: GetBit(Integer)
+  spec.csharp:
+  - uid: Pandowdy.EmuCore.DataTypes.BitField16.GetBit(System.Int32)
+    name: GetBit
+    href: Pandowdy.EmuCore.DataTypes.BitField16.html#Pandowdy_EmuCore_DataTypes_BitField16_GetBit_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Pandowdy.EmuCore.DataTypes.BitField16.GetBit(System.Int32)
+    name: GetBit
+    href: Pandowdy.EmuCore.DataTypes.BitField16.html#Pandowdy_EmuCore_DataTypes_BitField16_GetBit_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Pandowdy.EmuCore.DataTypes.BitmapDataArray
+  commentId: T:Pandowdy.EmuCore.DataTypes.BitmapDataArray
+  parent: Pandowdy.EmuCore.DataTypes
+  href: Pandowdy.EmuCore.DataTypes.BitmapDataArray.html
+  name: BitmapDataArray
+  nameWithType: BitmapDataArray
+  fullName: Pandowdy.EmuCore.DataTypes.BitmapDataArray
+- uid: Pandowdy.EmuCore.DataTypes
+  commentId: N:Pandowdy.EmuCore.DataTypes
+  href: Pandowdy.html
+  name: Pandowdy.EmuCore.DataTypes
+  nameWithType: Pandowdy.EmuCore.DataTypes
+  fullName: Pandowdy.EmuCore.DataTypes
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.DataTypes
+    name: DataTypes
+    href: Pandowdy.EmuCore.DataTypes.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.EmuCore
+    name: EmuCore
+    href: Pandowdy.EmuCore.html
+  - name: .
+  - uid: Pandowdy.EmuCore.DataTypes
+    name: DataTypes
+    href: Pandowdy.EmuCore.DataTypes.html
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Pandowdy.EmuCore.DataTypes.BitField16.Value*
+  commentId: Overload:Pandowdy.EmuCore.DataTypes.BitField16.Value
+  href: Pandowdy.EmuCore.DataTypes.BitField16.html#Pandowdy_EmuCore_DataTypes_BitField16_Value
+  name: Value
+  nameWithType: BitField16.Value
+  fullName: Pandowdy.EmuCore.DataTypes.BitField16.Value
+- uid: System.ArgumentOutOfRangeException
+  commentId: T:System.ArgumentOutOfRangeException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception
+  name: ArgumentOutOfRangeException
+  nameWithType: ArgumentOutOfRangeException
+  fullName: System.ArgumentOutOfRangeException
+- uid: Pandowdy.EmuCore.DataTypes.BitField16.GetBit*
+  commentId: Overload:Pandowdy.EmuCore.DataTypes.BitField16.GetBit
+  href: Pandowdy.EmuCore.DataTypes.BitField16.html#Pandowdy_EmuCore_DataTypes_BitField16_GetBit_System_Int32_
+  name: GetBit
+  nameWithType: BitField16.GetBit
+  fullName: Pandowdy.EmuCore.DataTypes.BitField16.GetBit
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Pandowdy.EmuCore.DataTypes.BitField16.SetBit*
+  commentId: Overload:Pandowdy.EmuCore.DataTypes.BitField16.SetBit
+  href: Pandowdy.EmuCore.DataTypes.BitField16.html#Pandowdy_EmuCore_DataTypes_BitField16_SetBit_System_Int32_System_Boolean_
+  name: SetBit
+  nameWithType: BitField16.SetBit
+  fullName: Pandowdy.EmuCore.DataTypes.BitField16.SetBit

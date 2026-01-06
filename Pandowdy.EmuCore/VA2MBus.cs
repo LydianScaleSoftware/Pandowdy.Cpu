@@ -664,6 +664,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// <strong>Write vs Read Semantics:</strong> Language card write handlers have different behavior
     /// than read handlers. Specifically, the two-access write sequence is reset on writes to certain
     /// addresses (see <see cref="ApplyBankIoWriteFlags"/>).
+    /// </para>
     /// </remarks>
     private void InitIoWriteHandlers()
     {

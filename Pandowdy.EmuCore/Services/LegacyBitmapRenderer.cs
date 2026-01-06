@@ -24,8 +24,8 @@
 //
 // Both this renderer and its replacement produce monochrome bitmaps that are
 // then processed by UI-layer NTSC color generators (if color output is desired).
-/// The interface (IDisplayBitmapRenderer) will remain stable to ensure the
-/// replacement can be swapped in transparently.
+// The interface (IDisplayBitmapRenderer) will remain stable to ensure the
+// replacement can be swapped in transparently.
 //------------------------------------------------------------------------------
 
 using Pandowdy.EmuCore.DataTypes;
@@ -156,7 +156,6 @@ public class LegacyBitmapRenderer : IDisplayBitmapRenderer
     /// <item>$4000-$5FFF: Hi-Res Page 2</item>
     /// </list>
     /// </para>
-    /// </remarks>
     /// </remarks>
     private void RenderScreen(BitmapDataArray buf)
     {
@@ -513,7 +512,7 @@ public class LegacyBitmapRenderer : IDisplayBitmapRenderer
     /// <summary>
     /// Renders a lo-res graphics cell (40×48 blocks).
     /// </summary>
-    /// <param name="address">Address in lo-res memory.</param>
+    /// <param name="address">Address in lo-res memory (unused when 80STORE active).</param>
     /// <param name="row">Row index (0-23).</param>
     /// <param name="col">Column index (0-39).</param>
     /// <param name="gr80">True if 80-column lo-res mode is active.</param>
@@ -531,17 +530,45 @@ public class LegacyBitmapRenderer : IDisplayBitmapRenderer
     /// as Apple IIe lo-res colors.
     /// </para>
     /// <para>
-    /// <strong>80-Column Lo-Res:</strong> Not implemented in this stopgap renderer.
-    /// Would require rendering aux and main memory patterns side-by-side.
+    /// <strong>80STORE + PAGE2 Behavior:</strong> When 80STORE is active, PAGE2 controls which
+    /// memory bank (aux vs main) to read from at $0400-$07FF, not which address range ($0400 vs $0800).
+    /// This matches the behavior in <see cref="RenderTextCell"/> and is critical for correct emulation.
+    /// </para>
+    /// <para>
+    /// <strong>80-Column Lo-Res (DGR):</strong> Basic implementation renders aux and main memory
+    /// patterns side-by-side without horizontal doubling. Each cell produces two 7-pixel patterns
+    /// (aux left, main right) for a total of 14 pixels per cell.
     /// </para>
     /// </remarks>
     private void RenderGrCell(int address, int row, int col, bool gr80, BitmapDataArray buf)
     {
-        // Render either 1 40-column or 2 80-column cells depending on mode
+        bool store80 = _context!.SystemStatus.State80Store;
+        bool page2 = _context!.SystemStatus.StatePage2;
+
+        // Calculate base address - always $0400 in text/lo-res range
+        // (80STORE controls bank, not address when active)
+        int baseAddr = 0x0400 + (row % 8) * 128 + (row / 8) * 40 + col;
+
         if (!gr80)
         {
-            // 40-column lo-res
-            byte value = _context!.Memory.ReadRawMain((ushort)address);
+            // 40-column lo-res: render with horizontal doubling
+            // When 80STORE is active and PAGE2 is set, read from AUX at $0400
+            // Otherwise read from MAIN (at $0400 or $0800 depending on PAGE2)
+            byte value;
+            if (store80 && page2)
+            {
+                value = _context!.Memory.ReadRawAux((ushort)baseAddr);
+            }
+            else if (!store80 && page2)
+            {
+                // Standard PAGE2 behavior: read from $0800
+                value = _context!.Memory.ReadRawMain((ushort)(baseAddr + 0x400));
+            }
+            else
+            {
+                // PAGE1 or 80STORE+PAGE1: read from main $0400
+                value = _context!.Memory.ReadRawMain((ushort)baseAddr);
+            }
 
             for (int glyphRow = 0; glyphRow < 8; glyphRow++)
             {
@@ -571,8 +598,43 @@ public class LegacyBitmapRenderer : IDisplayBitmapRenderer
         }
         else
         {
-            // TODO: 80-column lo-res (not implemented)
-            // Would render aux and main memory colors side-by-side
+            // 80-column lo-res (DGR): render aux and main memory patterns side-by-side
+            // Always use $0400 base address - 80-column mode implies 80STORE is active
+            byte auxValue = _context!.Memory.ReadRawAux((ushort)baseAddr);
+            byte mainValue = _context!.Memory.ReadRawMain((ushort)baseAddr);
+
+            for (int glyphRow = 0; glyphRow < 8; glyphRow++)
+            {
+                int y = row * 8 + glyphRow;
+
+                // Select color from lower (rows 0-3) or upper (rows 4-7) nibble for both banks
+                byte auxColor = (byte)(auxValue & 0x0f);
+                byte mainColor = (byte)(mainValue & 0x0f);
+                if (glyphRow >= 4)
+                {
+                    auxColor = (byte)(auxValue >> 4);
+                    mainColor = (byte)(mainValue >> 4);
+                }
+
+                // Generate patterns for aux and main colors
+                // Note: Using first two phase variations for simplicity in DGR mode
+                var (a1,_,a3, _) = MakeGrColor(auxColor);
+                var (_, a2, _, a4) = MakeGrColor(mainColor);
+
+                int baseX = col * 14;
+
+                if (col % 2 == 0) // Even column: use A1 & A2
+                {
+                    SetByteAt(buf, baseX, y, (byte) a1, _bitplane);
+                    SetByteAt(buf, baseX + 7, y, (byte) a2, _bitplane);
+                }
+                else // Odd column: use A3 & A4
+                {
+                    SetByteAt(buf, baseX, y, (byte) a3, _bitplane);
+                    SetByteAt(buf, baseX + 7, y, (byte) a4, _bitplane);
+                }
+
+            }
         }
     }
 

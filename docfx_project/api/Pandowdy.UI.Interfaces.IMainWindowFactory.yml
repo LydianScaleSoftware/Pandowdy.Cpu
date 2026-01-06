@@ -1,0 +1,134 @@
+### YamlMime:ManagedReference
+items:
+- uid: Pandowdy.UI.Interfaces.IMainWindowFactory
+  commentId: T:Pandowdy.UI.Interfaces.IMainWindowFactory
+  id: IMainWindowFactory
+  parent: Pandowdy.UI.Interfaces
+  children:
+  - Pandowdy.UI.Interfaces.IMainWindowFactory.Create
+  langs:
+  - csharp
+  - vb
+  name: IMainWindowFactory
+  nameWithType: IMainWindowFactory
+  fullName: Pandowdy.UI.Interfaces.IMainWindowFactory
+  type: Interface
+  source:
+    remote:
+      path: Pandowdy.UI/Interfaces/IMainWindowFactory.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: IMainWindowFactory
+    path: ../Pandowdy.UI/Interfaces/IMainWindowFactory.cs
+    startLine: 6
+  assemblies:
+  - Pandowdy.UI
+  namespace: Pandowdy.UI.Interfaces
+  summary: >-
+    Factory for creating and initializing MainWindow instances with proper dependency injection.
+
+    Encapsulates the two-phase initialization required by Avalonia's parameterless constructor constraint.
+  example: []
+  syntax:
+    content: public interface IMainWindowFactory
+    content.vb: Public Interface IMainWindowFactory
+- uid: Pandowdy.UI.Interfaces.IMainWindowFactory.Create
+  commentId: M:Pandowdy.UI.Interfaces.IMainWindowFactory.Create
+  id: Create
+  parent: Pandowdy.UI.Interfaces.IMainWindowFactory
+  langs:
+  - csharp
+  - vb
+  name: Create()
+  nameWithType: IMainWindowFactory.Create()
+  fullName: Pandowdy.UI.Interfaces.IMainWindowFactory.Create()
+  type: Method
+  source:
+    remote:
+      path: Pandowdy.UI/Interfaces/IMainWindowFactory.cs
+      branch: refactor
+      repo: https://github.com/markdavidlong/Pandowdy.git
+    id: Create
+    path: ../Pandowdy.UI/Interfaces/IMainWindowFactory.cs
+    startLine: 13
+  assemblies:
+  - Pandowdy.UI
+  namespace: Pandowdy.UI.Interfaces
+  summary: >-
+    Creates a new MainWindow instance and initializes it with all required dependencies.
+
+    This method handles both construction and initialization atomically.
+  example: []
+  syntax:
+    content: MainWindow Create()
+    return:
+      type: Pandowdy.UI.MainWindow
+      description: A fully initialized MainWindow ready to be displayed.
+    content.vb: Function Create() As MainWindow
+  overload: Pandowdy.UI.Interfaces.IMainWindowFactory.Create*
+references:
+- uid: Pandowdy.UI.Interfaces
+  commentId: N:Pandowdy.UI.Interfaces
+  href: Pandowdy.html
+  name: Pandowdy.UI.Interfaces
+  nameWithType: Pandowdy.UI.Interfaces
+  fullName: Pandowdy.UI.Interfaces
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.UI
+    name: UI
+    href: Pandowdy.UI.html
+  - name: .
+  - uid: Pandowdy.UI.Interfaces
+    name: Interfaces
+    href: Pandowdy.UI.Interfaces.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.UI
+    name: UI
+    href: Pandowdy.UI.html
+  - name: .
+  - uid: Pandowdy.UI.Interfaces
+    name: Interfaces
+    href: Pandowdy.UI.Interfaces.html
+- uid: Pandowdy.UI.Interfaces.IMainWindowFactory.Create*
+  commentId: Overload:Pandowdy.UI.Interfaces.IMainWindowFactory.Create
+  href: Pandowdy.UI.Interfaces.IMainWindowFactory.html#Pandowdy_UI_Interfaces_IMainWindowFactory_Create
+  name: Create
+  nameWithType: IMainWindowFactory.Create
+  fullName: Pandowdy.UI.Interfaces.IMainWindowFactory.Create
+- uid: Pandowdy.UI.MainWindow
+  commentId: T:Pandowdy.UI.MainWindow
+  parent: Pandowdy.UI
+  href: Pandowdy.UI.MainWindow.html
+  name: MainWindow
+  nameWithType: MainWindow
+  fullName: Pandowdy.UI.MainWindow
+- uid: Pandowdy.UI
+  commentId: N:Pandowdy.UI
+  href: Pandowdy.html
+  name: Pandowdy.UI
+  nameWithType: Pandowdy.UI
+  fullName: Pandowdy.UI
+  spec.csharp:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.UI
+    name: UI
+    href: Pandowdy.UI.html
+  spec.vb:
+  - uid: Pandowdy
+    name: Pandowdy
+    href: Pandowdy.html
+  - name: .
+  - uid: Pandowdy.UI
+    name: UI
+    href: Pandowdy.UI.html

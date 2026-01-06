@@ -933,7 +933,7 @@ public class VA2M : IDisposable
     /// </para>
     /// <para>
     /// <strong>BASIC Line Number Detection:</strong> Reads zero page locations $75-$76
-    /// which contain the current BASIC line pointer. Valid line numbers are < $FA00.
+    /// which contain the current BASIC line pointer. Valid line numbers are &lt; $FA00.
     /// Returns null if not in BASIC or if pointer is invalid.
     /// </para>
     /// <para>
@@ -1094,32 +1094,7 @@ public class VA2M : IDisposable
         Enqueue(() => Bus.SetPushButton(num, pressed));
     }
 
-    /// <summary>
-    /// Enqueues generation of a system status snapshot containing soft switch and button states.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <strong>Purpose:</strong> Triggers creation of a comprehensive system status snapshot
-    /// that includes all soft switches (memory mapping, video modes, ROM, annunciators)
-    /// and pushbutton states.
-    /// </para>
-    /// <para>
-    /// <strong>Thread Safety:</strong> This method is thread-safe. It enqueues the status
-    /// generation command which will be executed on the emulator thread via <see cref="BuildStatusData"/>.
-    /// </para>
-    /// <para>
-    /// <strong>Typical Usage:</strong> Called periodically (e.g., at frame boundaries or on-demand)
-    /// to update UI displays showing soft switch states, debug panels, or system status indicators.
-    /// </para>
-    /// <para>
-    /// <strong>Snapshot Contents:</strong> See <see cref="BuildStatusData"/> for details
-    /// on what data is captured in the status snapshot.
-    /// </para>
-    /// </remarks>
-    public void GenerateStatusData()
-    {
-        Enqueue(() => BuildStatusData());
-    }
+
 
     /// <summary>
     /// Immutable dictionary mapping soft switch IDs to their corresponding snapshot builder setter methods.
@@ -1185,8 +1160,7 @@ public class VA2M : IDisposable
     /// status provider sink.
     /// </para>
     /// <para>
-    /// <strong>Thread Context:</strong> Must be called on the emulator thread. External threads
-    /// should use <see cref="GenerateStatusData"/> which enqueues this method safely.
+    /// <strong>Thread Context:</strong> Must be called on the emulator thread. 
     /// </para>
     /// <para>
     /// <strong>Performance:</strong> Relatively lightweight operation (dictionary lookups + property sets).
