@@ -12,13 +12,13 @@ namespace Pandowdy.EmuCore.Services;
 /// This ensures thread-safe reads and clear change tracking through the observable pattern.
 /// </para>
 /// <para>
-/// <strong>Complete State Capture:</strong> Contains all 24 soft switch states for a single
-/// point in time, including memory configuration, video modes, and I/O settings. This allows
-/// consumers (renderers, debuggers, UI) to work with a consistent view of system state.
+/// <strong>Complete State Capture:</strong> Contains all soft switch states and I/O values for a single
+/// point in time, including memory configuration, video modes, keyboard input, and game controller state.
+/// This allows consumers (renderers, debuggers, UI) to work with a consistent view of system state.
 /// </para>
 /// <para>
 /// <strong>Apple IIe Context:</strong> These flags directly correspond to Apple IIe hardware
-/// soft switches and annunciators, providing authentic emulation of the system's state
+/// soft switches and I/O registers, providing authentic emulation of the system's state
 /// management. See Apple IIe Technical Reference Manual for detailed switch descriptions.
 /// </para>
 /// </remarks>
@@ -28,9 +28,9 @@ namespace Pandowdy.EmuCore.Services;
 /// <param name="StateIntCxRom">INTCXROM switch - uses internal ROM vs slot ROMs ($C006/$C007).</param>
 /// <param name="StateAltZp">ALTZP switch - uses aux zero page and stack ($C008/$C009).</param>
 /// <param name="StateSlotC3Rom">SLOTC3ROM switch - enables slot 3 ROM ($C00A/$C00B).</param>
-/// <param name="StatePb0">Paddle button 0 state.</param>
-/// <param name="StatePb1">Paddle button 1 state.</param>
-/// <param name="StatePb2">Paddle button 2 state.</param>
+/// <param name="StatePb0">Paddle button 0 state (readable at $C061, bit 7).</param>
+/// <param name="StatePb1">Paddle button 1 state (readable at $C062, bit 7).</param>
+/// <param name="StatePb2">Paddle button 2 state (readable at $C063, bit 7).</param>
 /// <param name="StateAnn0">Annunciator 0 state ($C058/$C059).</param>
 /// <param name="StateAnn1">Annunciator 1 state ($C05A/$C05B).</param>
 /// <param name="StateAnn2">Annunciator 2 state ($C05C/$C05D).</param>
@@ -46,6 +46,12 @@ namespace Pandowdy.EmuCore.Services;
 /// <param name="StateUseBank1">Language card bank selection (bank 1 vs bank 2).</param>
 /// <param name="StateHighRead">Language card read enable ($D000-$FFFF).</param>
 /// <param name="StateHighWrite">Language card write enable ($D000-$FFFF).</param>
+/// <param name="StateVBlank">Vertical blanking interval active (readable at $C019, bit 7).</param>
+/// <param name="StateCurrentKey">Keyboard character code with strobe (readable at $C000).</param>
+/// <param name="StatePdl0">Paddle 0 analog value 0-255 (timer readable at $C064, bit 7).</param>
+/// <param name="StatePdl1">Paddle 1 analog value 0-255 (timer readable at $C064, bit 6).</param>
+/// <param name="StatePdl2">Paddle 2 analog value 0-255 (timer readable at $C065, bit 7).</param>
+/// <param name="StatePdl3">Paddle 3 analog value 0-255 (timer readable at $C065, bit 6).</param>
 public record SystemStatusSnapshot(
     bool State80Store,
     bool StateRamRd,
@@ -70,7 +76,13 @@ public record SystemStatusSnapshot(
     bool StatePrewrite,
     bool StateUseBank1,
     bool StateHighRead,
-    bool StateHighWrite
+    bool StateHighWrite,
+    bool StateVBlank,
+    byte StateCurrentKey,
+    byte StatePdl0,
+    byte StatePdl1,
+    byte StatePdl2,
+    byte StatePdl3
     );
 
 /// <summary>
@@ -139,7 +151,13 @@ public sealed class SystemStatusProvider : ISystemStatusProvider, ISoftSwitchRes
         StatePrewrite: false,
         StateUseBank1: false,
         StateHighRead: false,
-        StateHighWrite: false);
+        StateHighWrite: false,
+        StateVBlank: false, // Apple IIe powers on outside VBlank period
+        StateCurrentKey: 0,
+        StatePdl0: 0,
+        StatePdl1: 0,
+        StatePdl2: 0,
+        StatePdl3: 0);        
 
     // Reactive subject for observable pattern (replays current state to new subscribers)
     private readonly System.Reactive.Subjects.BehaviorSubject<SystemStatusSnapshot> _subject;
@@ -235,6 +253,24 @@ public sealed class SystemStatusProvider : ISystemStatusProvider, ISoftSwitchRes
     
     /// <inheritdoc />
     public bool StateHighWrite => _current.StateHighWrite;
+
+    /// <inheritdoc />
+    public bool StateVBlank => _current.StateVBlank;
+
+    /// <inheritdoc />
+    public byte CurrentKey => _current.StateCurrentKey;
+    
+    /// <inheritdoc />
+    public byte Pdl0 => _current.StatePdl0;
+    
+    /// <inheritdoc />
+    public byte Pdl1 => _current.StatePdl1;
+    
+    /// <inheritdoc />
+    public byte Pdl2 => _current.StatePdl2;
+    
+    /// <inheritdoc />
+    public byte Pdl3 => _current.StatePdl3;
 
     /// <inheritdoc />
     public SystemStatusSnapshot Current => _current;
@@ -385,6 +421,17 @@ public sealed class SystemStatusProvider : ISystemStatusProvider, ISoftSwitchRes
     /// <inheritdoc />
     public void SetButton2(bool pressed) => Mutate(b => b.StatePb2 = pressed);
 
+    // Vertical blanking interval
+    /// <inheritdoc />
+    public void SetVBlank(bool active) => Mutate(b => b.StateVBlank = active);
+
+    public void SetCurrentKey(byte value) => Mutate(b => b.StateCurrentKey = value);
+    public void SetPdl0(byte value) => Mutate(b => b.StatePdl0 = value);
+    public void SetPdl1(byte value) => Mutate(b => b.StatePdl1 = value);
+    public void SetPdl2(byte value) => Mutate(b => b.StatePdl2 = value);
+    public void SetPdl3(byte value) => Mutate(b => b.StatePdl3 = value);
+
+
     #endregion
 }
 
@@ -478,6 +525,16 @@ public sealed class SystemStatusSnapshotBuilder(SystemStatusSnapshot s)
     /// <summary>Language card write enable.</summary>
     public bool StateHighWrite = s.StateHighWrite;
 
+    /// <summary>Vertical blanking interval state.</summary>
+    public bool StateVBlank = s.StateVBlank;
+    public byte StateCurrentKey = s.StateCurrentKey;
+    public byte StatePdl0 = s.StatePdl0;
+    public byte StatePdl1 = s.StatePdl1;
+    public byte StatePdl2 = s.StatePdl2;
+    public byte StatePdl3 = s.StatePdl3;
+
+
+
     /// <summary>
     /// Builds an immutable <see cref="SystemStatusSnapshot"/> from the current field values.
     /// </summary>
@@ -490,6 +547,7 @@ public sealed class SystemStatusSnapshotBuilder(SystemStatusSnapshot s)
         State80Store, StateRamRd, StateRamWrt, StateIntCxRom, StateAltZp, StateSlotC3Rom,
         StatePb0, StatePb1, StatePb2, StateAnn0, StateAnn1, StateAnn2, StateAnn3,
         StatePage2, StateHiRes, StateMixed, StateTextMode, StateShow80Col, StateAltCharSet,
-        StateFlashOn, StatePrewrite, StateUseBank1, StateHighRead, StateHighWrite);
+        StateFlashOn, StatePrewrite, StateUseBank1, StateHighRead, StateHighWrite, StateVBlank,
+        StateCurrentKey, StatePdl0, StatePdl1, StatePdl2, StatePdl3);
 }
 

@@ -18,6 +18,7 @@ namespace Pandowdy.EmuCore.Tests
         {
             public bool RamRd, RamWrt, AltZp, Store80, HiRes, Page2, IntCxRom, SlotC3Rom, HighWrite, Bank1, HighRead, Text;
             public bool PreWrite, Mixed, An0, An1, An2, An3, AltChar, Vid80;
+            public byte CurrentKeyValue, Pdl0Value, Pdl1Value, Pdl2Value, Pdl3Value;
 
             public void SetRamRd(bool ramRd) => RamRd = ramRd;
             public bool StateRamRd { get => RamRd; }
@@ -82,11 +83,27 @@ namespace Pandowdy.EmuCore.Tests
             public void SetButton0(bool pressed) { }
             public void SetButton1(bool pressed) { }
             public void SetButton2(bool pressed) { }
+            public void SetVBlank(bool active) { }
 
             public bool StatePb0 { get => false; }
             public bool StatePb1 { get => false; }
             public bool StatePb2 { get => false; }
             public bool StateFlashOn { get => false; }
+            public bool StateVBlank { get => false; }
+            
+            // ISystemStatusProvider keyboard/paddle properties
+            public byte CurrentKey { get => CurrentKeyValue; }
+            public byte Pdl0 { get => Pdl0Value; }
+            public byte Pdl1 { get => Pdl1Value; }
+            public byte Pdl2 { get => Pdl2Value; }
+            public byte Pdl3 { get => Pdl3Value; }
+            
+            // Keyboard/paddle setters (not part of ISoftSwitchResponder, but available on concrete class)
+            public void SetCurrentKey(byte value) => CurrentKeyValue = value;
+            public void SetPdl0(byte value) => Pdl0Value = value;
+            public void SetPdl1(byte value) => Pdl1Value = value;
+            public void SetPdl2(byte value) => Pdl2Value = value;
+            public void SetPdl3(byte value) => Pdl3Value = value;
 
 #pragma warning disable CS0067 // Event is never used - test stub doesn't need to raise events
             public event EventHandler<SystemStatusSnapshot>? Changed;

@@ -136,9 +136,9 @@ public class SoftSwitchTests
         // Arrange & Act
         var switches = new SoftSwitches();
 
-        // Assert - Verify all 20 switches are initialized
+        // Assert - Verify all 24 switches are initialized
         var list = switches.GetSwitchList();
-        Assert.Equal(20, list.Count);
+        Assert.Equal(24, list.Count);
     }
 
     [Fact]
@@ -257,7 +257,7 @@ public class SoftSwitchTests
         var list = switches.GetSwitchList();
 
         // Assert
-        Assert.Equal(20, list.Count);
+        Assert.Equal(24, list.Count);
         Assert.Contains(list, item => item.id == SoftSwitches.SoftSwitchId.Store80);
         Assert.Contains(list, item => item.id == SoftSwitches.SoftSwitchId.RamRd);
         Assert.Contains(list, item => item.id == SoftSwitches.SoftSwitchId.IntCxRom);
@@ -563,6 +563,7 @@ public class SoftSwitchTests
         public void SetButton0(bool value) { }
         public void SetButton1(bool value) { }
         public void SetButton2(bool value) { }
+        public void SetVBlank(bool value) { }
 
         public void Reset()
         {

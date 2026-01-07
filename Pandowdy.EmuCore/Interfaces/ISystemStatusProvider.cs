@@ -102,7 +102,7 @@ public interface ISystemStatusProvider
     
     #endregion
     
-    #region Pushbuttons (Game Controller)
+    #region Game Controller and Keyboard
     
     /// <summary>
     /// Gets the state of pushbutton 0 ($C061).
@@ -140,9 +140,6 @@ public interface ISystemStatusProvider
     /// </remarks>
     bool StatePb2 { get; }
     
-    #endregion
-    
-    #region Annunciators
     
     /// <summary>
     /// Gets the state of annunciator 0 ($C058/$C059).
@@ -193,6 +190,79 @@ public interface ISystemStatusProvider
     /// </para>
     /// </remarks>
     bool StateAnn3_DGR { get; }
+    
+    /// <summary>
+    /// Gets the current keyboard character code.
+    /// </summary>
+    /// <value>
+    /// The current keyboard character code with high bit set when a key is pressed.
+    /// </value>
+    /// <remarks>
+    /// <para>
+    /// Reading from $C000 returns the current keyboard strobe value. When a key is pressed,
+    /// bit 7 is set (value >= 128) and bits 0-6 contain the ASCII character code.
+    /// The strobe remains set until cleared by reading $C010.
+    /// </para>
+    /// <para>
+    /// <strong>Apple IIe Behavior:</strong> The keyboard generates standard ASCII codes
+    /// (0-127) with bit 7 serving as the strobe indicator. Control characters and
+    /// special keys are mapped to specific ASCII ranges.
+    /// </para>
+    /// </remarks>
+    byte CurrentKey { get; }
+
+    /// <summary>
+    /// Gets the current value of paddle 0 (game controller analog input).
+    /// </summary>
+    /// <value>
+    /// Paddle 0 position value (0-255), where 0 is fully left/up and 255 is fully right/down.
+    /// </value>
+    /// <remarks>
+    /// <para>
+    /// The Apple IIe game port provides four analog inputs read through a timer-based
+    /// mechanism. Software triggers a read by accessing $C070, then measures how long
+    /// it takes for the paddle value to time out by polling $C064 (bit 7).
+    /// </para>
+    /// <para>
+    /// <strong>Timing:</strong> The paddle timer counts from 0 to approximately 2805 μs
+    /// (at 1.023 MHz). The value stored here represents the pre-calculated time-out
+    /// period for emulator efficiency.
+    /// </para>
+    /// </remarks>
+    byte Pdl0 { get; }
+
+    /// <summary>
+    /// Gets the current value of paddle 1 (game controller analog input).
+    /// </summary>
+    /// <value>
+    /// Paddle 1 position value (0-255), where 0 is fully left/up and 255 is fully right/down.
+    /// </value>
+    /// <remarks>
+    /// See <see cref="Pdl0"/> for detailed paddle mechanics and timing information.
+    /// </remarks>
+    byte Pdl1 { get; }
+
+    /// <summary>
+    /// Gets the current value of paddle 2 (game controller analog input).
+    /// </summary>
+    /// <value>
+    /// Paddle 2 position value (0-255), where 0 is fully left/up and 255 is fully right/down.
+    /// </value>
+    /// <remarks>
+    /// See <see cref="Pdl0"/> for detailed paddle mechanics and timing information.
+    /// </remarks>
+    byte Pdl2 { get; }
+
+    /// <summary>
+    /// Gets the current value of paddle 3 (game controller analog input).
+    /// </summary>
+    /// <value>
+    /// Paddle 3 position value (0-255), where 0 is fully left/up and 255 is fully right/down.
+    /// </value>
+    /// <remarks>
+    /// See <see cref="Pdl0"/> for detailed paddle mechanics and timing information.
+    /// </remarks>
+    byte Pdl3 { get; }
     
     #endregion
     
@@ -341,6 +411,28 @@ public interface ISystemStatusProvider
     /// modification of critical code.
     /// </remarks>
     bool StateHighWrite { get; }
+    
+    /// <summary>
+    /// Gets the vertical blanking interval state (readable at $C019, bit 7).
+    /// </summary>
+    /// <value>
+    /// True if in VBlank period (70 scanlines); false during visible display (192 scanlines).
+    /// </value>
+    /// <remarks>
+    /// <para>
+    /// The vertical blanking interval occurs during scanlines 192-261 of each frame.
+    /// During VBlank, the CRT electron beam returns from bottom to top, and software
+    /// can safely update graphics without causing visual artifacts.
+    /// </para>
+    /// <para>
+    /// <strong>Timing:</strong> At 60 Hz frame rate, VBlank toggles approximately 120 times
+    /// per second (twice per frame: ON at cycle 12,480, OFF at cycle 17,029).
+    /// </para>
+    /// <para>
+    /// <strong>Hardware:</strong> Reading $C019 returns bit 7 = 1 during VBlank.
+    /// </para>
+    /// </remarks>
+    bool StateVBlank { get; }
     
     #endregion
 

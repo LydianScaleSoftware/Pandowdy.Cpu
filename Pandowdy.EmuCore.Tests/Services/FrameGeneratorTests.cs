@@ -124,7 +124,13 @@ public class FrameGeneratorTests
                 StatePrewrite: false,
                 StateUseBank1: false,
                 StateHighRead: false,
-                StateHighWrite: false
+                StateHighWrite: false,
+                StateVBlank: false,
+                StateCurrentKey: 0,
+                StatePdl0: 0,
+                StatePdl1: 0,
+                StatePdl2: 0,
+                StatePdl3: 0
             );
         }
 
@@ -271,6 +277,19 @@ public class FrameGeneratorTests
             get => _current.StateHighWrite;
             set => UpdateField(s => s with { StateHighWrite = value });
         }
+
+        public bool StateVBlank
+        {
+            get => _current.StateVBlank;
+            set => UpdateField(s => s with { StateVBlank = value });
+        }
+        
+        public byte CurrentKey => _current.StateCurrentKey;
+        public byte Pdl0 => _current.StatePdl0;
+        public byte Pdl1 => _current.StatePdl1;
+        public byte Pdl2 => _current.StatePdl2;
+        public byte Pdl3 => _current.StatePdl3;
+        
 
         private void UpdateField(Func<SystemStatusSnapshot, SystemStatusSnapshot> updater)
         {

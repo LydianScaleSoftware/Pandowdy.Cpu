@@ -50,7 +50,7 @@ public sealed class SystemStatusViewModel : ReactiveObject
     private bool _state80Store, _stateRamRd, _stateRamWrt, _stateIntCxRom, _stateAltZp, _stateSlotC3Rom,
                  _statePb0, _statePb1, _statePb2, _stateAnn0, _stateAnn1, _stateAnn2, _stateAnn3,
                  _statePage2, _stateHiRes, _stateMixed, _stateTextMode, _stateShow80Col, _stateAltCharSet, 
-                 _stateFlashOn, _stateBank1, _statePrewrite, _stateHighRead, _stateHighWrite;
+                 _stateFlashOn, _stateBank1, _statePrewrite, _stateHighRead, _stateHighWrite, _stateVBlank;
 
     #endregion
 
@@ -437,6 +437,34 @@ public sealed class SystemStatusViewModel : ReactiveObject
 
     #endregion
 
+    #region Vertical Blanking Interval
+
+    /// <summary>
+    /// Gets the vertical blanking interval state (readable at $C019, bit 7).
+    /// </summary>
+    /// <value>True during VBlank (70 scanlines), false during visible display (192 scanlines).</value>
+    /// <remarks>
+    /// <para>
+    /// The vertical blanking interval occurs during scanlines 192-261 (70 scanlines × 65 cycles = 4,550 cycles)
+    /// of each frame. During VBlank, the CRT electron beam returns from bottom to top.
+    /// </para>
+    /// <para>
+    /// <strong>Update Frequency:</strong> This property toggles approximately 120 times per second
+    /// (twice per frame at 60 Hz). It will appear to flicker rapidly during normal emulation but
+    /// is useful for debugging and single-step mode.
+    /// </para>
+    /// <para>
+    /// <strong>Hardware Behavior:</strong> Reading $C019 returns bit 7 = 1 during VBlank, bit 7 = 0 otherwise.
+    /// </para>
+    /// </remarks>
+    public bool StateVBlank
+    {
+        get => _stateVBlank;
+        private set => this.RaiseAndSetIfChanged(ref _stateVBlank, value);
+    }
+
+    #endregion
+
     #region Constructor
 
     /// <summary>
@@ -532,6 +560,9 @@ public sealed class SystemStatusViewModel : ReactiveObject
         StateBank1 = s.StateUseBank1;
         StateHighRead = s.StateHighRead;
         StateHighWrite = s.StateHighWrite;
+        
+        // Vertical blanking interval
+        StateVBlank = s.StateVBlank;
     }
 
     #endregion

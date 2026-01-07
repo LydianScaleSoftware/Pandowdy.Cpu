@@ -295,4 +295,27 @@ public interface ISoftSwitchResponder
     /// Returns bit 7 set when pressed. Used by games and applications for user input.
     /// </remarks>
     void SetButton2(bool pressed);
+    
+    // Vertical blanking interval
+    
+    /// <summary>
+    /// Called when vertical blanking state changes (readable at $C019, bit 7).
+    /// </summary>
+    /// <param name="active">True if in VBlank (70 scanlines); false during visible display (192 scanlines)</param>
+    /// <remarks>
+    /// <para>
+    /// The vertical blanking interval occurs during scanlines 192-261 (70 scanlines × 65 cycles = 4,550 cycles)
+    /// of each frame. During VBlank, the CRT electron beam returns from bottom to top, and software can
+    /// safely update graphics without causing visual artifacts (tearing).
+    /// </para>
+    /// <para>
+    /// <strong>Timing:</strong> VBlank toggles twice per frame (ON at cycle 12,480, OFF at cycle 17,029),
+    /// resulting in approximately 120 state changes per second at 60 Hz frame rate.
+    /// </para>
+    /// <para>
+    /// <strong>Hardware Behavior:</strong> Reading $C019 returns bit 7 = 1 during VBlank, bit 7 = 0 otherwise.
+    /// Lower 7 bits return the current keyboard latch value.
+    /// </para>
+    /// </remarks>
+    void SetVBlank(bool active);
 }

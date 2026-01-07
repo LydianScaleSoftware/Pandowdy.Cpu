@@ -260,7 +260,12 @@ public sealed class SoftSwitches
         /// <summary>
         /// Pushbutton 2 state (readable at $C063). Typically mapped to Shift key for joystick button emulation.
         /// </summary>
-        Button2
+        Button2,
+
+        /// <summary>
+        /// VBlank switch ($C060). Indicates vertical blanking interval for video.
+        /// </summary>
+        VBlank
     }
 
     /// <summary>
@@ -301,6 +306,7 @@ public sealed class SoftSwitches
         _switches[SoftSwitchId.Button0] = new SoftSwitch("BUTTON0");
         _switches[SoftSwitchId.Button1] = new SoftSwitch("BUTTON1");
         _switches[SoftSwitchId.Button2] = new SoftSwitch("BUTTON2");
+        _switches[SoftSwitchId.VBlank] = new SoftSwitch("VBLANK");
      //   DumpSoftSwitchStatus("Init:");
     }
 
@@ -530,6 +536,10 @@ public sealed class SoftSwitches
 
                 case SoftSwitchId.Button2:
                     responder.SetButton2(value);
+                    break;
+
+                case SoftSwitchId.VBlank:
+                    responder.SetVBlank(value);
                     break;
             }
         }

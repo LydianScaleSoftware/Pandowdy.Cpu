@@ -83,6 +83,12 @@ public class LanguageCardTests
         public bool StateAltCharSet => false;
         public bool StateFlashOn => false;
         public bool StatePreWrite => false;
+        public bool StateVBlank => false;
+        public byte CurrentKey { get; set; }
+        public byte Pdl0 { get; set; }
+        public byte Pdl1 { get; set; }
+        public byte Pdl2 { get; set; }
+        public byte Pdl3 { get; set; }
         
         // Event and Stream (not used in tests, but required by interface)
 #pragma warning disable CS0067 // Event is never used - required by interface but not needed for LanguageCard tests
