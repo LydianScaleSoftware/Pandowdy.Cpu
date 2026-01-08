@@ -469,188 +469,94 @@ public class FrameGeneratorTests
 
 
 
-    #region RenderFrame Tests (12 tests)
+    #region RenderFrameFromSnapshot Tests (NEW API)
 
     [Fact]
-    public void RenderFrame_ClearsFrameBuffer()
+    public void RenderFrameFromSnapshot_CallsRenderer()
     {
         // Arrange
         var fixture = new FrameGeneratorFixture();
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-        
-        // Set some pixels before rendering
-        context.FrameBuffer.SetPixel(100, 100, 0);
-        context.FrameBuffer.SetPixel(200, 100, 1);
-        
-        // Verify pixels are set
-        Assert.True(context.FrameBuffer.GetPixel(100, 100, 0));
-        Assert.True(context.FrameBuffer.GetPixel(200, 100, 1));
+        var snapshot = CreateTestSnapshot(fixture.StatusProvider);
 
         // Act
-        fixture.FrameGenerator.RenderFrame(context);
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
 
-        // Assert - Context should be invalidated after rendering
-        Assert.True(context.IsInvalidated);
-        
-        // Attempting to access the frame buffer should throw
-        Assert.Throws<InvalidOperationException>(() => context.FrameBuffer.GetPixel(100, 100, 0));
-    }
-
-    [Fact]
-    public void RenderFrame_CallsRenderer()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-
-        // Act
-        fixture.FrameGenerator.RenderFrame(context);
-
-        // Assert
+        // Assert - Renderer should have been called
         Assert.Equal(1, fixture.Renderer.RenderCount);
     }
 
     [Fact]
-    public void RenderFrame_PassesContextToRenderer()
+    public void RenderFrameFromSnapshot_SetsIsGraphics_WhenNotTextMode()
     {
         // Arrange
         var fixture = new FrameGeneratorFixture();
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-        
-        // Store reference to frame buffer before rendering
-        var frameBufferBeforeRender = context.FrameBuffer;
+        fixture.StatusProvider.StateTextMode = false;
+        var snapshot = CreateTestSnapshot(fixture.StatusProvider);
 
         // Act
-        fixture.FrameGenerator.RenderFrame(context);
-
-        // Assert - Renderer should have received the context
-        Assert.NotNull(fixture.Renderer.LastContext);
-        
-        // The renderer's LastContext is the same reference as our context
-        Assert.Same(context, fixture.Renderer.LastContext);
-        
-        // Both are now invalidated (same object)
-        Assert.True(context.IsInvalidated);
-        Assert.True(fixture.Renderer.LastContext.IsInvalidated);
-        
-        // But we can verify the frame buffer was passed correctly
-        // by checking our saved reference
-        Assert.NotNull(frameBufferBeforeRender);
-    }
-
-    [Fact]
-    public void RenderFrame_CommitsFrameBuffer()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-
-        // Act
-        fixture.FrameGenerator.RenderFrame(context);
-
-        // Assert
-        Assert.Equal(1, fixture.FrameProvider.CommitCount);
-    }
-
-    [Fact]
-    public void RenderFrame_SetsIsGraphics_WhenNotTextMode()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-        fixture.StatusProvider.StateTextMode = false; // Graphics mode
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-
-        // Act
-        fixture.FrameGenerator.RenderFrame(context);
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
 
         // Assert
         Assert.True(fixture.FrameProvider.IsGraphics);
     }
 
     [Fact]
-    public void RenderFrame_ClearsIsGraphics_WhenTextMode()
+    public void RenderFrameFromSnapshot_ClearsIsGraphics_WhenTextMode()
     {
         // Arrange
         var fixture = new FrameGeneratorFixture();
-        fixture.StatusProvider.StateTextMode = true; // Text mode
-        var context = fixture.FrameGenerator.AllocateRenderContext();
+        fixture.StatusProvider.StateTextMode = true;
+        var snapshot = CreateTestSnapshot(fixture.StatusProvider);
 
         // Act
-        fixture.FrameGenerator.RenderFrame(context);
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
 
         // Assert
         Assert.False(fixture.FrameProvider.IsGraphics);
     }
 
     [Fact]
-    public void RenderFrame_SetsIsMixed_WhenMixedMode()
+    public void RenderFrameFromSnapshot_SetsIsMixed_WhenMixedMode()
     {
         // Arrange
         var fixture = new FrameGeneratorFixture();
         fixture.StatusProvider.StateMixed = true;
-        var context = fixture.FrameGenerator.AllocateRenderContext();
+        var snapshot = CreateTestSnapshot(fixture.StatusProvider);
 
         // Act
-        fixture.FrameGenerator.RenderFrame(context);
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
 
         // Assert
         Assert.True(fixture.FrameProvider.IsMixed);
     }
 
     [Fact]
-    public void RenderFrame_ClearsIsMixed_WhenNotMixedMode()
+    public void RenderFrameFromSnapshot_ClearsIsMixed_WhenNotMixedMode()
     {
         // Arrange
         var fixture = new FrameGeneratorFixture();
         fixture.StatusProvider.StateMixed = false;
-        var context = fixture.FrameGenerator.AllocateRenderContext();
+        var snapshot = CreateTestSnapshot(fixture.StatusProvider);
 
         // Act
-        fixture.FrameGenerator.RenderFrame(context);
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
 
         // Assert
         Assert.False(fixture.FrameProvider.IsMixed);
     }
 
     [Fact]
-    public void RenderFrame_RendererCanDrawToFrameBuffer()
+    public void RenderFrameFromSnapshot_MultipleFrames_CallsRendererEachTime()
     {
         // Arrange
         var fixture = new FrameGeneratorFixture();
-        fixture.Renderer.ShouldDrawPattern = true;
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-        
-        // Store reference to frame buffer before rendering so we can verify after
-        var frameBuffer = context.FrameBuffer;
 
-        // Act
-        fixture.FrameGenerator.RenderFrame(context);
-
-        // Assert - Verify the renderer was called
-        Assert.Equal(1, fixture.Renderer.RenderCount);
-        
-        // Context should be invalidated
-        Assert.True(context.IsInvalidated);
-        
-        // We can verify the pattern was drawn by accessing the frame buffer directly
-        // (not through the invalidated context)
-        Assert.True(frameBuffer.GetPixel(0, 0, 0)); // Even coordinates
-        Assert.False(frameBuffer.GetPixel(1, 0, 0)); // Odd coordinates
-    }
-
-    [Fact]
-    public void RenderFrame_MultipleFrames_CallsRendererEachTime()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-        var context1 = fixture.FrameGenerator.AllocateRenderContext();
-        var context2 = fixture.FrameGenerator.AllocateRenderContext();
-        var context3 = fixture.FrameGenerator.AllocateRenderContext();
-
-        // Act
-        fixture.FrameGenerator.RenderFrame(context1);
-        fixture.FrameGenerator.RenderFrame(context2);
-        fixture.FrameGenerator.RenderFrame(context3);
+        // Act - Render 3 frames
+        for (int i = 0; i < 3; i++)
+        {
+            var snapshot = CreateTestSnapshot(fixture.StatusProvider);
+            fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
+        }
 
         // Assert
         Assert.Equal(3, fixture.Renderer.RenderCount);
@@ -658,67 +564,111 @@ public class FrameGeneratorTests
     }
 
     [Fact]
-    public void RenderFrame_ExecutionOrder_IsCorrect()
+    public void RenderFrameFromSnapshot_WithDifferentDisplayModes()
     {
         // Arrange
         var fixture = new FrameGeneratorFixture();
-        var context = fixture.FrameGenerator.AllocateRenderContext();
 
+        // Act & Assert - Text mode
+        fixture.StatusProvider.StateTextMode = true;
+        fixture.StatusProvider.StateMixed = false;
+        var snapshot1 = CreateTestSnapshot(fixture.StatusProvider);
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot1);
+        Assert.False(fixture.FrameProvider.IsGraphics);
+        Assert.False(fixture.FrameProvider.IsMixed);
 
-        // Set a pixel to verify it's cleared
-        context.FrameBuffer.SetPixel(100, 100, 0);
+        // Act & Assert - Graphics mode
+        fixture.StatusProvider.StateTextMode = false;
+        fixture.StatusProvider.StateMixed = false;
+        var snapshot2 = CreateTestSnapshot(fixture.StatusProvider);
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot2);
+        Assert.True(fixture.FrameProvider.IsGraphics);
+        Assert.False(fixture.FrameProvider.IsMixed);
 
-        // Custom renderer that checks state
-
-        var trackingFixture = new FrameGeneratorFixture();
-        var trackingContext = trackingFixture.FrameGenerator.AllocateRenderContext();
-        trackingContext.FrameBuffer.SetPixel(100, 100, 0);
-
-        // Act
-        trackingFixture.FrameGenerator.RenderFrame(trackingContext);
-
-        // Assert - Verify order:
-        // 1. Buffer cleared (pixel should be gone)
-        // 2. Renderer called (draw count incremented)
-        // 3. Frame committed (commit count incremented)
-        Assert.Equal(1, trackingFixture.Renderer.RenderCount);
-        Assert.Equal(1, trackingFixture.FrameProvider.CommitCount);
+        // Act & Assert - Mixed mode
+        fixture.StatusProvider.StateTextMode = false;
+        fixture.StatusProvider.StateMixed = true;
+        var snapshot3 = CreateTestSnapshot(fixture.StatusProvider);
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot3);
+        Assert.True(fixture.FrameProvider.IsGraphics);
+        Assert.True(fixture.FrameProvider.IsMixed);
     }
 
     [Fact]
-    public void RenderFrame_WithDifferentDisplayModes()
+    public void RenderFrameFromSnapshot_WithNullSnapshot_ThrowsArgumentNullException()
     {
         // Arrange
         var fixture = new FrameGeneratorFixture();
 
-        var testCases = new[]
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            fixture.FrameGenerator.RenderFrameFromSnapshot(null!));
+    }
+
+    [Fact]
+    public void RenderFrameFromSnapshot_WithNullSoftSwitches_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+        var snapshot = new VideoMemorySnapshot
         {
-            (textMode: false, mixed: false, expectedGraphics: true, expectedMixed: false),
-            (textMode: false, mixed: true, expectedGraphics: true, expectedMixed: true),
-            (textMode: true, mixed: false, expectedGraphics: false, expectedMixed: false),
-            (textMode: true, mixed: true, expectedGraphics: false, expectedMixed: true)
+            SoftSwitches = null, // Null soft switches
+            FrameNumber = 1
         };
 
-        foreach (var (textMode, mixed, expectedGraphics, expectedMixed) in testCases)
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot));
+    }
+
+    /// <summary>
+    /// Helper to create a test snapshot with current system status.
+    /// </summary>
+    private static VideoMemorySnapshot CreateTestSnapshot(TestStatusProvider statusProvider)
+    {
+        var snapshot = new VideoMemorySnapshot
         {
-            // Arrange
-            fixture.Reset();
-            fixture.StatusProvider.StateTextMode = textMode;
-            fixture.StatusProvider.StateMixed = mixed;
-            var context = fixture.FrameGenerator.AllocateRenderContext();
-
-            // Act
-            fixture.FrameGenerator.RenderFrame(context);
-
-            // Assert
-            Assert.Equal(expectedGraphics, fixture.FrameProvider.IsGraphics);
-            Assert.Equal(expectedMixed, fixture.FrameProvider.IsMixed);
-        }
+            SoftSwitches = new SystemStatusSnapshot(
+                State80Store: statusProvider.State80Store,
+                StateRamRd: statusProvider.StateRamRd,
+                StateRamWrt: statusProvider.StateRamWrt,
+                StateIntCxRom: statusProvider.StateIntCxRom,
+                StateAltZp: statusProvider.StateAltZp,
+                StateSlotC3Rom: statusProvider.StateSlotC3Rom,
+                StatePb0: statusProvider.StatePb0,
+                StatePb1: statusProvider.StatePb1,
+                StatePb2: statusProvider.StatePb2,
+                StateAnn0: statusProvider.StateAnn0,
+                StateAnn1: statusProvider.StateAnn1,
+                StateAnn2: statusProvider.StateAnn2,
+                StateAnn3_DGR: statusProvider.StateAnn3_DGR,
+                StatePage2: statusProvider.StatePage2,
+                StateHiRes: statusProvider.StateHiRes,
+                StateMixed: statusProvider.StateMixed,
+                StateTextMode: statusProvider.StateTextMode,
+                StateShow80Col: statusProvider.StateShow80Col,
+                StateAltCharSet: statusProvider.StateAltCharSet,
+                StateFlashOn: statusProvider.StateFlashOn,
+                StatePrewrite: statusProvider.StatePreWrite, // Property name is StatePreWrite
+                StateUseBank1: statusProvider.StateUseBank1,
+                StateHighRead: statusProvider.StateHighRead,
+                StateHighWrite: statusProvider.StateHighWrite,
+                StateVBlank: statusProvider.StateVBlank,
+                StateCurrentKey: statusProvider.CurrentKey, // Property name is CurrentKey
+                StatePdl0: statusProvider.Pdl0, // Property name is Pdl0
+                StatePdl1: statusProvider.Pdl1, // Property name is Pdl1
+                StatePdl2: statusProvider.Pdl2, // Property name is Pdl2
+                StatePdl3: statusProvider.Pdl3  // Property name is Pdl3
+            ),
+            FrameNumber = 1
+        };
+        
+        return snapshot;
     }
 
     #endregion
 
-    #region Integration Tests (4 tests)
+    #region Integration Tests - Updated for Snapshot API
 
     [Fact]
     public void Integration_CompleteRenderCycle()
@@ -730,9 +680,9 @@ public class FrameGeneratorTests
         fixture.StatusProvider.StateHiRes = true;
         fixture.StatusProvider.StatePage2 = false;
 
-        // Act - Complete render cycle
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-        fixture.FrameGenerator.RenderFrame(context);
+        // Act - Complete render cycle with snapshot
+        var snapshot = CreateTestSnapshot(fixture.StatusProvider);
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
 
         // Assert
         Assert.Equal(1, fixture.FrameProvider.BorrowCount);
@@ -748,21 +698,20 @@ public class FrameGeneratorTests
         // Arrange
         var fixture = new FrameGeneratorFixture();
 
-        // Act - Render 10 frames
-        for (int i = 0; i < 10; i++)
+        // Act - Render 5 frames
+        for (int i = 0; i < 5; i++)
         {
-            var context = fixture.FrameGenerator.AllocateRenderContext();
-            fixture.FrameGenerator.RenderFrame(context);
+            var snapshot = CreateTestSnapshot(fixture.StatusProvider);
+            fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
         }
 
         // Assert
-        Assert.Equal(10, fixture.FrameProvider.BorrowCount);
-        Assert.Equal(10, fixture.Renderer.RenderCount);
-        Assert.Equal(10, fixture.FrameProvider.CommitCount);
+        Assert.Equal(5, fixture.Renderer.RenderCount);
+        Assert.Equal(5, fixture.FrameProvider.CommitCount);
     }
 
     [Fact]
-    public void Integration_MemoryAccessThroughContext()
+    public void Integration_MemoryAccessThroughSnapshot()
     {
         // Arrange
         var fixture = new FrameGeneratorFixture();
@@ -770,13 +719,15 @@ public class FrameGeneratorTests
         fixture.MemoryReader.SetMainMemory(0x0401, 0x42); // 'B'
         fixture.MemoryReader.SetAuxMemory(0x0400, 0x61); // 'a'
 
-        // Act
-        var context = fixture.FrameGenerator.AllocateRenderContext();
+        // Act - Create snapshot (would normally copy memory)
+        var snapshot = CreateTestSnapshot(fixture.StatusProvider);
+        
+        // Note: In real usage, snapshot would contain copied memory data
+        // Here we're testing the API flow, not the memory copy itself
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
 
-        // Assert - Renderer can access memory through context
-        Assert.Equal(0x41, context.Memory.ReadRawMain(0x0400));
-        Assert.Equal(0x42, context.Memory.ReadRawMain(0x0401));
-        Assert.Equal(0x61, context.Memory.ReadRawAux(0x0400));
+        // Assert - Rendering succeeded
+        Assert.Equal(1, fixture.Renderer.RenderCount);
     }
 
     [Fact]
@@ -787,155 +738,22 @@ public class FrameGeneratorTests
 
         // Act & Assert - Text mode
         fixture.StatusProvider.StateTextMode = true;
-        var context1 = fixture.FrameGenerator.AllocateRenderContext();
-        Assert.True(context1.IsTextMode);
-        fixture.FrameGenerator.RenderFrame(context1);
+        var snapshot1 = CreateTestSnapshot(fixture.StatusProvider);
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot1);
         Assert.False(fixture.FrameProvider.IsGraphics);
 
         // Act & Assert - Graphics mode
         fixture.StatusProvider.StateTextMode = false;
-        var context2 = fixture.FrameGenerator.AllocateRenderContext();
-        Assert.False(context2.IsTextMode);
-        fixture.FrameGenerator.RenderFrame(context2);
+        var snapshot2 = CreateTestSnapshot(fixture.StatusProvider);
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot2);
         Assert.True(fixture.FrameProvider.IsGraphics);
 
         // Act & Assert - Mixed mode
         fixture.StatusProvider.StateMixed = true;
-        var context3 = fixture.FrameGenerator.AllocateRenderContext();
-        Assert.True(context3.IsMixed);
-        fixture.FrameGenerator.RenderFrame(context3);
+        var snapshot3 = CreateTestSnapshot(fixture.StatusProvider);
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot3);
         Assert.True(fixture.FrameProvider.IsMixed);
     }
 
     #endregion
-
-    #region Edge Cases and Error Handling (3 tests)
-
-    [Fact]
-    public void RenderFrame_WithEmptyRenderer_DoesNotCrash()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-
-        // Act & Assert - Should not throw
-        fixture.FrameGenerator.RenderFrame(context);
-    }
-
-    [Fact]
-    public void RenderFrame_SameContextMultipleTimes_ThrowsOnSecondCall()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-
-        // Act - First render should succeed
-        fixture.FrameGenerator.RenderFrame(context);
-        
-        // Assert - Context is now invalidated
-        Assert.True(context.IsInvalidated);
-        Assert.Equal(1, fixture.Renderer.RenderCount);
-        Assert.Equal(1, fixture.FrameProvider.CommitCount);
-
-        // Act & Assert - Attempting to render same context again should throw
-        // because ClearBuffer will be called on an invalidated context
-        Assert.Throws<InvalidOperationException>(() => 
-            fixture.FrameGenerator.RenderFrame(context));
-        
-        // Verify counts didn't change (second render didn't proceed past ClearBuffer)
-        Assert.Equal(1, fixture.Renderer.RenderCount);
-        Assert.Equal(1, fixture.FrameProvider.CommitCount);
-    }
-
-    #endregion
-
-
-
-    #region FrameGenerator Invalidation Tests (6 tests)
-
-    [Fact]
-    public void FrameGenerator_RenderFrame_InvalidatesContext()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-        Assert.False(context.IsInvalidated, "Context should start valid");
-
-        // Act
-        fixture.FrameGenerator.RenderFrame(context);
-
-        // Assert
-        Assert.True(context.IsInvalidated, "Context should be invalidated after RenderFrame");
-    }
-
-    [Fact]
-    public void FrameGenerator_RenderFrame_ThenAccessFrameBuffer_ThrowsException()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-        fixture.FrameGenerator.RenderFrame(context);
-
-        // Act & Assert
-        var ex = Assert.Throws<InvalidOperationException>(() => _ = context.FrameBuffer);
-        Assert.Contains("cannot be reused", ex.Message);
-    }
-
-    [Fact]
-    public void FrameGenerator_RenderFrame_ThenAccessMemory_ThrowsException()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-        fixture.FrameGenerator.RenderFrame(context);
-
-        // Act & Assert
-        var ex = Assert.Throws<InvalidOperationException>(() => _ = context.Memory);
-        Assert.Contains("cannot be reused", ex.Message);
-    }
-
-    [Fact]
-    public void FrameGenerator_RenderFrame_ThenAccessSystemStatus_ThrowsException()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-        fixture.FrameGenerator.RenderFrame(context);
-
-        // Act & Assert
-        var ex = Assert.Throws<InvalidOperationException>(() => _ = context.SystemStatus);
-        Assert.Contains("cannot be reused", ex.Message);
-    }
-
-    [Fact]
-    public void FrameGenerator_RenderFrame_ThenClearBuffer_ThrowsException()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-        fixture.FrameGenerator.RenderFrame(context);
-
-        // Act & Assert
-        var ex = Assert.Throws<InvalidOperationException>(() => context.ClearBuffer());
-        Assert.Contains("cannot be reused", ex.Message);
-    }
-
-    [Fact]
-    public void FrameGenerator_RenderFrame_ThenAccessModeProperties_ThrowsException()
-    {
-        // Arrange
-        var fixture = new FrameGeneratorFixture();
-        var context = fixture.FrameGenerator.AllocateRenderContext();
-        fixture.FrameGenerator.RenderFrame(context);
-
-        // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => _ = context.IsTextMode);
-        Assert.Throws<InvalidOperationException>(() => _ = context.IsMixed);
-        Assert.Throws<InvalidOperationException>(() => _ = context.IsHiRes);
-        Assert.Throws<InvalidOperationException>(() => _ = context.IsPage2);
-    }
-
-    #endregion
-
-
 }

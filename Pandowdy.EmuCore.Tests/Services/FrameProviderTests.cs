@@ -126,10 +126,10 @@ public class FrameProviderTests
         var originalBack = provider.BorrowWritable();
 
         // Mark the back buffer to identify it
-        originalBack.SetPixel(10, 10, 0);
+        originalBack!.SetPixel(10, 10, 0);
 
         // Act
-        provider.CommitWritable();
+        provider.CommitWritable(originalBack);
 
         // Assert - Front should now be what was back
         var newFront = provider.GetFrame();
@@ -143,9 +143,10 @@ public class FrameProviderTests
         var provider = new FrameProvider();
         bool eventRaised = false;
         provider.FrameAvailable += (sender, args) => eventRaised = true;
+        var buffer = provider.BorrowWritable();
 
         // Act
-        provider.CommitWritable();
+        provider.CommitWritable(buffer!);
 
         // Assert
         Assert.True(eventRaised);
@@ -158,9 +159,10 @@ public class FrameProviderTests
         var provider = new FrameProvider();
         object? capturedSender = null;
         provider.FrameAvailable += (sender, args) => capturedSender = sender;
+        var buffer = provider.BorrowWritable();
 
         // Act
-        provider.CommitWritable();
+        provider.CommitWritable(buffer!);
 
         // Assert
         Assert.Same(provider, capturedSender);
@@ -175,9 +177,12 @@ public class FrameProviderTests
         provider.FrameAvailable += (sender, args) => eventCount++;
 
         // Act
-        provider.CommitWritable();
-        provider.CommitWritable();
-        provider.CommitWritable();
+        var buffer1 = provider.BorrowWritable();
+        provider.CommitWritable(buffer1!);
+        var buffer2 = provider.BorrowWritable();
+        provider.CommitWritable(buffer2!);
+        var buffer3 = provider.BorrowWritable();
+        provider.CommitWritable(buffer3!);
 
         // Assert
         Assert.Equal(3, eventCount);
@@ -196,10 +201,10 @@ public class FrameProviderTests
         provider.IsMixed = false;
 
         var backBuffer = provider.BorrowWritable();
-        backBuffer.SetPixel(100, 100, 0);
+        backBuffer!.SetPixel(100, 100, 0);
         backBuffer.SetPixel(200, 100, 1);
 
-        provider.CommitWritable();
+        provider.CommitWritable(backBuffer);
 
         var frontBuffer = provider.GetFrame();
 
@@ -219,11 +224,11 @@ public class FrameProviderTests
         
         // Write pattern to back buffer
         var back = provider.BorrowWritable();
-        back.SetPixel(50, 50, 0);
+        back!.SetPixel(50, 50, 0);
         back.SetPixel(100, 100, 1);
 
         // Act - Commit (swap)
-        provider.CommitWritable();
+        provider.CommitWritable(back);
 
         // Assert - Pattern now in front buffer
         var front = provider.GetFrame();
@@ -239,15 +244,15 @@ public class FrameProviderTests
         
         // Set data in front buffer
         var back = provider.BorrowWritable();
-        back.SetPixel(50, 50, 0);
-        provider.CommitWritable();
+        back!.SetPixel(50, 50, 0);
+        provider.CommitWritable(back);
         
         var front = provider.GetFrame();
         Assert.True(front.GetPixel(50, 50, 0));
 
         // Act - Clear new back buffer
         var newBack = provider.BorrowWritable();
-        newBack.Clear();
+        newBack!.Clear();
 
         // Assert - Front buffer unchanged (hasn't been swapped yet)
         Assert.True(front.GetPixel(50, 50, 0));

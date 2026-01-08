@@ -45,10 +45,10 @@ public class RenderingIntegrationTests
         // Draw a horizontal line
         for (int x = 0; x < 560; x += 7)
         {
-            backBuffer.SetPixel(x, 96, 0);
+            backBuffer!.SetPixel(x, 96, 0);
         }
 
-        provider.CommitWritable();
+        provider.CommitWritable(backBuffer!);
         var frontBuffer = provider.GetFrame();
 
         // Assert - Pattern visible in front buffer
@@ -73,12 +73,12 @@ public class RenderingIntegrationTests
             provider.IsGraphics = (frame % 2 == 0);
             
             var backBuffer = provider.BorrowWritable();
-            backBuffer.Clear();
+            backBuffer!.Clear();
             
             // Draw frame-specific content
             backBuffer.SetPixel(frame * 100, 96, 0);
             
-            provider.CommitWritable();
+            provider.CommitWritable(backBuffer);
         }
 
         var finalFrame = provider.GetFrame();
