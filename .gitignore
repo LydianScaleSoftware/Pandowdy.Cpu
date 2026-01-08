@@ -50,23 +50,23 @@ Thumbs.db
 # DocFX Documentation
 ###################
 
-# Generated site output
+# Generated site output (HTML files)
+docfx_project/_site/
 docs/_site/
 
-# Generated API metadata
+# Generated API YAML files (regenerated from source code)
+docfx_project/api/*.yml
+docfx_project/api/.manifest
 docs/api/
-!docs/api/.gitkeep
 
 # Build artifacts
+docfx_project/obj/
+docfx_project/.manifest
 docs/obj/
 docs/.manifest
 
-# Generated YAML (keep manual toc.yml)
-docs/**/*.yml
-!docs/toc.yml
-!docs/**/toc.yml
-
 # Log files
+docfx_project/docfx.log
 docs/docfx.log
 
 # XML documentation (regenerated from source)
