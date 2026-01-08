@@ -102,12 +102,13 @@ public class FrameGenerator : IFrameGenerator
     /// <para>
     /// <strong>Rendering Pipeline:</strong>
     /// <list type="number">
+    /// <item><strong>Borrow buffer</strong> - Gets pre-cleared buffer from pool (lock-free)</item>
     /// <item><strong>Clear buffer</strong> - Resets all pixels to black (via context.ClearBuffer())</item>
     /// <item><strong>Invoke renderer</strong> - Delegates to <see cref="IDisplayBitmapRenderer.Render"/> 
     ///       which reads video memory and draws pixels based on current video mode</item>
     /// <item><strong>Annotate frame</strong> - Sets display mode metadata on the frame provider 
     ///       (IsGraphics, IsMixed) for downstream consumers</item>
-    /// <item><strong>Commit buffer</strong> - Swaps the writable buffer to readable, making it 
+    /// <item><strong>Commit buffer</strong> - Swaps the buffer to display, making it 
     ///       available to GUI/display consumers</item>
     /// <item><strong>Invalidate context</strong> - Marks the context as invalid to prevent accidental reuse</item>
     /// </list>
@@ -123,9 +124,8 @@ public class FrameGenerator : IFrameGenerator
     /// Well within the 16.67ms budget for 60 fps rendering.
     /// </para>
     /// <para>
-    /// <strong>Thread Safety:</strong> This method should only be called from the rendering thread.
-    /// The commit operation is thread-safe (handled by IFrameProvider), allowing the GUI thread
-    /// to concurrently read the previously committed frame.
+    /// <strong>Thread Safety:</strong> Multiple threads can call this method simultaneously
+    /// with multi-buffer architecture. Each gets its own buffer from the pool.
     /// </para>
     /// <para>
     /// <strong>Context Invalidation:</strong> After this method completes, the provided context
@@ -136,22 +136,11 @@ public class FrameGenerator : IFrameGenerator
     /// </remarks>
     public void RenderFrame(RenderContext context)
     {
-        // Step 1: Clear the frame buffer (all pixels to black/background)
-        context.ClearBuffer();
-
-        // Step 2: Invoke renderer to draw video memory into frame buffer
-        _renderer.Render(context);
-
-        // Step 3: Annotate frame with display mode metadata for downstream consumers
-        // (e.g., NTSC renderer) so they don't need ISystemStatusProvider reference
-        _frameProvider.IsGraphics = !_statusProvider.StateTextMode;
-        _frameProvider.IsMixed = _statusProvider.StateMixed;
-
-        // Step 4: Commit the writable buffer, making it available for display
-        _frameProvider.CommitWritable();
-
-        // Step 5: Invalidate the context to prevent accidental reuse
-        context.Invalidate();
+        // Legacy method - not used with snapshot-based rendering
+        // Kept for backward compatibility
+        throw new NotSupportedException(
+            "RenderFrame(context) is not supported in multi-buffer architecture. " +
+            "Use RenderFrameFromSnapshot(snapshot) instead.");
     }
 
     /// <inheritdoc />
@@ -160,39 +149,44 @@ public class FrameGenerator : IFrameGenerator
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(snapshot.SoftSwitches);
         
-        // Allocate render context with borrowed frame buffer
-        var context = AllocateRenderContext();
+        // Try to borrow a buffer from the pool (lock-free)
+        var buffer = _frameProvider.BorrowWritable();
+        if (buffer == null)
+        {
+            // All buffers in use - skip this frame
+            // Acceptable at high speeds (700 FPS)
+            return;
+        }
         
-        // Clear the frame buffer
-        context.ClearBuffer();
-        
-        // Create snapshot-based memory reader for renderer
-        var snapshotMemReader = new SnapshotMemoryReader(snapshot);
-        
-        // Create snapshot-based render context
-        var snapshotContext = new RenderContext(
-            context.FrameBuffer,
-            snapshotMemReader,
+        // Create render context with borrowed buffer
+        // Buffer is pre-cleared, ready for rendering
+        var context = new RenderContext(
+            buffer,
+            new SnapshotMemoryReader(snapshot),
             new SnapshotStatusProvider(snapshot.SoftSwitches));
         
         // Render using snapshot data
-        _renderer.Render(snapshotContext);
+        _renderer.Render(context);
         
         // Annotate frame with display mode metadata
         _frameProvider.IsGraphics = !snapshot.SoftSwitches.StateTextMode;
         _frameProvider.IsMixed = snapshot.SoftSwitches.StateMixed;
         
-        // Commit the buffer
-        _frameProvider.CommitWritable();
-        
-        // Invalidate context
-        context.Invalidate();
+        // Commit the rendered buffer (swaps display, returns old buffer to pool)
+        _frameProvider.CommitWritable(buffer);
     }
 }
 
 /// <summary>
 /// Snapshot-based memory reader for rendering from captured video memory.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <strong>Direct RAM Access:</strong> With simplified snapshot architecture, this reader
+/// indexes directly into the full 48KB main/aux RAM arrays instead of switching between
+/// separate text/hi-res page arrays. This simplifies logic and improves cache locality.
+/// </para>
+/// </remarks>
 internal sealed class SnapshotMemoryReader : IDirectMemoryPoolReader
 {
     private readonly VideoMemorySnapshot _snapshot;
@@ -204,28 +198,27 @@ internal sealed class SnapshotMemoryReader : IDirectMemoryPoolReader
     
     public byte ReadRawMain(int address)
     {
-        // Route reads to snapshot arrays based on address
-        return address switch
+        // Direct index into full 48KB main RAM array
+        // Video memory is naturally at correct offsets:
+        // - Text Page 1: $0400-$07FF
+        // - Text Page 2: $0800-$0BFF
+        // - Hi-Res Page 1: $2000-$3FFF
+        // - Hi-Res Page 2: $4000-$5FFF
+        if (address >= 0 && address < 0xC000)
         {
-            >= 0x0400 and < 0x0800 => _snapshot.MainPage1Text[address - 0x0400],
-            >= 0x0800 and < 0x0C00 => _snapshot.MainPage2Text[address - 0x0800],
-            >= 0x2000 and < 0x4000 => _snapshot.MainPage1HiRes[address - 0x2000],
-            >= 0x4000 and < 0x6000 => _snapshot.MainPage2HiRes[address - 0x4000],
-            _ => 0x00  // Outside video memory regions
-        };
+            return _snapshot.MainRam[address];
+        }
+        return 0x00;  // Outside 48KB range
     }
     
     public byte ReadRawAux(int address)
     {
-        // Route reads to snapshot's auxiliary arrays
-        return address switch
+        // Direct index into full 48KB auxiliary RAM array
+        if (address >= 0 && address < 0xC000)
         {
-            >= 0x0400 and < 0x0800 => _snapshot.AuxPage1Text[address - 0x0400],
-            >= 0x0800 and < 0x0C00 => _snapshot.AuxPage2Text[address - 0x0800],
-            >= 0x2000 and < 0x4000 => _snapshot.AuxPage1HiRes[address - 0x2000],
-            >= 0x4000 and < 0x6000 => _snapshot.AuxPage2HiRes[address - 0x4000],
-            _ => 0x00  // Outside video memory regions
-        };
+            return _snapshot.AuxRam[address];
+        }
+        return 0x00;  // Outside 48KB range
     }
 }
 
@@ -240,7 +233,7 @@ internal sealed class SnapshotStatusProvider : ISystemStatusProvider
     {
         _snapshot = snapshot;
     }
-    
+
     // Implement ISystemStatusProvider by returning snapshot values
     public bool State80Store => _snapshot.State80Store;
     public bool StateRamRd => _snapshot.StateRamRd;
@@ -251,35 +244,36 @@ internal sealed class SnapshotStatusProvider : ISystemStatusProvider
     public bool StatePb0 => _snapshot.StatePb0;
     public bool StatePb1 => _snapshot.StatePb1;
     public bool StatePb2 => _snapshot.StatePb2;
+    public bool StateFlashOn => _snapshot.StateFlashOn;
+    public bool StateTextMode => _snapshot.StateTextMode;
+    public bool StateMixed => _snapshot.StateMixed;
+    public bool StatePage2 => _snapshot.StatePage2;
+    public bool StateHiRes => _snapshot.StateHiRes;
+    public bool StateAltCharSet => _snapshot.StateAltCharSet;
+    public bool StateShow80Col => _snapshot.StateShow80Col;
+    public bool StateAnn3_DGR => _snapshot.StateAnn3_DGR;
     public bool StateAnn0 => _snapshot.StateAnn0;
     public bool StateAnn1 => _snapshot.StateAnn1;
     public bool StateAnn2 => _snapshot.StateAnn2;
-    public bool StateAnn3_DGR => _snapshot.StateAnn3_DGR;
-    public byte CurrentKey => _snapshot.StateCurrentKey;
-    public byte Pdl0 => _snapshot.StatePdl0;
-    public byte Pdl1 => _snapshot.StatePdl1;
-    public byte Pdl2 => _snapshot.StatePdl2;
-    public byte Pdl3 => _snapshot.StatePdl3;
-    public bool StatePage2 => _snapshot.StatePage2;
-    public bool StateHiRes => _snapshot.StateHiRes;
-    public bool StateMixed => _snapshot.StateMixed;
-    public bool StateTextMode => _snapshot.StateTextMode;
-    public bool StateShow80Col => _snapshot.StateShow80Col;
-    public bool StateAltCharSet => _snapshot.StateAltCharSet;
-    public bool StateFlashOn => _snapshot.StateFlashOn;
-    public bool StatePreWrite => _snapshot.StatePrewrite;
     public bool StateUseBank1 => _snapshot.StateUseBank1;
     public bool StateHighRead => _snapshot.StateHighRead;
     public bool StateHighWrite => _snapshot.StateHighWrite;
     public bool StateVBlank => _snapshot.StateVBlank;
+    
+    // Properties not captured in snapshot (not needed for rendering)
+    public bool StatePreWrite => false;
+    public byte CurrentKey => 0;
+    public byte Pdl0 => 0;
+    public byte Pdl1 => 0;
+    public byte Pdl2 => 0;
+    public byte Pdl3 => 0;
+    
     public SystemStatusSnapshot Current => _snapshot;
     
-    // Events not used during snapshot rendering
-#pragma warning disable CS0067
-    public event EventHandler<SystemStatusSnapshot>? Changed;
-    public event EventHandler<SystemStatusSnapshot>? MemoryMappingChanged;
-#pragma warning restore CS0067
+    // Events are not used during rendering from snapshot - no-op implementations
+    public event EventHandler<SystemStatusSnapshot>? Changed { add { } remove { } }
+    public event EventHandler<SystemStatusSnapshot>? MemoryMappingChanged { add { } remove { } }
     
-    public IObservable<SystemStatusSnapshot> Stream => throw new NotSupportedException();
-    public void Mutate(Action<SystemStatusSnapshotBuilder> mutator) => throw new NotSupportedException();
+    public IObservable<SystemStatusSnapshot> Stream => throw new NotSupportedException("Snapshot provider doesn't support streaming");
+    public void Mutate(Action<SystemStatusSnapshotBuilder> mutator) => throw new NotSupportedException("Snapshot provider is read-only");
 }

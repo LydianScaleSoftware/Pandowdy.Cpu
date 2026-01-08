@@ -138,9 +138,9 @@ public class TestFrameProvider : IFrameProvider
 
     public BitmapDataArray GetFrame() => _frame;
 
-    public BitmapDataArray BorrowWritable() => _frame;
+    public BitmapDataArray? BorrowWritable() => _frame;
 
-    public void CommitWritable()
+    public void CommitWritable(BitmapDataArray renderedBuffer)
     {
         _commitCount++;
         FrameAvailable?.Invoke(this, EventArgs.Empty);

@@ -107,32 +107,49 @@ public interface IFrameProvider
     BitmapDataArray GetFrame();
     
     /// <summary>
-    /// Gets the back buffer for writing and composing the next frame.
+    /// Borrows the writable back buffer for rendering the next frame.
     /// </summary>
     /// <returns>
-    /// A <see cref="BitmapDataArray"/> that can be written to for composing the next frame.
-    /// This buffer is not visible to the display until <see cref="CommitWritable"/> is called.
+    /// A <see cref="BitmapDataArray"/> representing the back buffer, ready for rendering.
+    /// In multi-buffer architecture, may return null if all buffers are currently in use.
     /// </returns>
     /// <remarks>
-    /// This method is typically called by the rendering subsystem at the start of each
-    /// frame generation cycle. The caller should render the complete frame into this buffer,
-    /// then call <see cref="CommitWritable"/> to make it visible. The term "Borrow" indicates
-    /// that the caller has temporary exclusive access to this buffer for rendering purposes.
-    /// </remarks>
-    BitmapDataArray BorrowWritable();
-    
-    /// <summary>
-    /// Swaps the front and back buffers and raises the <see cref="FrameAvailable"/> event.
-    /// </summary>
-    /// <remarks>
-    /// This method atomically swaps the front and back buffers, making the newly rendered
-    /// frame visible while providing the previous front buffer as the new back buffer for
-    /// the next frame. After the swap, the <see cref="FrameAvailable"/> event is raised to
-    /// notify the UI layer that a new frame is ready for display.
     /// <para>
-    /// This method should be called by the rendering subsystem after completing a frame
-    /// (typically once per VBlank period, approximately 60 times per second for Apple IIe).
+    /// <strong>Usage Pattern:</strong>
+    /// <code>
+    /// var buffer = frameProvider.BorrowWritable();
+    /// if (buffer != null)
+    /// {
+    ///     // Render frame into buffer
+    ///     frameProvider.CommitWritable(buffer);
+    /// }
+    /// // else: skip frame (all buffers busy)
+    /// </code>
+    /// </para>
+    /// <para>
+    /// <strong>Multi-Buffer Architecture:</strong> With 4-buffer circular pool, returns null
+    /// only when all 3 renderable buffers are in use (display + 2 renderers). This is rare
+    /// even at 700 FPS.
     /// </para>
     /// </remarks>
-    void CommitWritable();
+    BitmapDataArray? BorrowWritable();
+    
+    /// <summary>
+    /// Commits the rendered buffer, making it available for display.
+    /// </summary>
+    /// <param name="renderedBuffer">
+    /// The buffer that was borrowed and rendered. Must be the same buffer returned by
+    /// <see cref="BorrowWritable"/>.
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// <strong>Atomicity:</strong> The buffer swap is atomic. After this method returns,
+    /// calls to <see cref="GetFrame"/> will return the newly committed buffer.
+    /// </para>
+    /// <para>
+    /// <strong>Event Notification:</strong> Raises <see cref="FrameAvailable"/> to notify
+    /// the UI layer that a new frame is ready.
+    /// </para>
+    /// </remarks>
+    void CommitWritable(BitmapDataArray renderedBuffer);
 }

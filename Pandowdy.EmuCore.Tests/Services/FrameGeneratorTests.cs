@@ -32,13 +32,13 @@ public class FrameGeneratorTests
 
         public BitmapDataArray GetFrame() => _frontBuffer;
 
-        public BitmapDataArray BorrowWritable()
+        public BitmapDataArray? BorrowWritable()
         {
             BorrowCount++;
             return _backBuffer;
         }
 
-        public void CommitWritable()
+        public void CommitWritable(BitmapDataArray renderedBuffer)
         {
             CommitCount++;
             FrameAvailable?.Invoke(this, EventArgs.Empty);
