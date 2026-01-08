@@ -41,7 +41,11 @@ public sealed class RenderingService : IDisposable
     
     // Atomic flag: 0 = idle, 1 = rendering in progress
     private int _renderInProgress = 0;
-    
+
+    // Add this field near the other private fields (around line 43):
+    private int _disposed = 0;  // 0 = not disposed, 1 = disposed
+
+
     // Diagnostics (accessed via Interlocked for thread safety)
     private long _framesRendered = 0;
     private long _framesSkipped = 0;
@@ -237,13 +241,18 @@ public sealed class RenderingService : IDisposable
     /// <summary>
     /// Disposes the rendering service and waits for the render thread to complete.
     /// </summary>
+
     public void Dispose()
     {
-        // Signal render thread to stop
-        _snapshotChannel.Writer.Complete();
-        
-        // Wait for render thread to finish (with timeout)
-        _renderThread?.Join(TimeSpan.FromSeconds(2));
-        _renderThread2?.Join(TimeSpan.FromSeconds(2));
+        // Only dispose once (idempotent)
+        if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 0)
+        {
+            // Signal render thread to stop
+            _snapshotChannel.Writer.Complete();
+
+            // Wait for render threads to finish (with timeout)
+            _renderThread?.Join(TimeSpan.FromSeconds(2));
+            _renderThread2?.Join(TimeSpan.FromSeconds(2));
+        }
     }
 }
