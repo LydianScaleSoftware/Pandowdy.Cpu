@@ -1,8 +1,8 @@
 //------------------------------------------------------------------------------
-// SoftSwitch.cs
+// SoftSwitches.cs
 //
-// Implements the Apple IIe soft switch system, which controls memory mapping,
-// video modes, and peripheral access through memory-mapped I/O addresses.
+// Manages all Apple IIe soft switches and coordinates state changes with the
+// SystemStatusProvider.
 //
 // APPLE IIe SOFT SWITCH ARCHITECTURE:
 // The Apple IIe uses "soft switches" - memory locations in the $C000-$C0FF
@@ -15,91 +15,29 @@
 // - $C051: Select graphics mode
 // - $C054: Select page 1, $C055: Select page 2
 //
-// DESIGN PATTERN: Observable + Command Pattern
-// This implementation uses two complementary patterns:
+// DESIGN PATTERN: Direct Coupling with SystemStatusProvider
+// This implementation directly mutates the SystemStatusProvider when switches
+// change, eliminating the overhead of the responder pattern since only one
+// component (SystemStatusProvider) needs to track switch states.
 //
-// **Responder Pattern:**
-//   Components (MemoryPool, video renderer) register as ISoftSwitchResponder
-//    and receive notifications when switches change. This decouples the soft
-//    switch management from the components that react to switch changes.
-//
-// **Current Use:**
-// - DumpSoftSwitchStatus() shows which switches are active and how often they change
-// - Useful for verifying emulator behavior during development
-//
-// **Planned/Future Use:**
-// - **Performance Profiling:** Identify switches that toggle excessively, causing
-//   unnecessary memory remapping overhead (RAMRD/RAMWRT thrashing)
-// - **Compatibility Testing:** Compare switch usage patterns between programs to
-//   detect emulation inaccuracies
-// - **Regression Detection:** Track switch usage during test runs; changes in
-//   patterns may indicate bugs introduced
-// - **UI Visualization:** Display real-time switch activity in debugger panel
-//   (blinking indicators for frequently-toggled switches)
-// - **Save State Validation:** Include change counts in save states to detect
-//   desync issues during replay
-//
-// While this violates YAGNI (You Aren't Gonna Need It), the minimal cost
-// (single int increment per change) is justified by the anticipated debugging
-// value. The feature is passive and can be completely ignored when not needed.
+// Components that need to react to switch changes (like MemoryPool) subscribe
+// to SystemStatusProvider's MemoryMappingChanged event instead of implementing
+// a responder interface.
 //
 // THREAD SAFETY:
 // Not thread-safe. Soft switches are accessed from the CPU thread and should
-// not be modified from multiple threads concurrently. The responder pattern
-// assumes single-threaded CPU execution.
+// not be modified from multiple threads concurrently.
 //
 // PERFORMANCE:
-// Switch changes trigger responder callbacks immediately. For switches that
-// affect memory mapping (RAMRD, RAMWRT, etc.), this causes UpdateMemoryMappings()
-// to run, which has a write-lock cost. However, soft switch changes are
-// relatively infrequent compared to memory accesses.
+// Switch changes trigger direct mutation of SystemStatusProvider, which fires
+// appropriate events (Changed, MemoryMappingChanged) to notify subscribers.
 //------------------------------------------------------------------------------
 
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
+using Pandowdy.EmuCore.DataTypes;
 using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore;
-
-/// <summary>
-/// Represents a single Apple IIe soft switch with a name and boolean state.
-/// </summary>
-/// <remarks>
-/// <para>
-/// Apple IIe soft switches are memory-mapped I/O addresses ($C000-$C0FF) that control
-/// hardware behavior. Examples: 80STORE ($C000/$C001), RAMRD ($C002/$C003),
-/// TEXT ($C050/$C051), PAGE2 ($C054/$C055).
-/// </para>
-/// <para>
-/// Inherits change-counting functionality to track how often each switch changes state,
-/// useful for debugging and performance analysis.
-/// </para>
-/// </remarks>
-public sealed class SoftSwitch(string name)  
-{
-    /// <summary>
-    /// Gets the human-readable name of this soft switch (e.g., "80STORE", "RAMRD", "TEXT").
-    /// </summary>
-    /// <value>The switch name, typically matching Apple IIe documentation conventions.</value>
-    public string Name { get; private set; } = name;
-
-    public bool Value { get; set; }
-
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set(bool val = true) { Value = val; }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Get() { return Value; }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Toggle() { Value = !Value; }
-
-    /// <summary>
-    /// Returns a string representation of the soft switch showing its name and current state.
-    /// </summary>
-    /// <returns>A string in the format "SwitchName: True/False".</returns>
-    public override string ToString() => $"{Name}: {Value}";
-}
 
 /// <summary>
 /// Manages all Apple IIe soft switches and notifies responders when switches change.
@@ -274,6 +212,11 @@ public sealed class SoftSwitches
     private Dictionary<SoftSwitchId, SoftSwitch> _switches = [];
 
     /// <summary>
+    /// Collection of registered responders that receive notifications when switches change.
+    /// </summary>
+    private HashSet<ISoftSwitchResponder> _responders = [];
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="SoftSwitches"/> class with all
     /// switches set to their default states.
     /// </summary>
@@ -307,13 +250,7 @@ public sealed class SoftSwitches
         _switches[SoftSwitchId.Button1] = new SoftSwitch("BUTTON1");
         _switches[SoftSwitchId.Button2] = new SoftSwitch("BUTTON2");
         _switches[SoftSwitchId.VBlank] = new SoftSwitch("VBLANK");
-     //   DumpSoftSwitchStatus("Init:");
     }
-
-    /// <summary>
-       /// Collection of registered responders that receive notifications when switches change.
- /// </summary>
-    private HashSet<ISoftSwitchResponder> _responders = [];
 
     /// <summary>
     /// Writes the current state of all soft switches to the debug output.
@@ -326,7 +263,6 @@ public sealed class SoftSwitches
     /// </remarks>
     public void DumpSoftSwitchStatus(string header = "")
     {
-        // Cycle through all soft switches and use Debug.WriteLine to show the switch name and On or Off, depending on its value
         if (!string.IsNullOrEmpty(header))
         {
             Debug.WriteLine(header);
@@ -340,7 +276,6 @@ public sealed class SoftSwitches
             string status = kvp.Value.Value ? "On" : "Off";
             Debug.WriteLine($"{kvp.Value.Name}: {status}");
         }
-
     }
 
     /// <summary>
@@ -373,7 +308,7 @@ public sealed class SoftSwitches
     {
         foreach (var kvp in _switches)
         {
-            kvp.Value.Value = (kvp.Key==SoftSwitchId.IntCxRom);
+            kvp.Value.Value = (kvp.Key == SoftSwitchId.IntCxRom);
             TriggerResponder(kvp.Key, kvp.Value.Value);
         }
     }
@@ -414,7 +349,7 @@ public sealed class SoftSwitches
     /// <summary>
     /// Returns a snapshot of all switches with their current state and change counts.
     /// </summary>
-    /// <returns>A list of tuples containing switch ID and current valuefor each switch.</returns>
+    /// <returns>A list of tuples containing switch ID and current value for each switch.</returns>
     /// <remarks>
     /// Useful for diagnostics, save state serialization, and UI display of switch status.
     /// The change count indicates how many times each switch has toggled since reset.
