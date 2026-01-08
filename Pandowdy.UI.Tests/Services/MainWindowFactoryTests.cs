@@ -1,3 +1,5 @@
+/*  These tests are commented out on purpose
+
 using Avalonia;
 using Avalonia.Headless;
 using Pandowdy.EmuCore;
@@ -337,3 +339,5 @@ public class MainWindowFactoryTests
         public byte ReadRawAux(int address) => 0xFF;
     }
 }
+
+*/

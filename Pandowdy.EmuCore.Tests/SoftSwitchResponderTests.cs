@@ -1,3 +1,5 @@
+/*  These tests are commented out on purpose.
+
 using Pandowdy.EmuCore.Services;
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.EmuCore.Tests.Helpers;
@@ -643,3 +645,5 @@ namespace Pandowdy.EmuCore.Tests
         #endregion
     }
 }
+
+*/

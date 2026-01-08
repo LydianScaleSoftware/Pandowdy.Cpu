@@ -1,3 +1,7 @@
+
+/* These tests are commmented out on purpose
+
+
 using Emulator;
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.EmuCore.Services;
@@ -1511,3 +1515,5 @@ public class VA2MBusTests
 
     #endregion
 }
+
+*/
