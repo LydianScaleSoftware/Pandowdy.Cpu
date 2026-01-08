@@ -140,7 +140,7 @@ public class VA2MBusTests
     {
         // Arrange
         var fixture = new VA2MBusFixture();
-        fixture.Bus.SetKeyValue(0xC1); // 'A' with high bit
+        fixture.Bus.EnqueueKey(0xC1); // 'A' with high bit
 
         // Act
         var value = fixture.Bus.CpuRead(VA2MBus.KBD_);
@@ -154,7 +154,7 @@ public class VA2MBusTests
     {
         // Arrange
         var fixture = new VA2MBusFixture();
-        fixture.Bus.SetKeyValue(0xC1); // 'A' with high bit
+        fixture.Bus.EnqueueKey(0xC1); // 'A' with high bit
 
         // Act
         var value = fixture.Bus.CpuRead(VA2MBus.KEYSTRB_);
@@ -170,7 +170,7 @@ public class VA2MBusTests
         var fixture = new VA2MBusFixture();
 
         // Act
-        fixture.Bus.SetKeyValue(0x42);
+        fixture.Bus.EnqueueKey(0x42);
         var value = fixture.Bus.CpuRead(VA2MBus.KBD_);
 
         // Assert
@@ -184,10 +184,10 @@ public class VA2MBusTests
         var fixture = new VA2MBusFixture();
 
         // Act & Assert
-        fixture.Bus.SetKeyValue(0xC1);
+        fixture.Bus.EnqueueKey(0xC1);
         Assert.Equal(0xC1, fixture.Bus.CpuRead(VA2MBus.KBD_));
 
-        fixture.Bus.SetKeyValue(0xC2);
+        fixture.Bus.EnqueueKey(0xC2);
         Assert.Equal(0xC2, fixture.Bus.CpuRead(VA2MBus.KBD_));
     }
 
@@ -196,7 +196,7 @@ public class VA2MBusTests
     {
         // Arrange
         var fixture = new VA2MBusFixture();
-        fixture.Bus.SetKeyValue(0xC1);
+        fixture.Bus.EnqueueKey(0xC1);
 
         // Act
         fixture.Bus.CpuRead(VA2MBus.KEYSTRB_); // Clear high bit
@@ -217,7 +217,7 @@ public class VA2MBusTests
         var fixture = new VA2MBusFixture();
 
         // Act
-        fixture.Bus.SetKeyValue(input);
+        fixture.Bus.EnqueueKey(input);
         var value = fixture.Bus.CpuRead(VA2MBus.KBD_);
 
         // Assert
@@ -229,7 +229,7 @@ public class VA2MBusTests
     {
         // Arrange
         var fixture = new VA2MBusFixture();
-        fixture.Bus.SetKeyValue(0xC1);
+        fixture.Bus.EnqueueKey(0xC1);
 
         // Act
         fixture.Bus.CpuRead(VA2MBus.KEYSTRB_);
@@ -248,15 +248,15 @@ public class VA2MBusTests
         var fixture = new VA2MBusFixture();
 
         // Act - Simulate keyboard input sequence
-        fixture.Bus.SetKeyValue(0xC8); // 'H'
+        fixture.Bus.EnqueueKey(0xC8); // 'H'
         Assert.Equal(0xC8, fixture.Bus.CpuRead(VA2MBus.KBD_));
         fixture.Bus.CpuRead(VA2MBus.KEYSTRB_); // Strobe
 
-        fixture.Bus.SetKeyValue(0xC5); // 'E'
+        fixture.Bus.EnqueueKey(0xC5); // 'E'
         Assert.Equal(0xC5, fixture.Bus.CpuRead(VA2MBus.KBD_));
         fixture.Bus.CpuRead(VA2MBus.KEYSTRB_);
 
-        fixture.Bus.SetKeyValue(0xCC); // 'L'
+        fixture.Bus.EnqueueKey(0xCC); // 'L'
         var finalValue = fixture.Bus.CpuRead(VA2MBus.KBD_);
 
         // Assert
@@ -595,7 +595,7 @@ public class VA2MBusTests
     {
         // Arrange
         var fixture = new VA2MBusFixture();
-        fixture.Bus.SetKeyValue(0x55); // Pattern in low bits
+        fixture.Bus.EnqueueKey(0x55); // Pattern in low bits
         
         // Act
         fixture.Bus.CpuWrite(VA2MBus.RDCARDRAM_, 0); // Set RAMRD
@@ -1248,7 +1248,7 @@ public class VA2MBusTests
     {
         // Arrange
         var fixture = new VA2MBusFixture();
-        fixture.Bus.SetKeyValue(0xC1);
+        fixture.Bus.EnqueueKey(0xC1);
 
         // Act
         var value = fixture.Bus.CpuRead(VA2MBus.KBD_);
@@ -1335,7 +1335,7 @@ public class VA2MBusTests
         // Act - Mix I/O and memory operations
         fixture.Bus.CpuWrite(0x1000, 0x42);           // Memory write
         fixture.Bus.CpuWrite(VA2MBus.SETTXT_, 0);     // I/O write
-        fixture.Bus.SetKeyValue(0xC5);                // Keyboard
+        fixture.Bus.EnqueueKey(0xC5);                // Keyboard
         
         var memValue = fixture.Bus.CpuRead(0x1000);   // Memory read
         var keyValue = fixture.Bus.CpuRead(VA2MBus.KBD_); // I/O read
@@ -1394,11 +1394,11 @@ public class VA2MBusTests
         var fixture = new VA2MBusFixture();
 
         // Act - Simulate typing "HI"
-        fixture.Bus.SetKeyValue(0xC8); // 'H'
+        fixture.Bus.EnqueueKey(0xC8); // 'H'
         var h = fixture.Bus.CpuRead(VA2MBus.KBD_);
         fixture.Bus.CpuRead(VA2MBus.KEYSTRB_);
         
-        fixture.Bus.SetKeyValue(0xC9); // 'I'
+        fixture.Bus.EnqueueKey(0xC9); // 'I'
         var i = fixture.Bus.CpuRead(VA2MBus.KBD_);
 
         // Assert

@@ -2,7 +2,6 @@ using Avalonia;
 using ReactiveUI.Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Pandowdy.UI;
 using Pandowdy.UI.Interfaces;
 using Pandowdy.EmuCore;
@@ -28,28 +27,18 @@ namespace Pandowdy
         {
             var host = CreateHostBuilder(args).Build();
 
-            var logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
-            logger.LogInformation("Starting Pandowdy host.");
-
             UiBootstrap.IntegrateUiServiceProvider(host);
 
             await InitializeCoreAsync(host.Services);
 
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 
-            logger.LogInformation("Shutting down Pandowdy host.");
             await host.StopAsync();
         }
 
         private static IHostBuilder CreateHostBuilder(string[] args)
         {
             return Host.CreateDefaultBuilder(args)
-                .ConfigureLogging(logging =>
-                {
-                    logging.ClearProviders();
-                    logging.AddConsole();
-                    logging.AddDebug();
-                })
                 .ConfigureServices((context, services) =>
                 {
                     services.AddSingleton<Emulator.CPU>();
@@ -66,6 +55,8 @@ namespace Pandowdy
                     services.AddSingleton<IDisplayBitmapRenderer, LegacyBitmapRenderer>();
 
                     services.AddSingleton<IFrameGenerator, FrameGenerator>();
+
+                    services.AddSingleton<SoftSwitches>();
 
                     // SystemStatusProvider implements both ISystemStatusProvider and ISoftSwitchResponder
                     // Register the concrete type first

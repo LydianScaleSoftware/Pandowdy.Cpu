@@ -155,6 +155,7 @@ public class TestAppleIIBus : IAppleIIBus
     private byte _keyValue = 0;
     private readonly bool[] _pushButtons = new bool[3];
     private int _resetCount = 0;
+    private readonly List<byte> _enqueuedKeyHistory = new();
 
     // IAppleIIBus implementation
     public IMemory RAM => _memory;
@@ -166,9 +167,10 @@ public class TestAppleIIBus : IAppleIIBus
         // Not needed for test
     }
 
-    public void SetKeyValue(byte key)
+    public void EnqueueKey(byte key)
     {
         _keyValue = key;
+        _enqueuedKeyHistory.Add(key);
     }
 
     public void SetPushButton(int num, bool enabled)
@@ -202,6 +204,8 @@ public class TestAppleIIBus : IAppleIIBus
 
     // Test helpers
     public byte GetKeyValue() => _keyValue;
+    public byte GetLastEnqueuedKey() => _enqueuedKeyHistory.Count > 0 ? _enqueuedKeyHistory[^1] : (byte)0;
+    public List<byte> GetEnqueuedKeyHistory() => new List<byte>(_enqueuedKeyHistory);
     public bool GetPushButton(int num) => num >= 0 && num < 3 && _pushButtons[num];
     public int ResetCount => _resetCount;
 }

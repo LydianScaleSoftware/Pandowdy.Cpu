@@ -1412,7 +1412,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         }
         if ((e.KeyModifiers & KeyModifiers.Control) != 0 && (e.KeyModifiers & KeyModifiers.Shift) != 0 && e.Key == Key.D2)
         {
-            _machine?.InjectKey(0x00);
+            _machine?.EnqueueKey(0x00);
             e.Handled = true;
             return true;
         }
@@ -1458,7 +1458,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         if ((e.KeyModifiers & KeyModifiers.Control) != 0 && e.Key >= Key.A && e.Key <= Key.Z)
         {
             byte ctrl = (byte)(e.Key - Key.A + 1);
-            _machine?.InjectKey((byte)(ctrl | 0x80));
+            _machine?.EnqueueKey((byte)(ctrl | 0x80));
             e.Handled = true;
             return true;
         }
@@ -1477,7 +1477,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         };
         if (ascii.HasValue)
         {
-            _machine?.InjectKey((byte)(ascii.Value | 0x80));
+            _machine?.EnqueueKey((byte)(ascii.Value | 0x80));
             e.Handled = true;
             return true;
         }

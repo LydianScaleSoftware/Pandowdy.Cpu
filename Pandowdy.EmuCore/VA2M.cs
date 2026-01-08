@@ -104,7 +104,7 @@ namespace Pandowdy.EmuCore;
 /// </list>
 /// </para>
 /// </remarks>
-public class VA2M : IDisposable
+public class VA2M : IDisposable, IKeyboardSetter
 {
     /// <summary>
     /// Gets the memory pool managing the 128KB Apple IIe memory space.
@@ -1022,42 +1022,21 @@ public class VA2M : IDisposable
     }
     
     /// <summary>
-    /// Inject a keyboard value into the machine as if a key was latched at $C000.
-    /// High bit must be set.  Cleared by access of $C010.
+    /// Injects a keyboard character into the emulator as if a key was pressed.
     /// </summary>
     /// <param name="ascii">ASCII character code (0-127). High bit will be set automatically.</param>
+    /// <inheritdoc cref="IKeyboardSetter.EnqueueKey" path="/remarks"/>
     /// <remarks>
-    /// <para>
-    /// <strong>Apple IIe Keyboard Protocol:</strong> The Apple IIe keyboard latch is a memory-mapped
-    /// register at $C000. When a key is pressed, the ASCII value with bit 7 set appears at this
-    /// address. Reading $C010 (KBDSTRB) clears bit 7, indicating the key has been read.
-    /// </para>
     /// <para>
     /// <strong>Thread Safety:</strong> This method is thread-safe. It enqueues the key injection
     /// command which will be executed on the emulator thread at the next ProcessPending() call.
     /// This allows UI threads to inject keyboard input without race conditions.
     /// </para>
-    /// <para>
-    /// <strong>ASCII Codes:</strong>
-    /// <list type="bullet">
-    /// <item>0x20-0x7E: Standard printable ASCII characters</item>
-    /// <item>0x0D (13): Return/Enter key</item>
-    /// <item>0x08 (8): Backspace (sometimes)</item>
-    /// <item>0x15 (21): Right arrow (Apple IIe convention)</item>
-    /// <item>0x1B (27): Escape</item>
-    /// </list>
-    /// </para>
-    /// <para>
-    /// <strong>Implementation:</strong> The method automatically sets bit 7 (ORs with 0x80)
-    /// to match Apple IIe hardware behavior. The command is enqueued and executed via
-    /// Bus.SetKeyValue() on the emulator thread.
-    /// </para>
     /// </remarks>
-    public void InjectKey(byte ascii)
+    public void EnqueueKey(byte ascii)
     {
         // Enqueue to run on emulator thread
-        byte val = (byte)(ascii | 0x80);
-        Enqueue(() => Bus.SetKeyValue(val));
+        Enqueue(() => Bus.EnqueueKey(ascii));
     }
 
     /// <summary>

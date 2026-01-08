@@ -24,7 +24,7 @@ public interface IAppleIIBus : IBus
     /// and reading $C010 clears the high bit. This method simulates external keyboard
     /// input by setting the latch value that the CPU will read.
     /// </remarks>
-    void SetKeyValue(byte key);
+    void EnqueueKey(byte key);
 
     /// <summary>
     /// Sets the state of a pushbutton (game controller button).

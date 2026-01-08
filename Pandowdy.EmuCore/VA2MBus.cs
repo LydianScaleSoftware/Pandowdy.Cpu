@@ -40,7 +40,7 @@ namespace Pandowdy.EmuCore;
 /// for planned separation of concerns (slot bus system, floating bus emulation, etc.).
 /// </para>
 /// </remarks>
-public sealed class VA2MBus : IAppleIIBus, IDisposable
+public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
 {
     /// <summary>
     /// Memory pool managing the 128KB Apple IIe memory space.
@@ -64,12 +64,15 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// System clock counter tracking total CPU cycles executed since reset.
     /// </summary>
     private ulong _systemClock;
-    
+
     /// <summary>
     /// Soft switches managing memory mapping, video modes, ROM selection, and annunciators.
     /// </summary>
-    private SoftSwitches _softSwitches = new();
-//    private bool _isInVBlankBlackout = false;
+    private SoftSwitches _softSwitches;
+    //    private bool _isInVBlankBlackout = false;
+
+   
+
 
     /// <summary>
     /// Gets the RAM (MemoryPool) for direct memory access.
@@ -79,6 +82,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// should go through CpuRead/CpuWrite which handle I/O space routing.
     /// </remarks>
     public IMemory RAM => _memoryPool;
+
 
     /// <summary>
     /// Gets the total number of CPU cycles executed since last reset.
@@ -486,11 +490,13 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// of I/O space behavior.
     /// </para>
     /// </remarks>
-    public VA2MBus(MemoryPool mempool, ISystemStatusProvider statusProvider, ICpu cpu)
+    public VA2MBus(MemoryPool mempool, ISystemStatusProvider statusProvider, ICpu cpu, SoftSwitches switches)
     {
         ArgumentNullException.ThrowIfNull(mempool);
         ArgumentNullException.ThrowIfNull(statusProvider);
         ArgumentNullException.ThrowIfNull(cpu);
+        ArgumentNullException.ThrowIfNull(switches);
+        _softSwitches = switches;
         _memoryPool = mempool;
         _cpu = cpu;
         InitIoReadHandlers();
@@ -785,21 +791,22 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     }
 
     /// <summary>
-    /// Sets the keyboard latch value as if a key was pressed.
+    /// Injects a keyboard character into the keyboard latch.
     /// </summary>
     /// <param name="key">ASCII key value with bit 7 set (indicating key available).</param>
+    /// <inheritdoc cref="IKeyboardSetter.EnqueueKey" path="/remarks"/>
     /// <remarks>
     /// <para>
-    /// <strong>Keyboard Latch:</strong> The Apple IIe keyboard latch appears at $C000. When a key
-    /// is pressed, the ASCII value with bit 7 set appears at this address. Software reads $C010
-    /// (KEYSTRB) to clear bit 7, indicating the key has been read.
+    /// <strong>Implementation Note:</strong> Sets the internal keyboard latch (_currKey) directly.
+    /// The strobe bit (bit 7) should already be set by the caller. Software reads $C010 (KEYSTRB)
+    /// to clear bit 7, indicating the key has been read.
     /// </para>
     /// <para>
     /// <strong>Thread Safety:</strong> Should be called only from the emulator thread. External
-    /// threads should enqueue via VA2M.InjectKey().
+    /// threads should enqueue via VA2M.EnqueueKey() which marshals to the emulator thread safely.
     /// </para>
     /// </remarks>
-    public void SetKeyValue(byte key)
+    public void EnqueueKey(byte key)
     {
         _currKey = key;
     }

@@ -5,11 +5,27 @@ using Pandowdy.EmuCore.Tests.Helpers;
 namespace Pandowdy.EmuCore.Tests;
 
 /// <summary>
-/// Unit tests for VA2M, the main Apple II emulator class.
-/// 
-/// These tests use mock dependencies to test VA2M functionality in isolation.
-/// Integration tests should be added separately for full system testing.
+/// Unit tests for VA2M emulator orchestration layer.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <strong>Test Scope:</strong> VA2M is responsible for command queueing, thread marshaling,
+/// and orchestration - NOT for keyboard protocol implementation (strobe bits, etc.).
+/// </para>
+/// <para>
+/// <strong>What VA2M Does:</strong>
+/// <list type="bullet">
+/// <item>Enqueue commands for cross-thread execution (UI → emulator thread)</item>
+/// <item>Process pending commands at instruction boundaries</item>
+/// <item>Pass commands to Bus unchanged (no transformation)</item>
+/// <item>Coordinate Clock(), Reset(), and state publishing</item>
+/// </list>
+/// </para>
+/// <para>
+/// <strong>What VA2M Does NOT Do:</strong>
+/// Keyboard protocol (strobe bit setting) - tested in <see cref="SingularKeyHandlerTests"/>
+/// </para>
+/// </remarks>
 public class VA2MTests
 {
     #region Constructor Tests
@@ -240,10 +256,10 @@ public class VA2MTests
 
     #endregion
 
-    #region Key Injection Tests
+    #region Command Queueing Tests - EnqueueKey
 
     [Fact]
-    public void InjectKey_SetsHighBitAutomatically()
+    public void EnqueueKey_PassesValueUnchangedToBus()
     {
         // Arrange
         var testBus = new TestAppleIIBus();
@@ -251,61 +267,17 @@ public class VA2MTests
             .WithBus(testBus)
             .Build();
 
-        // Act - Inject ASCII 'A' (0x41) without high bit
-        va2m.InjectKey(0x41);
-
-        // Process pending queue
-        va2m.Clock();
-
-        // Assert - High bit should be set (0x41 | 0x80 = 0xC1)
-        Assert.Equal(0xC1, testBus.GetKeyValue());
-    }
-
-    [Fact]
-    public void InjectKey_PreservesHighBitIfAlreadySet()
-    {
-        // Arrange
-        var testBus = new TestAppleIIBus();
-        var va2m = VA2MTestHelpers.CreateBuilder()
-            .WithBus(testBus)
-            .Build();
-
-        // Act - Inject with high bit already set
-        va2m.InjectKey(0xC1); // 'A' with high bit
-
-        // Process pending queue
-        va2m.Clock();
-
-        // Assert - Should still be 0xC1
-        Assert.Equal(0xC1, testBus.GetKeyValue());
-    }
-
-    [Theory]
-    [InlineData(0x20, 0xA0)]  // Space
-    [InlineData(0x41, 0xC1)]  // 'A'
-    [InlineData(0x5A, 0xDA)]  // 'Z'
-    [InlineData(0x61, 0xE1)]  // 'a'
-    [InlineData(0x7A, 0xFA)]  // 'z'
-    [InlineData(0x30, 0xB0)]  // '0'
-    [InlineData(0x39, 0xB9)]  // '9'
-    public void InjectKey_VariousAsciiCharacters_SetsCorrectValue(byte input, byte expected)
-    {
-        // Arrange
-        var testBus = new TestAppleIIBus();
-        var va2m = VA2MTestHelpers.CreateBuilder()
-            .WithBus(testBus)
-            .Build();
-
-        // Act
-        va2m.InjectKey(input);
+        // Act - VA2M should pass the value to Bus unchanged
+        va2m.EnqueueKey(0x41);
         va2m.Clock(); // Process pending queue
 
-        // Assert
-        Assert.Equal(expected, testBus.GetKeyValue());
+        // Assert - VA2M doesn't modify the value (no strobe bit handling at this layer)
+        // The Bus (and ultimately SingularKeyHandler) handles strobe bit setting
+        Assert.Equal(0x41, testBus.GetLastEnqueuedKey());
     }
 
     [Fact]
-    public void InjectKey_MultipleTimes_UpdatesKeyValue()
+    public void EnqueueKey_MultipleCommands_ExecutedInOrder()
     {
         // Arrange
         var testBus = new TestAppleIIBus();
@@ -313,23 +285,63 @@ public class VA2MTests
             .WithBus(testBus)
             .Build();
 
-        // Act - Inject multiple keys
-        va2m.InjectKey(0x41); // 'A'
-        va2m.Clock();
-        var firstKey = testBus.GetKeyValue();
+        // Act - Enqueue multiple keys
+        va2m.EnqueueKey(0x41); // 'A'
+        va2m.EnqueueKey(0x42); // 'B'
+        va2m.EnqueueKey(0x43); // 'C'
+        va2m.Clock(); // Process all pending commands
 
-        va2m.InjectKey(0x42); // 'B'
-        va2m.Clock();
-        var secondKey = testBus.GetKeyValue();
+        // Assert - All commands executed in FIFO order
+        var enqueuedKeys = testBus.GetEnqueuedKeyHistory();
+        Assert.Equal(new byte[] { 0x41, 0x42, 0x43 }, enqueuedKeys);
+    }
 
-        // Assert
-        Assert.Equal(0xC1, firstKey);
-        Assert.Equal(0xC2, secondKey);
+    [Fact]
+    public void EnqueueKey_DeferredExecution_CommandNotExecutedUntilClock()
+    {
+        // Arrange
+        var testBus = new TestAppleIIBus();
+        var va2m = VA2MTestHelpers.CreateBuilder()
+            .WithBus(testBus)
+            .Build();
+
+        // Act - Enqueue key but don't call Clock()
+        va2m.EnqueueKey(0x41);
+
+        // Assert - Command not executed yet (no Clock() called)
+        Assert.Empty(testBus.GetEnqueuedKeyHistory());
+        
+        // Act - Now process pending queue
+        va2m.Clock();
+        
+        // Assert - Command executed after Clock()
+        Assert.Single(testBus.GetEnqueuedKeyHistory());
+    }
+
+    [Fact]
+    public void EnqueueKey_ValueCaptureIndependence_EachActionCapturesOwnValue()
+    {
+        // Arrange
+        var testBus = new TestAppleIIBus();
+        var va2m = VA2MTestHelpers.CreateBuilder()
+            .WithBus(testBus)
+            .Build();
+
+        // Act - Enqueue keys in a loop (tests closure capture behavior)
+        for (byte i = 0x41; i <= 0x43; i++)
+        {
+            va2m.EnqueueKey(i);
+        }
+        va2m.Clock(); // Process all
+
+        // Assert - Each action captured its own value independently
+        var enqueuedKeys = testBus.GetEnqueuedKeyHistory();
+        Assert.Equal(new byte[] { 0x41, 0x42, 0x43 }, enqueuedKeys);
     }
 
     #endregion
 
-    #region Push Button Tests
+    #region Command Queueing Tests - SetPushButton
 
     [Theory]
     [InlineData(0, true)]
@@ -422,9 +434,6 @@ public class VA2MTests
             $"1000 unthrottled cycles took {elapsed.TotalMilliseconds}ms (should be < 100ms)");
     }
 
-    // Note: Testing throttling with ThrottleEnabled=true requires timing
-    // which can be flaky in CI/CD. Consider integration tests for this.
-
     #endregion
 
     #region Bus Interaction Tests
@@ -513,7 +522,7 @@ public class VA2MTests
     }
 
     [Fact]
-    public void Scenario_KeyboardInput_ProcessesCorrectly()
+    public void Scenario_CommandQueueing_MixedCommands()
     {
         // Arrange
         var testBus = new TestAppleIIBus();
@@ -521,16 +530,19 @@ public class VA2MTests
             .WithBus(testBus)
             .Build();
 
-        // Act - Simulate typing "HELLO"
-        byte[] keys = [0x48, 0x45, 0x4C, 0x4C, 0x4F]; // H E L L O
-        foreach (var key in keys)
-        {
-            va2m.InjectKey(key);
-            va2m.Clock();
-        }
+        // Act - Mix keyboard and button commands
+        va2m.EnqueueKey(0x41);       // 'A'
+        va2m.SetPushButton(0, true);  // Button 0 press
+        va2m.EnqueueKey(0x42);       // 'B'
+        va2m.SetPushButton(0, false); // Button 0 release
+        va2m.Clock(); // Process all pending commands
 
-        // Assert - Last key should be 'O' with high bit set
-        Assert.Equal(0xCF, testBus.GetKeyValue());
+        // Assert - All commands executed in order
+        var keyHistory = testBus.GetEnqueuedKeyHistory();
+        Assert.Equal(2, keyHistory.Count);
+        Assert.Equal(0x41, keyHistory[0]);
+        Assert.Equal(0x42, keyHistory[1]);
+        Assert.False(testBus.GetPushButton(0)); // Final button state
     }
 
     [Fact]

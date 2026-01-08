@@ -19,8 +19,11 @@ public class SystemIoHandler : ISystemIoHandler
     int _VblankBlackoutCounter = 0;
 
 
-    public SystemIoHandler()
+    public SystemIoHandler(SoftSwitches switches)
     {
+        ArgumentNullException.ThrowIfNull(switches);
+        _softSwitches = switches;
+
         InitIoReadHandlers();
         InitIoWriteHandlers();
     }
@@ -190,7 +193,7 @@ public class SystemIoHandler : ISystemIoHandler
     /// <summary>
     /// Soft switches managing memory mapping, video modes, ROM selection, and annunciators.
     /// </summary>
-    private SoftSwitches _softSwitches = new();
+    private SoftSwitches _softSwitches;
 
     /// <summary>
     /// Dictionary mapping I/O addresses to write handler actions.

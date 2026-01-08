@@ -1038,7 +1038,7 @@ bool showScanLines)
             }
             if (c <= 0x7F)
             {
-                _machine.InjectKey((byte) ((byte) c | 0x80));
+                _machine.EnqueueKey((byte) ((byte) c | 0x80));
             }
         }
         e.Handled = true;
@@ -1082,7 +1082,7 @@ bool showScanLines)
         if ((e.KeyModifiers & KeyModifiers.Control) != 0 && e.Key >= Key.A && e.Key <= Key.Z)
         {
             byte ctrl = (byte) (e.Key - Key.A + 1);
-            _machine.InjectKey((byte) (ctrl | 0x80));
+            _machine.EnqueueKey((byte) (ctrl | 0x80));
             e.Handled = true;
             return;
         }
@@ -1101,7 +1101,7 @@ bool showScanLines)
         };
         if (ascii.HasValue)
         {
-            _machine.InjectKey((byte) (ascii.Value | 0x80));
+            _machine.EnqueueKey((byte) (ascii.Value | 0x80));
             e.Handled = true;
         }
     }
