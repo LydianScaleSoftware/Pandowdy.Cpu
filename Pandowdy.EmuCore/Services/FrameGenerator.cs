@@ -89,12 +89,8 @@ public class FrameGenerator : IFrameGenerator
     /// </remarks>
     public RenderContext AllocateRenderContext()
     {
-        var buffer = _frameProvider.BorrowWritable();
-        if (buffer == null)
-        {
-            throw new InvalidOperationException("No frame buffer available from provider");
-        }
-        
+        var buffer = _frameProvider.BorrowWritable() ?? throw new InvalidOperationException("No frame buffer available from provider");
+
         var context = new RenderContext(
             buffer,
             _memReader,

@@ -177,7 +177,7 @@ public class LegacyBitmapRenderer : IDisplayBitmapRenderer
                 
                 if (addr >= 0x400 && addr <= 0xBFF) // Text/Lo-Res pages
                 {
-                    RenderTextOrGRCell(addr, row, col, text, mixed, text80col, gr80col, buf);
+                    RenderTextOrGRCell(row, col, text, mixed, text80col, gr80col, buf);
                 }
                 else if (addr >= 0x2000 && addr <= 0x5fff) // Hi-Res pages
                 {
@@ -190,7 +190,6 @@ public class LegacyBitmapRenderer : IDisplayBitmapRenderer
     /// <summary>
     /// Renders a text or lo-res graphics cell based on video mode.
     /// </summary>
-    /// <param name="address">Base address of the cell in video memory.</param>
     /// <param name="row">Row index (0-23).</param>
     /// <param name="col">Column index (0-39).</param>
     /// <param name="text">True if text mode is active.</param>
@@ -202,15 +201,15 @@ public class LegacyBitmapRenderer : IDisplayBitmapRenderer
     /// In mixed mode, rows 20-23 are always rendered as text, regardless of the
     /// text mode flag. This allows games to display graphics with a text status line.
     /// </remarks>
-    private void RenderTextOrGRCell(int address, int row, int col, bool text, bool mixed, bool text80, bool gr80, BitmapDataArray buf)
+    private void RenderTextOrGRCell(int row, int col, bool text, bool mixed, bool text80, bool gr80, BitmapDataArray buf)
     {
         if (text || (mixed && row >= 20))
         {
-            RenderTextCell(address, row, col, text80, buf);
+            RenderTextCell(row, col, text80, buf);
         }
         else
         {
-            RenderGrCell(address, row, col, gr80, buf);
+            RenderGrCell(row, col, gr80, buf);
         }
     }
 
@@ -485,7 +484,6 @@ public class LegacyBitmapRenderer : IDisplayBitmapRenderer
     /// <summary>
     /// Renders a text character cell using the character ROM.
     /// </summary>
-    /// <param name="address">Address in text memory containing the character code.</param>
     /// <param name="row">Row index (0-23).</param>
     /// <param name="col">Column index (0-39).</param>
     /// <param name="text80">True if 80-column text mode is active.</param>
@@ -511,7 +509,7 @@ public class LegacyBitmapRenderer : IDisplayBitmapRenderer
     /// This is critical for 80-column text rendering where aux and main are interleaved.
     /// </para>
     /// </remarks>
-    private void RenderTextCell(int address, int row, int col, bool text80, BitmapDataArray buf)
+    private void RenderTextCell( int row, int col, bool text80, BitmapDataArray buf)
     {
         bool flashOn = _context!.SystemStatus.StateFlashOn;
         bool altChar = _context!.SystemStatus.StateAltCharSet;
@@ -579,7 +577,6 @@ public class LegacyBitmapRenderer : IDisplayBitmapRenderer
     /// <summary>
     /// Renders a lo-res graphics cell (40×48 blocks).
     /// </summary>
-    /// <param name="address">Address in lo-res memory (unused when 80STORE active).</param>
     /// <param name="row">Row index (0-23).</param>
     /// <param name="col">Column index (0-39).</param>
     /// <param name="gr80">True if 80-column lo-res mode is active.</param>
@@ -607,7 +604,7 @@ public class LegacyBitmapRenderer : IDisplayBitmapRenderer
     /// (aux left, main right) for a total of 14 pixels per cell.
     /// </para>
     /// </remarks>
-    private void RenderGrCell(int address, int row, int col, bool gr80, BitmapDataArray buf)
+    private void RenderGrCell(int row, int col, bool gr80, BitmapDataArray buf)
     {
         bool store80 = _context!.SystemStatus.State80Store;
         bool page2 = _context!.SystemStatus.StatePage2;

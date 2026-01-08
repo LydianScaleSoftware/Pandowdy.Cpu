@@ -33,7 +33,7 @@ public sealed class FrameProvider : IFrameProvider
     private readonly ConcurrentQueue<BitmapDataArray> _cleanBuffers;
     
     // Lock only for copying completed frame to stable display
-    private readonly object _displayCopyLock = new object();
+    private readonly object _displayCopyLock = new();
 
     public int Width { get; }
     public int Height { get; }
