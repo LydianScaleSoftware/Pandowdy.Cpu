@@ -59,7 +59,7 @@ public sealed class FrameProvider : IFrameProvider
         _allBuffers = new BitmapDataArray[5];
         for (int i = 0; i < 5; i++)
         {
-            _allBuffers[i] = new BitmapDataArray();
+            _allBuffers[i] = new();
         }
 
         // Buffer 0 is the permanent stable display buffer

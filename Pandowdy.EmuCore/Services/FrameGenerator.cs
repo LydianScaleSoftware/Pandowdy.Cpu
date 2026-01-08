@@ -89,8 +89,14 @@ public class FrameGenerator : IFrameGenerator
     /// </remarks>
     public RenderContext AllocateRenderContext()
     {
+        var buffer = _frameProvider.BorrowWritable();
+        if (buffer == null)
+        {
+            throw new InvalidOperationException("No frame buffer available from provider");
+        }
+        
         var context = new RenderContext(
-            _frameProvider.BorrowWritable(),
+            buffer,
             _memReader,
             _statusProvider);
 
@@ -187,14 +193,9 @@ public class FrameGenerator : IFrameGenerator
 /// separate text/hi-res page arrays. This simplifies logic and improves cache locality.
 /// </para>
 /// </remarks>
-internal sealed class SnapshotMemoryReader : IDirectMemoryPoolReader
+internal sealed class SnapshotMemoryReader(VideoMemorySnapshot snapshot) : IDirectMemoryPoolReader
 {
-    private readonly VideoMemorySnapshot _snapshot;
-    
-    public SnapshotMemoryReader(VideoMemorySnapshot snapshot)
-    {
-        _snapshot = snapshot;
-    }
+    private readonly VideoMemorySnapshot _snapshot = snapshot;
     
     public byte ReadRawMain(int address)
     {
@@ -225,15 +226,10 @@ internal sealed class SnapshotMemoryReader : IDirectMemoryPoolReader
 /// <summary>
 /// Snapshot-based status provider for rendering from captured soft switch states.
 /// </summary>
-internal sealed class SnapshotStatusProvider : ISystemStatusProvider
+internal sealed class SnapshotStatusProvider(SystemStatusSnapshot snapshot) : ISystemStatusProvider
 {
-    private readonly SystemStatusSnapshot _snapshot;
+    private readonly SystemStatusSnapshot _snapshot = snapshot;
     
-    public SnapshotStatusProvider(SystemStatusSnapshot snapshot)
-    {
-        _snapshot = snapshot;
-    }
-
     // Implement ISystemStatusProvider by returning snapshot values
     public bool State80Store => _snapshot.State80Store;
     public bool StateRamRd => _snapshot.StateRamRd;
