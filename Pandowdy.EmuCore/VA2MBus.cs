@@ -252,9 +252,9 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
     /// <summary>Keyboard data register (read: returns last key + high bit if available) ($C000).</summary>
     public const ushort KBD_ = 0xC000;
     /// <summary>Set 80STORE switch off ($C000 write).</summary>
-    public const ushort SET80STORE_ = 0xC000;
+    public const ushort CLR80STORE_ = 0xC000;
     /// <summary>Set 80STORE switch on ($C001 write).</summary>
-    public const ushort CLR80STORE_ = 0xC001;
+    public const ushort SET80STORE_ = 0xC001;
     /// <summary>Read from main RAM ($C002 write).</summary>
     public const ushort RDMAINRAM_ = 0xC002;
     /// <summary>Read from auxiliary (card) RAM ($C003 write).</summary>
@@ -675,8 +675,8 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
     private void InitIoWriteHandlers()
     {
         // Simple soft-switch writes
-        _ioWriteHandlers[SET80STORE_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Store80, false);
-        _ioWriteHandlers[CLR80STORE_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Store80, true);
+        _ioWriteHandlers[CLR80STORE_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Store80, false);
+        _ioWriteHandlers[SET80STORE_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Store80, true);
         _ioWriteHandlers[RDMAINRAM_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.RamRd, false);
         _ioWriteHandlers[RDCARDRAM_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.RamRd, true);
         _ioWriteHandlers[WRMAINRAM_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.RamWrt, false);
@@ -930,7 +930,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
             return handler();
         }
         // Fallback to existing logic for unhandled addresses
-        if (address >= SET80STORE_ && address <= SETALTCHAR_)
+        if (address >= CLR80STORE_ && address <= SETALTCHAR_)
         {
             return _currKey;
         }
