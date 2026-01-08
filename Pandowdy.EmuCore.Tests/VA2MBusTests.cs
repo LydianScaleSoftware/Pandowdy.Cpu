@@ -440,10 +440,10 @@ public class VA2MBusTests
         var fixture = new VA2MBusFixture();
         
         // Act
-        fixture.Bus.CpuWrite(VA2MBus.CLR80STORE_, 0); // CLR sets it true
+        fixture.Bus.CpuWrite(VA2MBus.SET80STORE_, 0);  
         var valueOn = fixture.Bus.CpuRead(VA2MBus.RD_80STORE_);
         
-        fixture.Bus.CpuWrite(VA2MBus.SET80STORE_, 0); // SET sets it false
+        fixture.Bus.CpuWrite(VA2MBus.CLR80STORE_, 0);  
         var valueOff = fixture.Bus.CpuRead(VA2MBus.RD_80STORE_);
 
         // Assert
@@ -682,7 +682,7 @@ public class VA2MBusTests
         var fixture = new VA2MBusFixture();
         
         // Act
-        fixture.Bus.CpuWrite(VA2MBus.CLR80STORE_, 0); // CLR sets 80STORE true
+        fixture.Bus.CpuWrite(VA2MBus.SET80STORE_, 0);  
         fixture.Bus.CpuWrite(VA2MBus.RDCARDRAM_, 0);
         fixture.Bus.CpuWrite(VA2MBus.WRCARDRAM_, 0);
         fixture.Bus.CpuWrite(VA2MBus.ALTZP_, 0);

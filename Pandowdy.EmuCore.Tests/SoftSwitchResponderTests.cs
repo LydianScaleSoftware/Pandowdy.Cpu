@@ -133,13 +133,13 @@ namespace Pandowdy.EmuCore.Tests
             var stub = new StubSoftSwitchResponderAndSystemStatusProvider();
             var bus = CreateBus(stub, out _);
 
-            // Act & Assert - Turn OFF (clear)
-            bus.CpuWrite(VA2MBus.CLR80STORE_, 0);
-            Assert.True(stub.Store80, "CLR80STORE should turn ON 80STORE");
-
             // Turn ON (set)
             bus.CpuWrite(VA2MBus.SET80STORE_, 0);
-            Assert.False(stub.Store80, "SET80STORE should turn OFF 80STORE");
+            Assert.True(stub.Store80, "SET80STORE should turn ON 80STORE");
+
+            // Act & Assert - Turn OFF (clear)
+            bus.CpuWrite(VA2MBus.CLR80STORE_, 0);
+            Assert.False(stub.Store80, "CLR80STORE should turn OFF 80STORE");
         }
 
         [Fact]
