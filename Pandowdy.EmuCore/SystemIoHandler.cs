@@ -3,11 +3,36 @@ using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore;
 
+/// <summary>
+/// Handles system I/O space ($C000-$C08F) for the Apple IIe, managing soft switches,
+/// keyboard input, game controller, language card banking, and status reads.
+/// </summary>
+/// <remarks>
+/// <para>
+/// <strong>Responsibility:</strong> Manages the critical $C000-$C08F I/O address range:
+/// keyboard input/strobe, soft switch toggles, status reads, game controller input,
+/// and language card banking.
+/// </para>
+/// <para>
+/// <strong>Handler Dispatch:</strong> Uses dictionary-based dispatch tables for O(1) lookup
+/// and easy extensibility. Addresses without handlers fall back to legacy range-based logic.
+/// </para>
+/// <para>
+/// <strong>Integration:</strong> Shares IKeyboardReader with VA2M for single source of truth.
+/// Reads game controller via IGameControllerStatus. VBlank synchronized via UpdateVBlankCounter().
+/// </para>
+/// </remarks>
 // Handles C000-C08F (System IO Area)
 public class SystemIoHandler : ISystemIoHandler
 {
+    /// <summary>
+    /// Gets or sets a byte using indexer syntax (delegates to Read/Write).
+    /// </summary>
     public byte this[ushort offset] { get => Read(offset); set => Write(offset,value); }
 
+    /// <summary>
+    /// Gets the size of managed I/O space (0x90 bytes for $C000-$C08F).
+    /// </summary>
     public int Size => 0x90; // Handles C000-C08F (0x90 bytes)
 
     /// <summary>
@@ -36,10 +61,28 @@ public class SystemIoHandler : ISystemIoHandler
       
     
 
+    /// <summary>
+    /// Updates the VBlank blackout counter from VA2MBus timing.
+    /// </summary>
+    /// <param name="counter">
+    /// Current VBlank counter. Positive during VBlank, negative during visible scanlines.
+    /// </param>
+    /// <remarks>
+    /// Called every CPU cycle by VA2MBus.Clock(). When counter &gt; 0, RD_VERTBLANK ($C019) returns $80+.
+    /// </remarks>
     public void UpdateVBlankCounter(long counter) { _VblankBlackoutCounter = counter; }    
 
-
-
+    /// <summary>
+    /// Initializes the SystemIoHandler with required dependencies.
+    /// </summary>
+    /// <param name="switches">Soft switches for memory mapping and video modes.</param>
+    /// <param name="keyboard">Keyboard reader (shared with VA2M as IKeyboardSetter).</param>
+    /// <param name="gameController">Game controller for button and paddle state.</param>
+    /// <exception cref="ArgumentNullException">Thrown if any parameter is null.</exception>
+    /// <remarks>
+    /// Initializes I/O handler dictionaries via InitIoReadHandlers() and InitIoWriteHandlers().
+    /// Does not subscribe to game controller events - SystemStatusProvider handles that.
+    /// </remarks>
     public SystemIoHandler(SoftSwitches switches, IKeyboardReader keyboard, IGameControllerStatus gameController)
     {
         ArgumentNullException.ThrowIfNull(switches);
@@ -60,11 +103,27 @@ public class SystemIoHandler : ISystemIoHandler
         InitIoWriteHandlers();
     }
 
+    /// <summary>
+    /// Resets all soft switches to power-on defaults.
+    /// </summary>
+    /// <remarks>
+    /// Called during system reset. Does not reset keyboard or game controller - those
+    /// are managed by their respective subsystems.
+    /// </remarks>
     public void Reset()
     {
         _softSwitches.ResetAllSwitches();
     }
 
+    /// <summary>
+    /// Reads from I/O space using zero-based offset (0x00-0x8F for $C000-$C08F).
+    /// </summary>
+    /// <param name="offset">Zero-based offset (0x00-0x8F).</param>
+    /// <returns>Byte value from I/O handler.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if offset ≥ 0x90.</exception>
+    /// <remarks>
+    /// Translates offset to absolute address ($C000 + offset) and delegates to ReadFromIOSpace().
+    /// </remarks>
     public byte Read(ushort offset)
     {
         if (offset >= Size)
@@ -77,6 +136,16 @@ public class SystemIoHandler : ISystemIoHandler
         return ReadFromIOSpace(address);
     }
 
+    /// <summary>
+    /// Writes to I/O space using zero-based offset (0x00-0x8F for $C000-$C08F).
+    /// </summary>
+    /// <param name="offset">Zero-based offset (0x00-0x8F).</param>
+    /// <param name="data">Byte to write (usually ignored by handlers).</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if offset ≥ 0x90.</exception>
+    /// <remarks>
+    /// Translates offset to absolute address ($C000 + offset) and delegates to WriteToIOSpace().
+    /// Most handlers ignore data value and toggle switches based on address.
+    /// </remarks>
     public void Write(ushort offset, byte data)
     {
         if (offset >= Size)
