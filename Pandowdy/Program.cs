@@ -44,9 +44,9 @@ namespace Pandowdy
                     services.AddSingleton<Emulator.CPU>();
 
                     // EmuCore
-                    services.AddSingleton<MemoryPool>();
+                    services.AddSingleton<AddressSpaceController>();
 
-                    services.AddSingleton<IDirectMemoryPoolReader>(sp => sp.GetRequiredService<MemoryPool>());
+                    services.AddSingleton<IDirectMemoryPoolReader>(sp => sp.GetRequiredService<AddressSpaceController>());
 
                     services.AddSingleton<ICpu, CPUAdapter>();
                     services.AddSingleton<IFrameProvider, FrameProvider>();
@@ -55,6 +55,8 @@ namespace Pandowdy
                     services.AddSingleton<IDisplayBitmapRenderer, LegacyBitmapRenderer>();
 
                     services.AddSingleton<IFrameGenerator, FrameGenerator>();
+
+                    services.AddSingleton<ISystemIoHandler, SystemIoHandler>();
                     
                     // Threaded rendering services
                     services.AddSingleton<VideoMemorySnapshotPool>(sp => new VideoMemorySnapshotPool(maxPoolSize: 4));

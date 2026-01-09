@@ -110,7 +110,7 @@ public class VA2M : IDisposable, IKeyboardSetter
     /// <summary>
     /// Gets the memory pool managing the 128KB Apple IIe memory space.
     /// </summary>
-    public MemoryPool MemoryPool { get; }
+    public AddressSpaceController MemoryPool { get; }
 
     /// <summary>
     /// Gets the system bus coordinating CPU, memory, and I/O access.
@@ -322,7 +322,7 @@ public class VA2M : IDisposable, IKeyboardSetter
         IFrameProvider frameSink, 
         ISystemStatusMutator statusProvider, 
         IAppleIIBus bus, 
-        MemoryPool memoryPool, 
+        AddressSpaceController memoryPool, 
         IFrameGenerator frameGenerator,
         RenderingService renderingService,
         VideoMemorySnapshotPool snapshotPool)

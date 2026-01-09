@@ -19,7 +19,7 @@ public static class VA2MTestHelpers
         private IFrameProvider? _frameProvider;
         private ISystemStatusMutator? _systemStatusProvider;
         private IAppleIIBus? _bus;
-        private MemoryPool? _memoryPool;
+        private AddressSpaceController? _memoryPool;
         private IFrameGenerator? _frameGenerator;
 
         public VA2MBuilder()
@@ -29,7 +29,7 @@ public static class VA2MTestHelpers
             _frameProvider = new TestFrameProvider();
             _systemStatusProvider = new SystemStatusProvider(); // SystemStatusProvider implements ISystemStatusMutator
             _bus = new TestAppleIIBus();
-            _memoryPool = new MemoryPool(_systemStatusProvider, new TestLanguageCard(), new TestSystemRamSelector());
+            _memoryPool = new AddressSpaceController(_systemStatusProvider, new TestLanguageCard(), new TestSystemRamSelector());
             _frameGenerator = new TestFrameGenerator();
         }
 
@@ -57,7 +57,7 @@ public static class VA2MTestHelpers
             return this;
         }
 
-        public VA2MBuilder WithMemoryPool(MemoryPool memoryPool)
+        public VA2MBuilder WithMemoryPool(AddressSpaceController memoryPool)
         {
             _memoryPool = memoryPool;
             return this;
@@ -156,7 +156,7 @@ public class TestFrameProvider : IFrameProvider
 public class TestAppleIIBus : IAppleIIBus
 {
     private readonly TestCpu _cpu = new();
-    private readonly MemoryPool _memory = new(new SystemStatusProvider(), new TestLanguageCard(), new Test64KSystemRamSelector());
+    private readonly AddressSpaceController _memory = new(new SystemStatusProvider(), new TestLanguageCard(), new Test64KSystemRamSelector());
     private ulong _clockCounter = 0;
     private byte _keyValue = 0;
     private readonly bool[] _pushButtons = new bool[3];
@@ -265,7 +265,7 @@ public class TestFrameGenerator : IFrameGenerator
         var statusProvider = new SystemStatusProvider();
         return new RenderContext(
             new BitmapDataArray(),
-            new MemoryPool(statusProvider, new TestLanguageCard(), new TestSystemRamSelector()),
+            new AddressSpaceController(statusProvider, new TestLanguageCard(), new TestSystemRamSelector()),
             statusProvider
         );
     }

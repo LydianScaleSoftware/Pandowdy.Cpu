@@ -12,12 +12,30 @@ public class SystemIoHandler : ISystemIoHandler
 
     public int Size => 0x90; // Handles C000-C08F (0x90 bytes)
 
-    byte _currKey = 0;
-    bool _button0 = false;
-    bool _button1 = false;
-    bool _button2 = false;
-    int _VblankBlackoutCounter = 0;
+    private byte _currKey = 0;
+    private bool _button0 = false;
+    private bool _button1 = false;
+    private bool _button2 = false;
+    private long _VblankBlackoutCounter = 0;
 
+
+    public void EnqueueKey(byte key) { _currKey = key; }          
+    public void SetPushButton(int num, bool pressed)   
+    {
+        switch (num)
+        {
+            case 0:
+                _button0 = pressed;
+                break;
+            case 1:
+                _button1 = pressed;
+                break;
+            case 2:
+                _button2 = pressed;
+                break;
+        }
+    }
+    public void UpdateVBlankCounter(long counter) { _VblankBlackoutCounter = counter; }    
 
     public SystemIoHandler(SoftSwitches switches)
     {
@@ -37,7 +55,8 @@ public class SystemIoHandler : ISystemIoHandler
            $"Address must be less than {Size} (0x{Size:X}). Got 0x{offset:X4}.");
         }
 
-        return 0;
+        ushort address = (ushort) (0xC000 + offset);
+        return ReadFromIOSpace(address);
     }
 
     public void Write(ushort offset, byte data)
@@ -48,7 +67,13 @@ public class SystemIoHandler : ISystemIoHandler
            $"Address must be less than {Size} (0x{Size:X}). Got 0x{offset:X4}.");
         }
 
+
+        ushort address = (ushort) (0xC000 + offset);
+        WriteToIOSpace(address, data);
     }
+
+
+
 
 
 

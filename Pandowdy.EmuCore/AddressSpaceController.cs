@@ -26,7 +26,7 @@ public sealed class MemoryAccessEventArgs : EventArgs
 }
 
 
-public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPoolReader,  IDisposable
+public sealed class AddressSpaceController : IMemory, IMemoryAccessNotifier, IDirectMemoryPoolReader,  IDisposable
 {
     //Methods from IMemory:
     
@@ -238,7 +238,7 @@ public sealed class MemoryPool : IMemory, IMemoryAccessNotifier, IDirectMemoryPo
 
     public ISystemRamSelector SystemRam { get => _systemRam; }
 
-    public MemoryPool(
+    public AddressSpaceController(
         ISystemStatusProvider status,
         ILanguageCard langCard,
         ISystemRamSelector systemRam,

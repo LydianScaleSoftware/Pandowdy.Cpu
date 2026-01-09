@@ -45,7 +45,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
     /// <summary>
     /// Memory pool managing the 128KB Apple IIe memory space.
     /// </summary>
-    private readonly MemoryPool _memoryPool;
+    private readonly AddressSpaceController _addressSpace;
     
     /// <summary>
     /// CPU instance (6502 emulator) connected to this bus.
@@ -71,8 +71,8 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
     private SoftSwitches _softSwitches;
     //    private bool _isInVBlankBlackout = false;
 
-   
 
+    private ISystemIoHandler _io;
 
     /// <summary>
     /// Gets the RAM (MemoryPool) for direct memory access.
@@ -81,7 +81,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
     /// Primarily used for testing and direct memory inspection. Normal CPU access
     /// should go through CpuRead/CpuWrite which handle I/O space routing.
     /// </remarks>
-    public IMemory RAM => _memoryPool;
+    public IMemory RAM => _addressSpace;
 
 
     /// <summary>
@@ -242,7 +242,13 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
 
     /// <summary>Start of Apple IIe I/O address space ($C000).</summary>
     public const ushort IO_AREA_START = 0xC000;
+    /// <summary>End of Apple IIe internal system I/O address space</summary>
+    public const ushort IO_SYSTEM_AREA_END = 0xC08F;
     /// <summary>End of Apple IIe I/O address space ($CFFF).</summary>
+
+
+
+
     public const ushort IO_AREA_END = 0xCFFF;
     /// <summary>Start of system I/O space ($C000).</summary>
     public const ushort SYSTEM_IO_START = 0xC000;
@@ -469,7 +475,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
     /// <summary>
     /// Initializes a new instance of the VA2MBus class.
     /// </summary>
-    /// <param name="mempool">Memory pool managing 128KB Apple IIe memory space.</param>
+    /// <param name="addressSpace">Memory pool managing 128KB Apple IIe memory space.</param>
     /// <param name="statusProvider">System status provider implementing ISoftSwitchResponder for status updates.</param>
     /// <param name="cpu">CPU instance (6502 emulator) to connect to this bus.</param>
     /// <exception cref="ArgumentNullException">Thrown if any parameter is null.</exception>
@@ -490,23 +496,19 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
     /// of I/O space behavior.
     /// </para>
     /// </remarks>
-    public VA2MBus(MemoryPool mempool, ISystemStatusProvider statusProvider, ICpu cpu, SoftSwitches switches)
+    public VA2MBus(AddressSpaceController addressSpace, ISystemIoHandler ioHandler , ICpu cpu, SoftSwitches switches)
     {
-        ArgumentNullException.ThrowIfNull(mempool);
-        ArgumentNullException.ThrowIfNull(statusProvider);
+        ArgumentNullException.ThrowIfNull(addressSpace);
+        ArgumentNullException.ThrowIfNull(ioHandler);
         ArgumentNullException.ThrowIfNull(cpu);
         ArgumentNullException.ThrowIfNull(switches);
         _softSwitches = switches;
-        _memoryPool = mempool;
+        _addressSpace = addressSpace;
         _cpu = cpu;
+        _io = ioHandler;
         InitIoReadHandlers();
         InitIoWriteHandlers();
 
-
-        //if (statusProvider is ISoftSwitchResponder softSwitchResponder)
-        //{
-        //    _softSwitches.AddResponder(softSwitchResponder);
-        //}
     }
 
     /// <summary>
@@ -809,6 +811,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
     public void EnqueueKey(byte key)
     {
         _currKey = key;
+        _io.EnqueueKey(key);
     }
 
     /// <summary>
@@ -863,6 +866,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
                 _softSwitches.Set(SoftSwitches.SoftSwitchId.Button2, pressed);
                 break;
         }
+        _io.SetPushButton(num, pressed);
     }
 
     /// <summary>
@@ -1062,11 +1066,11 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
     public byte CpuRead(ushort address, bool readOnly = false)
     {
         ThrowIfDisposed();
-        if (address >= SYSTEM_IO_START && address <= SLOT7_IO_SPACE_END)
+        if (address >= SYSTEM_IO_START && address <= IO_SYSTEM_AREA_END)
         {
-            return ReadFromIOSpace(address);
+            return _io.Read((ushort)(address-0xC000));
         }
-        return _memoryPool.Read(address);
+        return _addressSpace.Read(address);
     }
 
     /// <summary>
@@ -1094,12 +1098,12 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
     public void CpuWrite(ushort address, byte data)
     {
         ThrowIfDisposed();
-        if (address >= SYSTEM_IO_START && address <= SLOT7_IO_SPACE_END)
+        if (address >= SYSTEM_IO_START && address <= IO_SYSTEM_AREA_END)
         {
-            WriteToIOSpace(address, data);
+            _io.Write((ushort) (address - 0xC000),data);
             return;
         }
-        _memoryPool.Write(address, data);
+        _addressSpace.Write(address, data);
     }
 
     /// <summary>
@@ -1221,7 +1225,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
     public void Reset()
     {
         ThrowIfDisposed();
-        _memoryPool.ResetRanges();
+        _addressSpace.ResetRanges();
         _softSwitches.ResetAllSwitches();
         _cpu!.Reset(this);
         _systemClock = 0;
@@ -1257,7 +1261,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
         ThrowIfDisposed();
 
         _softSwitches.ResetAllSwitches();
-        _memoryPool.ResetRanges();
+        _addressSpace.ResetRanges();
         _cpu!.Reset(this);
         _systemClock = 0;
         _nextVblankCycle = CyclesPerVBlank;
