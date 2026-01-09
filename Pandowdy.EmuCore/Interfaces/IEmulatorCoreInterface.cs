@@ -1,0 +1,180 @@
+namespace Pandowdy.EmuCore.Interfaces;
+
+/// <summary>
+/// Defines the core control interface for emulator operations accessible from external threads (primarily UI).
+/// </summary>
+/// <remarks>
+/// <para>
+/// <strong>Purpose:</strong> This interface serves as the primary contract between the UI and the emulator core,
+/// providing thread-safe command queueing (Reset, EnqueueKey, etc.) and execution control (RunAsync, Clock, ThrottleEnabled).
+/// It represents the **complete control surface** that the UI needs to interact with the emulator.
+/// </para>
+/// <para>
+/// <strong>Thread Safety Contract:</strong>
+/// <list type="bullet">
+/// <item><strong>Reset/UserReset/EnqueueKey/SetPushButton:</strong> Thread-safe command queueing.
+/// Commands are enqueued and executed at instruction boundaries on the emulator thread, respecting
+/// 6502 atomic instruction guarantees.</item>
+/// <item><strong>RunAsync:</strong> Thread-safe. Starts async execution loop on a background thread
+/// (typically called via Task.Run from UI thread).</item>
+/// <item><strong>Clock:</strong> Single-step execution. Should be called from the emulator thread
+/// (used for debugging/testing).</item>
+/// <item><strong>ThrottleEnabled:</strong> Thread-safe property. Can be set from any thread
+/// (typically UI thread via data binding).</item>
+/// </list>
+/// </para>
+/// <para>
+/// <strong>Architecture Benefits:</strong>
+/// <list type="bullet">
+/// <item><strong>Decoupling:</strong> UI depends on this interface, not concrete VA2M implementation</item>
+/// <item><strong>Testability:</strong> Interface can be mocked for UI testing without full emulator</item>
+/// <item><strong>Thread Safety:</strong> Provides explicit contract preventing accidental cross-thread calls</item>
+/// <item><strong>Interface Segregation:</strong> UI only sees what it needs (8 members vs 1,200+ lines of implementation)</item>
+/// </list>
+/// </para>
+/// <para>
+/// <strong>Implementation:</strong> VA2M implements this interface, providing the UI with a clean
+/// abstraction for emulator control without exposing internal implementation details like bus coordination,
+/// memory management, or CPU internals.
+/// </para>
+/// <para>
+/// <strong>Naming Rationale:</strong> "EmulatorCoreInterface" emphasizes that this is the **core control interface**
+/// for the emulator, not just a collection of queueable commands. It includes both command queueing and
+/// execution control, representing the complete UI control surface.
+/// </para>
+/// </remarks>
+public interface IEmulatorCoreInterface
+{
+    /// <summary>
+    /// Queues a full system reset (power cycle).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>Thread Safety:</strong> Thread-safe. Can be called from any thread (typically UI thread).
+    /// The reset operation will be executed at the next instruction boundary on the emulator thread,
+    /// ensuring 6502 atomic instruction guarantees are maintained.
+    /// </para>
+    /// <para>
+    /// <strong>Effect:</strong> Performs a complete hardware reset equivalent to powering off and on
+    /// the Apple IIe. Resets CPU, memory mappings, soft switches, and cycle counters.
+    /// </para>
+    /// </remarks>
+    void Reset();
+    
+    /// <summary>
+    /// Queues a warm reset (Ctrl+Reset) without clearing memory.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>Thread Safety:</strong> Thread-safe. Can be called from any thread (typically UI thread).
+    /// Simulates pressing Ctrl+Reset on the Apple IIe, which resets the CPU but preserves RAM contents.
+    /// Executed at instruction boundary.
+    /// </para>
+    /// <para>
+    /// <strong>Use Cases:</strong> Break out of infinite loop, return to Monitor/BASIC prompt,
+    /// recover from program hang while preserving state.
+    /// </para>
+    /// </remarks>
+    void UserReset();
+    
+    /// <summary>
+    /// Queues a keyboard character to be injected into the emulator.
+    /// </summary>
+    /// <param name="value">ASCII character code (0-127). High bit will be set automatically by keyboard handler.</param>
+    /// <remarks>
+    /// <para>
+    /// <strong>Thread Safety:</strong> Thread-safe. Can be called from any thread (typically UI thread
+    /// from keyboard event handlers). The key will be enqueued and appear at $C000 with strobe set when
+    /// the emulator thread processes the command at the next instruction boundary.
+    /// </para>
+    /// <para>
+    /// <strong>Apple IIe Format:</strong> The keyboard handler (SingularKeyHandler) automatically sets
+    /// bit 7 (OR with 0x80) to match Apple II keyboard hardware format. The key becomes available at
+    /// $C000 with strobe set, cleared when software reads $C010 (KBDSTRB).
+    /// </para>
+    /// </remarks>
+    void EnqueueKey(byte value);
+    
+    /// <summary>
+    /// Queues a pushbutton state change for game controller.
+    /// </summary>
+    /// <param name="num">Button number (0-2). Button 0-2 map to $C061-$C063.</param>
+    /// <param name="pressed">True if button is pressed, false if released.</param>
+    /// <remarks>
+    /// <para>
+    /// <strong>Thread Safety:</strong> Thread-safe. Can be called from any thread (typically UI thread
+    /// from input event handlers). The button state change will be executed at the next instruction boundary.
+    /// </para>
+    /// <para>
+    /// <strong>Event-Driven Architecture:</strong> The change triggers ButtonChanged events that
+    /// SystemStatusProvider observes automatically, ensuring SystemStatus stays synchronized without
+    /// manual polling.
+    /// </para>
+    /// </remarks>
+    void SetPushButton(byte num, bool pressed);
+    
+    /// <summary>
+    /// Starts asynchronous emulator execution loop.
+    /// </summary>
+    /// <param name="ct">Cancellation token to stop execution.</param>
+    /// <param name="ticksPerSecond">Time slice frequency (e.g., 60 for frame pacing, 1000 for 1ms slices).</param>
+    /// <returns>Task that completes when cancellation is requested or execution stops.</returns>
+    /// <remarks>
+    /// <para>
+    /// <strong>Thread Context:</strong> This method should be called from a background thread
+    /// (typically via Task.Run from UI thread). It will execute the emulator at the specified
+    /// frequency until the cancellation token is triggered.
+    /// </para>
+    /// <para>
+    /// <strong>Throttling:</strong> When <see cref="ThrottleEnabled"/> is true, runs at ~1.023 MHz
+    /// (Apple IIe speed) using PID-based adaptive throttling. When false, runs as fast as possible
+    /// (useful for loading programs quickly or testing).
+    /// </para>
+    /// <para>
+    /// <strong>Batch Execution:</strong> Executes cycles in batches (e.g., ~1,023 cycles per 1ms tick)
+    /// to reduce overhead. Fractional cycle accumulation prevents timing drift over time.
+    /// </para>
+    /// </remarks>
+    System.Threading.Tasks.Task RunAsync(System.Threading.CancellationToken ct, double ticksPerSecond = 1000d);
+    
+    /// <summary>
+    /// Executes one CPU clock cycle.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>Thread Context:</strong> Should be called from the emulator thread. Processes pending
+    /// commands, executes one bus clock cycle, applies throttling if enabled, and publishes state.
+    /// </para>
+    /// <para>
+    /// <strong>Use Case:</strong> Single-step debugging, testing, or simple synchronous execution loops.
+    /// For continuous operation, use <see cref="RunAsync"/> instead as it batches cycles for efficiency.
+    /// </para>
+    /// <para>
+    /// <strong>Performance Note:</strong> Clock() has per-cycle overhead from command processing
+    /// and state publishing. RunAsync() batches these operations for better performance.
+    /// </para>
+    /// </remarks>
+    void Clock();
+    
+    /// <summary>
+    /// Gets or sets whether throttling is enabled to maintain Apple IIe speed.
+    /// </summary>
+    /// <value>True to run at ~1.023 MHz (Apple IIe speed); false to run as fast as possible.</value>
+    /// <remarks>
+    /// <para>
+    /// <strong>Thread Safety:</strong> Thread-safe property. Can be set from any thread (typically
+    /// UI thread via data binding). Setting this property resets throttling state (cycle counters,
+    /// error accumulators, adaptive parameters) to prevent timing issues when switching modes.
+    /// </para>
+    /// <para>
+    /// <strong>Fast Mode (false):</strong> Runs as fast as possible (typically 10-20 MHz on modern CPUs).
+    /// Useful for loading programs quickly, running tests, or when maximum speed is desired.
+    /// </para>
+    /// <para>
+    /// <strong>Throttled Mode (true):</strong> Uses PID-based adaptive throttling to maintain
+    /// ~1.023 MHz within 0.05% error (~500 PPM). Provides authentic Apple IIe speed for gameplay
+    /// and software compatibility.
+    /// </para>
+    /// </remarks>
+    bool ThrottleEnabled { get; set; }
+}
