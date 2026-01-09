@@ -261,6 +261,16 @@ public class VA2M : IDisposable, IKeyboardSetter
     private readonly VideoMemorySnapshotPool _snapshotPool;
     
     /// <summary>
+    /// Keyboard setter for injecting key events from UI thread into the emulator.
+    /// </summary>
+    /// <remarks>
+    /// This is the same instance that SystemIoHandler uses (as IKeyboardReader) to read
+    /// keyboard state, ensuring single source of truth for keyboard emulation. VA2M uses
+    /// the setter interface to enqueue keys from the UI thread via thread-safe command queue.
+    /// </remarks>
+    private readonly IKeyboardSetter _keyboardSetter;
+    
+    /// <summary>
     /// Frame counter for snapshot debugging and diagnostics.
     /// </summary>
     private ulong _frameCounter = 0;
@@ -285,6 +295,9 @@ public class VA2M : IDisposable, IKeyboardSetter
     /// </remarks>
     private int _pendingFlashToggle; // 0/1 flag set by timer, consumed on VBlank
 
+
+    private IGameControllerStatus _gameController;
+
     /// <summary>
     /// Initializes a new instance of the VA2M emulator.
     /// </summary>
@@ -292,10 +305,11 @@ public class VA2M : IDisposable, IKeyboardSetter
     /// <param name="frameSink">Frame provider for publishing rendered video frames.</param>
     /// <param name="statusProvider">System status mutator for soft switch states (read and write access).</param>
     /// <param name="bus">System bus coordinating CPU, memory, and I/O.</param>
-    /// <param name="memoryPool">Memory pool managing 128KB Apple IIe memory.</param>
+    /// <param name="memoryPool">Address space controller managing 128KB Apple IIe memory.</param>
     /// <param name="frameGenerator">Frame generator for rendering video output.</param>
     /// <param name="renderingService">Rendering service for threaded frame rendering.</param>
     /// <param name="snapshotPool">Pool for reusing video memory snapshots.</param>
+    /// <param name="keyboardSetter">Keyboard setter for injecting key events from UI thread.</param>
     /// <exception cref="ArgumentNullException">Thrown if any parameter is null.</exception>
     /// <remarks>
     /// <para>
@@ -316,6 +330,11 @@ public class VA2M : IDisposable, IKeyboardSetter
     /// <strong>VBlank Event:</strong> If the bus is a VA2MBus, the OnVBlank handler
     /// is registered to trigger frame rendering and flash state updates at ~60 Hz.
     /// </para>
+    /// <para>
+    /// <strong>Keyboard Injection:</strong> The injected <paramref name="keyboardSetter"/> is used
+    /// by <see cref="EnqueueKey"/> to inject keyboard events from the UI thread. This is the same
+    /// instance that SystemIoHandler uses for reading keyboard state, ensuring single source of truth.
+    /// </para>
     /// </remarks>
     public VA2M(
         IEmulatorState stateSink, 
@@ -325,7 +344,9 @@ public class VA2M : IDisposable, IKeyboardSetter
         AddressSpaceController memoryPool, 
         IFrameGenerator frameGenerator,
         RenderingService renderingService,
-        VideoMemorySnapshotPool snapshotPool)
+        VideoMemorySnapshotPool snapshotPool,
+        IKeyboardSetter keyboardSetter,
+        IGameControllerStatus gameController)
     {
         ArgumentNullException.ThrowIfNull(stateSink);
         ArgumentNullException.ThrowIfNull(frameSink);
@@ -335,6 +356,9 @@ public class VA2M : IDisposable, IKeyboardSetter
         ArgumentNullException.ThrowIfNull(frameGenerator);
         ArgumentNullException.ThrowIfNull(renderingService);
         ArgumentNullException.ThrowIfNull(snapshotPool);
+        ArgumentNullException.ThrowIfNull(keyboardSetter);
+        ArgumentNullException.ThrowIfNull(gameController);
+
 
         _stateSink = stateSink;
         _frameSink = frameSink;
@@ -342,8 +366,11 @@ public class VA2M : IDisposable, IKeyboardSetter
         _frameGenerator = frameGenerator;
         _renderingService = renderingService;
         _snapshotPool = snapshotPool;
+        _keyboardSetter = keyboardSetter;
+        _gameController = gameController;
         Bus = bus;
         MemoryPool = memoryPool;
+
         TryLoadEmbeddedRom("Pandowdy.EmuCore.Resources.a2e_enh_c-f.rom");
         
         if (Bus is VA2MBus vb)
@@ -492,7 +519,7 @@ public class VA2M : IDisposable, IKeyboardSetter
         var snapshot = CaptureVideoMemorySnapshot();
         
         // Try to enqueue for rendering (non-blocking check)
-        bool queued = _renderingService.TryEnqueueSnapshot(snapshot);
+        bool _= _renderingService.TryEnqueueSnapshot(snapshot);
         
         // If frame was skipped, that's fine - rendering couldn't keep up
         // Emulator continues at full speed, display shows last completed frame
@@ -1113,11 +1140,17 @@ public class VA2M : IDisposable, IKeyboardSetter
     /// command which will be executed on the emulator thread at the next ProcessPending() call.
     /// This allows UI threads to inject keyboard input without race conditions.
     /// </para>
+    /// <para>
+    /// <strong>Implementation Note:</strong> This method now delegates directly to the injected
+    /// <see cref="IKeyboardSetter"/> instance (SingularKeyHandler), bypassing VA2MBus. The keyboard
+    /// handler is shared between VA2M (for input injection) and SystemIoHandler (for I/O reads),
+    /// ensuring single source of truth for keyboard state.
+    /// </para>
     /// </remarks>
     public void EnqueueKey(byte ascii)
     {
-        // Enqueue to run on emulator thread
-        Enqueue(() => Bus.EnqueueKey(ascii));
+        // Enqueue to run on emulator thread - now calls keyboard handler directly
+        Enqueue(() => _keyboardSetter.EnqueueKey(ascii));
     }
 
     /// <summary>
@@ -1150,12 +1183,9 @@ public class VA2M : IDisposable, IKeyboardSetter
     /// </remarks>
     public void SetPushButton(byte num, bool pressed)
     {
-        Enqueue(() => Bus.SetPushButton(num, pressed));
+        Enqueue(() =>  _gameController.SetButton(num,pressed));
     }
 
-
-
-  
 
 
     /// <summary>
@@ -1166,7 +1196,7 @@ public class VA2M : IDisposable, IKeyboardSetter
     /// <strong>Cleanup Sequence:</strong>
     /// <list type="number">
     /// <item>Stop and dispose flash timer (~2.1 Hz cursor blink timer)</item>
-    /// <item>Stop and dispose rendering service (threaded rendering)</item>
+    /// <item>Stop and dispose rendering service (threaded frame rendering)</item>
     /// <item>Clear pending command queue to release enqueued actions</item>
     /// <item>Dispose bus (includes VBlank event cleanup)</item>
     /// <item>Suppress finalization (no unmanaged resources)</item>

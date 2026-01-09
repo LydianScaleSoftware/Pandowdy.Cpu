@@ -49,7 +49,7 @@ namespace Pandowdy.EmuCore;
 /// for architectural details.
 /// </para>
 /// </remarks>
-public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
+public sealed class VA2MBus : IAppleIIBus, IDisposable
 {
     /// <summary>
     /// Address space controller managing the 128KB Apple IIe memory space.
@@ -301,53 +301,10 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
         throw new NotSupportedException("This should not be called. Connect is deprecated.");
     }
 
-    /// <summary>
-    /// Injects a keyboard character into the keyboard latch via the I/O handler.
-    /// </summary>
-    /// <param name="key">ASCII key value with bit 7 set (indicating key available).</param>
-    /// <inheritdoc cref="IKeyboardSetter.EnqueueKey" path="/remarks"/>
-    /// <remarks>
-    /// <para>
-    /// <strong>Implementation Note:</strong> This method delegates to ISystemIoHandler.EnqueueKey(),
-    /// which manages the internal keyboard latch (_currKey). The strobe bit (bit 7) should already
-    /// be set by the caller. Software reads $C010 (KEYSTRB) to clear bit 7, indicating the key
-    /// has been read.
-    /// </para>
-    /// <para>
-    /// <strong>Thread Safety:</strong> Should be called only from the emulator thread. External
-    /// threads should enqueue via VA2M.EnqueueKey() which marshals to the emulator thread safely.
-    /// </para>
-    /// </remarks>
-    public void EnqueueKey(byte key)
-    {
-        _io.EnqueueKey(key);
-    }
+
 
    
 
-    /// <summary>
-    /// Sets the state of a pushbutton via the I/O handler.
-    /// </summary>
-    /// <param name="num">Button number (0-2).</param>
-    /// <param name="pressed">True if button is pressed, false if released.</param>
-    /// <remarks>
-    /// <para>
-    /// <strong>Implementation Note:</strong> This method delegates to ISystemIoHandler.SetPushButton(),
-    /// which manages the internal button state (_button0, _button1, _button2). Button states are
-    /// readable at I/O addresses $C061-$C063 with bit 7 set when pressed.
-    /// </para>
-    /// <para>
-    /// <strong>Thread Safety:</strong> Should be called only from the emulator thread. External
-    /// threads should enqueue via VA2M.SetPushButton().
-    /// </para>
-    /// <para>
-    /// Invalid button numbers are silently ignored by the I/O handler.
-    /// </para>
-    /// </remarks>
-    public void SetPushButton(int num, bool pressed)
-    {
-        _io.SetPushButton(num, pressed);
-    }
 
 
     /// <summary>

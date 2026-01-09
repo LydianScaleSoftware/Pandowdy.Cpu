@@ -259,84 +259,93 @@ public class VA2MTests
     #region Command Queueing Tests - EnqueueKey
 
     [Fact]
-    public void EnqueueKey_PassesValueUnchangedToBus()
+    public void EnqueueKey_EnqueuesCommandForExecution()
     {
         // Arrange
-        var testBus = new TestAppleIIBus();
+        var keyboard = new SingularKeyHandler();
         var va2m = VA2MTestHelpers.CreateBuilder()
-            .WithBus(testBus)
+            .WithKeyboardSetter(keyboard)
             .Build();
 
-        // Act - VA2M should pass the value to Bus unchanged
+        // Act - VA2M enqueues command for thread-safe execution
         va2m.EnqueueKey(0x41);
-        va2m.Clock(); // Process pending queue
+        
+        // Before Clock() - command not yet executed
+        Assert.False(keyboard.StrobePending());
+        
+        // Process pending queue
+        va2m.Clock();
 
-        // Assert - VA2M doesn't modify the value (no strobe bit handling at this layer)
-        // The Bus (and ultimately SingularKeyHandler) handles strobe bit setting
-        Assert.Equal(0x41, testBus.GetLastEnqueuedKey());
+        // Assert - Command executed, keyboard has key
+        Assert.True(keyboard.StrobePending());
+        Assert.Equal(0x41, keyboard.PeekCurrentKeyValue());
     }
 
     [Fact]
     public void EnqueueKey_MultipleCommands_ExecutedInOrder()
     {
         // Arrange
-        var testBus = new TestAppleIIBus();
+        var keyboard = new SingularKeyHandler();
         var va2m = VA2MTestHelpers.CreateBuilder()
-            .WithBus(testBus)
+            .WithKeyboardSetter(keyboard)
             .Build();
 
         // Act - Enqueue multiple keys
         va2m.EnqueueKey(0x41); // 'A'
-        va2m.EnqueueKey(0x42); // 'B'
-        va2m.EnqueueKey(0x43); // 'C'
+        va2m.EnqueueKey(0x42); // 'B' (will overwrite 'A' due to Apple IIe behavior)
+        va2m.EnqueueKey(0x43); // 'C' (will overwrite 'B')
         va2m.Clock(); // Process all pending commands
 
-        // Assert - All commands executed in FIFO order
-        var enqueuedKeys = testBus.GetEnqueuedKeyHistory();
-        Assert.Equal(new byte[] { 0x41, 0x42, 0x43 }, enqueuedKeys);
+        // Assert - Last key wins (authentic Apple IIe single-key latch behavior)
+        // This tests VA2M's command queueing, not keyboard buffering
+        Assert.Equal(0x43, keyboard.PeekCurrentKeyValue());
     }
 
     [Fact]
     public void EnqueueKey_DeferredExecution_CommandNotExecutedUntilClock()
     {
         // Arrange
-        var testBus = new TestAppleIIBus();
+        var keyboard = new SingularKeyHandler();
         var va2m = VA2MTestHelpers.CreateBuilder()
-            .WithBus(testBus)
+            .WithKeyboardSetter(keyboard)
             .Build();
 
         // Act - Enqueue key but don't call Clock()
         va2m.EnqueueKey(0x41);
 
         // Assert - Command not executed yet (no Clock() called)
-        Assert.Empty(testBus.GetEnqueuedKeyHistory());
+        Assert.False(keyboard.StrobePending());
         
         // Act - Now process pending queue
         va2m.Clock();
         
         // Assert - Command executed after Clock()
-        Assert.Single(testBus.GetEnqueuedKeyHistory());
+        Assert.True(keyboard.StrobePending());
+        Assert.Equal(0x41, keyboard.PeekCurrentKeyValue());
     }
 
     [Fact]
-    public void EnqueueKey_ValueCaptureIndependence_EachActionCapturesOwnValue()
+    public void EnqueueKey_ThreadSafeQueuing_CommandsDeferredUntilSafePoint()
     {
         // Arrange
-        var testBus = new TestAppleIIBus();
+        var keyboard = new SingularKeyHandler();
         var va2m = VA2MTestHelpers.CreateBuilder()
-            .WithBus(testBus)
+            .WithKeyboardSetter(keyboard)
             .Build();
 
-        // Act - Enqueue keys in a loop (tests closure capture behavior)
-        for (byte i = 0x41; i <= 0x43; i++)
-        {
-            va2m.EnqueueKey(i);
-        }
-        va2m.Clock(); // Process all
+        // Act - Simulate UI thread calling EnqueueKey
+        // (In real usage, this would be from a different thread)
+        va2m.EnqueueKey(0x41);
+        va2m.EnqueueKey(0x42);
+        
+        // Commands queued but not executed
+        Assert.False(keyboard.StrobePending());
+        
+        // Emulator thread processes queue
+        va2m.Clock();
 
-        // Assert - Each action captured its own value independently
-        var enqueuedKeys = testBus.GetEnqueuedKeyHistory();
-        Assert.Equal(new byte[] { 0x41, 0x42, 0x43 }, enqueuedKeys);
+        // Assert - Commands executed on emulator thread
+        Assert.True(keyboard.StrobePending());
     }
 
     #endregion
@@ -525,24 +534,27 @@ public class VA2MTests
     public void Scenario_CommandQueueing_MixedCommands()
     {
         // Arrange
+        var keyboard = new SingularKeyHandler();
         var testBus = new TestAppleIIBus();
         var va2m = VA2MTestHelpers.CreateBuilder()
+            .WithKeyboardSetter(keyboard)
             .WithBus(testBus)
             .Build();
 
         // Act - Mix keyboard and button commands
-        va2m.EnqueueKey(0x41);       // 'A'
+        va2m.EnqueueKey(0x41);       // 'A' (will be overwritten by 'B')
         va2m.SetPushButton(0, true);  // Button 0 press
-        va2m.EnqueueKey(0x42);       // 'B'
+        va2m.EnqueueKey(0x42);       // 'B' (overwrites 'A' - Apple IIe single-key behavior)
         va2m.SetPushButton(0, false); // Button 0 release
         va2m.Clock(); // Process all pending commands
 
-        // Assert - All commands executed in order
-        var keyHistory = testBus.GetEnqueuedKeyHistory();
-        Assert.Equal(2, keyHistory.Count);
-        Assert.Equal(0x41, keyHistory[0]);
-        Assert.Equal(0x42, keyHistory[1]);
-        Assert.False(testBus.GetPushButton(0)); // Final button state
+        // Assert - Verify both keyboard and button commands executed
+        // Keyboard: Only last key survives (Apple IIe authentic single-key latch)
+        Assert.True(keyboard.StrobePending());
+        Assert.Equal(0x42, keyboard.PeekCurrentKeyValue()); // 'B' survived
+        
+        // Buttons: Final state is correct
+        Assert.False(testBus.GetPushButton(0)); // Released
     }
 
     [Fact]

@@ -1,9 +1,7 @@
-
 using System.Diagnostics;
 using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore;
-
 
 // Handles C000-C08F (System IO Area)
 public class SystemIoHandler : ISystemIoHandler
@@ -12,35 +10,51 @@ public class SystemIoHandler : ISystemIoHandler
 
     public int Size => 0x90; // Handles C000-C08F (0x90 bytes)
 
-    private byte _currKey = 0;
-    private bool _button0 = false;
-    private bool _button1 = false;
-    private bool _button2 = false;
+    /// <summary>
+    /// Keyboard reader for accessing keyboard state from I/O handlers.
+    /// </summary>
+    /// <remarks>
+    /// This is the same SingularKeyHandler instance that VA2M uses (as IKeyboardSetter)
+    /// to inject keys, ensuring single source of truth for keyboard emulation.
+    /// </remarks>
+    private readonly IKeyboardReader _keyboard;
+
+    /// <summary>
+    /// Game controller for accessing button and paddle states.
+    /// </summary>
+    /// <remarks>
+    /// Provides read-only access to 3 pushbuttons and 4 analog paddle/joystick inputs.
+    /// SystemIoHandler reads from this when CPU accesses $C061-$C063 (buttons) or
+    /// paddle timer addresses. State synchronization with SystemStatus happens
+    /// directly via SystemStatusProvider, not through this class.
+    /// </remarks>
+    private readonly IGameControllerStatus _gameController;
+
     private long _VblankBlackoutCounter = 0;
 
 
-    public void EnqueueKey(byte key) { _currKey = key; }          
-    public void SetPushButton(int num, bool pressed)   
-    {
-        switch (num)
-        {
-            case 0:
-                _button0 = pressed;
-                break;
-            case 1:
-                _button1 = pressed;
-                break;
-            case 2:
-                _button2 = pressed;
-                break;
-        }
-    }
+      
+    
+
     public void UpdateVBlankCounter(long counter) { _VblankBlackoutCounter = counter; }    
 
-    public SystemIoHandler(SoftSwitches switches)
+
+
+    public SystemIoHandler(SoftSwitches switches, IKeyboardReader keyboard, IGameControllerStatus gameController)
     {
         ArgumentNullException.ThrowIfNull(switches);
+        ArgumentNullException.ThrowIfNull(keyboard);
+        ArgumentNullException.ThrowIfNull(gameController);
+
+
         _softSwitches = switches;
+        _keyboard = keyboard;
+        _gameController = gameController;
+
+        // Note: We do NOT subscribe to game controller events here.
+        // SystemStatusProvider subscribes directly to maintain clean separation:
+        // - SystemIoHandler: Reads controller state for CPU I/O operations
+        // - SystemStatusProvider: Observes controller changes for state snapshots
 
         InitIoReadHandlers();
         InitIoWriteHandlers();
@@ -50,7 +64,6 @@ public class SystemIoHandler : ISystemIoHandler
     {
         _softSwitches.ResetAllSwitches();
     }
-
 
     public byte Read(ushort offset)
     {
@@ -111,7 +124,8 @@ public class SystemIoHandler : ISystemIoHandler
         // Fallback to existing logic for unhandled addresses
         if (address >= CLR80STORE_ && address <= SETALTCHAR_)
         {
-            return _currKey;
+            return _keyboard.PeekCurrentKeyAndStrobe();
+            //return _currKey;
         }
         if (address >= TAPEOUT_ && address <= END_TAPEOUT_RD_)
         {
@@ -189,7 +203,7 @@ public class SystemIoHandler : ISystemIoHandler
         }
         if (address >= KEYSTRB_ && address <= KEYSTRB_ + 0x1F)
         {
-            _currKey &= 0x7f; // Clear high byte;
+            _keyboard.ClearStrobe();
             return;
         }
         if (address >= TAPEOUT_ && address <= END_TAPEOUT_RD_)
@@ -276,7 +290,7 @@ public class SystemIoHandler : ISystemIoHandler
     public const ushort ALTZP_ = 0xC009;
     /// <summary>Use internal slot 3 ROM ($C00A write).</summary>
     public const ushort INTC3ROM_ = 0xC00A;
-    /// <summary>Use slot 3 ROM ($C00B write).</summary>
+    /// <summary>Use slot 3 ROM ($C00B).</summary>
     public const ushort SLOTC3ROM_ = 0xC00B;
     /// <summary>Turn off 80-column display ($C00C write).</summary>
     public const ushort CLR80VID_ = 0xC00C;
@@ -611,26 +625,26 @@ public class SystemIoHandler : ISystemIoHandler
     private void InitIoReadHandlers()
     {
         // Simple reads that only return composed values
-        _ioReadHandlers[KEYSTRB_] = () => { _currKey &= 0x7f; return _currKey; };
-        _ioReadHandlers[RD_LC_BANK1_] = () => (byte) (Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Bank1), _currKey) ^ 0x80);
-        _ioReadHandlers[RD_LC_RAM] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.HighRead), _currKey);
-        _ioReadHandlers[RD_RAMRD_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.RamRd), _currKey);
-        _ioReadHandlers[RD_RAMWRT_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.RamWrt), _currKey);
-        _ioReadHandlers[RD_INTCXROM_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.IntCxRom), _currKey);
-        _ioReadHandlers[RD_ALTZP_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.AltZp), _currKey);
-        _ioReadHandlers[RD_SLOTC3ROM_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.SlotC3Rom), _currKey);
-        _ioReadHandlers[RD_80STORE_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Store80), _currKey);
-        _ioReadHandlers[RD_TEXT_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Text), _currKey);
-        _ioReadHandlers[RD_MIXED_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Mixed), _currKey);
-        _ioReadHandlers[RD_PAGE2_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Page2), _currKey);
-        _ioReadHandlers[RD_HIRES_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.HiRes), _currKey);
-        _ioReadHandlers[RD_ALTCHAR_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.AltChar), _currKey);
-        _ioReadHandlers[RD_80VID_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Vid80), _currKey);
-        _ioReadHandlers[RD_VERTBLANK_] = () => { byte inVBlank = (byte) (_VblankBlackoutCounter > 0 ? 0x80 : 0x00); return (byte) (inVBlank | _currKey & 0x7f); };
+        _ioReadHandlers[KEYSTRB_] = () => { return _keyboard.ClearStrobe();  };
+        _ioReadHandlers[RD_LC_BANK1_] = () => (byte) (Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Bank1), _keyboard.PeekCurrentKeyValue()) ^ 0x80);
+        _ioReadHandlers[RD_LC_RAM] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.HighRead), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_RAMRD_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.RamRd), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_RAMWRT_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.RamWrt), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_INTCXROM_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.IntCxRom), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_ALTZP_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.AltZp), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_SLOTC3ROM_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.SlotC3Rom), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_80STORE_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Store80), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_TEXT_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Text), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_MIXED_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Mixed), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_PAGE2_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Page2), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_HIRES_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.HiRes), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_ALTCHAR_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.AltChar), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_80VID_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Vid80), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_VERTBLANK_] = () => { byte inVBlank = (byte) (_VblankBlackoutCounter > 0 ? 0x80 : 0x00); return (byte) (inVBlank | _keyboard.PeekCurrentKeyValue() & 0x7f); };
         _ioReadHandlers[TAPEIN_] = () => 0x00;
-        _ioReadHandlers[BUTTON0_] = () => (byte) (_button0 ? 0x80 : 0x00);
-        _ioReadHandlers[BUTTON1_] = () => (byte) (_button1 ? 0x80 : 0x00);
-        _ioReadHandlers[BUTTON2_] = () => (byte) (_button2 ? 0x80 : 0x00);
+        _ioReadHandlers[BUTTON0_] = () => (byte) (_gameController.GetButton(0) ? 0x80 : 0x00);
+        _ioReadHandlers[BUTTON1_] = () => (byte) (_gameController.GetButton(1) ? 0x80 : 0x00);
+        _ioReadHandlers[BUTTON2_] = () => (byte) (_gameController.GetButton(2) ? 0x80 : 0x00);
 
         // Reads that also toggle soft switches (Apple II behavior: reading addresses sets switches)
         _ioReadHandlers[CLRTXT_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Text, false); return 0xA0; };

@@ -21,16 +21,20 @@ public static class VA2MTestHelpers
         private IAppleIIBus? _bus;
         private AddressSpaceController? _memoryPool;
         private IFrameGenerator? _frameGenerator;
+        private IKeyboardSetter? _keyboardSetter;
+        private IGameControllerStatus? _gameController;
 
         public VA2MBuilder()
         {
             // Set defaults
             _emulatorState = new TestEmulatorState();
             _frameProvider = new TestFrameProvider();
-            _systemStatusProvider = new SystemStatusProvider(); // SystemStatusProvider implements ISystemStatusMutator
+            _gameController = new SimpleGameController(); // Create controller first
+            _systemStatusProvider = new SystemStatusProvider(_gameController); // Pass controller to status provider
             _bus = new TestAppleIIBus();
             _memoryPool = new AddressSpaceController(_systemStatusProvider, new TestLanguageCard(), new TestSystemRamSelector());
             _frameGenerator = new TestFrameGenerator();
+            _keyboardSetter = new SingularKeyHandler(); // Default keyboard handler
         }
 
         public VA2MBuilder WithEmulatorState(IEmulatorState state)
@@ -69,6 +73,18 @@ public static class VA2MTestHelpers
             return this;
         }
 
+        public VA2MBuilder WithKeyboardSetter(IKeyboardSetter keyboardSetter)
+        {
+            _keyboardSetter = keyboardSetter;
+            return this;
+        }
+
+        public VA2MBuilder WithGameController(IGameControllerStatus gameController)
+        {
+            _gameController = gameController;
+            return this;
+        }
+
         public VA2M Build()
         {
             // Create rendering service and snapshot pool for tests
@@ -83,7 +99,9 @@ public static class VA2MTestHelpers
                 _memoryPool!,
                 _frameGenerator!,
                 renderingService,
-                snapshotPool
+                snapshotPool,
+                _keyboardSetter!,
+                _gameController!
             );
         }
     }

@@ -171,13 +171,92 @@ public sealed class SystemStatusProvider : ISystemStatusMutator
     /// <summary>
     /// Initializes a new instance of the <see cref="SystemStatusProvider"/> class.
     /// </summary>
+    /// <param name="gameController">Optional game controller for automatic state synchronization.</param>
     /// <remarks>
+    /// <para>
     /// Creates the reactive subject with the default power-on state, ensuring
     /// new subscribers immediately receive the current system status.
+    /// </para>
+    /// <para>
+    /// <strong>Game Controller Integration:</strong> If a game controller is provided,
+    /// this class subscribes to its change events and automatically updates the
+    /// button and paddle state in the system status snapshot. This ensures all
+    /// observers receive consistent controller state without requiring intermediate
+    /// synchronization layers.
+    /// </para>
     /// </remarks>
-    public SystemStatusProvider()
+    public SystemStatusProvider(IGameControllerStatus? gameController = null)
     {
         _subject = new System.Reactive.Subjects.BehaviorSubject<SystemStatusSnapshot>(_current);
+        
+        // Subscribe to game controller events if provided
+        if (gameController != null)
+        {
+            gameController.ButtonChanged += OnGameControllerButtonChanged;
+            gameController.PaddleChanged += OnGameControllerPaddleChanged;
+        }
+    }
+
+    /// <summary>
+    /// Handles game controller button state changes and synchronizes with system status.
+    /// </summary>
+    /// <param name="sender">Event sender (game controller).</param>
+    /// <param name="e">Event args containing button number and new state.</param>
+    /// <remarks>
+    /// <para>
+    /// <strong>Direct Integration:</strong> SystemStatusProvider subscribes directly to
+    /// game controller events, eliminating the need for intermediate synchronization
+    /// through SystemIoHandler. This is the correct architectural layer for this
+    /// synchronization since SystemStatus is the observable state container.
+    /// </para>
+    /// </remarks>
+    private void OnGameControllerButtonChanged(object? sender, GameControllerButtonChangedEventArgs e)
+    {
+        // Update button state in system status
+        switch (e.ButtonNumber)
+        {
+            case 0:
+                SetButton0(e.IsPressed);
+                break;
+            case 1:
+                SetButton1(e.IsPressed);
+                break;
+            case 2:
+                SetButton2(e.IsPressed);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Handles game controller paddle value changes and synchronizes with system status.
+    /// </summary>
+    /// <param name="sender">Event sender (game controller).</param>
+    /// <param name="e">Event args containing paddle number and new value.</param>
+    /// <remarks>
+    /// <para>
+    /// <strong>Direct Integration:</strong> SystemStatusProvider subscribes directly to
+    /// game controller events, providing automatic synchronization of paddle values
+    /// into the system status snapshot for all observers.
+    /// </para>
+    /// </remarks>
+    private void OnGameControllerPaddleChanged(object? sender, GameControllerPaddleChangedEventArgs e)
+    {
+        // Update paddle value in system status
+        switch (e.PaddleNumber)
+        {
+            case 0:
+                SetPdl0(e.Value);
+                break;
+            case 1:
+                SetPdl1(e.Value);
+                break;
+            case 2:
+                SetPdl2(e.Value);
+                break;
+            case 3:
+                SetPdl3(e.Value);
+                break;
+        }
     }
 
     #region ISystemStatusProvider - Read-only property access

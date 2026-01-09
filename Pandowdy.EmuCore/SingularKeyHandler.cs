@@ -123,45 +123,6 @@ public class SingularKeyHandler : IKeyboardReader, IKeyboardSetter
     /// </remarks>
     public byte PeekCurrentKeyAndStrobe() => _key;
 
-    /// <inheritdoc />
-    /// <remarks>
-    /// <para>
-    /// <strong>Implementation:</strong> Atomically checks the strobe bit, clears it, and returns
-    /// the 7-bit key code. This simulates the hardware behavior of reading $C010 (KBDSTRB).
-    /// </para>
-    /// <para>
-    /// <strong>Behavior Details:</strong>
-    /// <list type="bullet">
-    /// <item>If strobe is set (bit 7 = 1): Clears bit 7, returns 7-bit key code</item>
-    /// <item>If strobe is clear (bit 7 = 0): Returns <c>null</c> immediately without modification</item>
-    /// </list>
-    /// </para>
-    /// <para>
-    /// <strong>Idempotency:</strong> Calling this method twice in succession returns the key value
-    /// on the first call and <c>null</c> on subsequent calls until a new key is enqueued.
-    /// </para>
-    /// <para>
-    /// <strong>Apple IIe Software Pattern:</strong>
-    /// <code>
-    /// ; Wait for keypress and read it
-    /// GETKEY:
-    ///     LDA $C000      ; Read keyboard with strobe
-    ///     BPL GETKEY     ; Loop if no key (bit 7 clear)
-    ///     STA $C010      ; Clear strobe
-    ///     AND #$7F       ; Mask off strobe bit
-    ///     RTS            ; Return with key in A
-    /// </code>
-    /// </para>
-    /// </remarks>
-    public byte? FetchPendingAndClearStrobe()
-    {
-        if (!StrobePending())
-        {
-            return null;
-        }
-        _key &= 0x7f; // Clear high bit (strobe)
-        return _key;
-    }
 
     /// <inheritdoc />
     /// <remarks>
@@ -201,4 +162,7 @@ public class SingularKeyHandler : IKeyboardReader, IKeyboardSetter
     /// </para>
     /// </remarks>
     public void EnqueueKey(byte key) => _key = (byte)(key | 0x80);
+
+
+    public byte ClearStrobe() { _key &= 0x7f; return _key; }
 }

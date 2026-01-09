@@ -33,28 +33,6 @@ namespace Pandowdy.EmuCore.Interfaces;
 public interface IKeyboardReader
 {
     /// <summary>
-    /// Enqueues a raw key value with strobe bit automatically set.
-    /// </summary>
-    /// <param name="key">The 7-bit ASCII character code (0-127). Bit 7 will be set automatically.</param>
-    /// <remarks>
-    /// <para>
-    /// This method simulates a physical key press on the Apple IIe keyboard. The strobe bit (bit 7)
-    /// is automatically set to indicate the key is unread, regardless of the input value's bit 7 state.
-    /// </para>
-    /// <para>
-    /// <strong>Behavior:</strong>
-    /// <list type="bullet">
-    /// <item><strong>Single-key systems</strong> (e.g., <see cref="SingularKeyHandler"/>) - Replaces the current key</item>
-    /// <item><strong>Buffered systems</strong> - Adds key to queue (FIFO behavior)</item>
-    /// </list>
-    /// </para>
-    /// <para>
-    /// <strong>Example:</strong> Calling <c>EnqueueKey(0x41)</c> (ASCII 'A') stores 0xC1 internally (0x41 | 0x80).
-    /// </para>
-    /// </remarks>
-    public void EnqueueKey(byte key);
-
-    /// <summary>
     /// Checks if there is an unread key with strobe bit set.
     /// </summary>
     /// <returns>
@@ -112,10 +90,6 @@ public interface IKeyboardReader
     /// </list>
     /// </para>
     /// <para>
-    /// <strong>Important:</strong> This method does <em>not</em> clear the strobe. To clear the strobe,
-    /// call <see cref="FetchPendingAndClearStrobe"/> or simulate reading $C010 (KBDSTRB).
-    /// </para>
-    /// <para>
     /// <strong>Example Values:</strong>
     /// <list type="bullet">
     /// <item>0xC1 = 'A' key pressed, unread (0x41 | 0x80)</item>
@@ -126,45 +100,7 @@ public interface IKeyboardReader
     /// </remarks>
     public byte PeekCurrentKeyAndStrobe();
 
-    /// <summary>
-    /// Returns the next pending key and clears its strobe bit, or <c>null</c> if no unread key is pending.
-    /// </summary>
-    /// <returns>
-    /// The 7-bit ASCII character code (0-127) of the pending key with strobe cleared,
-    /// or <c>null</c> if no key is pending (strobe already cleared).
-    /// </returns>
-    /// <remarks>
-    /// <para>
-    /// This method simulates the sequence of reading $C000 (KBD) followed by reading $C010 (KBDSTRB)
-    /// to clear the keyboard strobe. It atomically checks for a pending key and clears the strobe bit.
-    /// </para>
-    /// <para>
-    /// <strong>Single-Key Behavior:</strong> Returns the current key with strobe cleared, or <c>null</c>
-    /// if the strobe was already cleared. The internal state is updated to clear bit 7.
-    /// </para>
-    /// <para>
-    /// <strong>Buffered Keyboard Behavior:</strong> Dequeues the next key from the buffer (FIFO),
-    /// returns it with strobe cleared, and removes it from the queue. Returns <c>null</c> if buffer is empty.
-    /// </para>
-    /// <para>
-    /// <strong>Return Value Note:</strong> The returned byte has bit 7 cleared (0-127 range) even though
-    /// the key was pending with strobe set. Use <see cref="PeekCurrentKeyAndStrobe"/> if you need to
-    /// inspect the strobe state before clearing it.
-    /// </para>
-    /// <para>
-    /// <strong>Example Usage:</strong>
-    /// <code>
-    /// // C# emulator code
-    /// if (keyboardReader.StrobePending())
-    /// {
-    ///     byte? key = keyboardReader.FetchPendingAndClearStrobe();
-    ///     if (key.HasValue)
-    ///     {
-    ///         ProcessKey(key.Value);  // Value is 0x41 for 'A', not 0xC1
-    ///     }
-    /// }
-    /// </code>
-    /// </para>
-    /// </remarks>
-    public byte? FetchPendingAndClearStrobe();
+
+    // Clears strobe if it set and returns new key value
+    public byte ClearStrobe();
 }

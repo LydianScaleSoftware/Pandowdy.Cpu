@@ -15,30 +15,6 @@ namespace Pandowdy.EmuCore.Interfaces;
 public interface IAppleIIBus : IBus
 {
     /// <summary>
-    /// Sets the keyboard latch value (typically with high bit set).
-    /// </summary>
-    /// <param name="key">The key value to store in the keyboard latch. 
-    /// The high bit (bit 7) should typically be set to indicate a key is available.</param>
-    /// <remarks>
-    /// On the Apple II, reading address $C000 returns the keyboard latch value,
-    /// and reading $C010 clears the high bit. This method simulates external keyboard
-    /// input by setting the latch value that the CPU will read.
-    /// </remarks>
-    void EnqueueKey(byte key);
-
-    /// <summary>
-    /// Sets the state of a pushbutton (game controller button).
-    /// </summary>
-    /// <param name="num">Button number (0-2 for buttons 0, 1, and 2)</param>
-    /// <param name="enabled">True if the button is pressed, false if released</param>
-    /// <remarks>
-    /// Apple II game controllers have up to 3 buttons that can be read at addresses
-    /// $C061 (button 0), $C062 (button 1), and $C063 (button 2). The high bit of
-    /// the returned byte indicates button state (1=pressed, 0=released).
-    /// </remarks>
-    void SetPushButton(int num, bool enabled);
-
-    /// <summary>
     /// Gets the memory pool representing the Apple IIe's 64k addressable memory space.
     /// </summary>
     /// <value>
@@ -118,4 +94,5 @@ public interface IAppleIIBus : IBus
     void Reset();
 }
 #pragma warning restore CS0108
+
 

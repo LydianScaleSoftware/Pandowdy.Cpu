@@ -43,7 +43,14 @@ namespace Pandowdy
                 {
                     services.AddSingleton<Emulator.CPU>();
 
-                    // EmuCore
+                    // EmuCore - Input Subsystems
+                    services.AddSingleton<SingularKeyHandler>();  // Keyboard handler (both IKeyboardReader and IKeyboardSetter)
+                    services.AddSingleton<IKeyboardReader>(sp => sp.GetRequiredService<SingularKeyHandler>());
+                    services.AddSingleton<IKeyboardSetter>(sp => sp.GetRequiredService<SingularKeyHandler>());
+
+                    services.AddSingleton<IGameControllerStatus, SimpleGameController>();
+
+                    // EmuCore - Memory & Bus
                     services.AddSingleton<AddressSpaceController>();
 
                     services.AddSingleton<IDirectMemoryPoolReader>(sp => sp.GetRequiredService<AddressSpaceController>());
@@ -65,8 +72,12 @@ namespace Pandowdy
                     services.AddSingleton<SoftSwitches>();
 
                     // SystemStatusProvider implements both ISystemStatusProvider (read-only) and ISystemStatusMutator (read-write)
-                    // Register the concrete type first
-                    services.AddSingleton<SystemStatusProvider>();
+                    // Register the concrete type first - now with game controller integration
+                    services.AddSingleton<SystemStatusProvider>(sp =>
+                    {
+                        var gameController = sp.GetRequiredService<IGameControllerStatus>();
+                        return new SystemStatusProvider(gameController);
+                    });
                     // Register read-only interface
                     services.AddSingleton<ISystemStatusProvider>(sp => sp.GetRequiredService<SystemStatusProvider>());
                     // Register read-write interface (inherits from ISystemStatusProvider)
