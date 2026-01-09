@@ -414,16 +414,16 @@ public class SimpleGameControllerTests
         var events = new List<GameControllerPaddleChangedEventArgs>();
         controller.PaddleChanged += (sender, e) => events.Add(e);
 
-        // Act - Test extreme values
-        controller.SetPaddle(0, 0);     // Change 1
-        controller.SetPaddle(0, 127);   // Change 2
-        controller.SetPaddle(0, 255);   // Change 3
+        // Act - Test extreme values (skip 0 since it's the default)
+        controller.SetPaddle(0, 127);   // Change 1: 0 -> 127
+        controller.SetPaddle(0, 255);   // Change 2: 127 -> 255
+        controller.SetPaddle(0, 0);     // Change 3: 255 -> 0
 
         // Assert
         Assert.Equal(3, events.Count);
-        Assert.Equal(0, events[0].Value);
-        Assert.Equal(127, events[1].Value);
-        Assert.Equal(255, events[2].Value);
+        Assert.Equal(127, events[0].Value);
+        Assert.Equal(255, events[1].Value);
+        Assert.Equal(0, events[2].Value);
     }
 
     #endregion

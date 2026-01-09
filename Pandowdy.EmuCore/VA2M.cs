@@ -286,7 +286,60 @@ public class VA2M : IDisposable, IKeyboardSetter, IEmulatorCoreInterface
     /// </summary>
     public ulong SystemClock => Bus.SystemClockCounter;
 
-
+    #region IEmulatorCoreInterface Observable Accessors
+    
+    /// <summary>
+    /// Gets the emulator state observable for monitoring CPU status.
+    /// </summary>
+    /// <value>Observable that publishes CPU state snapshots (PC, SP, cycles, BASIC line).</value>
+    /// <remarks>
+    /// <para>
+    /// <strong>Implementation:</strong> Returns the injected <see cref="IEmulatorState"/> instance
+    /// (EmulatorStateProvider) that VA2M publishes state updates to via <see cref="PublishState"/>.
+    /// </para>
+    /// <para>
+    /// <strong>Observable Pattern:</strong> State changes are pushed through reactive streams.
+    /// The UI can subscribe to <see cref="IEmulatorState.Stream"/> to receive real-time updates.
+    /// </para>
+    /// </remarks>
+    public IEmulatorState EmulatorState => _stateSink;
+    
+    /// <summary>
+    /// Gets the frame provider observable for receiving rendered video frames.
+    /// </summary>
+    /// <value>Observable that publishes rendered video frames (560×192 pixels with soft switch state).</value>
+    /// <remarks>
+    /// <para>
+    /// <strong>Implementation:</strong> Returns the injected <see cref="IFrameProvider"/> instance
+    /// (FrameProvider) that receives frames from the threaded <see cref="RenderingService"/>.
+    /// </para>
+    /// <para>
+    /// <strong>Threading:</strong> Frames are rendered on a separate thread and published at ~60 Hz.
+    /// The UI subscribes to <see cref="IFrameProvider.Stream"/> to receive frames asynchronously.
+    /// </para>
+    /// </remarks>
+    public IFrameProvider FrameProvider => _frameSink;
+    
+    /// <summary>
+    /// Gets the system status observable for monitoring soft switches and system state.
+    /// </summary>
+    /// <value>Observable that publishes system status snapshots (all 20+ soft switches and I/O states).</value>
+    /// <remarks>
+    /// <para>
+    /// <strong>Implementation:</strong> Returns the injected <see cref="ISystemStatusMutator"/> as
+    /// read-only <see cref="ISystemStatusProvider"/> interface. VA2M uses the mutator interface
+    /// internally (e.g., SetFlashOn) but exposes only read-only access to the UI.
+    /// </para>
+    /// <para>
+    /// <strong>Event-Driven:</strong> System status changes (soft switches, button states) trigger
+    /// the <see cref="ISystemStatusProvider.Changed"/> event automatically via the game controller
+    /// and soft switch subsystems.
+    /// </para>
+    /// </remarks>
+    public ISystemStatusProvider SystemStatus => _sysStatusSink;
+    
+    #endregion
+    
     /// <summary>
     /// Emulator state sink for publishing CPU state snapshots.
     /// </summary>

@@ -6,8 +6,20 @@ namespace Pandowdy.EmuCore.Interfaces;
 /// <remarks>
 /// <para>
 /// <strong>Purpose:</strong> This interface serves as the primary contract between the UI and the emulator core,
-/// providing thread-safe command queueing (Reset, EnqueueKey, etc.) and execution control (RunAsync, Clock, ThrottleEnabled).
-/// It represents the **complete control surface** that the UI needs to interact with the emulator.
+/// providing thread-safe command queueing (Reset, EnqueueKey, etc.), execution control (RunAsync, Clock, ThrottleEnabled),
+/// and observable accessors for system state. It represents the **complete control surface** that the UI needs to 
+/// interact with the emulator - a firm seam between GUI and emulator layers.
+/// </para>
+/// <para>
+/// <strong>The Firm Seam:</strong> This interface defines the explicit boundary between the UI and emulator core.
+/// The UI depends only on this interface and never accesses concrete VA2M implementation details like Bus or MemoryPool.
+/// This provides:
+/// <list type="bullet">
+/// <item><strong>Clear Contract:</strong> Everything the UI needs is explicitly defined here</item>
+/// <item><strong>Thread Safety:</strong> Explicit guarantees about which methods are thread-safe</item>
+/// <item><strong>Testability:</strong> Single interface to mock for UI testing</item>
+/// <item><strong>Encapsulation:</strong> Implementation details hidden from UI</item>
+/// </list>
 /// </para>
 /// <para>
 /// <strong>Thread Safety Contract:</strong>
@@ -21,15 +33,19 @@ namespace Pandowdy.EmuCore.Interfaces;
 /// (used for debugging/testing).</item>
 /// <item><strong>ThrottleEnabled:</strong> Thread-safe property. Can be set from any thread
 /// (typically UI thread via data binding).</item>
+/// <item><strong>EmulatorState/FrameProvider/SystemStatus:</strong> Thread-safe read-only observable
+/// accessors. These provide reactive streams that can be subscribed to from any thread.</item>
 /// </list>
 /// </para>
 /// <para>
 /// <strong>Architecture Benefits:</strong>
 /// <list type="bullet">
-/// <item><strong>Decoupling:</strong> UI depends on this interface, not concrete VA2M implementation</item>
+/// <item><strong>Single Seam:</strong> UI depends only on this interface, not concrete VA2M type</item>
+/// <item><strong>Decoupling:</strong> UI has no knowledge of implementation details (Bus, MemoryPool, etc.)</item>
 /// <item><strong>Testability:</strong> Interface can be mocked for UI testing without full emulator</item>
 /// <item><strong>Thread Safety:</strong> Provides explicit contract preventing accidental cross-thread calls</item>
-/// <item><strong>Interface Segregation:</strong> UI only sees what it needs (8 members vs 1,200+ lines of implementation)</item>
+/// <item><strong>Interface Segregation:</strong> UI only sees what it needs (11 members vs 1,200+ lines of implementation)</item>
+/// <item><strong>Observable Pattern:</strong> State changes flow through reactive streams, not property polling</item>
 /// </list>
 /// </para>
 /// <para>
@@ -39,12 +55,14 @@ namespace Pandowdy.EmuCore.Interfaces;
 /// </para>
 /// <para>
 /// <strong>Naming Rationale:</strong> "EmulatorCoreInterface" emphasizes that this is the **core control interface**
-/// for the emulator, not just a collection of queueable commands. It includes both command queueing and
-/// execution control, representing the complete UI control surface.
+/// for the emulator, not just a collection of queueable commands. It includes command queueing, execution control,
+/// and observable state accessors - representing the complete UI control surface.
 /// </para>
 /// </remarks>
 public interface IEmulatorCoreInterface
 {
+    #region Command Queueing (Thread-Safe)
+    
     /// <summary>
     /// Queues a full system reset (power cycle).
     /// </summary>
@@ -113,6 +131,10 @@ public interface IEmulatorCoreInterface
     /// </remarks>
     void SetPushButton(byte num, bool pressed);
     
+    #endregion
+    
+    #region Execution Control
+    
     /// <summary>
     /// Starts asynchronous emulator execution loop.
     /// </summary>
@@ -177,4 +199,71 @@ public interface IEmulatorCoreInterface
     /// </para>
     /// </remarks>
     bool ThrottleEnabled { get; set; }
+    
+    #endregion
+    
+    #region Observable State Accessors (Read-Only)
+    
+    /// <summary>
+    /// Gets the emulator state observable for monitoring CPU status.
+    /// </summary>
+    /// <value>Observable that publishes CPU state snapshots (PC, SP, cycles, BASIC line).</value>
+    /// <remarks>
+    /// <para>
+    /// <strong>Thread Safety:</strong> Thread-safe read-only property. The returned <see cref="IEmulatorState"/>
+    /// interface provides reactive streams that can be subscribed to from any thread.
+    /// </para>
+    /// <para>
+    /// <strong>Observable Pattern:</strong> State changes are pushed through reactive streams rather than
+    /// polled. Subscribe to <see cref="IEmulatorState.Stream"/> to receive real-time CPU state updates.
+    /// </para>
+    /// <para>
+    /// <strong>Use Cases:</strong> Display PC/SP in debugger, show cycle counter, detect BASIC line changes,
+    /// monitor running/paused state for UI updates.
+    /// </para>
+    /// </remarks>
+    IEmulatorState EmulatorState { get; }
+    
+    /// <summary>
+    /// Gets the frame provider observable for receiving rendered video frames.
+    /// </summary>
+    /// <value>Observable that publishes rendered video frames (560×192 pixels with soft switch state).</value>
+    /// <remarks>
+    /// <para>
+    /// <strong>Thread Safety:</strong> Thread-safe read-only property. The returned <see cref="IFrameProvider"/>
+    /// interface provides reactive streams for frame updates from the threaded rendering service.
+    /// </para>
+    /// <para>
+    /// <strong>Observable Pattern:</strong> Frames are rendered on a separate thread and published through
+    /// reactive streams. Subscribe to <see cref="IFrameProvider.Stream"/> to receive frames at ~60 Hz.
+    /// </para>
+    /// <para>
+    /// <strong>Use Cases:</strong> Display Apple IIe video output, capture screenshots, record video.
+    /// Frames include both the bitmap data (560×192) and soft switch state for mode-accurate rendering.
+    /// </para>
+    /// </remarks>
+    IFrameProvider FrameProvider { get; }
+    
+    /// <summary>
+    /// Gets the system status observable for monitoring soft switches and system state.
+    /// </summary>
+    /// <value>Observable that publishes system status snapshots (all 20+ soft switches and I/O states).</value>
+    /// <remarks>
+    /// <para>
+    /// <strong>Thread Safety:</strong> Thread-safe read-only property. The returned <see cref="ISystemStatusProvider"/>
+    /// interface provides reactive streams for system state changes.
+    /// </para>
+    /// <para>
+    /// <strong>Observable Pattern:</strong> System status changes (soft switches, button states, paddle values)
+    /// are published through reactive streams. Subscribe to <see cref="ISystemStatusProvider.Stream"/> or
+    /// <see cref="ISystemStatusProvider.Changed"/> event to receive updates.
+    /// </para>
+    /// <para>
+    /// <strong>Use Cases:</strong> Display soft switch status panel, show video mode indicators, monitor
+    /// memory configuration, display game controller state, debug system behavior.
+    /// </para>
+    /// </remarks>
+    ISystemStatusProvider SystemStatus { get; }
+    
+    #endregion
 }

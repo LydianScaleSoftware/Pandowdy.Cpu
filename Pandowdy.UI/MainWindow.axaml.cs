@@ -340,8 +340,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// Initializes MainWindow with required dependencies (phase 2 of two-phase construction).
     /// </summary>
     /// <param name="viewModel">Main window view model containing UI state and commands.</param>
-    /// <param name="machine">Emulator core control interface for commanding operations from UI thread.</param>
-    /// <param name="frameProvider">Frame provider for display rendering.</param>
+    /// <param name="machine">Emulator core control interface providing complete control surface.</param>
     /// <param name="refreshTicker">60 Hz ticker for driving display updates.</param>
     /// <exception cref="InvalidOperationException">Thrown if Initialize() is called more than once.</exception>
     /// <remarks>
@@ -351,23 +350,38 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// which handles both phases automatically.
     /// </para>
     /// <para>
+    /// <strong>Simplified Dependencies:</strong> With <see cref="IEmulatorCoreInterface"/> observable
+    /// accessors, this method now only needs 3 parameters instead of 4. Frame provider is accessed
+    /// through <see cref="IEmulatorCoreInterface.FrameProvider"/> instead of being a separate parameter.
+    /// </para>
+    /// <para>
     /// <strong>Dependency Injection:</strong> This method accepts:
     /// <list type="bullet">
     /// <item><strong>viewModel:</strong> Provides UI state, settings, and ReactiveCommands</item>
-    /// <item><strong>machine:</strong> Emulator core interface (IEmulatorCoreInterface) for Reset, EnqueueKey, RunAsync, etc.</item>
-    /// <item><strong>frameProvider:</strong> Provides rendered frames for display</item>
+    /// <item><strong>machine:</strong> Emulator core interface (IEmulatorCoreInterface) providing:
+    ///     <list type="bullet">
+    ///     <item>Command queueing (Reset, EnqueueKey, etc.)</item>
+    ///     <item>Execution control (RunAsync, Clock, ThrottleEnabled)</item>
+    ///     <item>Observable accessors (EmulatorState, FrameProvider, SystemStatus)</item>
+    ///     </list>
+    /// </item>
     /// <item><strong>refreshTicker:</strong> Drives 60 Hz display updates</item>
     /// </list>
     /// </para>
     /// <para>
-    /// <strong>Abstraction:</strong> The machine parameter uses <see cref="IEmulatorCoreInterface"/>
-    /// instead of concrete VA2M type, decoupling the UI from emulator implementation details while
-    /// providing thread-safe command queueing and preventing accidental cross-thread calls.
+    /// <strong>The Firm Seam:</strong> The machine parameter uses <see cref="IEmulatorCoreInterface"/>
+    /// as the single point of contact between UI and emulator core. This provides:
+    /// <list type="bullet">
+    /// <item><strong>Explicit Contract:</strong> Everything the UI needs is defined in one interface</item>
+    /// <item><strong>Thread Safety:</strong> Clear guarantees about which methods are thread-safe</item>
+    /// <item><strong>Encapsulation:</strong> No access to implementation details (Bus, MemoryPool)</item>
+    /// <item><strong>Testability:</strong> Single interface to mock for UI testing</item>
+    /// </list>
     /// </para>
     /// <para>
     /// <strong>Child Control Initialization:</strong> Attaches machine and frame provider to:
     /// <list type="bullet">
-    /// <item><strong>ScreenDisplay:</strong> Apple2Display control for video rendering</item>
+    /// <item><strong>ScreenDisplay:</strong> Apple2Display control for video rendering (gets FrameProvider from machine)</item>
     /// <item><strong>SoftSwitchStatusPanel:</strong> Status panel for soft switch display</item>
     /// </list>
     /// </para>
@@ -400,7 +414,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// </code>
     /// </para>
     /// </remarks>
-    public void Initialize(MainWindowViewModel viewModel, IEmulatorCoreInterface machine, IFrameProvider frameProvider, IRefreshTicker refreshTicker)
+    public void Initialize(MainWindowViewModel viewModel, IEmulatorCoreInterface machine, IRefreshTicker refreshTicker)
     {
         if (_depsInjected)
         {
@@ -418,7 +432,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         if (screenDisplay != null)
         {
             screenDisplay.AttachMachine(_machine);
-            screenDisplay.AttachFrameProvider(frameProvider);
+            screenDisplay.AttachFrameProvider(machine.FrameProvider);
             screenDisplay.Focus();
         }
         else

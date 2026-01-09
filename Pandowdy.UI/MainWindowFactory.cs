@@ -27,6 +27,11 @@ namespace Pandowdy.UI;
 /// </list>
 /// </para>
 /// <para>
+/// <strong>Simplified Dependencies:</strong> With the introduction of <see cref="IEmulatorCoreInterface"/>
+/// observable accessors, this factory now only needs 3 dependencies instead of 4. The frame provider is
+/// accessed through <see cref="IEmulatorCoreInterface.FrameProvider"/>, eliminating redundant parameters.
+/// </para>
+/// <para>
 /// <strong>Dependency Injection Pattern:</strong> This factory is registered as a singleton in the DI
 /// container and receives all MainWindow dependencies. When Create() is called, it transfers those
 /// dependencies to the new MainWindow instance.
@@ -52,13 +57,10 @@ namespace Pandowdy.UI;
 /// The main window view model containing UI state and commands. Must not be null.
 /// </param>
 /// <param name="machine">
-/// The emulator core control interface (IEmulatorCoreInterface) for commanding operations from the UI thread.
-/// Provides thread-safe command queueing for Reset, UserReset, EnqueueKey, SetPushButton, and execution
-/// control via RunAsync, Clock, and ThrottleEnabled. Must not be null.
-/// </param>
-/// <param name="frameProvider">
-/// The frame provider supplying rendered video frames (560x192 pixels) from the emulator
-/// to the display control. Must not be null.
+/// The emulator core control interface (IEmulatorCoreInterface) providing the complete control surface
+/// for the emulator. This single interface provides command queueing (Reset, EnqueueKey, etc.),
+/// execution control (RunAsync, Clock, ThrottleEnabled), and observable accessors (EmulatorState,
+/// FrameProvider, SystemStatus). Must not be null.
 /// </param>
 /// <param name="refreshTicker">
 /// The 60 Hz refresh ticker that triggers periodic display updates, ensuring smooth
@@ -67,7 +69,6 @@ namespace Pandowdy.UI;
 public sealed class MainWindowFactory(
     MainWindowViewModel viewModel,
     IEmulatorCoreInterface machine,
-    IFrameProvider frameProvider,
     IRefreshTicker refreshTicker) : IMainWindowFactory
 {
     /// <summary>
@@ -80,25 +81,29 @@ public sealed class MainWindowFactory(
     private readonly MainWindowViewModel _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
     
     /// <summary>
-    /// Emulator core control interface for commanding operations from the UI thread.
+    /// Emulator core control interface providing complete control surface for the emulator.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Validated as non-null in constructor. Passed to MainWindow.Initialize() which attaches
     /// it to the Apple2Display control for keyboard input injection and emulator control commands.
+    /// </para>
+    /// <para>
+    /// <strong>The Firm Seam:</strong> This interface is the single point of contact between the UI
+    /// and emulator core. It provides:
+    /// <list type="bullet">
+    /// <item><strong>Command Queueing:</strong> Reset, UserReset, EnqueueKey, SetPushButton</item>
+    /// <item><strong>Execution Control:</strong> RunAsync, Clock, ThrottleEnabled</item>
+    /// <item><strong>Observable Accessors:</strong> EmulatorState, FrameProvider, SystemStatus</item>
+    /// </list>
+    /// </para>
+    /// <para>
     /// Uses <see cref="IEmulatorCoreInterface"/> abstraction instead of concrete VA2M type,
     /// decoupling the UI from emulator implementation details and providing an explicit thread-safe
     /// contract that prevents accidental cross-thread calls.
+    /// </para>
     /// </remarks>
     private readonly IEmulatorCoreInterface _machine = machine ?? throw new ArgumentNullException(nameof(machine));
-    
-    /// <summary>
-    /// Frame provider supplying rendered video frames from the emulator.
-    /// </summary>
-    /// <remarks>
-    /// Validated as non-null in constructor. Passed to MainWindow.Initialize() which attaches
-    /// it to the Apple2Display control for rendering 560x192 pixel frames.
-    /// </remarks>
-    private readonly IFrameProvider _frameProvider = frameProvider ?? throw new ArgumentNullException(nameof(frameProvider));
     
     /// <summary>
     /// 60 Hz refresh ticker for driving periodic display updates.
@@ -128,8 +133,13 @@ public sealed class MainWindowFactory(
     /// <item>Call MainWindow parameterless constructor (XAML loading, minimal setup)</item>
     /// <item>Call window.Initialize() with all dependencies (complete setup)</item>
     /// <item>Restore window position/size BEFORE showing (Windows 11 compatibility)</item>
-    /// <item>Return fully-initialized window</item>
+    /// <item>Return a fully-initialized window</item>
     /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Simplified Dependencies:</strong> Frame provider is now accessed through
+    /// <see cref="IEmulatorCoreInterface.FrameProvider"/> instead of being a separate parameter.
+    /// This reduces coupling and makes the firm seam between UI and emulator more explicit.
     /// </para>
     /// <para>
     /// <strong>Windows 11 Position Restore:</strong> Window position and size are restored
@@ -144,7 +154,7 @@ public sealed class MainWindowFactory(
     /// <strong>What's Initialized:</strong>
     /// <list type="bullet">
     /// <item>ViewModel and DataContext set</item>
-    /// <item>Machine and frame provider attached to Apple2Display</item>
+    /// <item>Machine attached to Apple2Display (provides FrameProvider through interface)</item>
     /// <item>SoftSwitchStatusPanel initialized with its view model</item>
     /// <item>ReactiveUI subscriptions set up (7 property subscriptions + 4 command bridges)</item>
     /// <item>Window position/size restored from saved settings</item>
@@ -172,7 +182,7 @@ public sealed class MainWindowFactory(
     public MainWindow Create()
     {
         var window = new MainWindow();
-        window.Initialize(_viewModel, _machine, _frameProvider, _refreshTicker);
+        window.Initialize(_viewModel, _machine, _refreshTicker);
         
         // Restore window position/size BEFORE showing (Windows 11 best practice)
         // This gives Windows 11 less opportunity to override our saved position

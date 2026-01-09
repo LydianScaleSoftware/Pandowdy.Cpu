@@ -362,26 +362,26 @@ public class VA2MTests
     public void SetPushButton_UpdatesButtonState(byte buttonNum, bool pressed)
     {
         // Arrange
-        var testBus = new TestAppleIIBus();
+        var gameController = new SimpleGameController();
         var va2m = VA2MTestHelpers.CreateBuilder()
-            .WithBus(testBus)
+            .WithGameController(gameController)
             .Build();
 
         // Act
         va2m.SetPushButton(buttonNum, pressed);
         va2m.Clock(); // Process pending queue
 
-        // Assert
-        Assert.Equal(pressed, testBus.GetPushButton(buttonNum));
+        // Assert - Check game controller state (not bus)
+        Assert.Equal(pressed, gameController.GetButton(buttonNum));
     }
 
     [Fact]
     public void SetPushButton_MultipleButtons_IndependentStates()
     {
         // Arrange
-        var testBus = new TestAppleIIBus();
+        var gameController = new SimpleGameController();
         var va2m = VA2MTestHelpers.CreateBuilder()
-            .WithBus(testBus)
+            .WithGameController(gameController)
             .Build();
 
         // Act - Set different states for each button
@@ -390,33 +390,33 @@ public class VA2MTests
         va2m.SetPushButton(2, true);
         va2m.Clock(); // Process pending queue
 
-        // Assert
-        Assert.True(testBus.GetPushButton(0));
-        Assert.False(testBus.GetPushButton(1));
-        Assert.True(testBus.GetPushButton(2));
+        // Assert - Check game controller state
+        Assert.True(gameController.GetButton(0));
+        Assert.False(gameController.GetButton(1));
+        Assert.True(gameController.GetButton(2));
     }
 
     [Fact]
     public void SetPushButton_Toggle_ChangesState()
     {
         // Arrange
-        var testBus = new TestAppleIIBus();
+        var gameController = new SimpleGameController();
         var va2m = VA2MTestHelpers.CreateBuilder()
-            .WithBus(testBus)
+            .WithGameController(gameController)
             .Build();
 
         // Act - Press, release, press again
         va2m.SetPushButton(0, true);
         va2m.Clock();
-        Assert.True(testBus.GetPushButton(0));
+        Assert.True(gameController.GetButton(0));
 
         va2m.SetPushButton(0, false);
         va2m.Clock();
-        Assert.False(testBus.GetPushButton(0));
+        Assert.False(gameController.GetButton(0));
 
         va2m.SetPushButton(0, true);
         va2m.Clock();
-        Assert.True(testBus.GetPushButton(0));
+        Assert.True(gameController.GetButton(0));
     }
 
     #endregion
@@ -535,10 +535,10 @@ public class VA2MTests
     {
         // Arrange
         var keyboard = new SingularKeyHandler();
-        var testBus = new TestAppleIIBus();
+        var gameController = new SimpleGameController();
         var va2m = VA2MTestHelpers.CreateBuilder()
             .WithKeyboardSetter(keyboard)
-            .WithBus(testBus)
+            .WithGameController(gameController)
             .Build();
 
         // Act - Mix keyboard and button commands
@@ -553,17 +553,17 @@ public class VA2MTests
         Assert.True(keyboard.StrobePending());
         Assert.Equal(0x42, keyboard.PeekCurrentKeyValue()); // 'B' survived
         
-        // Buttons: Final state is correct
-        Assert.False(testBus.GetPushButton(0)); // Released
+        // Buttons: Final state is correct (check game controller, not bus)
+        Assert.False(gameController.GetButton(0)); // Released
     }
 
     [Fact]
     public void Scenario_GameController_MultipleButtonPresses()
     {
         // Arrange
-        var testBus = new TestAppleIIBus();
+        var gameController = new SimpleGameController();
         var va2m = VA2MTestHelpers.CreateBuilder()
-            .WithBus(testBus)
+            .WithGameController(gameController)
             .Build();
 
         // Act - Simulate game controller inputs
@@ -574,10 +574,10 @@ public class VA2MTests
         va2m.SetPushButton(0, false); // Release fire
         va2m.Clock();
 
-        // Assert
-        Assert.False(testBus.GetPushButton(0)); // Fire released
-        Assert.True(testBus.GetPushButton(1));  // Jump still pressed
-        Assert.False(testBus.GetPushButton(2)); // Third button not pressed
+        // Assert - Check game controller state
+        Assert.False(gameController.GetButton(0)); // Fire released
+        Assert.True(gameController.GetButton(1));  // Jump still pressed
+        Assert.False(gameController.GetButton(2)); // Third button not pressed
     }
 
     #endregion
