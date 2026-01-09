@@ -32,7 +32,10 @@ public static class VA2MTestHelpers
             _gameController = new SimpleGameController(); // Create controller first
             _systemStatusProvider = new SystemStatusProvider(_gameController); // Pass controller to status provider
             _bus = new TestAppleIIBus();
-            _memoryPool = new AddressSpaceController(_systemStatusProvider, new TestLanguageCard(), new TestSystemRamSelector());
+            _memoryPool = new AddressSpaceController(
+                new TestLanguageCard(), 
+                new TestSystemRamSelector(),
+                new TestSlots(_systemStatusProvider));
             _frameGenerator = new TestFrameGenerator();
             _keyboardSetter = new SingularKeyHandler(); // Default keyboard handler
         }
@@ -174,12 +177,22 @@ public class TestFrameProvider : IFrameProvider
 public class TestAppleIIBus : IAppleIIBus
 {
     private readonly TestCpu _cpu = new();
-    private readonly AddressSpaceController _memory = new(new SystemStatusProvider(), new TestLanguageCard(), new Test64KSystemRamSelector());
+    private readonly AddressSpaceController _memory;
     private ulong _clockCounter = 0;
     private byte _keyValue = 0;
     private readonly bool[] _pushButtons = new bool[3];
     private int _resetCount = 0;
     private readonly List<byte> _enqueuedKeyHistory = [];
+
+    public TestAppleIIBus()
+    {
+        var gameController = new SimpleGameController();
+        var statusProvider = new SystemStatusProvider(gameController);
+        _memory = new AddressSpaceController(
+            new TestLanguageCard(), 
+            new Test64KSystemRamSelector(),
+            new TestSlots(statusProvider));
+    }
 
     // IAppleIIBus implementation
     public IMemory RAM => _memory;
@@ -280,10 +293,14 @@ public class TestFrameGenerator : IFrameGenerator
 
     public RenderContext AllocateRenderContext()
     {
-        var statusProvider = new SystemStatusProvider();
+        var gameController = new SimpleGameController();
+        var statusProvider = new SystemStatusProvider(gameController);
         return new RenderContext(
             new BitmapDataArray(),
-            new AddressSpaceController(statusProvider, new TestLanguageCard(), new TestSystemRamSelector()),
+            new AddressSpaceController(
+                new TestLanguageCard(), 
+                new TestSystemRamSelector(),
+                new TestSlots(statusProvider)),
             statusProvider
         );
     }

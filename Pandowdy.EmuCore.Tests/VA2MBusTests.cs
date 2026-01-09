@@ -45,11 +45,11 @@ public class VA2MBusTests
             GameController = new SimpleGameController();
             StatusProvider = new SystemStatusProvider(GameController);
             
-            // Create memory subsystem
+            // Create memory subsystem (AddressSpaceController no longer needs StatusProvider!)
             AddressSpace = new AddressSpaceController(
-                StatusProvider, 
                 new TestLanguageCard(), 
-                new Test64KSystemRamSelector());
+                new Test64KSystemRamSelector(),
+                new TestSlots(StatusProvider));
             
             // Create CPU
             Cpu = new CPUAdapter(new CPU());
@@ -79,7 +79,10 @@ public class VA2MBusTests
         // Arrange
         var gameController = new SimpleGameController();
         var status = new SystemStatusProvider(gameController);
-        var addressSpace = new AddressSpaceController(status, new TestLanguageCard(), new Test64KSystemRamSelector());
+        var addressSpace = new AddressSpaceController(
+            new TestLanguageCard(), 
+            new Test64KSystemRamSelector(),
+            new TestSlots(status));
         var cpu = new CPUAdapter(new CPU());
         var keyboard = new SingularKeyHandler();
         var switches = new SoftSwitches(status);
@@ -115,7 +118,10 @@ public class VA2MBusTests
         // Arrange
         var gameController = new SimpleGameController();
         var status = new SystemStatusProvider(gameController);
-        var addressSpace = new AddressSpaceController(status, new TestLanguageCard(), new Test64KSystemRamSelector());
+        var addressSpace = new AddressSpaceController(
+            new TestLanguageCard(), 
+            new Test64KSystemRamSelector(),
+            new TestSlots(status));
         var cpu = new CPUAdapter(new CPU());
 
         // Act & Assert
@@ -128,7 +134,10 @@ public class VA2MBusTests
         // Arrange
         var gameController = new SimpleGameController();
         var status = new SystemStatusProvider(gameController);
-        var addressSpace = new AddressSpaceController(status, new TestLanguageCard(), new Test64KSystemRamSelector());
+        var addressSpace = new AddressSpaceController(
+            new TestLanguageCard(), 
+            new Test64KSystemRamSelector(),
+            new TestSlots(status));
         var keyboard = new SingularKeyHandler();
         var switches = new SoftSwitches(status);
         var ioHandler = new SystemIoHandler(switches, keyboard, gameController);
