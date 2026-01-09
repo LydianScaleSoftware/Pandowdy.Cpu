@@ -121,8 +121,6 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// Flag indicating whether this bus has been disposed.
     /// </summary>
     private bool _disposed;
-    
-    
 
     /// <summary>
     /// Number of CPU cycles between VBlank events (17,030 = 262 scanlines × 65 cycles/scanline).
@@ -231,7 +229,6 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     public event EventHandler? VBlank;
 
 
-
     /// <summary>Start of system I/O space ($C000).</summary>
     public const ushort SYSTEM_IO_START = 0xC000;
     /// <summary>End of Apple IIe internal system I/O address space</summary>
@@ -300,11 +297,6 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     {
         throw new NotSupportedException("This should not be called. Connect is deprecated.");
     }
-
-
-
-   
-
 
 
     /// <summary>
@@ -499,13 +491,15 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// <item>Reset address space controller (memory ranges, banking)</item>
     /// <item>Reset CPU (PC loaded from $FFFC/$FFFD, SP = $FF)</item>
     /// <item>Reset system clock to zero</item>
-    /// <item>Reset VBlank cycle counter to 17,030 (first VBlank at cycle 17,030)</item>
+    /// <item>Reset VBlank cycle counter to 12,480 (first VBlank at cycle 12,480)</item>
     /// </list>
     /// </para>
     /// <para>
-    /// <strong>⚠️ Temporal Coupling Warning:</strong> The order of _io.Reset() and _addressSpace.Reset()
-    /// may matter if there are dependencies between I/O state and memory banking state. This should
-    /// be reviewed and documented or refactored to eliminate ordering dependencies.
+    /// <strong>Reset Order Independence:</strong> The I/O handler and address space controller
+    /// resets are order-independent. The I/O handler resets soft switches to defaults and fires
+    /// a MemoryMappingChanged event. The address space controller's Reset() calls UpdateMemoryMappings()
+    /// explicitly, ensuring correct state regardless of reset order. Both subsystems end up in the
+    /// correct power-on state.
     /// </para>
     /// <para>
     /// <strong>Difference from UserReset:</strong> Reset() is a cold boot that clears everything.
@@ -519,9 +513,11 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     public void Reset()
     {
         ThrowIfDisposed();
-        //TODO: Check for temporal coupling between _io and _addressSpace resets
+        
+        // Reset order is now independent - both subsystems self-synchronize
         _io.Reset();
         _addressSpace.Reset();
+        
         _cpu!.Reset(this);
         _systemClock = 0;
         _nextVblankCycle = CyclesPerVBlank;
@@ -539,13 +535,12 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// <item>Reset address space controller (memory ranges, banking)</item>
     /// <item>Reset CPU (PC loaded from $FFFC/$FFFD)</item>
     /// <item>Reset system clock to zero</item>
-    /// <item>Reset VBlank cycle counter to 17,030</item>
+    /// <item>Reset VBlank cycle counter to 12,480</item>
     /// </list>
     /// </para>
     /// <para>
-    /// <strong>⚠️ Temporal Coupling Warning:</strong> The order of _io.Reset() and _addressSpace.Reset()
-    /// may matter if there are dependencies between I/O state and memory banking state. This should
-    /// be reviewed and documented or refactored to eliminate ordering dependencies.
+    /// <strong>Reset Order Independence:</strong> The I/O handler and address space controller
+    /// resets are order-independent. Both subsystems self-synchronize to ensure correct state.
     /// </para>
     /// <para>
     /// <strong>Current Implementation Note:</strong> In the current implementation, UserReset() and
@@ -560,9 +555,11 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     public void UserReset()
     {
         ThrowIfDisposed();
-        //TODO: Check for temporal coupling between _io and _addressSpace resets
+        
+        // Reset order is now independent - both subsystems self-synchronize
         _io.Reset();
         _addressSpace.Reset();
+        
         _cpu!.Reset(this);
         _systemClock = 0;
         _nextVblankCycle = CyclesPerVBlank;

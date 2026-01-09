@@ -1,4 +1,3 @@
-
 using Emulator;
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.EmuCore.Services;
@@ -331,8 +330,10 @@ public sealed class AddressSpaceController : IMemory, IMemoryAccessNotifier, IDi
     {
         SetDefaultReadRanges();
         SetDefaultWriteRanges();
-
-        // Reset IO when installed
+        
+        // Ensure memory mappings reflect current soft switch state
+        // This makes reset order-independent (no temporal coupling with SystemIoHandler.Reset)
+        UpdateMemoryMappings();
     }
 
     private void SetDefaultReadRanges()
