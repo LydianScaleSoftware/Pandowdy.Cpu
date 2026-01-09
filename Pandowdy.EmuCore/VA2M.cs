@@ -1,13 +1,10 @@
 //------------------------------------------------------------------------------
 // VA2M.cs
 //
-// ✅ MAJOR REFACTORING COMPLETED - Input subsystems extracted!
-//
-// "Virtual Apple II Machinator" - Main emulator orchestrator that coordinates
+// "Virtual Apple II Machine" - Main emulator orchestrator that coordinates
 // the CPU, bus, memory, and timing systems to emulate an Apple IIe computer.
 //
-// CURRENT RESPONSIBILITIES:
-// VA2M serves as the top-level controller for the emulator, managing:
+// RESPONSIBILITIES:
 //
 // 1. **Emulator Lifecycle:**
 //    - Construction and dependency injection (10 required dependencies)
@@ -41,11 +38,9 @@
 //
 // DESIGN PATTERN: Façade + Coordinator
 // VA2M acts as a façade over the emulator subsystems (Bus, Memory, CPU) and
-// coordinates their interactions. It delegates to specialized subsystems:
-// - IKeyboardSetter (SingularKeyHandler) for keyboard input
-// - IGameControllerStatus (SimpleGameController) for game controller
-// - RenderingService for threaded frame rendering
-// Handles cross-thread communication via command queue pattern.
+// coordinates their interactions. Input handling is delegated to specialized
+// subsystems (SingularKeyHandler for keyboard, SimpleGameController for buttons),
+// ensuring single source of truth and event-driven state updates.
 //
 // THREADING MODEL:
 // - **Emulator Thread:** Runs Clock() or RunAsync() loop
@@ -62,26 +57,6 @@
 // 4. Sleep for whole milliseconds (OS scheduler, efficient)
 // 5. Adaptive SpinWait for sub-millisecond precision (5-200 iterations)
 // Achieves ~1.023 MHz within 0.05% error (~500 PPM).
-//
-// SUBSYSTEM EXTRACTION (COMPLETED):
-// ✅ Keyboard: Extracted to SingularKeyHandler (IKeyboardSetter/IKeyboardReader)
-//    - 26 comprehensive tests
-//    - Single source of truth shared with SystemIoHandler
-// ✅ Game Controller: Extracted to SimpleGameController (IGameControllerStatus)
-//    - 32 comprehensive tests
-//    - Event-driven updates to SystemStatusProvider
-// ✅ Rendering: Threaded via RenderingService + VideoMemorySnapshotPool
-//    - Non-blocking snapshot capture (~1-3 microseconds)
-//    - Automatic frame skipping when renderer falls behind
-//
-// REFACTORING STATUS:
-// - Input Manager: ✅ DONE (keyboard + game controller extracted)
-// - State Publishing: ✅ IMPROVED (event-driven, no manual polling)
-// - Timing Service: ⏳ PARTIAL (PID throttling improved but not extracted)
-// - ROM Loader: ❌ NOT STARTED (still embedded ROM only)
-//
-// See: Pandowdy.EmuCore/_docs_/VA2M-documentation-status.md
-//      Pandowdy.EmuCore/_docs_/VA2M-Current-State-Comparison.md
 //------------------------------------------------------------------------------
 
 using System.Reflection;
@@ -98,16 +73,7 @@ namespace Pandowdy.EmuCore;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <strong>✅ MAJOR REFACTORING COMPLETED:</strong> Input subsystems (keyboard and game controller)
-/// have been successfully extracted to dedicated, well-tested subsystems. VA2M now acts as a pure
-/// coordinator, delegating to specialized components. See documentation for details:
-/// <list type="bullet">
-/// <item>Pandowdy.EmuCore/_docs_/VA2M-documentation-status.md</item>
-/// <item>Pandowdy.EmuCore/_docs_/VA2M-Current-State-Comparison.md</item>
-/// </list>
-/// </para>
-/// <para>
-/// <strong>Name Origin:</strong> "VA2M" = "Virtual Apple II Machinator" - the machine
+/// <strong>Name Origin:</strong> "VA2M" = "Virtual Apple II Machine" - the machine
 /// orchestrator that brings together all emulator subsystems.
 /// </para>
 /// <para>
