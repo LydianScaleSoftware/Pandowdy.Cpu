@@ -514,9 +514,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     {
         ThrowIfDisposed();
         
-        // Reset order is now independent - both subsystems self-synchronize
         _io.Reset();
-        _addressSpace.Reset();
         
         _cpu!.Reset(this);
         _systemClock = 0;
@@ -556,10 +554,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     {
         ThrowIfDisposed();
         
-        // Reset order is now independent - both subsystems self-synchronize
         _io.Reset();
-        _addressSpace.Reset();
-        
         _cpu!.Reset(this);
         _systemClock = 0;
         _nextVblankCycle = CyclesPerVBlank;

@@ -456,8 +456,7 @@ public class VA2M : IDisposable, IKeyboardSetter, IEmulatorCoreInterface
         Bus = bus;
         MemoryPool = memoryPool;
 
-        TryLoadEmbeddedRom("Pandowdy.EmuCore.Resources.a2e_enh_c-f.rom");
-        
+       
         if (Bus is VA2MBus vb)
         {
             vb.VBlank += OnVBlank;
@@ -654,51 +653,6 @@ public class VA2M : IDisposable, IKeyboardSetter, IEmulatorCoreInterface
         return snapshot;
     }
 
-    /// <summary>
-    /// Loads an embedded ROM resource into memory.
-    /// </summary>
-    /// <param name="resourceName">
-    /// Resource identifier with "res:" prefix (e.g., "res:Pandowdy.EmuCore.Resources.a2e_enh_c-f.rom").
-    /// </param>
-    /// <remarks>
-    /// <para>
-    /// <strong>ROM Source:</strong> The Apple IIe Enhanced ROM is embedded in the assembly
-    /// as a resource during build. This eliminates the need for external ROM files.
-    /// </para>
-    /// <para>
-    /// <strong>ROM Contents (16KB - but only 12KB used for $D000-$FFFF):</strong>
-    /// <list type="bullet">
-    /// <item>$C000-$C0FF: I/O space firmware</item>
-    /// <item>$C100-$C7FF: Internal peripheral ROM (7 x 256 bytes)</item>
-    /// <item>$C800-$CFFF: Extended internal ROM (2KB)</item>
-    /// <item>$D000-$DFFF: Monitor ROM (4KB)</item>
-    /// <item>$E000-$FFFF: Applesoft BASIC ROM + reset vector (8KB)</item>
-    /// </list>
-    /// </para>
-    /// <para>
-    /// <strong>Note:</strong> This method is now deprecated. Use SystemRomProvider
-    /// with "res:" prefix directly instead. Kept for backward compatibility.
-    /// </para>
-    /// </remarks>
-    //[Obsolete("Use SystemRomProvider with 'res:' prefix instead")]
-    private void TryLoadEmbeddedRom(string resourceName)
-    {
-        // Legacy method - now delegates to SystemRomProvider's resource loading
-        // by constructing a resource identifier
-        if (!resourceName.StartsWith("res:", StringComparison.OrdinalIgnoreCase))
-        {
-            resourceName = "res:" + resourceName;
-        }
-
-        var asm = Assembly.GetExecutingAssembly();
-        using Stream? s = asm.GetManifestResourceStream(resourceName[4..]);
-        if (s != null)
-        {
-            using var ms = new MemoryStream();
-            s.CopyTo(ms);
-            MemoryPool.InstallApple2ROM(ms.ToArray());
-        }
-    }
 
     /// <summary>
     /// Advance one system clock (one CPU/bus cycle). If throttling is enabled,
