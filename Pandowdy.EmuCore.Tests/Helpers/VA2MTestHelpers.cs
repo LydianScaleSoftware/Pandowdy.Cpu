@@ -17,7 +17,7 @@ public static class VA2MTestHelpers
     {
         private IEmulatorState? _emulatorState;
         private IFrameProvider? _frameProvider;
-        private ISystemStatusProvider? _systemStatusProvider;
+        private ISystemStatusMutator? _systemStatusProvider;
         private IAppleIIBus? _bus;
         private MemoryPool? _memoryPool;
         private IFrameGenerator? _frameGenerator;
@@ -27,7 +27,7 @@ public static class VA2MTestHelpers
             // Set defaults
             _emulatorState = new TestEmulatorState();
             _frameProvider = new TestFrameProvider();
-            _systemStatusProvider = new SystemStatusProvider();
+            _systemStatusProvider = new SystemStatusProvider(); // SystemStatusProvider implements ISystemStatusMutator
             _bus = new TestAppleIIBus();
             _memoryPool = new MemoryPool(_systemStatusProvider, new TestLanguageCard(), new TestSystemRamSelector());
             _frameGenerator = new TestFrameGenerator();
@@ -45,7 +45,7 @@ public static class VA2MTestHelpers
             return this;
         }
 
-        public VA2MBuilder WithSystemStatusProvider(ISystemStatusProvider provider)
+        public VA2MBuilder WithSystemStatusProvider(ISystemStatusMutator provider)
         {
             _systemStatusProvider = provider;
             return this;

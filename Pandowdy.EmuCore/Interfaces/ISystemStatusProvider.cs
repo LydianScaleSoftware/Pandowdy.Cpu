@@ -19,9 +19,10 @@ namespace Pandowdy.EmuCore.Interfaces;
 /// </list>
 /// </para>
 /// <para>
-/// All state properties are read-only from the consumer's perspective. The underlying
-/// implementation is updated by the bus/soft switch manager through the <see cref="Mutate"/>
-/// method, which is intended for internal use by the emulator core.
+/// <strong>Read-Only Design:</strong> All state properties are read-only. Components that need
+/// to modify system state should depend on <see cref="ISystemStatusMutator"/> instead, which
+/// extends this interface with mutation methods. See <see cref="SoftSwitches"/> for an example
+/// of a component that uses <see cref="ISystemStatusMutator"/> to both read and write state.
 /// </para>
 /// </remarks>
 public interface ISystemStatusProvider
@@ -497,20 +498,4 @@ public interface ISystemStatusProvider
     /// </para>
     /// </remarks>
     IObservable<SystemStatusSnapshot> Stream { get; }
-
-    /// <summary>
-    /// Internal mutation method for updating the status snapshot.
-    /// </summary>
-    /// <param name="mutator">A builder action that modifies the snapshot state</param>
-    /// <remarks>
-    /// <strong>For internal use by emulator core only.</strong> This method is called
-    /// by the bus or soft switch manager to update the system status when switches
-    /// are toggled. It uses a builder pattern to efficiently update the immutable
-    /// snapshot and notify subscribers.
-    /// <para>
-    /// Consumers should not call this method - use the read-only properties and
-    /// subscribe to <see cref="Changed"/> or <see cref="Stream"/> instead.
-    /// </para>
-    /// </remarks>
-    void Mutate(Action<SystemStatusSnapshotBuilder> mutator);
 }

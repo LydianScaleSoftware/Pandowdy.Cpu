@@ -36,6 +36,7 @@
 using System.Diagnostics;
 using Pandowdy.EmuCore.DataTypes;
 using Pandowdy.EmuCore.Interfaces;
+using Pandowdy.EmuCore.Services;
 
 namespace Pandowdy.EmuCore;
 
@@ -211,10 +212,9 @@ public sealed class SoftSwitches
     /// </summary>
     private Dictionary<SoftSwitchId, SoftSwitch> _switches = [];
 
-    /// <summary>
-    /// Collection of registered responders that receive notifications when switches change.
-    /// </summary>
-    private HashSet<ISoftSwitchResponder> _responders = [];
+  
+
+    private SystemStatusProvider _status;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SoftSwitches"/> class with all
@@ -224,73 +224,41 @@ public sealed class SoftSwitches
     /// All switches are initialized to false (off) except INTCXROM which defaults to true.
     /// This matches the Apple IIe power-on state where internal ROMs are enabled by default.
     /// </remarks>
-    public SoftSwitches()
+    public SoftSwitches(SystemStatusProvider status)
     {
-        _switches[SoftSwitchId.Store80] = new SoftSwitch("80STORE");
-        _switches[SoftSwitchId.RamRd] = new SoftSwitch("RAMRD");
-        _switches[SoftSwitchId.RamWrt] = new SoftSwitch("RAMWRT");
-        _switches[SoftSwitchId.IntCxRom] = new SoftSwitch("INTCXROM");
-        _switches[SoftSwitchId.AltZp] = new SoftSwitch("ALTZP");
-        _switches[SoftSwitchId.SlotC3Rom] = new SoftSwitch("SLOTC3ROM");
-        _switches[SoftSwitchId.Vid80] = new SoftSwitch("80VID");
-        _switches[SoftSwitchId.AltChar] = new SoftSwitch("ALTCHAR");
-        _switches[SoftSwitchId.Text] = new SoftSwitch("TEXT");
-        _switches[SoftSwitchId.Mixed] = new SoftSwitch("MIXED");
-        _switches[SoftSwitchId.Page2] = new SoftSwitch("PAGE2");
-        _switches[SoftSwitchId.HiRes] = new SoftSwitch("HIRES");
-        _switches[SoftSwitchId.An0] = new SoftSwitch("AN0");
-        _switches[SoftSwitchId.An1] = new SoftSwitch("AN1");
-        _switches[SoftSwitchId.An2] = new SoftSwitch("AN2");
-        _switches[SoftSwitchId.An3] = new SoftSwitch("AN3");
-        _switches[SoftSwitchId.Bank1] = new SoftSwitch("BANK1");
-        _switches[SoftSwitchId.HighWrite] = new SoftSwitch("HIGHWRITE");
-        _switches[SoftSwitchId.HighRead] = new SoftSwitch("HIGHREAD");
-        _switches[SoftSwitchId.PreWrite] = new SoftSwitch("PREWRITE");
-        _switches[SoftSwitchId.Button0] = new SoftSwitch("BUTTON0");
-        _switches[SoftSwitchId.Button1] = new SoftSwitch("BUTTON1");
-        _switches[SoftSwitchId.Button2] = new SoftSwitch("BUTTON2");
-        _switches[SoftSwitchId.VBlank] = new SoftSwitch("VBLANK");
+        ArgumentNullException.ThrowIfNull(status);
+        _status = status;
+
+        _switches[SoftSwitchId.Store80] = new SoftSwitch("80STORE", _status.State80Store);
+        _switches[SoftSwitchId.RamRd] = new SoftSwitch("RAMRD", _status.StateRamRd);
+        _switches[SoftSwitchId.RamWrt] = new SoftSwitch("RAMWRT", _status.StateRamWrt);
+        _switches[SoftSwitchId.IntCxRom] = new SoftSwitch("INTCXROM", _status.StateIntCxRom);
+        _switches[SoftSwitchId.AltZp] = new SoftSwitch("ALTZP", _status.StateAltZp);
+        _switches[SoftSwitchId.SlotC3Rom] = new SoftSwitch("SLOTC3ROM", _status.StateSlotC3Rom);
+        _switches[SoftSwitchId.Vid80] = new SoftSwitch("80VID", _status.StateShow80Col);
+        _switches[SoftSwitchId.AltChar] = new SoftSwitch("ALTCHAR", _status.StateAltCharSet);
+        _switches[SoftSwitchId.Text] = new SoftSwitch("TEXT", _status.StateTextMode);
+        _switches[SoftSwitchId.Mixed] = new SoftSwitch("MIXED", _status.StateMixed);
+        _switches[SoftSwitchId.Page2] = new SoftSwitch("PAGE2", _status.StatePage2);
+        _switches[SoftSwitchId.HiRes] = new SoftSwitch("HIRES", _status.StateHiRes);
+        _switches[SoftSwitchId.An0] = new SoftSwitch("AN0", _status.StateAnn0);
+        _switches[SoftSwitchId.An1] = new SoftSwitch("AN1", _status.StateAnn1);
+        _switches[SoftSwitchId.An2] = new SoftSwitch("AN2", _status.StateAnn2);
+        _switches[SoftSwitchId.An3] = new SoftSwitch("AN3", _status.StateAnn3_DGR);
+        _switches[SoftSwitchId.Bank1] = new SoftSwitch("BANK1", _status.StateUseBank1);
+        _switches[SoftSwitchId.HighWrite] = new SoftSwitch("HIGHWRITE", _status.StateHighWrite);
+        _switches[SoftSwitchId.HighRead] = new SoftSwitch("HIGHREAD", _status.StateHighRead);
+        _switches[SoftSwitchId.PreWrite] = new SoftSwitch("PREWRITE", _status.StatePreWrite);
+        _switches[SoftSwitchId.Button0] = new SoftSwitch("BUTTON0", _status.StatePb0);
+        _switches[SoftSwitchId.Button1] = new SoftSwitch("BUTTON1", _status.StatePb1);
+        _switches[SoftSwitchId.Button2] = new SoftSwitch("BUTTON2", _status.StatePb2);
+        _switches[SoftSwitchId.VBlank] = new SoftSwitch("VBLANK", _status.StateVBlank);
+
+        ResetAllSwitches();
     }
 
-    /// <summary>
-    /// Writes the current state of all soft switches to the debug output.
-    /// </summary>
-    /// <param name="header">Optional header text to display before the switch status list.
-    /// If provided, each switch status line will be indented.</param>
-    /// <remarks>
-    /// Output format: "SwitchName: On/Off (Changes: count)"
-    /// Useful for debugging switch state during emulation and tracking switch activity patterns.
-    /// </remarks>
-    public void DumpSoftSwitchStatus(string header = "")
-    {
-        if (!string.IsNullOrEmpty(header))
-        {
-            Debug.WriteLine(header);
-        }
-        foreach (var kvp in _switches)
-        {
-            if (!string.IsNullOrEmpty(header))
-            {
-                Debug.Write("    ");
-            }
-            string status = kvp.Value.Value ? "On" : "Off";
-            Debug.WriteLine($"{kvp.Value.Name}: {status}");
-        }
-    }
+   
 
-    /// <summary>
-    /// Registers a component to receive notifications when soft switches change.
-    /// </summary>
-    /// <param name="responder">The responder to add. Must implement <see cref="ISoftSwitchResponder"/>.</param>
-    /// <remarks>
-    /// Responders receive immediate callbacks when switches change via the <see cref="TriggerResponder"/>
-    /// method. Typical responders include MemoryPool (for memory remapping) and video renderers
-    /// (for display mode changes).
-    /// </remarks>
-    public void AddResponder(ISoftSwitchResponder responder)
-    {
-        _responders.Add(responder);
-    }
 
     /// <summary>
     /// Resets all soft switches to their default power-on state.
@@ -309,8 +277,19 @@ public sealed class SoftSwitches
         foreach (var kvp in _switches)
         {
             kvp.Value.Value = (kvp.Key == SoftSwitchId.IntCxRom);
-            TriggerResponder(kvp.Key, kvp.Value.Value);
+            SetStatus(kvp.Key, kvp.Value.Value); 
         }
+    }
+
+
+    public bool QuietlySet(SoftSwitchId id, bool value)
+    {
+        if (_switches.TryGetValue(id, out var softSwitch))
+        {
+            softSwitch.Value = value;
+            return true;
+        }
+        return false;
     }
 
     /// <summary>
@@ -325,11 +304,15 @@ public sealed class SoftSwitches
     /// </remarks>
     public void Set(SoftSwitchId id, bool value)
     {
-        if (_switches.TryGetValue(id, out var softSwitch))
+        bool oldVal = Get(id);
+        if (QuietlySet(id, value))
         {
-            softSwitch.Value = value;
-        }
-        TriggerResponder(id, value);
+            if (value != oldVal)
+            {
+                SetStatus(id, value);  
+            }
+        }    
+
     }
 
     /// <summary>
@@ -346,137 +329,109 @@ public sealed class SoftSwitches
         return false;
     }
 
-    /// <summary>
-    /// Returns a snapshot of all switches with their current state and change counts.
-    /// </summary>
-    /// <returns>A list of tuples containing switch ID and current value for each switch.</returns>
-    /// <remarks>
-    /// Useful for diagnostics, save state serialization, and UI display of switch status.
-    /// The change count indicates how many times each switch has toggled since reset.
-    /// </remarks>
-    public List<(SoftSwitchId id, bool value)> GetSwitchList()
-    {
-        var result = new List<(SoftSwitchId id, bool value)>();
-        foreach (var kvp in _switches)
-        {
-            result.Add((kvp.Key, kvp.Value.Value));
-        }
-        return result;
-    }
 
-    /// <summary>
-    /// Notifies all registered responders about a switch state change.
-    /// </summary>
-    /// <param name="id">The switch that changed.</param>
-    /// <param name="value">The new state of the switch.</param>
-    /// <remarks>
-    /// This method dispatches the switch change to the appropriate responder method
-    /// based on the switch ID. Each responder receives a specific callback (e.g.,
-    /// SetRamRd, SetText) matching the switch that changed. This allows responders
-    /// to react differently to different switch types.
-    /// </remarks>
-    private void TriggerResponder(SoftSwitchId id, bool value = false)
+
+    private void SetStatus(SoftSwitchId id, bool value = false)
     {
-        foreach (var responder in _responders)
-        {
+  
             switch (id)
             {
-                case SoftSwitchId.Store80:
-                    responder.Set80Store(value);
-                    break;
+            case SoftSwitchId.Store80:
+                _status.Set80Store(value);
+                break;
 
-                case SoftSwitchId.RamRd:
-                    responder.SetRamRd(value);
-                    break;
+            case SoftSwitchId.RamRd:
+                _status.SetRamRd(value);
+                break;
 
-                case SoftSwitchId.RamWrt:
-                    responder.SetRamWrt(value);
-                    break;
+            case SoftSwitchId.RamWrt:
+                _status.SetRamWrt(value);
+                break;
 
-                case SoftSwitchId.IntCxRom:
-                    responder.SetIntCxRom(value);
-                    break;
+            case SoftSwitchId.IntCxRom:
+                _status.SetIntCxRom(value);
+                break;
 
-                case SoftSwitchId.AltZp:
-                    responder.SetAltZp(value);
-                    break;
+            case SoftSwitchId.AltZp:
+                _status.SetAltZp(value);
+                break;
 
-                case SoftSwitchId.SlotC3Rom:
-                    responder.SetSlotC3Rom(value);
-                    break;
+            case SoftSwitchId.SlotC3Rom:
+                _status.SetSlotC3Rom(value);
+                break;
 
-                case SoftSwitchId.Vid80:
-                    responder.Set80Vid(value);
-                    break;
+            case SoftSwitchId.Vid80:
+                _status.Set80Vid(value);
+                break;
 
-                case SoftSwitchId.AltChar:
-                    responder.SetAltChar(value);
-                    break;
+            case SoftSwitchId.AltChar:
+                _status.SetAltChar(value);
+                break;
 
-                case SoftSwitchId.Text:
-                    responder.SetText(value);
-                    break;
+            case SoftSwitchId.Text:
+                _status.SetText(value);
+                break;
 
-                case SoftSwitchId.Mixed:
-                    responder.SetMixed(value);
-                    break;
+            case SoftSwitchId.Mixed:
+                _status.SetMixed(value);
+                break;
 
-                case SoftSwitchId.Page2:
-                    responder.SetPage2(value);
-                    break;
+            case SoftSwitchId.Page2:
+                _status.SetPage2(value);
+                break;
 
-                case SoftSwitchId.HiRes:
-                    responder.SetHiRes(value);
-                    break;
+            case SoftSwitchId.HiRes:
+                _status.SetHiRes(value);
+                break;
 
-                case SoftSwitchId.An0:
-                    responder.SetAn0(value);
-                    break;
+            case SoftSwitchId.An0:
+                _status.SetAn0(value);
+                break;
 
-                case SoftSwitchId.An1:
-                    responder.SetAn1(value);
-                    break;
+            case SoftSwitchId.An1:
+                _status.SetAn1(value);
+                break;
 
-                case SoftSwitchId.An2:
-                    responder.SetAn2(value);
-                    break;
+            case SoftSwitchId.An2:
+                _status.SetAn2(value);
+                break;
 
-                case SoftSwitchId.An3:
-                    responder.SetAn3(value);
-                    break;
+            case SoftSwitchId.An3:
+                _status.SetAn3(value);
+                break;
 
-                case SoftSwitchId.Bank1:
-                    responder.SetBank1(value);
-                    break;
+            case SoftSwitchId.Bank1:
+                _status.SetBank1(value);
+                break;
 
-                case SoftSwitchId.HighWrite:
-                    responder.SetHighWrite(value);
-                    break;
+            case SoftSwitchId.HighWrite:
+                _status.SetHighWrite(value);
+                break;
 
-                case SoftSwitchId.HighRead:
-                    responder.SetHighRead(value);
-                    break;
+            case SoftSwitchId.HighRead:
+                _status.SetHighRead(value);
+                break;
 
-                case SoftSwitchId.PreWrite:
-                    responder.SetPreWrite(value);
-                    break;
+            case SoftSwitchId.PreWrite:
+                _status.SetPreWrite(value);
+                break;
 
-                case SoftSwitchId.Button0:
-                    responder.SetButton0(value);
-                    break;
+            case SoftSwitchId.Button0:
+                _status.SetButton0(value);
+                break;
 
-                case SoftSwitchId.Button1:
-                    responder.SetButton1(value);
-                    break;
+            case SoftSwitchId.Button1:
+                _status.SetButton1(value);
+                break;
 
-                case SoftSwitchId.Button2:
-                    responder.SetButton2(value);
-                    break;
+            case SoftSwitchId.Button2:
+                _status.SetButton2(value);
+                break;
 
-                case SoftSwitchId.VBlank:
-                    responder.SetVBlank(value);
-                    break;
-            }
+            case SoftSwitchId.VBlank:
+                _status.SetVBlank(value);
+                break;
+            
         }
     }
 }

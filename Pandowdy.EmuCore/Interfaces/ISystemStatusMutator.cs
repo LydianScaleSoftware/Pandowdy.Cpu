@@ -1,0 +1,380 @@
+using Pandowdy.EmuCore.Services;
+
+namespace Pandowdy.EmuCore.Interfaces;
+
+/// <summary>
+/// Provides write access to system status and soft switch states, extending the read-only <see cref="ISystemStatusProvider"/>.
+/// </summary>
+/// <remarks>
+/// <para>
+/// This interface extends <see cref="ISystemStatusProvider"/> to add mutation methods for updating
+/// Apple IIe soft switch states and system flags. Components that need to modify system state
+/// (such as <see cref="SoftSwitches"/> or the bus) should depend on this interface.
+/// </para>
+/// <para>
+/// <strong>Inheritance Design:</strong> By inheriting from <see cref="ISystemStatusProvider"/>,
+/// this interface provides both read and write access. This is intentional - components that
+/// can mutate state typically also need to read it for synchronization and verification.
+/// </para>
+/// <para>
+/// <strong>Usage Pattern:</strong> The <see cref="SoftSwitches"/> class accepts an
+/// <see cref="ISystemStatusMutator"/> via dependency injection, giving it both read access
+/// (to initialize from current state) and write access (to update state when switches toggle).
+/// </para>
+/// <para>
+/// <strong>Thread Safety:</strong> Mutation methods are not thread-safe. Callers must ensure
+/// serialized access from a single thread (typically the emulator CPU thread).
+/// </para>
+/// </remarks>
+public interface ISystemStatusMutator : ISystemStatusProvider
+{
+    #region Memory Configuration Switch Mutations
+
+    /// <summary>
+    /// Sets the state of the 80STORE soft switch ($C000/$C001).
+    /// </summary>
+    /// <param name="store80">True to enable 80STORE (page 2 redirected to auxiliary memory); false to disable.</param>
+    /// <remarks>
+    /// When enabled, page 2 video memory is redirected to auxiliary RAM, enabling
+    /// 80-column text mode and double hi-res graphics with independent video pages.
+    /// </remarks>
+    void Set80Store(bool store80);
+
+    /// <summary>
+    /// Sets the state of the RAMRD soft switch ($C002/$C003).
+    /// </summary>
+    /// <param name="ramRd">True to read from auxiliary memory; false to read from main memory.</param>
+    /// <remarks>
+    /// Controls which 64KB bank (main or auxiliary) is used for memory reads.
+    /// Allows programs to access the Apple IIe's extended 128KB memory space.
+    /// </remarks>
+    void SetRamRd(bool ramRd);
+
+    /// <summary>
+    /// Sets the state of the RAMWRT soft switch ($C004/$C005).
+    /// </summary>
+    /// <param name="ramWrt">True to write to auxiliary memory; false to write to main memory.</param>
+    /// <remarks>
+    /// Controls which 64KB bank (main or auxiliary) is used for memory writes.
+    /// Independent from RAMRD, allowing asymmetric read/write configurations.
+    /// </remarks>
+    void SetRamWrt(bool ramWrt);
+
+    /// <summary>
+    /// Sets the state of the INTCXROM soft switch ($C006/$C007).
+    /// </summary>
+    /// <param name="intCxRom">True to use internal ROM; false to use slot ROMs.</param>
+    /// <remarks>
+    /// Controls whether the $C100-$CFFF range accesses internal ROM or peripheral
+    /// card slot ROMs. Typically set by the monitor during initialization.
+    /// </remarks>
+    void SetIntCxRom(bool intCxRom);
+
+    /// <summary>
+    /// Sets the state of the ALTZP soft switch ($C008/$C009).
+    /// </summary>
+    /// <param name="altZp">True to use auxiliary zero page/stack; false to use main.</param>
+    /// <remarks>
+    /// Controls whether zero page ($0000-$00FF) and stack ($0100-$01FF) access
+    /// auxiliary memory. Allows programs to maintain separate CPU contexts.
+    /// </remarks>
+    void SetAltZp(bool altZp);
+
+    /// <summary>
+    /// Sets the state of the SLOTC3ROM soft switch ($C00A/$C00B).
+    /// </summary>
+    /// <param name="slotC3Rom">True to use slot C3 ROM; false to use internal ROM.</param>
+    /// <remarks>
+    /// Controls whether the $C300-$C3FF range (slot 3) uses peripheral card ROM
+    /// or internal ROM. Independent of INTCXROM. Commonly used for 80-column card firmware.
+    /// </remarks>
+    void SetSlotC3Rom(bool slotC3Rom);
+
+    #endregion
+
+    #region Video Mode Switch Mutations
+
+    /// <summary>
+    /// Sets the state of the 80VID soft switch ($C00C/$C00D).
+    /// </summary>
+    /// <param name="vid">True to enable 80-column mode; false for 40-column mode.</param>
+    /// <remarks>
+    /// Enables 80-column text mode, which uses both main and auxiliary memory to display
+    /// 80 characters per line (alternating bytes from main and aux). When false,
+    /// standard 40-column text mode is used.
+    /// </remarks>
+    void Set80Vid(bool vid);
+
+    /// <summary>
+    /// Sets the state of the ALTCHAR soft switch ($C00E/$C00F).
+    /// </summary>
+    /// <param name="altChar">True to use MouseText character set; false to use standard.</param>
+    /// <remarks>
+    /// Selects between the standard Apple II character set and the alternate MouseText
+    /// character set. MouseText provides graphical symbols for building text-based UIs.
+    /// </remarks>
+    void SetAltChar(bool altChar);
+
+    /// <summary>
+    /// Sets the state of the TEXT soft switch ($C050/$C051).
+    /// </summary>
+    /// <param name="text">True for text mode; false for graphics mode.</param>
+    /// <remarks>
+    /// Controls the primary video mode. When true, displays 40-column or 80-column text.
+    /// When false, displays lo-res or hi-res graphics, depending on the HIRES switch.
+    /// </remarks>
+    void SetText(bool text);
+
+    /// <summary>
+    /// Sets the state of the MIXED soft switch ($C052/$C053).
+    /// </summary>
+    /// <param name="mixed">True to enable mixed mode; false for full-screen mode.</param>
+    /// <remarks>
+    /// When true and in graphics mode, displays graphics on the top 20 rows (160 scanlines)
+    /// and text on the bottom 4 rows (32 scanlines). Commonly used in games to show
+    /// graphics with a text status line. Has no effect in text mode.
+    /// </remarks>
+    void SetMixed(bool mixed);
+
+    /// <summary>
+    /// Sets the state of the PAGE2 soft switch ($C054/$C055).
+    /// </summary>
+    /// <param name="page2">True to display page 2; false to display page 1.</param>
+    /// <remarks>
+    /// Selects which video page is displayed. Page 1 uses $0400-$07FF (text) or
+    /// $2000-$3FFF (hi-res). Page 2 uses $0800-$0BFF (text) or $4000-$5FFF (hi-res).
+    /// Can be used for page flipping animation.
+    /// </remarks>
+    void SetPage2(bool page2);
+
+    /// <summary>
+    /// Sets the state of the HIRES soft switch ($C056/$C057).
+    /// </summary>
+    /// <param name="hires">True for hi-res graphics mode; false for lo-res graphics mode.</param>
+    /// <remarks>
+    /// In graphics mode (TEXT off), controls whether to display hi-res graphics
+    /// (280×192 pixels, 6 colors) or lo-res graphics (40×48 color blocks, 16 colors).
+    /// Has no effect when TEXT mode is enabled.
+    /// </remarks>
+    void SetHiRes(bool hires);
+
+    #endregion
+
+    #region Annunciator Mutations
+
+    /// <summary>
+    /// Sets the state of annunciator 0 ($C058/$C059).
+    /// </summary>
+    /// <param name="an0">True to turn on annunciator 0; false to turn off.</param>
+    /// <remarks>
+    /// General-purpose output signal, rarely used in standard software.
+    /// Some games use annunciators for audio effects or peripheral control.
+    /// </remarks>
+    void SetAn0(bool an0);
+
+    /// <summary>
+    /// Sets the state of annunciator 1 ($C05A/$C05B).
+    /// </summary>
+    /// <param name="an1">True to turn on annunciator 1; false to turn off.</param>
+    /// <remarks>
+    /// General-purpose output signal, rarely used in standard software.
+    /// </remarks>
+    void SetAn1(bool an1);
+
+    /// <summary>
+    /// Sets the state of annunciator 2 ($C05C/$C05D).
+    /// </summary>
+    /// <param name="an2">True to turn on annunciator 2; false to turn off.</param>
+    /// <remarks>
+    /// General-purpose output signal, rarely used in standard software.
+    /// </remarks>
+    void SetAn2(bool an2);
+
+    /// <summary>
+    /// Sets the state of annunciator 3 / double hi-res enable ($C05E/$C05F).
+    /// </summary>
+    /// <param name="an3">True to turn on annunciator 3; false to turn off.</param>
+    /// <remarks>
+    /// Annunciator 3 doubles as the double hi-res (DHR) enable switch.
+    /// <para>
+    /// <strong>Important:</strong> The logic is inverted for DHGR - when this value is
+    /// <em>false</em> (annunciator off), double hi-res mode is <em>enabled</em>.
+    /// When this value is <em>true</em> (annunciator on), double hi-res is <em>disabled</em>.
+    /// </para>
+    /// </remarks>
+    void SetAn3(bool an3);
+
+    #endregion
+
+    #region Language Card Switch Mutations
+
+    /// <summary>
+    /// Sets the language card bank selection state.
+    /// </summary>
+    /// <param name="enabled">True to select bank 1; false to select bank 2.</param>
+    /// <remarks>
+    /// The language card provides two 4KB RAM banks for the $D000-$DFFF address space.
+    /// Bank 1 is physically located at $C000-$CFFF, while bank 2 is at $D000-$DFFF.
+    /// </remarks>
+    void SetBank1(bool enabled);
+
+    /// <summary>
+    /// Sets the language card write enable state.
+    /// </summary>
+    /// <param name="enabled">True to enable writing to language card RAM; false to write-protect.</param>
+    /// <remarks>
+    /// Controls whether writes to the $D000-$FFFF range modify the language card RAM.
+    /// Write protection is engaged through a two-access sequence to prevent accidental
+    /// modification of critical code.
+    /// </remarks>
+    void SetHighWrite(bool enabled);
+
+    /// <summary>
+    /// Sets the language card read enable state.
+    /// </summary>
+    /// <param name="enabled">True to read from language card RAM; false to read from ROM.</param>
+    /// <remarks>
+    /// Controls whether reads from $D000-$FFFF access the language card RAM or the
+    /// built-in ROM. Independent of write enable, allowing read-from-ROM,
+    /// write-to-RAM configurations.
+    /// </remarks>
+    void SetHighRead(bool enabled);
+
+    /// <summary>
+    /// Sets the language card pre-write state.
+    /// </summary>
+    /// <param name="enabled">True to activate pre-write sequence; false otherwise.</param>
+    /// <remarks>
+    /// The language card uses a two-access sequence to enable writing. The first access
+    /// sets pre-write mode. A second consecutive access to the same address enables
+    /// write mode. This is an internal state for the write protection mechanism.
+    /// </remarks>
+    void SetPreWrite(bool enabled);
+
+    #endregion
+
+    #region Game Controller and Keyboard Mutations
+
+    /// <summary>
+    /// Sets the state of pushbutton 0 ($C061).
+    /// </summary>
+    /// <param name="pressed">True if button 0 is pressed; false if released.</param>
+    /// <remarks>
+    /// Represents the state of game controller button 0. The high bit of the
+    /// byte read from $C061 indicates the button state.
+    /// </remarks>
+    void SetButton0(bool pressed);
+
+    /// <summary>
+    /// Sets the state of pushbutton 1 ($C062).
+    /// </summary>
+    /// <param name="pressed">True if button 1 is pressed; false if released.</param>
+    /// <remarks>
+    /// Represents the state of game controller button 1. The high bit of the
+    /// byte read from $C062 indicates the button state.
+    /// </remarks>
+    void SetButton1(bool pressed);
+
+    /// <summary>
+    /// Sets the state of pushbutton 2 ($C063).
+    /// </summary>
+    /// <param name="pressed">True if button 2 is pressed; false if released.</param>
+    /// <remarks>
+    /// Represents the state of game controller button 2. The high bit of the
+    /// byte read from $C063 indicates the button state.
+    /// </remarks>
+    void SetButton2(bool pressed);
+
+    /// <summary>
+    /// Sets the current keyboard character code.
+    /// </summary>
+    /// <param name="value">The keyboard character code with high bit set when a key is pressed.</param>
+    /// <remarks>
+    /// <para>
+    /// When a key is pressed, bit 7 is set (value >= 128) and bits 0-6 contain the ASCII
+    /// character code. The strobe remains set until cleared by reading $C010.
+    /// </para>
+    /// <para>
+    /// <strong>Apple IIe Behavior:</strong> The keyboard generates standard ASCII codes
+    /// (0-127) with bit 7 serving as the strobe indicator.
+    /// </para>
+    /// </remarks>
+    void SetCurrentKey(byte value);
+
+    /// <summary>
+    /// Sets the value of paddle 0 (game controller analog input).
+    /// </summary>
+    /// <param name="value">Paddle 0 position value (0-255), where 0 is fully left/up and 255 is fully right/down.</param>
+    /// <remarks>
+    /// The Apple IIe game port provides four analog inputs read through a timer-based
+    /// mechanism. The value represents the pre-calculated time-out period for emulator efficiency.
+    /// </remarks>
+    void SetPdl0(byte value);
+
+    /// <summary>
+    /// Sets the value of paddle 1 (game controller analog input).
+    /// </summary>
+    /// <param name="value">Paddle 1 position value (0-255), where 0 is fully left/up and 255 is fully right/down.</param>
+    /// <remarks>
+    /// See <see cref="SetPdl0"/> for detailed paddle mechanics and timing information.
+    /// </remarks>
+    void SetPdl1(byte value);
+
+    /// <summary>
+    /// Sets the value of paddle 2 (game controller analog input).
+    /// </summary>
+    /// <param name="value">Paddle 2 position value (0-255), where 0 is fully left/up and 255 is fully right/down.</param>
+    /// <remarks>
+    /// See <see cref="SetPdl0"/> for detailed paddle mechanics and timing information.
+    /// </remarks>
+    void SetPdl2(byte value);
+
+    /// <summary>
+    /// Sets the value of paddle 3 (game controller analog input).
+    /// </summary>
+    /// <param name="value">Paddle 3 position value (0-255), where 0 is fully left/up and 255 is fully right/down.</param>
+    /// <remarks>
+    /// See <see cref="SetPdl0"/> for detailed paddle mechanics and timing information.
+    /// </remarks>
+    void SetPdl3(byte value);
+
+    #endregion
+
+    #region System State Mutations
+
+    /// <summary>
+    /// Sets the vertical blanking interval state ($C019, bit 7).
+    /// </summary>
+    /// <param name="active">True if in VBlank period; false during visible display.</param>
+    /// <remarks>
+    /// <para>
+    /// The vertical blanking interval occurs during scanlines 192-261 of each frame.
+    /// During VBlank, the CRT electron beam returns from bottom to top, and software
+    /// can safely update graphics without causing visual artifacts.
+    /// </para>
+    /// <para>
+    /// <strong>Timing:</strong> At 60 Hz frame rate, VBlank toggles approximately 120 times
+    /// per second (twice per frame: ON at cycle 12,480, OFF at cycle 17,029).
+    /// </para>
+    /// </remarks>
+    void SetVBlank(bool active);
+
+    /// <summary>
+    /// Sets the flash state for flashing characters.
+    /// </summary>
+    /// <param name="flashOn">True if flash characters should be displayed in inverse; false for normal.</param>
+    /// <remarks>
+    /// <para>
+    /// The Apple IIe automatically alternates the display of flashing characters
+    /// (codes $40-$7F) between normal and inverse video at approximately 2 Hz.
+    /// This property reflects the current phase of that cycle.
+    /// </para>
+    /// <para>
+    /// <strong>Timing:</strong> Typically toggled by the emulator at ~2.1 Hz to match
+    /// Apple IIe hardware behavior (managed by <see cref="VA2M"/> flash timer).
+    /// </para>
+    /// </remarks>
+    void SetFlashOn(bool flashOn);
+
+    #endregion
+}

@@ -86,16 +86,16 @@ public record SystemStatusSnapshot(
     );
 
 /// <summary>
-/// Provides observable system status tracking with soft switch response integration.
+/// Provides observable system status tracking with mutation interface.
 /// </summary>
 /// <remarks>
 /// <para>
-/// <strong>Dual Role:</strong> This class serves two roles in the emulator architecture:
-/// <list type="number">
+/// <strong>Dual Interface Implementation:</strong> This class implements both:
+/// <list type="bullet">
 /// <item><see cref="ISystemStatusProvider"/> - Read-only observable access for consumers
 /// (renderers, debuggers, UI) to query and subscribe to system state changes.</item>
-/// <item><see cref="ISoftSwitchResponder"/> - Write interface for the bus/soft switch
-/// manager to update state when soft switches are toggled by programs.</item>
+/// <item><see cref="ISystemStatusMutator"/> - Write interface for components that need to
+/// update state (such as <see cref="SoftSwitches"/> when soft switches are toggled).</item>
 /// </list>
 /// </para>
 /// <para>
@@ -114,8 +114,8 @@ public record SystemStatusSnapshot(
 /// This matches the behavior of a freshly powered-on Apple IIe before the monitor runs.
 /// </para>
 /// <para>
-/// <strong>Thread Safety:</strong> Updates via <see cref="Mutate"/> are not inherently
-/// thread-safe. The caller (typically <see cref="VA2MBus"/>) must ensure serialized access
+/// <strong>Thread Safety:</strong> Updates via mutation methods are not inherently
+/// thread-safe. The caller (typically <see cref="SoftSwitches"/>) must ensure serialized access
 /// from a single thread. Reads are safe from any thread due to immutable snapshots.
 /// </para>
 /// <para>
@@ -124,7 +124,7 @@ public record SystemStatusSnapshot(
 /// This ensures reactive subscribers see updates before event handlers.
 /// </para>
 /// </remarks>
-public sealed class SystemStatusProvider : ISystemStatusProvider, ISoftSwitchResponder
+public sealed class SystemStatusProvider : ISystemStatusMutator
 {
     // Current system state snapshot (immutable)
     private SystemStatusSnapshot _current = new(
@@ -345,7 +345,7 @@ public sealed class SystemStatusProvider : ISystemStatusProvider, ISoftSwitchRes
         }
     }
 
-    #region ISoftSwitchResponder - Soft switch update interface
+    #region ISystemStatusMutator - Mutation interface
 
     // Memory configuration switches
     /// <inheritdoc />
@@ -421,16 +421,29 @@ public sealed class SystemStatusProvider : ISystemStatusProvider, ISoftSwitchRes
     /// <inheritdoc />
     public void SetButton2(bool pressed) => Mutate(b => b.StatePb2 = pressed);
 
+    // Keyboard and paddles
+    /// <inheritdoc />
+    public void SetCurrentKey(byte value) => Mutate(b => b.StateCurrentKey = value);
+
+    /// <inheritdoc />
+    public void SetPdl0(byte value) => Mutate(b => b.StatePdl0 = value);
+
+    /// <inheritdoc />
+    public void SetPdl1(byte value) => Mutate(b => b.StatePdl1 = value);
+
+    /// <inheritdoc />
+    public void SetPdl2(byte value) => Mutate(b => b.StatePdl2 = value);
+
+    /// <inheritdoc />
+    public void SetPdl3(byte value) => Mutate(b => b.StatePdl3 = value);
+
     // Vertical blanking interval
     /// <inheritdoc />
     public void SetVBlank(bool active) => Mutate(b => b.StateVBlank = active);
 
-    public void SetCurrentKey(byte value) => Mutate(b => b.StateCurrentKey = value);
-    public void SetPdl0(byte value) => Mutate(b => b.StatePdl0 = value);
-    public void SetPdl1(byte value) => Mutate(b => b.StatePdl1 = value);
-    public void SetPdl2(byte value) => Mutate(b => b.StatePdl2 = value);
-    public void SetPdl3(byte value) => Mutate(b => b.StatePdl3 = value);
-
+    // Flash state (timing-based, toggled by VA2M)
+    /// <inheritdoc />
+    public void SetFlashOn(bool flashOn) => Mutate(b => b.StateFlashOn = flashOn);
 
     #endregion
 }

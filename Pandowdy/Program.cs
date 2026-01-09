@@ -62,12 +62,14 @@ namespace Pandowdy
 
                     services.AddSingleton<SoftSwitches>();
 
-                    // SystemStatusProvider implements both ISystemStatusProvider and ISoftSwitchResponder
+                    // SystemStatusProvider implements both ISystemStatusProvider (read-only) and ISystemStatusMutator (read-write)
                     // Register the concrete type first
                     services.AddSingleton<SystemStatusProvider>();
-                    // Then register both interfaces to point to the same instance
+                    // Register read-only interface
                     services.AddSingleton<ISystemStatusProvider>(sp => sp.GetRequiredService<SystemStatusProvider>());
-                    services.AddSingleton<ISoftSwitchResponder>(sp => sp.GetRequiredService<SystemStatusProvider>());
+                    // Register read-write interface (inherits from ISystemStatusProvider)
+                    services.AddSingleton<ISystemStatusMutator>(sp => sp.GetRequiredService<SystemStatusProvider>());
+
 
                     // Floating Bus Provider
                     //services.AddSingleton<IFloatingBusProvider, NullFloatingBusProvider>();

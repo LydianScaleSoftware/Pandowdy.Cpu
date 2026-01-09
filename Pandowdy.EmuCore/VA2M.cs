@@ -116,9 +116,7 @@ public class VA2M : IDisposable, IKeyboardSetter
     /// Gets the system bus coordinating CPU, memory, and I/O access.
     /// </summary>
     public IAppleIIBus Bus { get; }
-
- //   private readonly ICpu _cpu;
-    
+  
     /// <summary>
     /// Stopwatch for throttling the emulator to match Apple IIe speed.
     /// </summary>
@@ -243,9 +241,9 @@ public class VA2M : IDisposable, IKeyboardSetter
     private readonly IFrameProvider _frameSink; 
     
     /// <summary>
-    /// System status sink for publishing soft switch states.
+    /// System status sink for publishing and mutating soft switch states.
     /// </summary>
-    private readonly ISystemStatusProvider _sysStatusSink;
+    private readonly ISystemStatusMutator _sysStatusSink;
     
     /// <summary>
     /// Frame generator for rendering Apple IIe video output.
@@ -292,7 +290,7 @@ public class VA2M : IDisposable, IKeyboardSetter
     /// </summary>
     /// <param name="stateSink">State provider for publishing emulator state snapshots.</param>
     /// <param name="frameSink">Frame provider for publishing rendered video frames.</param>
-    /// <param name="statusProvider">System status provider for soft switch states.</param>
+    /// <param name="statusProvider">System status mutator for soft switch states (read and write access).</param>
     /// <param name="bus">System bus coordinating CPU, memory, and I/O.</param>
     /// <param name="memoryPool">Memory pool managing 128KB Apple IIe memory.</param>
     /// <param name="frameGenerator">Frame generator for rendering video output.</param>
@@ -322,7 +320,7 @@ public class VA2M : IDisposable, IKeyboardSetter
     public VA2M(
         IEmulatorState stateSink, 
         IFrameProvider frameSink, 
-        ISystemStatusProvider statusProvider, 
+        ISystemStatusMutator statusProvider, 
         IAppleIIBus bus, 
         MemoryPool memoryPool, 
         IFrameGenerator frameGenerator,
@@ -487,7 +485,7 @@ public class VA2M : IDisposable, IKeyboardSetter
         // Apply pending flash toggle at frame boundary for consistent rendering
         if (Interlocked.Exchange(ref _pendingFlashToggle, 0) != 0)
         {
-            _sysStatusSink.Mutate(s => s.StateFlashOn = !s.StateFlashOn);
+            _sysStatusSink.SetFlashOn(!_sysStatusSink.StateFlashOn);
         }
 
         // Capture video memory snapshot (fast - ~1-3 microseconds)

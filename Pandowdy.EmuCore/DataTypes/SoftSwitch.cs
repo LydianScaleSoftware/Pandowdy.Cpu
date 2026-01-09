@@ -16,7 +16,7 @@ namespace Pandowdy.EmuCore.DataTypes;
 /// useful for debugging and performance analysis.
 /// </para>
 /// </remarks>
-public sealed class SoftSwitch(string name)
+public sealed class SoftSwitch(string name, bool initialValue = false)
 {
     /// <summary>
     /// Gets the human-readable name of this soft switch (e.g., "80STORE", "RAMRD", "TEXT").
@@ -28,7 +28,7 @@ public sealed class SoftSwitch(string name)
     /// Gets or sets the current boolean state of the soft switch.
     /// </summary>
     /// <value>True if the switch is on (enabled); false if off (disabled).</value>
-    public bool Value { get; set; }
+    public bool Value { get; set; } = initialValue;
 
     /// <summary>
     /// Sets the soft switch to the specified value.

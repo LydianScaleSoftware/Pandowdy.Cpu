@@ -503,10 +503,10 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable, IKeyboardSetter
         InitIoWriteHandlers();
 
 
-        if (statusProvider is ISoftSwitchResponder softSwitchResponder)
-        {
-            _softSwitches.AddResponder(softSwitchResponder);
-        }
+        //if (statusProvider is ISoftSwitchResponder softSwitchResponder)
+        //{
+        //    _softSwitches.AddResponder(softSwitchResponder);
+        //}
     }
 
     /// <summary>

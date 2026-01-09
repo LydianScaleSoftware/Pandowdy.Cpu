@@ -4,7 +4,7 @@ namespace Pandowdy.EmuCore.Tests.Services;
 
 /// <summary>
 /// Unit tests for SystemStatusProvider, which manages Apple II system state
-/// and implements both ISystemStatusProvider and ISoftSwitchResponder.
+/// and implements both ISystemStatusProvider (read-only) and ISystemStatusMutator (read-write).
 /// </summary>
 public class SystemStatusProviderTests
 {
@@ -72,7 +72,7 @@ public class SystemStatusProviderTests
 
     #endregion
 
-    #region ISoftSwitchResponder Memory Configuration Tests
+    #region ISystemStatusMutator Memory Configuration Tests
 
     [Fact]
     public void Set80Store_UpdatesStateCorrectly()
@@ -167,7 +167,7 @@ public class SystemStatusProviderTests
 
     #endregion
 
-    #region ISoftSwitchResponder Video Mode Tests
+    #region ISystemStatusMutator Video Mode Tests
 
     [Fact]
     public void Set80Vid_UpdatesShow80Col()
@@ -262,7 +262,7 @@ public class SystemStatusProviderTests
 
     #endregion
 
-    #region ISoftSwitchResponder Annunciator Tests
+    #region ISystemStatusMutator Annunciator Tests
 
     [Theory]
     [InlineData(true)]
@@ -326,7 +326,7 @@ public class SystemStatusProviderTests
 
     #endregion
 
-    #region ISoftSwitchResponder Language Card Tests
+    #region ISystemStatusMutator Language Card Tests
 
     [Theory]
     [InlineData(true)]
