@@ -55,7 +55,35 @@ public class SystemIoHandler : ISystemIoHandler
     /// </remarks>
     private readonly IGameControllerStatus _gameController;
 
-    // private long _VblankBlackoutCounter = 0;
+    /// <summary>
+    /// VBlank status handler for vertical blanking timing synchronization.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>Shared State:</strong> This VBlankStatusHandler instance is shared with VA2MBus
+    /// to maintain consistent VBlank timing state across the emulator. VA2MBus owns the counter
+    /// lifecycle (decrementing every CPU cycle, resetting when VBlank starts), while SystemIoHandler
+    /// reads the InVBlank property when servicing RD_VERTBLANK_ ($C019) I/O reads.
+    /// </para>
+    /// <para>
+    /// <strong>$C019 (RD_VERTBLANK_) Handling:</strong> When CPU reads address $C019, the I/O handler
+    /// returns bit 7 set ($80) if currently in VBlank period, or bit 7 clear ($00) if not. The lower
+    /// 7 bits contain the current keyboard latch value. This allows software to detect the vertical
+    /// blanking interval for flicker-free graphics updates.
+    /// </para>
+    /// <para>
+    /// <strong>Read-Only Access:</strong> SystemIoHandler only reads from VBlankStatusHandler via
+    /// the InVBlank property. It never modifies the counter or state. All counter management is
+    /// performed by VA2MBus.Clock() which decrements the counter every CPU cycle and resets it
+    /// when VBlank starts (every 17,030 cycles at cycle offset 12,480).
+    /// </para>
+    /// <para>
+    /// <strong>Apple IIe Timing:</strong> VBlank is active for 4,550 cycles (70 scanlines × 65
+    /// cycles/scanline) starting at cycle 12,480 of each 17,030-cycle frame. Software uses this
+    /// period for graphics updates, page flipping, and other operations that should not cause
+    /// visual artifacts during active display.
+    /// </para>
+    /// </remarks>
     private VBlankStatusHandler _vblank;
 
     /// <summary>
@@ -162,11 +190,6 @@ public class SystemIoHandler : ISystemIoHandler
         ushort address = (ushort) (0xC000 + offset);
         WriteToIOSpace(address, data);
     }
-
-
-
-
-
 
     /// <summary>
     /// Reads a byte from I/O space ($C000-$C0FF) by dispatching to the appropriate handler.
@@ -330,6 +353,7 @@ public class SystemIoHandler : ISystemIoHandler
     /// </remarks>
     private readonly Dictionary<ushort, Func<byte>> _ioReadHandlers = [];
 
+    #region Constants 
     /// <summary>Start of Apple IIe I/O address space ($C000).</summary>
     public const ushort IO_AREA_START = 0xC000;
     /// <summary>End of Apple IIe I/O address space ($CFFF).</summary>
@@ -546,6 +570,8 @@ public class SystemIoHandler : ISystemIoHandler
     /// <summary>Slot 7 I/O space end ($C0FF).</summary>
     public const ushort SLOT7_IO_SPACE_END = 0xC0FF;
 
+    #endregion
+
     /// <summary>
     /// Initializes I/O write handler dictionary with functions for all writable I/O addresses.
     /// </summary>
@@ -670,8 +696,6 @@ public class SystemIoHandler : ISystemIoHandler
             return;
         }
     }
-
-
 
     /// <summary>
     /// Initializes I/O read handler dictionary with functions for all readable I/O addresses.
@@ -850,7 +874,5 @@ public class SystemIoHandler : ISystemIoHandler
             _softSwitches.Set(SoftSwitches.SoftSwitchId.HighWrite, true);
         }
     }
-
-
 
 }
