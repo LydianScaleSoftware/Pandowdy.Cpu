@@ -289,7 +289,7 @@ public sealed class AddressSpaceController : IMemory, IMemoryAccessNotifier, IDi
                 _systemRam.Write(address, value);
                 break;
         }
-        
+
         MemoryWritten?.Invoke(this, new MemoryAccessEventArgs { Address = address, Value = value });
     }
 

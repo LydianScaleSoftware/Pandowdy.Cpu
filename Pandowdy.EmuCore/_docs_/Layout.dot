@@ -1,27 +1,14 @@
 digraph PandowdyEmuCore {
-    // Graph styling
+    // Graph styling - optimized for compact vertical layout
     rankdir=TB;
-    node [shape=rectangle, style=filled, fontname="Arial"];
-    edge [fontname="Arial", fontsize=10];
+    node [shape=rectangle, style=filled, fontname="Arial", fontsize=10];
+    edge [fontname="Arial", fontsize=9];
     compound=true;
-    
-    // Legend
-    subgraph cluster_legend {
-        label="Legend";
-        style=filled;
-        color=lightgrey;
-        
-        legend_singleton [label="Singleton", fillcolor=lightblue, shape=box];
-        legend_transient [label="Transient", fillcolor=lightyellow, shape=box];
-        legend_interface [label="Interface", fillcolor=lightgreen, shape=ellipse];
-        legend_external [label="External (6502.NET)", fillcolor=wheat, shape=box];
-        
-        legend_singleton -> legend_transient [style=invis];
-        legend_interface -> legend_external [style=invis];
-    }
+    nodesep=0.3;
+    ranksep=0.8;
     
     // ========================================
-    // ORCHESTRATION LAYER
+    // TIER 1: ORCHESTRATION LAYER (TOP)
     // ========================================
     
     subgraph cluster_orchestration {
@@ -29,11 +16,11 @@ digraph PandowdyEmuCore {
         style=filled;
         color=lightsteelblue;
         
-        VA2M [fillcolor=lightblue, label="VA2M\n(Singleton)\nMain Orchestrator"];
+        VA2M [fillcolor=lightblue, label="VA2M\n(Singleton)\nOrchestrator"];
     }
     
     // ========================================
-    // CPU SUBSYSTEM
+    // TIER 2: BUS + CPU (SIDE BY SIDE)
     // ========================================
     
     subgraph cluster_cpu {
@@ -41,17 +28,10 @@ digraph PandowdyEmuCore {
         style=filled;
         color=lightsalmon;
         
-        // External 6502.NET CPU
-        CPU [fillcolor=wheat, label="Emulator.CPU\n(6502.NET)\n(Singleton)"];
-        
-        // Adapter pattern
+        CPU [fillcolor=wheat, label="Emulator.CPU\n(6502.NET)"];
         ICpu [fillcolor=lightgreen, shape=ellipse, label="ICpu"];
-        CPUAdapter [fillcolor=lightblue, label="CPUAdapter\n(Singleton)\nAdapter Pattern"];
+        CPUAdapter [fillcolor=lightblue, label="CPUAdapter\nAdapter"];
     }
-    
-    // ========================================
-    // BUS SUBSYSTEM
-    // ========================================
     
     subgraph cluster_bus {
         label="Bus Subsystem";
@@ -59,65 +39,102 @@ digraph PandowdyEmuCore {
         color=lightcoral;
         
         IAppleIIBus [fillcolor=lightgreen, shape=ellipse, label="IAppleIIBus"];
-        VA2MBus [fillcolor=lightblue, label="VA2MBus\n(Singleton)\nMemory Router\nI/O Handler"];
+        VA2MBus [fillcolor=lightblue, label="VA2MBus\nRouter\n$C000-$C08F"];
         
-        ISystemIoHandler [fillcolor=lightgreen, shape=ellipse, label="ISystemIoHandler\n(Planned)", style="filled,dashed"];
-        SystemIoHandler [fillcolor=lightyellow, label="SystemIoHandler\n(Future)\nI/O Coordinator", style="filled,dashed"];
+        ISystemIoHandler [fillcolor=lightgreen, shape=ellipse, label="ISystemIoHandler"];
+        SystemIoHandler [fillcolor=lightblue, label="SystemIoHandler\nI/O $C000-$C08F"];
     }
     
+    // Force CPU and Bus to same rank
+    {rank=same; cluster_cpu; cluster_bus;}
+    
     // ========================================
-    // KEYBOARD SUBSYSTEM
+    // TIER 3: INPUT + STATE (SIDE BY SIDE)
     // ========================================
     
-    subgraph cluster_keyboard {
-        label="Keyboard Subsystem";
+    subgraph cluster_input {
+        label="Input Subsystem";
         style=filled;
         color=lightgoldenrodyellow;
         
-        IKeyboardSetter [fillcolor=lightgreen, shape=ellipse, label="IKeyboardSetter\nWrite Interface"];
-
-        IKeyboardReader [fillcolor=lightgreen, shape=ellipse, label="IKeyboardReader\nRead Interface", style="filled,dashed"];
-        SingularKeyHandler [fillcolor=lightblue, label="SingularKeyHandler\n(Future)\nApple IIe Protocol", style="filled,dashed"];
+        IKeyboardSetter [fillcolor=lightgreen, shape=ellipse, label="IKeyboardSetter"];
+        IKeyboardReader [fillcolor=lightgreen, shape=ellipse, label="IKeyboardReader"];
+        SingularKeyHandler [fillcolor=lightblue, label="SingularKeyHandler"];
+        
+        IGameControllerStatus [fillcolor=lightgreen, shape=ellipse, label="IGameControllerStatus"];
+        SimpleGameController [fillcolor=lightblue, label="SimpleGameController"];
     }
     
+    subgraph cluster_state {
+        label="State & Status Subsystem";
+        style=filled;
+        color=lavender;
+        
+        SystemStatusProvider [fillcolor=lightblue, label="SystemStatusProvider\nObservable"];
+        ISystemStatusProvider [fillcolor=lightgreen, shape=ellipse, label="ISystemStatusProvider"];
+        ISystemStatusMutator [fillcolor=lightgreen, shape=ellipse, label="ISystemStatusMutator"];
+        
+        IEmulatorState [fillcolor=lightgreen, shape=ellipse, label="IEmulatorState"];
+        EmulatorStateProvider [fillcolor=lightblue, label="EmulatorStateProvider"];
+        
+        SoftSwitches [fillcolor=lightblue, label="SoftSwitches"];
+    }
+    
+    // Force Input and State to same rank
+    {rank=same; cluster_input; cluster_state;}
+    
     // ========================================
-    // MEMORY SUBSYSTEM
+    // TIER 4: MEMORY SUBSYSTEM
     // ========================================
     
     subgraph cluster_memory_main {
-        label="Memory Subsystem";
+        label="Memory Subsystem (Refactored)";
         style=filled;
         color=lightcyan;
         
-        MemoryPool [fillcolor=lightblue, label="MemoryPool\n(Singleton)\n128KB Manager"];
+        AddressSpaceController [fillcolor=lightblue, label="AddressSpaceController\nPure Router\n~200 lines", penwidth=3];
+        IMemory [fillcolor=lightgreen, shape=ellipse, label="IMemory"];
         IDirectMemoryPoolReader [fillcolor=lightgreen, shape=ellipse, label="IDirectMemoryPoolReader"];
         
-        subgraph cluster_language_card {
-            label="Language Card ($D000-$FFFF)";
-            style=filled;
-            color=paleturquoise;
-            
-            ILanguageCard [fillcolor=lightgreen, shape=ellipse, label="ILanguageCard"];
-            LanguageCard [fillcolor=lightblue, label="LanguageCard\n(Singleton)\nBanked ROM/RAM"];
-        }
-        
         subgraph cluster_ram_selector {
-            label="RAM Selector ($0000-$BFFF)";
+            label="RAM $0000-$BFFF";
             style=filled;
             color=paleturquoise;
             
             ISystemRamSelector [fillcolor=lightgreen, shape=ellipse, label="ISystemRamSelector"];
-            SystemRamSelector [fillcolor=lightblue, label="SystemRamSelector\n(Singleton)\nMain/Aux RAM"];
+            SystemRamSelector [fillcolor=lightblue, label="SystemRamSelector\nMain/Aux"];
+        }
+        
+        subgraph cluster_slots {
+            label="Slots $C090-$CFFF";
+            style=filled;
+            color=paleturquoise;
+            
+            ISlots [fillcolor=lightgreen, shape=ellipse, label="ISlots"];
+            Slots [fillcolor=lightblue, label="Slots\nCard Mgr"];
+            
+            ICard [fillcolor=lightgreen, shape=ellipse, label="ICard"];
+            NullCard [fillcolor=lightyellow, label="NullCard"];
+            ICardFactory [fillcolor=lightgreen, shape=ellipse, label="ICardFactory"];
+        }
+        
+        subgraph cluster_language_card {
+            label="LangCard $D000-$FFFF";
+            style=filled;
+            color=paleturquoise;
+            
+            ILanguageCard [fillcolor=lightgreen, shape=ellipse, label="ILanguageCard"];
+            LanguageCard [fillcolor=lightblue, label="LanguageCard\nBanked"];
         }
         
         subgraph cluster_system_ram {
-            label="System RAM (Keyed Services)";
+            label="System RAM";
             style=filled;
             color=paleturquoise;
             
             ISystemRam [fillcolor=lightgreen, shape=ellipse, label="ISystemRam"];
-            MemoryBlock_16K [fillcolor=lightyellow, label="MemoryBlock\n16KB\n(Transient)"];
-            MemoryBlock_48K [fillcolor=lightyellow, label="MemoryBlock\n48KB\n(Transient)"];
+            MemoryBlock_16K [fillcolor=lightyellow, label="MemoryBlock\n16KB"];
+            MemoryBlock_48K [fillcolor=lightyellow, label="MemoryBlock\n48KB"];
         }
         
         subgraph cluster_rom {
@@ -126,7 +143,7 @@ digraph PandowdyEmuCore {
             color=paleturquoise;
             
             ISystemRomProvider [fillcolor=lightgreen, shape=ellipse, label="ISystemRomProvider"];
-            SystemRomProvider [fillcolor=lightblue, label="SystemRomProvider\n(Singleton)\nApple IIe ROM"];
+            SystemRomProvider [fillcolor=lightblue, label="SystemRomProvider\n16KB ROM\nShared", penwidth=3];
         }
         
         subgraph cluster_floating_bus {
@@ -135,34 +152,18 @@ digraph PandowdyEmuCore {
             color=paleturquoise;
             
             IFloatingBusProvider [fillcolor=lightgreen, shape=ellipse, label="IFloatingBusProvider"];
-            RandomFloatingBusProvider [fillcolor=lightblue, label="RandomFloatingBusProvider\n(Singleton)"];
+            RandomFloatingBusProvider [fillcolor=lightblue, label="RandomFloatingBusProvider"];
         }
+        
+        // Force memory regions to same rank
+        {rank=same; cluster_ram_selector; cluster_slots; cluster_language_card;}
+        
+        // Force supporting services to same rank
+        {rank=same; cluster_system_ram; cluster_rom; cluster_floating_bus;}
     }
     
     // ========================================
-    // STATE & STATUS SUBSYSTEM (REFACTORED)
-    // ========================================
-    
-    subgraph cluster_state {
-        label="State & Status Subsystem";
-        style=filled;
-        color=lavender;
-        
-        // System Status - NEW ARCHITECTURE
-        SystemStatusProvider [fillcolor=lightblue, label="SystemStatusProvider\n(Singleton)\nObservable State"];
-        ISystemStatusProvider [fillcolor=lightgreen, shape=ellipse, label="ISystemStatusProvider\nRead-Only Interface"];
-        ISystemStatusMutator [fillcolor=lightgreen, shape=ellipse, label="ISystemStatusMutator\nRead-Write Interface\n(extends ISystemStatusProvider)"];
-        
-        // Emulator State
-        IEmulatorState [fillcolor=lightgreen, shape=ellipse, label="IEmulatorState"];
-        EmulatorStateProvider [fillcolor=lightblue, label="EmulatorStateProvider\n(Singleton)\nCPU State"];
-        
-        // Soft Switches (DI Managed) - REFACTORED
-        SoftSwitches [fillcolor=lightblue, label="SoftSwitches\n(Singleton)\nDirect Coupling\nwith StatusProvider"];
-    }
-    
-    // ========================================
-    // RENDERING SUBSYSTEM
+    // TIER 5: RENDERING SUBSYSTEM (BOTTOM)
     // ========================================
     
     subgraph cluster_rendering {
@@ -171,134 +172,123 @@ digraph PandowdyEmuCore {
         color=mistyrose;
         
         IFrameGenerator [fillcolor=lightgreen, shape=ellipse, label="IFrameGenerator"];
-        FrameGenerator [fillcolor=lightblue, label="FrameGenerator\n(Singleton)\nFrame Coordinator"];
+        FrameGenerator [fillcolor=lightblue, label="FrameGenerator"];
         
         IFrameProvider [fillcolor=lightgreen, shape=ellipse, label="IFrameProvider"];
-        FrameProvider [fillcolor=lightblue, label="FrameProvider\n(Singleton)\nDouble Buffer"];
+        FrameProvider [fillcolor=lightblue, label="FrameProvider"];
         
         ICharacterRomProvider [fillcolor=lightgreen, shape=ellipse, label="ICharacterRomProvider"];
-        CharacterRomProvider [fillcolor=lightblue, label="CharacterRomProvider\n(Singleton)\nChar ROM"];
+        CharacterRomProvider [fillcolor=lightblue, label="CharacterRomProvider"];
         
         IDisplayBitmapRenderer [fillcolor=lightgreen, shape=ellipse, label="IDisplayBitmapRenderer"];
-        LegacyBitmapRenderer [fillcolor=lightblue, label="LegacyBitmapRenderer\n(Singleton)\nPixel Renderer"];
+        LegacyBitmapRenderer [fillcolor=lightblue, label="LegacyBitmapRenderer"];
         
-        // Threaded Rendering
-        VideoMemorySnapshotPool [fillcolor=lightblue, label="VideoMemorySnapshotPool\n(Singleton)\nSnapshot Pool"];
-        RenderingService [fillcolor=lightblue, label="RenderingService\n(Singleton)\nThreaded Rendering"];
+        VideoMemorySnapshotPool [fillcolor=lightblue, label="VideoMemorySnapshotPool"];
+        RenderingService [fillcolor=lightblue, label="RenderingService\nThreaded"];
     }
     
     // ========================================
     // INTERFACE IMPLEMENTATIONS
     // ========================================
     
-    // CPU Adapter implements ICpu
-    CPUAdapter -> ICpu [label="implements", style=dashed, color=blue];
-    
-    // Keyboard implementations (planned)
-    SingularKeyHandler -> IKeyboardReader [label="implements", style=dashed, color=orange];
-    SingularKeyHandler -> IKeyboardSetter [label="implements", style=dashed, color=orange];
-    
-    // SystemStatusProvider implements NEW interfaces
-    SystemStatusProvider -> ISystemStatusProvider [label="implements", style=dashed, color=blue, penwidth=2];
-    SystemStatusProvider -> ISystemStatusMutator [label="implements", style=dashed, color=blue, penwidth=2];
-    ISystemStatusMutator -> ISystemStatusProvider [label="extends", style=dashed, color=green, penwidth=2];
-    
-    // MemoryPool implements IDirectMemoryPoolReader
-    MemoryPool -> IDirectMemoryPoolReader [label="implements", style=dashed, color=blue];
-    
-    // Bus implementation
-    VA2MBus -> IAppleIIBus [label="implements", style=dashed, color=blue];
-    SystemIoHandler -> ISystemIoHandler [label="implements", style=dashed, color=orange];
-    
-    // Memory implementations
-    LanguageCard -> ILanguageCard [label="implements", style=dashed, color=blue];
-    SystemRamSelector -> ISystemRamSelector [label="implements", style=dashed, color=blue];
-    MemoryBlock_16K -> ISystemRam [label="implements", style=dashed, color=blue];
-    MemoryBlock_48K -> ISystemRam [label="implements", style=dashed, color=blue];
-    SystemRomProvider -> ISystemRomProvider [label="implements", style=dashed, color=blue];
-    RandomFloatingBusProvider -> IFloatingBusProvider [label="implements", style=dashed, color=blue];
-    
-    // Rendering implementations
-    FrameGenerator -> IFrameGenerator [label="implements", style=dashed, color=blue];
-    FrameProvider -> IFrameProvider [label="implements", style=dashed, color=blue];
-    CharacterRomProvider -> ICharacterRomProvider [label="implements", style=dashed, color=blue];
-    LegacyBitmapRenderer -> IDisplayBitmapRenderer [label="implements", style=dashed, color=blue];
-    
-    // State implementation
-    EmulatorStateProvider -> IEmulatorState [label="implements", style=dashed, color=blue];
+    CPUAdapter -> ICpu [label="impl", style=dashed, color=blue];
+    SingularKeyHandler -> IKeyboardReader [label="impl", style=dashed, color=blue];
+    SingularKeyHandler -> IKeyboardSetter [label="impl", style=dashed, color=blue];
+    SimpleGameController -> IGameControllerStatus [label="impl", style=dashed, color=blue];
+    SystemStatusProvider -> ISystemStatusProvider [label="impl", style=dashed, color=blue];
+    SystemStatusProvider -> ISystemStatusMutator [label="impl", style=dashed, color=blue];
+    ISystemStatusMutator -> ISystemStatusProvider [label="extends", style=dashed, color=green];
+    AddressSpaceController -> IMemory [label="impl", style=dashed, color=blue];
+    AddressSpaceController -> IDirectMemoryPoolReader [label="impl", style=dashed, color=blue];
+    VA2MBus -> IAppleIIBus [label="impl", style=dashed, color=blue];
+    SystemIoHandler -> ISystemIoHandler [label="impl", style=dashed, color=blue];
+    Slots -> ISlots [label="impl", style=dashed, color=blue];
+    NullCard -> ICard [label="impl", style=dashed, color=blue];
+    LanguageCard -> ILanguageCard [label="impl", style=dashed, color=blue];
+    SystemRamSelector -> ISystemRamSelector [label="impl", style=dashed, color=blue];
+    MemoryBlock_16K -> ISystemRam [label="impl", style=dashed, color=blue];
+    MemoryBlock_48K -> ISystemRam [label="impl", style=dashed, color=blue];
+    SystemRomProvider -> ISystemRomProvider [label="impl", style=dashed, color=blue];
+    RandomFloatingBusProvider -> IFloatingBusProvider [label="impl", style=dashed, color=blue];
+    FrameGenerator -> IFrameGenerator [label="impl", style=dashed, color=blue];
+    FrameProvider -> IFrameProvider [label="impl", style=dashed, color=blue];
+    CharacterRomProvider -> ICharacterRomProvider [label="impl", style=dashed, color=blue];
+    LegacyBitmapRenderer -> IDisplayBitmapRenderer [label="impl", style=dashed, color=blue];
+    EmulatorStateProvider -> IEmulatorState [label="impl", style=dashed, color=blue];
     
     // ========================================
-    // DEPENDENCY RELATIONSHIPS
+    // KEY DEPENDENCIES
     // ========================================
     
-    // VA2M dependencies (orchestrates everything)
-    VA2M -> IEmulatorState [label="publishes to", color=red];
-    VA2M -> IFrameProvider [label="uses", color=red];
-    VA2M -> ISystemStatusMutator [label="mutates flash", color=red, penwidth=2];
-    VA2M -> IAppleIIBus [label="orchestrates", color=red, penwidth=2];
-    VA2M -> MemoryPool [label="manages", color=red];
-    VA2M -> IFrameGenerator [label="triggers", color=red];
-    VA2M -> RenderingService [label="coordinates", color=red];
-    VA2M -> VideoMemorySnapshotPool [label="uses pool", color=red];
-    VA2M -> IKeyboardSetter [label="implements", color=red];
+    // VA2M orchestration
+    VA2M -> IEmulatorState [color=red];
+    VA2M -> IFrameProvider [color=red];
+    VA2M -> ISystemStatusMutator [color=red, penwidth=2];
+    VA2M -> IAppleIIBus [color=red, penwidth=2];
+    VA2M -> AddressSpaceController [color=red];
+    VA2M -> IFrameGenerator [color=red];
+    VA2M -> RenderingService [color=red];
+    VA2M -> VideoMemorySnapshotPool [color=red];
+    VA2M -> IKeyboardSetter [color=red];
+    VA2M -> IGameControllerStatus [color=red];
     
-    // VA2MBus dependencies (central routing) - REFACTORED
-    VA2MBus -> MemoryPool [label="routes to", color=red, penwidth=2];
-    VA2MBus -> ISystemStatusProvider [label="observes", color=red];
-    VA2MBus -> ICpu [label="executes", color=red, penwidth=2];
-    VA2MBus -> SoftSwitches [label="manages", color=red, penwidth=2];
-    VA2MBus -> IKeyboardSetter [label="implements", color=red];
-    VA2MBus -> ISystemIoHandler [label="will route to", color=orange, style=dashed];
+    // VA2MBus routing
+    VA2MBus -> AddressSpaceController [label="$C090+", color=red, penwidth=2];
+    VA2MBus -> ICpu [color=red, penwidth=2];
+    VA2MBus -> ISystemIoHandler [label="$C000", color=red, penwidth=2];
     
-    // SystemIoHandler dependencies (planned refactor)
-    SystemIoHandler -> IKeyboardReader [label="reads from", color=orange, style=dashed];
-    SystemIoHandler -> ISystemStatusMutator [label="updates", color=orange, style=dashed];
+    // SystemIoHandler
+    SystemIoHandler -> SoftSwitches [color=red, penwidth=2];
+    SystemIoHandler -> IKeyboardReader [color=red];
+    SystemIoHandler -> IGameControllerStatus [color=red];
     
-    // CPUAdapter wraps CPU (Adapter pattern)
+    // CPU wrapping
     CPUAdapter -> CPU [label="wraps", color=purple, penwidth=2];
     
-    // MemoryPool dependencies (coordinates memory)
-    MemoryPool -> ISystemStatusProvider [label="observes", color=red];
-    MemoryPool -> ILanguageCard [label="routes to\n$D000-$FFFF", color=red, penwidth=2];
-    MemoryPool -> ISystemRamSelector [label="routes to\n$0000-$BFFF", color=red, penwidth=2];
+    // AddressSpaceController routing
+    AddressSpaceController -> ILanguageCard [label="$D000", color=red, penwidth=3];
+    AddressSpaceController -> ISystemRamSelector [label="$0000", color=red, penwidth=3];
+    AddressSpaceController -> ISlots [label="$C090", color=red, penwidth=3];
     
-    // LanguageCard dependencies (complex factory)
-    LanguageCard -> ISystemRam [label="banks\n2× 16K", color=red];
-    LanguageCard -> ISystemRomProvider [label="reads ROM", color=red];
-    LanguageCard -> IFloatingBusProvider [label="unmapped", color=red];
-    LanguageCard -> ISystemStatusProvider [label="observes", color=red];
+    // Slots dependencies
+    Slots -> ICardFactory [color=red];
+    Slots -> ISystemRomProvider [color=red, penwidth=2];
+    Slots -> IFloatingBusProvider [color=red];
+    Slots -> ISystemStatusProvider [color=red];
+    Slots -> ICard [color=red];
     
-    // SystemRamSelector dependencies (complex factory)
-    SystemRamSelector -> ISystemRam [label="switches\n2× 48K", color=red];
-    SystemRamSelector -> IFloatingBusProvider [label="unmapped", color=red];
-    SystemRamSelector -> ISystemStatusProvider [label="observes", color=red];
+    // LanguageCard dependencies
+    LanguageCard -> ISystemRam [color=red];
+    LanguageCard -> ISystemRomProvider [color=red, penwidth=2];
+    LanguageCard -> IFloatingBusProvider [color=red];
+    LanguageCard -> ISystemStatusProvider [color=red];
     
-    // FrameGenerator dependencies (rendering coordinator)
-    FrameGenerator -> IFrameProvider [label="writes to", color=red];
-    FrameGenerator -> IDisplayBitmapRenderer [label="renders with", color=red, penwidth=2];
-    FrameGenerator -> IDirectMemoryPoolReader [label="reads RAM", color=red];
-    FrameGenerator -> ISystemStatusProvider [label="observes", color=red];
+    // SystemRamSelector dependencies
+    SystemRamSelector -> ISystemRam [color=red];
+    SystemRamSelector -> IFloatingBusProvider [color=red];
+    SystemRamSelector -> ISystemStatusProvider [color=red];
     
-    // LegacyBitmapRenderer dependencies
-    LegacyBitmapRenderer -> ICharacterRomProvider [label="reads chars", color=red, penwidth=2];
+    // FrameGenerator dependencies
+    FrameGenerator -> IFrameProvider [color=red];
+    FrameGenerator -> IDisplayBitmapRenderer [color=red, penwidth=2];
+    FrameGenerator -> IDirectMemoryPoolReader [color=red];
+    FrameGenerator -> ISystemStatusProvider [color=red];
     
-    // SoftSwitches dependencies - NEW ARCHITECTURE
-    SoftSwitches -> ISystemStatusMutator [label="directly mutates", color=red, penwidth=3];
-    SoftSwitches -> ISystemStatusProvider [label="reads from\n(via DI)", color=red, penwidth=2];
+    // Renderer dependencies
+    LegacyBitmapRenderer -> ICharacterRomProvider [color=red, penwidth=2];
     
-    // Keyboard chain of responsibility
-    VA2M -> VA2MBus [label="EnqueueKey", color=green, style=bold];
-    VA2MBus -> SingularKeyHandler [label="EnqueueKey\n(future)", color=orange, style=dashed];
+    // SoftSwitches dependencies
+    SoftSwitches -> ISystemStatusMutator [color=red, penwidth=3];
+    SoftSwitches -> ISystemStatusProvider [color=red];
     
-    // Rendering Service dependencies
-    RenderingService -> VideoMemorySnapshotPool [label="uses pool", color=red];
-    RenderingService -> IFrameGenerator [label="generates with", color=red];
+    // SystemStatusProvider observes GameController
+    SystemStatusProvider -> IGameControllerStatus [label="observes", color=red, penwidth=2];
     
-    // ========================================
-    // ARCHITECTURAL NOTES
-    // ========================================
+    // Rendering Service
+    RenderingService -> VideoMemorySnapshotPool [color=red];
+    RenderingService -> IFrameGenerator [color=red];
     
-    note_refactor [shape=note, fillcolor=lightyellow, label="RECENT REFACTORING:\n\n• Removed ISoftSwitchResponder\n• Created ISystemStatusMutator\n• Direct DI coupling:\n  SoftSwitches → StatusProvider\n• Components subscribe to\n  StatusProvider events\n  for state changes"];
-    
-    note_refactor -> SoftSwitches [style=invis];
+    // ROM SHARING (CRITICAL)
+    Slots -> SystemRomProvider [label="ROM", color=purple, penwidth=3, style=bold];
+    LanguageCard -> SystemRomProvider [label="ROM", color=purple, penwidth=3, style=bold];
 }
