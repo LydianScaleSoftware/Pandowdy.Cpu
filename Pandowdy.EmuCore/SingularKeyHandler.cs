@@ -1,4 +1,4 @@
-using Pandowdy.EmuCore.Interfaces;
+ using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore;
 
@@ -175,4 +175,7 @@ public class SingularKeyHandler : IKeyboardReader, IKeyboardSetter
 
 
     public byte ClearStrobe() { _key &= 0x7f; return _key; }
+
+
+    public int NumKeysPending() => ((_key & 0x80) == 0x80) ? 1 : 0; 
 }

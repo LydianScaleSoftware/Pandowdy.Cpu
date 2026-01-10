@@ -100,7 +100,53 @@ public interface IKeyboardReader
     /// </remarks>
     public byte PeekCurrentKeyAndStrobe();
 
-
-    // Clears strobe if it set and returns new key value
+    /// <summary>
+    /// Clears the keyboard strobe bit (bit 7) and returns the key value without strobe.
+    /// </summary>
+    /// <returns>The 7-bit ASCII character code (0-127) with strobe cleared.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method simulates reading from $C010 (KBDSTRB) on the Apple IIe. The strobe bit
+    /// is cleared, indicating the key has been acknowledged by software. Subsequent reads
+    /// from $C000 (via <see cref="PeekCurrentKeyAndStrobe"/>) will return the key without strobe
+    /// until a new key is pressed.
+    /// </para>
+    /// <para>
+    /// <strong>Buffered Implementations:</strong> In buffered keyboard implementations like
+    /// <see cref="QueuedKeyHandler"/>, calling this method may trigger automatic loading of
+    /// the next queued key after a configurable delay. This simulates natural typing where
+    /// keys arrive sequentially with pauses between.
+    /// </para>
+    /// </remarks>
     public byte ClearStrobe();
+
+    /// <summary>
+    /// Returns the number of keys waiting in the queue with strobe bits set.
+    /// </summary>
+    /// <returns>
+    /// Number of keys pending. Returns 0 for simple implementations that don't buffer keys.
+    /// Buffered implementations return the queue depth (excluding the current key in the latch).
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// <strong>Implementation Differences:</strong>
+    /// <list type="bullet">
+    /// <item><strong>SingularKeyHandler:</strong> Always returns 0 or 1 (single-key buffer)</item>
+    /// <item><strong>QueuedKeyHandler:</strong> Returns number of keys queued (may be > 1)</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Use Cases:</strong>
+    /// <list type="bullet">
+    /// <item>UI display: "X keys pending" indicator during paste operations</item>
+    /// <item>Test verification: Ensure all keys were queued correctly</item>
+    /// <item>Throttling: Pause key injection if queue is full</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Note:</strong> This count does NOT include the current key in the keyboard latch.
+    /// Use <see cref="StrobePending"/> to check if a key is currently loaded and unread.
+    /// </para>
+    /// </remarks>
+    public int NumKeysPending();
 }
