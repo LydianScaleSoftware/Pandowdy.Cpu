@@ -18,13 +18,13 @@ public class SystemIoHandlerGameControllerSyncTests
     /// Helper method to create test fixtures with proper dependency injection.
     /// </summary>
     /// <returns>Tuple of (SystemIoHandler, SimpleGameController, SystemStatusProvider, VBlankStatusHandler) for testing.</returns>
-    private static (SystemIoHandler ioHandler, SimpleGameController controller, SystemStatusProvider status, VBlankStatusHandler vblank) CreateTestFixture()
+    private static (SystemIoHandler ioHandler, SimpleGameController controller, SystemStatusProvider status, CpuClockingCounters vblank) CreateTestFixture()
     {
         var controller = new SimpleGameController();
         var status = new SystemStatusProvider(controller);  // Direct integration!
         var switches = new SoftSwitches(status);
         var keyboard = new SingularKeyHandler();
-        var vblank = new VBlankStatusHandler();
+        var vblank = new CpuClockingCounters();
         
         var ioHandler = new SystemIoHandler(switches, keyboard, controller, vblank);
         

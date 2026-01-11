@@ -74,11 +74,6 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
   //  private AppleSoftHookTable? _hookTable;
   
     /// <summary>
-    /// System clock counter tracking total CPU cycles executed since reset.
-    /// </summary>
-    private ulong _systemClock;
-
-    /// <summary>
     /// System I/O handler managing $C000-$C08F I/O space.
     /// </summary>
     /// <remarks>
@@ -105,7 +100,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// reads the InVBlank property to service $C019 (RD_VERTBLANK_) reads.
     /// </para>
     /// </remarks>
-    private VBlankStatusHandler _vblank;
+    private CpuClockingCounters _clockCounters;
 
     /// <summary>
     /// Gets the AddressSpaceController for direct memory access.
@@ -127,65 +122,15 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// <summary>
     /// Gets the total number of CPU cycles executed since last reset.
     /// </summary>
-    public ulong SystemClockCounter => _systemClock;
+    public ulong SystemClockCounter => _clockCounters.TotalCycles;
     
     /// <summary>
     /// Flag indicating whether this bus has been disposed.
     /// </summary>
     private bool _disposed;
-
-    /// <summary>
-    /// Number of CPU cycles between VBlank events (17,030 = 262 scanlines × 65 cycles/scanline).
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <strong>Apple IIe NTSC Timing:</strong>
-    /// <list type="bullet">
-    /// <item>192 visible scanlines (cycles 0-12,479)</item>
-    /// <item>70 vertical blanking scanlines (cycles 12,480-17,029)</item>
-    /// <item>Total: 262 scanlines × 65 cycles/scanline = 17,030 cycles/frame</item>
-    /// <item>Frame rate: 1,023,000 Hz / 17,030 cycles ≈ 60.06 Hz (NTSC)</item>
-    /// </list>
-    /// </para>
-    /// <para>
-    /// <strong>Why 17,030 not 17,063:</strong> The correct Apple IIe timing is 17,030 cycles
-    /// per frame. The value 17,063 was an approximation that caused synchronization issues
-    /// with 80-column firmware which expects VBlank at scanline 192 (cycle 12,480).
-    /// </para>
-    /// </remarks>
-    private const ulong CyclesPerVBlank = 17030;
-
-
     
     /// <summary>
-    /// Cycle count within frame at which VBlank starts (scanline 192 begins).
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <strong>Visible Display Ends:</strong> After 192 visible scanlines × 65 cycles/scanline
-    /// = 12,480 cycles, the video scanner enters vertical blanking. This is when RD_VERTBLANK_
-    /// ($C019) transitions from $00 to $80.
-    /// </para>
-    /// <para>
-    /// <strong>Why This Matters:</strong> The Apple IIe 80-column firmware expects VBlank to
-    /// occur at this specific cycle offset, not at cycle 0 (start of frame). By firing VBlank
-    /// at cycle 12,480, we ensure firmware PAGE2 toggles are synchronized with the correct
-    /// scanline positions.
-    /// </para>
-    /// </remarks>
-    private const ulong VBlankStartCycle = 12480; // 192 scanlines × 65 cycles
-    
-    /// <summary>
-    /// Cycle count at which the next VBlank event will fire.
-    /// </summary>
-    /// <remarks>
-    /// Initialized to VBlankStartCycle so the first VBlank fires at cycle 12,480 (not 0),
-    /// matching Apple IIe hardware behavior where VBlank occurs after visible display.
-    /// </remarks>
-    private ulong _nextVblankCycle = VBlankStartCycle;
-    
-    /// <summary>
-    /// Event raised every ~60 Hz (17,063 cycles) to signal vertical blanking interval.
+    /// Event raised every ~60 Hz (17,030 cycles) to signal vertical blanking interval.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -254,7 +199,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// </list>
     /// </para>
     /// </remarks>
-    public VA2MBus(AddressSpaceController addressSpace, ISystemIoHandler ioHandler , ICpu cpu, VBlankStatusHandler vb)
+    public VA2MBus(AddressSpaceController addressSpace, ISystemIoHandler ioHandler , ICpu cpu, CpuClockingCounters vb)
     {
         ArgumentNullException.ThrowIfNull(addressSpace);
         ArgumentNullException.ThrowIfNull(ioHandler);
@@ -263,7 +208,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         _addressSpace = addressSpace;
         _cpu = cpu;
         _io = ioHandler;
-        _vblank = vb;
+        _clockCounters = vb;
     }
 
    
@@ -373,43 +318,15 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// <strong>Execution Sequence:</strong>
     /// <list type="number">
     /// <item>Execute one CPU instruction (CPU.Clock)</item>
-    /// <item>Increment system clock counter</item>
-    /// <item>Decrement VBlank counter (via VBlankStatusHandler.Counter--)</item>
+    /// <item>Increment cycle counters (via CpuClockingCounters)</item>
+    /// <item>Decrement VBlank counter</item>
     /// <item>Check if VBlank cycle reached, fire event if so</item>
-    /// <item>Reset VBlank counter (via VBlankStatusHandler.ResetCounter) when VBlank starts</item>
     /// </list>
     /// </para>
     /// <para>
-    /// <strong>VBlank Counter Synchronization:</strong> The VBlankStatusHandler is shared
-    /// with the I/O handler so that reads to $C019 (RD_VERTBLANK_) return the correct bit 7
-    /// state (set during VBlank, clear during visible scanlines). VA2MBus manages the counter
-    /// lifecycle (decrement every cycle, reset at VBlank start), while SystemIoHandler reads
-    /// the InVBlank property.
-    /// </para>
-    /// <para>
-    /// <strong>VBlank Timing:</strong> When _systemClock reaches _nextVblankCycle (initially
-    /// 12,480, then 29,510, 46,540, ...), the VBlank event is fired and _nextVblankCycle is
-    /// advanced by CyclesPerVBlank (17,030). The VBlank counter is reset to 4,550 cycles via
-    /// VBlankStatusHandler.ResetCounter().
-    /// </para>
-    /// <para>
-    /// <strong>Frame Cycle Calculation:</strong>
-    /// <code>
-    /// Frame 0: VBlank at cycle 12,480 (scanline 192)
-    /// Frame 1: VBlank at cycle 29,510 (12,480 + 17,030)
-    /// Frame 2: VBlank at cycle 46,540 (29,510 + 17,030)
-    /// ...and so on
-    /// </code>
-    /// </para>
-    /// <para>
-    /// <strong>Catch-Up Logic:</strong> If the emulator runs fast (unthrottled batches), multiple
-    /// VBlank cycles may be skipped. The do-while loop ensures _nextVblankCycle catches up to
-    /// _systemClock, preventing event spam while maintaining proper phase alignment.
-    /// </para>
-    /// <para>
-    /// <strong>80-Column Synchronization:</strong> By firing VBlank at cycle 12,480 (not 0),
-    /// we maintain synchronization with Apple IIe 80-column firmware which rapidly toggles
-    /// PAGE2 during visible scanlines and relies on VBlank flag ($C019) for timing.
+    /// <strong>VBlank Timing:</strong> The CpuClockingCounters class manages all timing logic
+    /// including cycle counting, VBlank counter management, and catch-up logic for fast emulation.
+    /// VA2MBus simply calls CheckAndAdvanceVBlank() and fires the event when signaled.
     /// </para>
     /// <para>
     /// <strong>Disposal Safety:</strong> If the bus has been disposed, Clock() returns immediately
@@ -429,23 +346,12 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
 
         // Execute a single CPU cycle
         _cpu.Clock(this);
-        _systemClock++;
-        _vblank.Counter--;
+        _clockCounters.IncrementCycles(1);
+        _clockCounters.DecrementVBlankCounter(1);
 
-
-        if (_systemClock >= _nextVblankCycle)
+        // Check if VBlank should fire (handles catch-up automatically)
+        if (_clockCounters.CheckAndAdvanceVBlank())
         {
-            // Catch up if emulator ran fast (unthrottled batches)
-            // Advance VBlank cycle by full frame duration (17,030 cycles)
-            do
-            { 
-                _nextVblankCycle += CyclesPerVBlank;
-                _vblank.ResetCounter();
-
-
-
-            } while (_systemClock >= _nextVblankCycle);
-
             if (!_disposed)
             {
                 VBlank?.Invoke(this, EventArgs.Empty);
@@ -462,23 +368,9 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// <strong>Reset Operations:</strong>
     /// <list type="number">
     /// <item>Reset I/O handler (soft switches, keyboard latch, button states)</item>
-    /// <item>Reset address space controller (memory ranges, banking)</item>
     /// <item>Reset CPU (PC loaded from $FFFC/$FFFD, SP = $FF)</item>
-    /// <item>Reset system clock to zero</item>
-    /// <item>Reset VBlank cycle counter to 12,480 (first VBlank at cycle 12,480)</item>
+    /// <item>Reset timing counters (via CpuClockingCounters.Reset())</item>
     /// </list>
-    /// </para>
-    /// <para>
-    /// <strong>Reset Order Independence:</strong> The I/O handler and address space controller
-    /// resets are order-independent. The I/O handler resets soft switches to defaults and fires
-    /// a MemoryMappingChanged event. The address space controller's Reset() calls UpdateMemoryMappings()
-    /// explicitly, ensuring correct state regardless of reset order. Both subsystems end up in the
-    /// correct power-on state.
-    /// </para>
-    /// <para>
-    /// <strong>Difference from UserReset:</strong> Reset() is a cold boot that clears everything.
-    /// <see cref="UserReset"/> is a warm reset that has the same implementation currently but may
-    /// preserve memory contents in a future enhancement.
     /// </para>
     /// <para>
     /// <strong>Thread Context:</strong> Must be called from emulator thread only.
@@ -489,10 +381,8 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         ThrowIfDisposed();
         
         _io.Reset();
-        
         _cpu!.Reset(this);
-        _systemClock = 0;
-        _nextVblankCycle = CyclesPerVBlank;
+        _clockCounters.Reset();
     }
 
     /// <summary>
@@ -504,21 +394,14 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// <strong>Reset Operations:</strong>
     /// <list type="number">
     /// <item>Reset I/O handler (soft switches, keyboard latch, button states)</item>
-    /// <item>Reset address space controller (memory ranges, banking)</item>
     /// <item>Reset CPU (PC loaded from $FFFC/$FFFD)</item>
-    /// <item>Reset system clock to zero</item>
-    /// <item>Reset VBlank cycle counter to 12,480</item>
+    /// <item>Reset timing counters (via CpuClockingCounters.Reset())</item>
     /// </list>
-    /// </para>
-    /// <para>
-    /// <strong>Reset Order Independence:</strong> The I/O handler and address space controller
-    /// resets are order-independent. Both subsystems self-synchronize to ensure correct state.
     /// </para>
     /// <para>
     /// <strong>Current Implementation Note:</strong> In the current implementation, UserReset() and
     /// Reset() are identical. Future enhancements may preserve more state during UserReset (e.g.,
-    /// RAM contents, some soft switches) to better match Apple IIe Ctrl+Reset behavior, which
-    /// preserves memory while resetting the CPU.
+    /// RAM contents, some soft switches) to better match Apple IIe Ctrl+Reset behavior.
     /// </para>
     /// <para>
     /// <strong>Thread Context:</strong> Must be called from emulator thread only.
@@ -530,9 +413,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         
         _io.Reset();
         _cpu!.Reset(this);
-        _systemClock = 0;
-        _nextVblankCycle = CyclesPerVBlank;
-
+        _clockCounters.Reset();
     }
 
     /// <summary>

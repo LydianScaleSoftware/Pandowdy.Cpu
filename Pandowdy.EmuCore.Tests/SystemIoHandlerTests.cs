@@ -45,7 +45,7 @@ public class SystemIoHandlerTests
         public SingularKeyHandler Keyboard { get; }
         public SimpleGameController GameController { get; }
         public SystemStatusProvider StatusProvider { get; }
-        public VBlankStatusHandler VBlank { get; }
+        public CpuClockingCounters VBlank { get; }
         public SystemIoHandler IoHandler { get; }
 
         public SystemIoHandlerFixture()
@@ -55,7 +55,7 @@ public class SystemIoHandlerTests
             StatusProvider = new SystemStatusProvider(GameController);
             Keyboard = new SingularKeyHandler();
             Switches = new SoftSwitches(StatusProvider);
-            VBlank = new VBlankStatusHandler();
+            VBlank = new CpuClockingCounters();
             
             // Create SystemIoHandler
             IoHandler = new SystemIoHandler(Switches, Keyboard, GameController, VBlank);
@@ -74,7 +74,7 @@ public class SystemIoHandlerTests
         var statusProvider = new SystemStatusProvider(gameController);
         var keyboard = new SingularKeyHandler();
         var switches = new SoftSwitches(statusProvider);
-        var vblank = new VBlankStatusHandler();
+        var vblank = new CpuClockingCounters();
 
         // Act
         var ioHandler = new SystemIoHandler(switches, keyboard, gameController, vblank);
@@ -89,7 +89,7 @@ public class SystemIoHandlerTests
         // Arrange
         var gameController = new SimpleGameController();
         var keyboard = new SingularKeyHandler();
-        var vblank = new VBlankStatusHandler();
+        var vblank = new CpuClockingCounters();
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => 
@@ -103,7 +103,7 @@ public class SystemIoHandlerTests
         var gameController = new SimpleGameController();
         var statusProvider = new SystemStatusProvider(gameController);
         var switches = new SoftSwitches(statusProvider);
-        var vblank = new VBlankStatusHandler();
+        var vblank = new CpuClockingCounters();
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => 
@@ -118,7 +118,7 @@ public class SystemIoHandlerTests
         var statusProvider = new SystemStatusProvider(gameController);
         var switches = new SoftSwitches(statusProvider);
         var keyboard = new SingularKeyHandler();
-        var vblank = new VBlankStatusHandler();
+        var vblank = new CpuClockingCounters();
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => 
@@ -693,10 +693,10 @@ public class SystemIoHandlerTests
         var fixture = new SystemIoHandlerFixture();
 
         // Act
-        fixture.VBlank.Counter = 4550; // In VBlank
+        fixture.VBlank.VBlankCounter = 4550; // In VBlank
         var inVBlank = fixture.IoHandler.Read((ushort)(SystemIoHandler.RD_VERTBLANK_ & 0xFF));
         
-        fixture.VBlank.Counter = 0;    // Out of VBlank
+        fixture.VBlank.VBlankCounter = 0;    // Out of VBlank
         var outOfVBlank = fixture.IoHandler.Read((ushort)(SystemIoHandler.RD_VERTBLANK_ & 0xFF));
 
         // Assert
@@ -711,16 +711,16 @@ public class SystemIoHandlerTests
         var fixture = new SystemIoHandlerFixture();
 
         // Act - Test various counter values
-        fixture.VBlank.Counter = 1000;
+        fixture.VBlank.VBlankCounter = 1000;
         var value1 = fixture.IoHandler.Read((ushort)(SystemIoHandler.RD_VERTBLANK_ & 0xFF));
         
-        fixture.VBlank.Counter = 1;
+        fixture.VBlank.VBlankCounter = 1;
         var value2 = fixture.IoHandler.Read((ushort)(SystemIoHandler.RD_VERTBLANK_ & 0xFF));
         
-        fixture.VBlank.Counter = 0;
+        fixture.VBlank.VBlankCounter = 0;
         var value3 = fixture.IoHandler.Read((ushort)(SystemIoHandler.RD_VERTBLANK_ & 0xFF));
         
-        fixture.VBlank.Counter = -100;
+        fixture.VBlank.VBlankCounter = -100;
         var value4 = fixture.IoHandler.Read((ushort)(SystemIoHandler.RD_VERTBLANK_ & 0xFF));
 
         // Assert - Bit 7 set when counter > 0, clear when counter <= 0
@@ -737,17 +737,17 @@ public class SystemIoHandlerTests
         var fixture = new SystemIoHandlerFixture();
 
         // Act & Assert - Start not in VBlank
-        fixture.VBlank.Counter = 0; // Start not in VBlank
+        fixture.VBlank.VBlankCounter = 0; // Start not in VBlank
         var value1 = fixture.IoHandler.Read((ushort)(SystemIoHandler.RD_VERTBLANK_ & 0xFF));
         Assert.Equal(0x00, value1 & 0x80);
         
         // Enter VBlank
-        fixture.VBlank.Counter = 4550; // Enter VBlank
+        fixture.VBlank.VBlankCounter = 4550; // Enter VBlank
         var value2 = fixture.IoHandler.Read((ushort)(SystemIoHandler.RD_VERTBLANK_ & 0xFF));
         Assert.Equal(0x80, value2 & 0x80);
         
         // Exit VBlank
-        fixture.VBlank.Counter = 0; // Exit VBlank
+        fixture.VBlank.VBlankCounter = 0; // Exit VBlank
         var value3 = fixture.IoHandler.Read((ushort)(SystemIoHandler.RD_VERTBLANK_ & 0xFF));
         Assert.Equal(0x00, value3 & 0x80);
     }
@@ -761,7 +761,7 @@ public class SystemIoHandlerTests
         // Act & Assert - Test all typical counter values
         for (int i = -1000; i <= 5000; i++)
         {
-            fixture.VBlank.Counter = i;
+            fixture.VBlank.VBlankCounter = i;
             var value = fixture.IoHandler.Read((ushort)(SystemIoHandler.RD_VERTBLANK_ & 0xFF));
             
             if (i > 0)
@@ -823,7 +823,7 @@ public class SystemIoHandlerTests
         fixture.GameController.SetButton(2, true);
         fixture.IoHandler.Write((ushort)(SystemIoHandler.SETHIRES_ & 0xFF), 0);
         fixture.IoHandler.Write((ushort)(SystemIoHandler.SETMIXED_ & 0xFF), 0);
-        fixture.VBlank.Counter = 4550;
+        fixture.VBlank.VBlankCounter = 4550;
 
         // Assert - All I/O types readable
         Assert.Equal(0xC1, fixture.IoHandler.Read((ushort)(SystemIoHandler.KBD_ & 0xFF)));
@@ -888,7 +888,7 @@ public class SystemIoHandlerTests
         fixture.GameController.SetButton(1, false);
         fixture.GameController.SetButton(2, true);
         fixture.IoHandler.Write((ushort)(SystemIoHandler.SETHIRES_ & 0xFF), 0);
-        fixture.VBlank.Counter = 1000;
+        fixture.VBlank.VBlankCounter = 1000;
 
         // Assert - Spot check key addresses
         var kbdRead = fixture.IoHandler.Read((ushort)(SystemIoHandler.KBD_ & 0xFF));

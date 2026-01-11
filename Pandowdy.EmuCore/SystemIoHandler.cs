@@ -84,7 +84,7 @@ public class SystemIoHandler : ISystemIoHandler
     /// visual artifacts during active display.
     /// </para>
     /// </remarks>
-    private VBlankStatusHandler _vblank;
+    private CpuClockingCounters _vblank;
 
     /// <summary>
     /// Initializes the SystemIoHandler with required dependencies.
@@ -113,13 +113,12 @@ public class SystemIoHandler : ISystemIoHandler
     /// </list>
     /// </para>
     /// </remarks>
-    public SystemIoHandler(SoftSwitches switches, IKeyboardReader keyboard, IGameControllerStatus gameController, VBlankStatusHandler vb)
+    public SystemIoHandler(SoftSwitches switches, IKeyboardReader keyboard, IGameControllerStatus gameController, CpuClockingCounters vb)
     {
         ArgumentNullException.ThrowIfNull(switches);
         ArgumentNullException.ThrowIfNull(keyboard);
         ArgumentNullException.ThrowIfNull(gameController);
         ArgumentNullException.ThrowIfNull(vb);
-
 
         _softSwitches = switches;
         _keyboard = keyboard;

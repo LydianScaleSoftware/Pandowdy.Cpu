@@ -38,7 +38,7 @@ public class VA2MBusTests
         public IKeyboardReader KeyboardReader { get; }
         public IGameControllerStatus GameController { get; }
         public ISystemIoHandler IoHandler { get; }
-        public VBlankStatusHandler VBlank { get; }
+        public CpuClockingCounters VBlank { get; }
 
         public VA2MBusFixture()
         {
@@ -63,7 +63,7 @@ public class VA2MBusTests
             Switches = new SoftSwitches(StatusProvider);
             
             // Create VBlank status handler
-            VBlank = new VBlankStatusHandler();
+            VBlank = new CpuClockingCounters();
             
             // Create I/O handler (coordinates keyboard, controller, switches, VBlank)
             IoHandler = new SystemIoHandler(Switches, keyboard, GameController, VBlank);
@@ -90,7 +90,7 @@ public class VA2MBusTests
         var cpu = new CPUAdapter(new CPU());
         var keyboard = new SingularKeyHandler();
         var switches = new SoftSwitches(status);
-        var vblank = new VBlankStatusHandler();
+        var vblank = new CpuClockingCounters();
         var ioHandler = new SystemIoHandler(switches, keyboard, gameController, vblank);
 
         // Act
@@ -111,7 +111,7 @@ public class VA2MBusTests
         var cpu = new CPUAdapter(new CPU());
         var keyboard = new SingularKeyHandler();
         var switches = new SoftSwitches(status);
-        var vblank = new VBlankStatusHandler();
+        var vblank = new CpuClockingCounters();
         var ioHandler = new SystemIoHandler(switches, keyboard, gameController, vblank);
 
         // Act & Assert
@@ -129,7 +129,7 @@ public class VA2MBusTests
             new Test64KSystemRamSelector(),
             new TestSlots(status));
         var cpu = new CPUAdapter(new CPU());
-        var vblank = new VBlankStatusHandler();
+        var vblank = new CpuClockingCounters();
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new VA2MBus(addressSpace, null!, cpu, vblank));
@@ -147,7 +147,7 @@ public class VA2MBusTests
             new TestSlots(status));
         var keyboard = new SingularKeyHandler();
         var switches = new SoftSwitches(status);
-        var vblank = new VBlankStatusHandler();
+        var vblank = new CpuClockingCounters();
         var ioHandler = new SystemIoHandler(switches, keyboard, gameController, vblank);
 
         // Act & Assert

@@ -1,23 +1,24 @@
 namespace Pandowdy.EmuCore.Tests;
 
 /// <summary>
-/// Tests for VBlankStatusHandler - manages VBlank timing state for Apple IIe emulation.
+/// Tests for CpuClockingCounters - manages CPU cycle counting and VBlank timing state for Apple IIe emulation.
 /// </summary>
 /// <remarks>
 /// <para>
 /// <strong>Test Coverage:</strong>
 /// <list type="bullet">
 /// <item>Initial state validation</item>
-/// <item>Counter property behavior</item>
+/// <item>VBlankCounter property behavior</item>
+/// <item>TotalCycles tracking</item>
 /// <item>InVBlank property logic</item>
-/// <item>ResetCounter functionality</item>
-/// <item>Counter decrement behavior</item>
+/// <item>ResetVBlankCounter functionality</item>
+/// <item>VBlank counter decrement behavior</item>
 /// <item>Boundary conditions (zero crossing)</item>
 /// <item>Negative counter values</item>
 /// </list>
 /// </para>
 /// <para>
-/// <strong>VBlank Timing Context:</strong> VBlankStatusHandler manages a countdown counter
+/// <strong>VBlank Timing Context:</strong> CpuClockingCounters manages a countdown counter
 /// that tracks when the Apple IIe is in vertical blanking (VBlank). The counter is decremented
 /// every CPU cycle by VA2MBus and reset to 4,550 cycles when VBlank starts. SystemIoHandler
 /// reads the InVBlank property to service $C019 (RD_VERTBLANK_) reads.
@@ -28,20 +29,20 @@ public class VBlankStatusHandlerTests
     #region Initial State Tests (3 tests)
 
     [Fact]
-    public void Constructor_InitializesCounterToZero()
+    public void Constructor_InitializesVBlankCounterToZero()
     {
         // Arrange & Act
-        var handler = new VBlankStatusHandler();
+        var handler = new CpuClockingCounters();
 
         // Assert
-        Assert.Equal(0, handler.Counter);
+        Assert.Equal(0, handler.VBlankCounter);
     }
 
     [Fact]
     public void Constructor_InVBlankIsFalseInitially()
     {
         // Arrange & Act
-        var handler = new VBlankStatusHandler();
+        var handler = new CpuClockingCounters();
 
         // Assert
         Assert.False(handler.InVBlank);
@@ -51,85 +52,85 @@ public class VBlankStatusHandlerTests
     public void VBlankBlackoutCycles_IsCorrectConstant()
     {
         // Assert
-        Assert.Equal(4550, VBlankStatusHandler.VBlankBlackoutCycles);
+        Assert.Equal(4550, CpuClockingCounters.VBlankBlackoutCycles);
     }
 
     #endregion
 
-    #region Counter Property Tests (5 tests)
+    #region VBlankCounter Property Tests (5 tests)
 
     [Fact]
-    public void Counter_CanBeSetAndRetrieved()
+    public void VBlankCounter_CanBeSetAndRetrieved()
     {
         // Arrange
-        var handler = new VBlankStatusHandler();
+        var handler = new CpuClockingCounters();
 
         // Act
-        handler.Counter = 100;
+        handler.VBlankCounter = 100;
 
         // Assert
-        Assert.Equal(100, handler.Counter);
+        Assert.Equal(100, handler.VBlankCounter);
     }
 
     [Fact]
-    public void Counter_CanBeSetToZero()
+    public void VBlankCounter_CanBeSetToZero()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = 100
+            VBlankCounter = 100
         };
 
         // Act
-        handler.Counter = 0;
+        handler.VBlankCounter = 0;
 
         // Assert
-        Assert.Equal(0, handler.Counter);
+        Assert.Equal(0, handler.VBlankCounter);
     }
 
     [Fact]
-    public void Counter_CanBeSetToNegativeValue()
+    public void VBlankCounter_CanBeSetToNegativeValue()
     {
         // Arrange
-        var handler = new VBlankStatusHandler();
+        var handler = new CpuClockingCounters();
 
         // Act
-        handler.Counter = -100;
+        handler.VBlankCounter = -100;
 
         // Assert
-        Assert.Equal(-100, handler.Counter);
+        Assert.Equal(-100, handler.VBlankCounter);
     }
 
     [Fact]
-    public void Counter_CanBeDecremented()
+    public void VBlankCounter_CanBeDecremented()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = 100
+            VBlankCounter = 100
         };
 
         // Act
-        handler.Counter--;
+        handler.DecrementVBlankCounter(1);
 
         // Assert
-        Assert.Equal(99, handler.Counter);
+        Assert.Equal(99, handler.VBlankCounter);
     }
 
     [Fact]
-    public void Counter_CanBeIncremented()
+    public void VBlankCounter_CanBeIncremented()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = 100
+            VBlankCounter = 100
         };
 
         // Act
-        handler.Counter++;
+        handler.VBlankCounter++;
 
         // Assert
-        Assert.Equal(101, handler.Counter);
+        Assert.Equal(101, handler.VBlankCounter);
     }
 
     #endregion
@@ -140,9 +141,9 @@ public class VBlankStatusHandlerTests
     public void InVBlank_ReturnsTrueWhenCounterIsPositive()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = 1
+            VBlankCounter = 1
         };
 
         // Act
@@ -156,9 +157,9 @@ public class VBlankStatusHandlerTests
     public void InVBlank_ReturnsFalseWhenCounterIsZero()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = 0
+            VBlankCounter = 0
         };
 
         // Act
@@ -172,9 +173,9 @@ public class VBlankStatusHandlerTests
     public void InVBlank_ReturnsFalseWhenCounterIsNegative()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = -1
+            VBlankCounter = -1
         };
 
         // Act
@@ -188,9 +189,9 @@ public class VBlankStatusHandlerTests
     public void InVBlank_ReturnsTrueWhenCounterIsMaxValue()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = VBlankStatusHandler.VBlankBlackoutCycles
+            VBlankCounter = CpuClockingCounters.VBlankBlackoutCycles
         };
 
         // Act
@@ -204,14 +205,14 @@ public class VBlankStatusHandlerTests
     public void InVBlank_TransitionsToFalseWhenCounterReachesZero()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = 1
+            VBlankCounter = 1
         };
 
         // Act - Before decrement
         var inVBlankBefore = handler.InVBlank;
-        handler.Counter--;
+        handler.DecrementVBlankCounter(1);
         var inVBlankAfter = handler.InVBlank;
 
         // Assert
@@ -223,14 +224,14 @@ public class VBlankStatusHandlerTests
     public void InVBlank_TransitionsToTrueWhenCounterBecomesPositive()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = 0
+            VBlankCounter = 0
         };
 
         // Act - Before increment
         var inVBlankBefore = handler.InVBlank;
-        handler.Counter++;
+        handler.VBlankCounter++;
         var inVBlankAfter = handler.InVBlank;
 
         // Assert
@@ -242,9 +243,9 @@ public class VBlankStatusHandlerTests
     public void InVBlank_StaysFalseWhenCounterIsDeepNegative()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = -12480 // Typical negative value before next VBlank
+            VBlankCounter = -12480 // Typical negative value before next VBlank
         };
 
         // Act
@@ -256,66 +257,66 @@ public class VBlankStatusHandlerTests
 
     #endregion
 
-    #region ResetCounter Tests (4 tests)
+    #region ResetVBlankCounter Tests (4 tests)
 
     [Fact]
-    public void ResetCounter_SetsCounterToVBlankBlackoutCycles()
+    public void ResetVBlankCounter_SetsCounterToVBlankBlackoutCycles()
     {
         // Arrange
-        var handler = new VBlankStatusHandler();
+        var handler = new CpuClockingCounters();
 
         // Act
-        handler.ResetCounter();
+        handler.ResetVBlankCounter();
 
         // Assert
-        Assert.Equal(VBlankStatusHandler.VBlankBlackoutCycles, handler.Counter);
+        Assert.Equal(CpuClockingCounters.VBlankBlackoutCycles, handler.VBlankCounter);
     }
 
     [Fact]
-    public void ResetCounter_MakesInVBlankTrue()
+    public void ResetVBlankCounter_MakesInVBlankTrue()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = 0
+            VBlankCounter = 0
         };
 
         // Act
-        handler.ResetCounter();
+        handler.ResetVBlankCounter();
 
         // Assert
         Assert.True(handler.InVBlank);
     }
 
     [Fact]
-    public void ResetCounter_CanBeCalledMultipleTimes()
+    public void ResetVBlankCounter_CanBeCalledMultipleTimes()
     {
         // Arrange
-        var handler = new VBlankStatusHandler();
+        var handler = new CpuClockingCounters();
 
         // Act
-        handler.ResetCounter();
-        handler.Counter = 100; // Simulate some cycles passed
-        handler.ResetCounter();
+        handler.ResetVBlankCounter();
+        handler.VBlankCounter = 100; // Simulate some cycles passed
+        handler.ResetVBlankCounter();
 
         // Assert
-        Assert.Equal(VBlankStatusHandler.VBlankBlackoutCycles, handler.Counter);
+        Assert.Equal(CpuClockingCounters.VBlankBlackoutCycles, handler.VBlankCounter);
     }
 
     [Fact]
-    public void ResetCounter_ResetsFromNegativeValue()
+    public void ResetVBlankCounter_ResetsFromNegativeValue()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = -12480
+            VBlankCounter = -12480
         };
 
         // Act
-        handler.ResetCounter();
+        handler.ResetVBlankCounter();
 
         // Assert
-        Assert.Equal(VBlankStatusHandler.VBlankBlackoutCycles, handler.Counter);
+        Assert.Equal(CpuClockingCounters.VBlankBlackoutCycles, handler.VBlankCounter);
         Assert.True(handler.InVBlank);
     }
 
@@ -327,20 +328,20 @@ public class VBlankStatusHandlerTests
     public void TypicalScenario_VBlankCountdown()
     {
         // Arrange - Simulate VBlank starting
-        var handler = new VBlankStatusHandler();
-        handler.ResetCounter();
+        var handler = new CpuClockingCounters();
+        handler.ResetVBlankCounter();
 
         // Act & Assert - Countdown from 4,550 to 0
-        Assert.Equal(4550, handler.Counter);
+        Assert.Equal(4550, handler.VBlankCounter);
         Assert.True(handler.InVBlank);
 
         // Simulate 100 cycles
         for (int i = 0; i < 100; i++)
         {
-            handler.Counter--;
+            handler.DecrementVBlankCounter(1);
         }
 
-        Assert.Equal(4450, handler.Counter);
+        Assert.Equal(4450, handler.VBlankCounter);
         Assert.True(handler.InVBlank);
     }
 
@@ -348,16 +349,16 @@ public class VBlankStatusHandlerTests
     public void TypicalScenario_VBlankEnds()
     {
         // Arrange - Counter at 1 (last cycle of VBlank)
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = 1
+            VBlankCounter = 1
         };
 
         // Act - Decrement to 0 (VBlank ends)
-        handler.Counter--;
+        handler.DecrementVBlankCounter(1);
 
         // Assert
-        Assert.Equal(0, handler.Counter);
+        Assert.Equal(0, handler.VBlankCounter);
         Assert.False(handler.InVBlank);
     }
 
@@ -365,19 +366,17 @@ public class VBlankStatusHandlerTests
     public void TypicalScenario_AfterVBlankEnds_CounterGoesNegative()
     {
         // Arrange - Counter at 0 (VBlank just ended)
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = 0
+            VBlankCounter = 0
         };
 
         // Act - Continue decrementing (visible scanlines)
-        for (int i = 0; i < 100; i++)
-        {
-            handler.Counter--;
-        }
+        // Note: DecrementVBlankCounter stops at 0, so we manually set negative
+        handler.VBlankCounter = -100;
 
         // Assert
-        Assert.Equal(-100, handler.Counter);
+        Assert.Equal(-100, handler.VBlankCounter);
         Assert.False(handler.InVBlank);
     }
 
@@ -385,19 +384,19 @@ public class VBlankStatusHandlerTests
     public void TypicalScenario_FullVBlankCycle()
     {
         // Arrange
-        var handler = new VBlankStatusHandler();
+        var handler = new CpuClockingCounters();
 
         // Act - Simulate full VBlank cycle (4,550 cycles)
-        handler.ResetCounter();
+        handler.ResetVBlankCounter();
         Assert.True(handler.InVBlank);
 
-        for (int i = 0; i < VBlankStatusHandler.VBlankBlackoutCycles; i++)
+        for (int i = 0; i < CpuClockingCounters.VBlankBlackoutCycles; i++)
         {
-            handler.Counter--;
+            handler.DecrementVBlankCounter(1);
         }
 
         // Assert - VBlank should have ended
-        Assert.Equal(0, handler.Counter);
+        Assert.Equal(0, handler.VBlankCounter);
         Assert.False(handler.InVBlank);
     }
 
@@ -405,30 +404,28 @@ public class VBlankStatusHandlerTests
     public void TypicalScenario_MultipleVBlankPeriods()
     {
         // Arrange
-        var handler = new VBlankStatusHandler();
+        var handler = new CpuClockingCounters();
 
         // Act & Assert - Simulate 3 VBlank periods
         for (int period = 0; period < 3; period++)
         {
             // VBlank starts
-            handler.ResetCounter();
-            Assert.Equal(4550, handler.Counter);
+            handler.ResetVBlankCounter();
+            Assert.Equal(4550, handler.VBlankCounter);
             Assert.True(handler.InVBlank);
 
             // VBlank active (4,550 cycles)
             for (int i = 0; i < 4550; i++)
             {
-                handler.Counter--;
+                handler.DecrementVBlankCounter(1);
             }
-            Assert.Equal(0, handler.Counter);
+            Assert.Equal(0, handler.VBlankCounter);
             Assert.False(handler.InVBlank);
 
             // Visible scanlines (12,480 cycles - simulate just 100 for test speed)
-            for (int i = 0; i < 100; i++)
-            {
-                handler.Counter--;
-            }
-            Assert.Equal(-100, handler.Counter);
+            // Manually set negative since DecrementVBlankCounter stops at 0
+            handler.VBlankCounter = -100;
+            Assert.Equal(-100, handler.VBlankCounter);
             Assert.False(handler.InVBlank);
         }
     }
@@ -441,9 +438,9 @@ public class VBlankStatusHandlerTests
     public void BoundaryCondition_CounterAtOne()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = 1
+            VBlankCounter = 1
         };
 
         // Assert - Should be in VBlank
@@ -454,29 +451,29 @@ public class VBlankStatusHandlerTests
     public void BoundaryCondition_CounterCrossesZero()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = 1
+            VBlankCounter = 1
         };
 
         // Act - Cross zero boundary
         Assert.True(handler.InVBlank);
-        handler.Counter--;
+        handler.DecrementVBlankCounter(1);
         Assert.False(handler.InVBlank);
-        handler.Counter--;
+        handler.VBlankCounter--; // Manually decrement past 0
         Assert.False(handler.InVBlank);
 
         // Assert
-        Assert.Equal(-1, handler.Counter);
+        Assert.Equal(-1, handler.VBlankCounter);
     }
 
     [Fact]
     public void BoundaryCondition_CounterAtMinusOne()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = -1
+            VBlankCounter = -1
         };
 
         // Assert - Should NOT be in VBlank
@@ -487,9 +484,9 @@ public class VBlankStatusHandlerTests
     public void BoundaryCondition_LargePositiveCounter()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = 100000
+            VBlankCounter = 100000
         };
 
         // Assert - Should be in VBlank
@@ -500,9 +497,9 @@ public class VBlankStatusHandlerTests
     public void BoundaryCondition_LargeNegativeCounter()
     {
         // Arrange
-        var handler = new VBlankStatusHandler
+        var handler = new CpuClockingCounters
         {
-            Counter = -100000
+            VBlankCounter = -100000
         };
 
         // Assert - Should NOT be in VBlank
@@ -517,14 +514,14 @@ public class VBlankStatusHandlerTests
     public void IntegrationSimulation_VA2MBusDecrements_SystemIoHandlerReads()
     {
         // Arrange - Shared handler (simulating VA2MBus and SystemIoHandler sharing)
-        var handler = new VBlankStatusHandler();
-        handler.ResetCounter();
+        var handler = new CpuClockingCounters();
+        handler.ResetVBlankCounter();
 
         // Act - Simulate VA2MBus Clock() decrementing
         for (int i = 0; i < 100; i++)
         {
             // VA2MBus.Clock()
-            handler.Counter--;
+            handler.DecrementVBlankCounter(1);
 
             // SystemIoHandler.Read($C019) would check InVBlank
             bool rdVertBlank = handler.InVBlank;
@@ -532,7 +529,7 @@ public class VBlankStatusHandlerTests
         }
 
         // Assert
-        Assert.Equal(4450, handler.Counter);
+        Assert.Equal(4450, handler.VBlankCounter);
         Assert.True(handler.InVBlank);
     }
 
@@ -540,20 +537,20 @@ public class VBlankStatusHandlerTests
     public void IntegrationSimulation_VBlankStatusForC019Reads()
     {
         // Arrange - Simulating SystemIoHandler reading $C019
-        var handler = new VBlankStatusHandler();
+        var handler = new CpuClockingCounters();
 
         // Scenario 1: Not in VBlank
-        handler.Counter = -100;
+        handler.VBlankCounter = -100;
         byte rdVertBlank1 = (byte)(handler.InVBlank ? 0x80 : 0x00);
         Assert.Equal(0x00, rdVertBlank1);
 
         // Scenario 2: In VBlank
-        handler.ResetCounter();
+        handler.ResetVBlankCounter();
         byte rdVertBlank2 = (byte)(handler.InVBlank ? 0x80 : 0x00);
         Assert.Equal(0x80, rdVertBlank2);
 
         // Scenario 3: VBlank just ended
-        handler.Counter = 0;
+        handler.VBlankCounter = 0;
         byte rdVertBlank3 = (byte)(handler.InVBlank ? 0x80 : 0x00);
         Assert.Equal(0x00, rdVertBlank3);
     }
@@ -562,13 +559,13 @@ public class VBlankStatusHandlerTests
     public void IntegrationSimulation_17030CycleFrame()
     {
         // Arrange - Simulate full 17,030 cycle frame
-        var handler = new VBlankStatusHandler();
+        var handler = new CpuClockingCounters();
         int inVBlankCycles = 0;
         int notInVBlankCycles = 0;
 
         // Act - Simulate VBlank starting at cycle 12,480
         // First 12,480 cycles: not in VBlank (counter goes negative)
-        handler.Counter = 0;
+        handler.VBlankCounter = 0;
         for (int i = 0; i < 12480; i++)
         {
             if (handler.InVBlank)
@@ -579,11 +576,11 @@ public class VBlankStatusHandlerTests
             {
                 notInVBlankCycles++;
             }
-            handler.Counter--;
+            handler.VBlankCounter--;
         }
 
         // VBlank starts at cycle 12,480
-        handler.ResetCounter();
+        handler.ResetVBlankCounter();
 
         // Next 4,550 cycles: in VBlank
         for (int i = 0; i < 4550; i++)
@@ -596,7 +593,7 @@ public class VBlankStatusHandlerTests
             {
                 notInVBlankCycles++;
             }
-            handler.Counter--;
+            handler.DecrementVBlankCounter(1);
         }
 
         // Assert
