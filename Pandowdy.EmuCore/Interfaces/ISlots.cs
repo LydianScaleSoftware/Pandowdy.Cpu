@@ -14,7 +14,7 @@ namespace Pandowdy.EmuCore.Interfaces;
 public enum SlotNumber
 {
     /// <summary>Expansion slot 1.</summary>
-    Slot1,
+    Slot1 = 1,
     /// <summary>Expansion slot 2.</summary>
     Slot2,
     /// <summary>Expansion slot 3 (typically 80-column card).</summary>

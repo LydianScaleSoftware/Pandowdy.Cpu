@@ -171,19 +171,19 @@ public class Slots : ISlots
     /// <inheritdoc/>
     public void InstallCard(int id, SlotNumber slot)
     {
-        _cards[(int) slot] = _factory.GetCardWithId(id) ?? throw new InvalidOperationException($"Could not create a card with id {id} for slot {((int) slot) + 1}");
+        _cards[(int) slot] = _factory.GetCardWithId(id) ?? throw new InvalidOperationException($"Could not create a card with id {id} for slot {((int) slot)}");
     }
     
     /// <inheritdoc/>
     public void InstallCard(string name, SlotNumber slot)
     {
-        _cards[(int) slot] = _factory.GetCardWithName(name) ?? throw new InvalidOperationException($"Could not create a card with name {name} for slot {((int) slot) + 1}");
+        _cards[(int) slot] = _factory.GetCardWithName(name) ?? throw new InvalidOperationException($"Could not create a card with name {name} for slot {((int) slot)}");
     }
 
     /// <inheritdoc/>
     public void RemoveCard(SlotNumber slot)
     {
-        _cards[(int) slot] = _factory.GetNullCard() ?? throw new InvalidOperationException($"Could not create a Null Card while removing a card in slot {((int) slot) + 1}");
+        _cards[(int) slot] = _factory.GetNullCard() ?? throw new InvalidOperationException($"Could not create a Null Card while removing a card in slot {((int) slot)}");
     }
 
     /// <inheritdoc/>
@@ -545,16 +545,15 @@ public class Slots : ISlots
             var config = new
             {
                 version = 1,
-                bankSelect = BankSelect,
                 slots = Enumerable.Range(1, 7)
-                    .Select(i => (SlotNumber)(i - 1))
+                    .Select(i => (SlotNumber)(i))
                     .Where(slot => !IsEmpty(slot))
                     .Select(slot =>
                     {
                         var card = GetCardIn(slot);
                         return new
                         {
-                            slotNumber = (int)slot + 1,
+                            slotNumber = (int)slot,
                             cardId = card.Id,
                             cardName = card.Name,
                             metadata = card.GetMetadata()
@@ -639,7 +638,6 @@ public class Slots : ISlots
             {
                 RemoveCard((SlotNumber)(i - 1));
             }
-            BankSelect = 0;
             return true;
         }
 
@@ -651,7 +649,7 @@ public class Slots : ISlots
             // Clear all slots first
             for (int i = 1; i <= 7; i++)
             {
-                RemoveCard((SlotNumber)(i - 1));
+                RemoveCard((SlotNumber)(i));
             }
 
             // Track overall success
@@ -678,7 +676,7 @@ public class Slots : ISlots
                         continue;
                     }
 
-                    var slot = (SlotNumber)(slotNumber - 1);
+                    var slot = (SlotNumber)(slotNumber);
 
                     try
                     {
@@ -704,15 +702,6 @@ public class Slots : ISlots
                 }
             }
 
-            // Restore BankSelect state
-            if (root.TryGetProperty("bankSelect", out var bankSelectElement))
-            {
-                BankSelect = (byte)bankSelectElement.GetInt32();
-            }
-            else
-            {
-                BankSelect = 0;
-            }
 
             return allSucceeded;
         }
