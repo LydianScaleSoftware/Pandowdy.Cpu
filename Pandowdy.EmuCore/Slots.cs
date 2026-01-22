@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore;
@@ -143,6 +144,11 @@ public class Slots : ISlots
             nullcard.Clone(),
             nullcard.Clone()
          ];
+
+        for (int i = 1; i <= 7; i++) // Register the default null cards above.
+        {
+            InstallExistingCard(_cards[i], (SlotNumber) i);
+        }
     }
 
     /// <summary>
@@ -171,13 +177,36 @@ public class Slots : ISlots
     /// <inheritdoc/>
     public void InstallCard(int id, SlotNumber slot)
     {
-        _cards[(int) slot] = _factory.GetCardWithId(id) ?? throw new InvalidOperationException($"Could not create a card with id {id} for slot {((int) slot)}");
+        if (slot == SlotNumber.Unslotted)
+        {
+            throw new ArgumentException("Slot must be in the range Slot1-Slot7");
+        }
+        var card = _factory.GetCardWithId(id) ?? throw new InvalidOperationException($"Could not create a card with id {id} for slot {((int) slot)}");
+        card.OnInstalled(slot);
+        _cards[(int) slot] = card;
     }
     
     /// <inheritdoc/>
     public void InstallCard(string name, SlotNumber slot)
     {
-        _cards[(int) slot] = _factory.GetCardWithName(name) ?? throw new InvalidOperationException($"Could not create a card with name {name} for slot {((int) slot)}");
+        if (slot == SlotNumber.Unslotted)
+        {
+            throw new ArgumentException("Slot must be in the range Slot1-Slot7");
+        }
+        var card = _factory.GetCardWithName(name) ?? throw new InvalidOperationException($"Could not create a card with name {name} for slot {((int) slot)}");
+        card.OnInstalled(slot);
+        _cards[(int) slot] = card;
+    }
+
+    private void InstallExistingCard(ICard card, SlotNumber slot)
+    {
+        if (slot == SlotNumber.Unslotted)
+        {
+            throw new ArgumentException("Slot must be in the range Slot1-Slot7");
+        }
+        Debug.WriteLine($"Assigning {card.Name} (Id {card.Id}) into slot {slot}.");
+        card.OnInstalled(slot);
+        _cards[(int) slot] = card;
     }
 
     /// <inheritdoc/>
@@ -255,6 +284,7 @@ public class Slots : ISlots
         // $C090-$C0FF: Card I/O space
         if (address >= 0x0090 && address <= 0x00FF)
         {
+            //TODO: Double check this if statement:
             // INTCXROM overrides all card I/O and ROM
             if (_status.StateIntCxRom)
             {
@@ -285,18 +315,23 @@ public class Slots : ISlots
             byte offset = (byte) (address & 0xFF);
 
             // Determine if this slot should use card ROM or system ROM
-            bool useCardRom = !_status.StateIntCxRom;
+            bool useCardRom = (slot != 3); // !_status.StateIntCxRom;
 
             // Special case: Slot 3 is controlled by SLOTC3ROM
             if (slot == 3)
             {
+                // SLOTC3ROM = false: use internal 80-col ROM (default)
+                // SLOTC3ROM = true: use card ROM (if peripheral card installed)
                 useCardRom = _status.StateSlotC3Rom;
             }
 
             if (useCardRom)
             {
                 // Card ROM enabled: ACTIVATE extended ROM and return card data
-                BankSelect = (byte) slot;
+                if (_cards[slot].Id != 0) // If there's a card there, then assert IoStrobe to swap in Extended Card Rom
+                {
+                    BankSelect = (byte) slot;
+                }
 
                 byte? cardByte = _cards[slot].ReadRom(offset);
                 return cardByte ?? _floatingBus.Read();
@@ -312,7 +347,7 @@ public class Slots : ISlots
         if (address >= 0x0800 && address <= 0x0FFF)
         {
             // INTCXROM overrides extended ROM
-            if (_status.StateIntCxRom)
+            if (_status.StateIntCxRom || (BankSelect == 3 && !_status.StateSlotC3Rom))
             {
                 return _rom.Read(address);
             }
@@ -508,7 +543,6 @@ public class Slots : ISlots
     /// <code>
     /// {
     ///   "version": 1,
-    ///   "bankSelect": 6,
     ///   "slots": [
     ///     {
     ///       "slotNumber": 6,
@@ -530,12 +564,6 @@ public class Slots : ISlots
     /// <strong>Empty Slots:</strong><br/>
     /// Empty slots (containing <see cref="NullCard"/>) are omitted from the metadata to
     /// keep it concise. On restoration, any slot not mentioned in the metadata is left empty.
-    /// </para>
-    /// <para>
-    /// <strong>BankSelect State:</strong><br/>
-    /// The current <see cref="BankSelect"/> value is included in the metadata. While not
-    /// strictly necessary for configuration (it's runtime state), including it allows for
-    /// precise state restoration during debugging or save states.
     /// </para>
     /// </remarks>
     public string GetMetadata()
@@ -711,4 +739,13 @@ public class Slots : ISlots
             return false;
         }
     }
+
+    public void Reset()
+    {
+        foreach (var card in _cards)
+        {
+            card.Reset();
+        }
+    }
+
 }

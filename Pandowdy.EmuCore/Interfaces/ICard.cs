@@ -38,7 +38,7 @@ public interface ICard : IConfigurable
 {
 
 
-    public SlotNumber? Slot { get; }
+    public SlotNumber Slot { get; }
 
     /// <summary>
     /// Gets the human-readable name of the card (e.g., "Disk II Controller", "Super Serial Card").

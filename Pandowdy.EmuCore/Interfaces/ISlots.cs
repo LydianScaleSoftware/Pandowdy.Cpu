@@ -13,8 +13,9 @@ namespace Pandowdy.EmuCore.Interfaces;
 /// </remarks>
 public enum SlotNumber
 {
+    Unslotted,
     /// <summary>Expansion slot 1.</summary>
-    Slot1 = 1,
+    Slot1,
     /// <summary>Expansion slot 2.</summary>
     Slot2,
     /// <summary>Expansion slot 3 (typically 80-column card).</summary>
@@ -314,5 +315,11 @@ public interface ISlots : IMemory, IConfigurable
     //   Indexer providing array-style access to Read/Write methods.
     //
     // Note: All addresses are offset by $C000. For example, to access $C600, pass 0x0600.
+
+
+    /// <summary>
+    /// Sends a reset to all attached cards.
+    /// </summary>
+    public void Reset();
 }
 
