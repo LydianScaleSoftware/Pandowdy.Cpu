@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore;
@@ -6,57 +7,7 @@ namespace Pandowdy.EmuCore;
 /// <summary>
 /// Implements the Apple IIe expansion slot system, managing peripheral cards and their I/O and ROM access.
 /// </summary>
-/// <remarks>
-/// <para>
-/// The <see cref="Slots"/> class is the concrete implementation of <see cref="ISlots"/>, providing
-/// the complete address decoding logic for the Apple IIe's $C000-$CFFF peripheral I/O range.
-/// It coordinates between peripheral cards, system ROM, and soft switch settings to determine
-/// which device responds to memory accesses.
-/// </para>
-/// <para>
-/// <strong>Architecture:</strong><br/>
-/// The slots system maintains an array of 8 card positions (0-7), where slot 0 is reserved
-/// for system use and slots 1-7 are available for peripheral cards. Empty slots are filled
-/// with <see cref="NullCard"/> instances that return <c>null</c> for all operations, causing
-/// floating bus behavior.
-/// </para>
-/// <para>
-/// <strong>Address Decoding Priority:</strong>
-/// </para>
-/// <list type="number">
-/// <item><description><strong>INTCXROM check</strong> - If enabled, system ROM overrides all cards</description></item>
-/// <item><description><strong>Address range decode</strong> - Determines I/O, ROM, or Extended ROM space</description></item>
-/// <item><description><strong>SLOTCXROM/SLOTC3ROM check</strong> - Determines card vs. system ROM (when INTCXROM off)</description></item>
-/// <item><description><strong>Card query</strong> - Asks the card for data (may return null)</description></item>
-/// <item><description><strong>Fallback</strong> - Returns system ROM or floating bus value</description></item>
-/// </list>
-/// <para>
-/// <strong>Extended ROM Bank Selection:</strong><br/>
-/// The <see cref="BankSelect"/> property tracks which slot (1-7) currently owns the $C800-$CFFF
-/// extended ROM space. Accessing a slot's ROM ($Cn00-$CnFF) activates that slot; accessing
-/// $CFFF disables all extended ROM.
-/// </para>
-/// <para>
-/// <strong>Configuration Management:</strong><br/>
-/// The <see cref="Slots"/> class implements <see cref="IConfigurable"/> (via <see cref="ISlots"/>),
-/// enabling complete save/restore of the slot configuration. The metadata format includes:
-/// </para>
-/// <list type="bullet">
-/// <item><description>Which cards are installed in which slots (by ID)</description></item>
-/// <item><description>Each card's configuration metadata (hierarchical inclusion)</description></item>
-/// <item><description>Current <see cref="BankSelect"/> state (optional)</description></item>
-/// </list>
-/// <para>
-/// This allows the entire peripheral configuration to be saved, shared, and restored,
-/// including disk images, serial port settings, and other card-specific configurations.
-/// Empty slots are omitted from the metadata to keep it concise.
-/// </para>
-/// <para>
-/// <strong>Threading:</strong><br/>
-/// This class is not thread-safe. All methods must be called from the emulator worker thread.
-/// Card installation/removal during emulation may cause race conditions.
-/// </para>
-/// </remarks>
+
 public class Slots : ISlots
 {
     /// <summary>
@@ -95,7 +46,7 @@ public class Slots : ISlots
     /// <summary>
     /// Provider for soft switch states (INTCXROM, SLOTCXROM, SLOTC3ROM, etc.).
     /// </summary>
-    private ISystemStatusProvider _status;
+    private ISystemStatusMutator _status;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Slots"/> class with all slots empty.
@@ -121,7 +72,7 @@ public class Slots : ISlots
     /// to ensure each slot has its own instance, even though NullCards are stateless.
     /// </para>
     /// </remarks>
-    public Slots(ICardFactory factory, ISystemRomProvider rom, IFloatingBusProvider floatingBus, ISystemStatusProvider status)
+    public Slots(ICardFactory factory, ISystemRomProvider rom, IFloatingBusProvider floatingBus, ISystemStatusMutator status)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(rom);
@@ -171,9 +122,7 @@ public class Slots : ISlots
     /// </remarks>
     public int Size { get => 0x1000; }
 
-    /// <inheritdoc/>
-    public byte BankSelect { get; set; } = 0;
-
+ 
     /// <inheritdoc/>
     public void InstallCard(int id, SlotNumber slot)
     {
@@ -227,6 +176,49 @@ public class Slots : ISlots
         return GetCardIn(slot).Id == 0;
     }
 
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ManageC800(byte slot)
+    {
+        if (slot >= 1 && slot <= 7)
+        {
+            if (_status.StateIntCxRom)
+            {
+                return;
+            }
+
+            // Force C8Rom on if We're accessing slot 3 and SlotC3Rom is off
+            if (slot == 3 && !_status.StateSlotC3Rom)
+            {
+                if (!_status.StateIntC8Rom)
+                {
+                    _status.SetIntC8Rom(true);
+                    _status.SetIntC8RomSlot(255);
+                }
+            }
+
+            // If C800Slot is zero, then possibly set it to first card accessed
+            if (_status.StateIntC8RomSlot == 0)
+            {
+                // Only switch C8 space if slot has extended ROM
+                // In a real system, not all cards respond to /IOSTROBE
+                // Do a test read to see if it returns data or null.
+                if (_cards[slot].ReadExtendedRom(0) != null)
+                {
+                    _status.SetIntC8RomSlot(slot);
+                }
+            }
+
+        }
+        else
+        {
+            // if slot == 255 then it's from a $CFFF access
+            // so reset INTC8ROM to peripheral ROM
+            _status.SetIntC8Rom(false);
+            _status.SetIntC8RomSlot(0);
+        } 
+    }
+
     /// <summary>
     /// Reads a byte from the slots address space ($C090-$CFFF).
     /// </summary>
@@ -234,69 +226,24 @@ public class Slots : ISlots
     /// The address to read, offset by $C000. For example, to read from $C600, pass 0x0600.
     /// Valid range: 0x0090-0x0FFF.
     /// </param>
-    /// <returns>
-    /// The byte value from the responding device (card, system ROM, or floating bus).
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown if the address is outside the valid range ($C090-$CFFF / 0x0090-0x0FFF).
-    /// </exception>
-    /// <remarks>
-    /// <para>
-    /// <strong>Address Decoding Logic:</strong>
-    /// </para>
-    /// <para>
-    /// <strong>$C090-$C0FF (Card I/O Space):</strong><br/>
-    /// If INTCXROM is enabled, returns system ROM. Otherwise, extracts slot number from
-    /// address bits 4-6 and calls the card's <see cref="ICard.ReadIO"/>. Returns floating
-    /// bus if card returns <c>null</c>. This range never modifies <see cref="BankSelect"/>.
-    /// </para>
-    /// <para>
-    /// <strong>$C100-$C7FF (Card ROM Space):</strong><br/>
-    /// If INTCXROM is enabled, returns system ROM. Otherwise, checks SLOTCXROM (or SLOTC3ROM
-    /// for slot 3) to determine card vs. system ROM. If using card ROM, sets <see cref="BankSelect"/>
-    /// to the slot number and calls <see cref="ICard.ReadRom"/>. Returns floating bus if
-    /// card returns <c>null</c>, or system ROM if soft switches indicate system ROM.
-    /// </para>
-    /// <para>
-    /// <strong>$C800-$CFFF (Extended ROM Space):</strong><br/>
-    /// If INTCXROM is enabled, returns system ROM. Otherwise, checks <see cref="BankSelect"/>
-    /// to determine which card's extended ROM is active. If <see cref="BankSelect"/> is non-zero,
-    /// calls that card's <see cref="ICard.ReadExtendedRom"/>. Returns floating bus if
-    /// <see cref="BankSelect"/> is 0 or if card returns <c>null</c>.
-    /// </para>
-    /// <para>
-    /// <strong>Special Behavior at $CFFF:</strong><br/>
-    /// Reading from $CFFF (0x0FFF) disables extended ROM by setting <see cref="BankSelect"/>
-    /// to 0. The read still returns the byte from the currently active card (if any) before
-    /// being disabled.
-    /// </para>
-    /// </remarks>
-    /// <seealso cref="Write"/>
-    /// <seealso cref="BankSelect"/>
+   
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public byte Read(ushort address)
     {
-        // $CFFF disables extended ROM (both read and write)
-        if (address == 0x0FFF)
-        {
-            BankSelect = 0;
-        }
-
         // $C090-$C0FF: Card I/O space
         if (address >= 0x0090 && address <= 0x00FF)
         {
-            //TODO: Double check this if statement:
-            // INTCXROM overrides all card I/O and ROM
-            if (_status.StateIntCxRom)
-            {
-                // Internal ROM enabled, return system ROM
-                return _rom.Read(address);  // _rom is also offset by $C000
-            }
+            //// INTCXROM overrides all card I/O and ROM
+            //if (_status.StateIntCxRom)
+            //{
+            //    // Internal ROM enabled, return system ROM
+            //    return _rom.Read(address);  // _rom is also offset by $C000
+            //}
 
             // Determine slot from address: $C090-$C09F=slot1, $C0A0-$C0AF=slot2, etc.
             int slot = ((address >> 4) & 0x07);
             byte offset = (byte) (address & 0x0F);
 
-            // Card I/O never changes BankSelect
             byte? cardByte = _cards[slot].ReadIO(offset);
             return cardByte ?? _floatingBus.Read();
         }
@@ -304,15 +251,16 @@ public class Slots : ISlots
         // $C100-$C7FF: Card ROM or System ROM
         if (address >= 0x0100 && address <= 0x07FF)
         {
+            
+            int slot = (address >> 8) & 0x07;
+            byte offset = (byte) (address & 0xFF);
+            ManageC800((byte) (slot));
+
             // INTCXROM overrides SLOTCXROM and SLOTC3ROM
             if (_status.StateIntCxRom)
             {
-                // Internal ROM enabled for entire $C100-$CFFF range
                 return _rom.Read(address);
             }
-
-            int slot = (address >> 8) & 0x07;
-            byte offset = (byte) (address & 0xFF);
 
             // Determine if this slot should use card ROM or system ROM
             bool useCardRom = (slot != 3); // !_status.StateIntCxRom;
@@ -327,36 +275,34 @@ public class Slots : ISlots
 
             if (useCardRom)
             {
-                // Card ROM enabled: ACTIVATE extended ROM and return card data
-                if (_cards[slot].Id != 0) // If there's a card there, then assert IoStrobe to swap in Extended Card Rom
-                {
-                    BankSelect = (byte) slot;
-                }
-
                 byte? cardByte = _cards[slot].ReadRom(offset);
                 return cardByte ?? _floatingBus.Read();
             }
             else
             {
-                // System ROM enabled: DON'T change BankSelect
                 return _rom.Read(address);
             }
         }
 
-        // $C800-$CFFF: Extended ROM (uses BankSelect regardless of SLOTCXROM/SLOTC3ROM)
+        // $C800-$CFFF: Extended ROM 
         if (address >= 0x0800 && address <= 0x0FFF)
-        {
+        {   if (address == 0x0FFF)
+            {
+                ManageC800(255); // Reset C8Rom to peripheral ROM
+            }
+
+            if (_status.StateIntCxRom || _status.StateIntC8Rom)
             // INTCXROM overrides extended ROM
-            if (_status.StateIntCxRom || (BankSelect == 3 && !_status.StateSlotC3Rom))
+            //if (_status.StateIntCxRom || (BankSelect == 3 && !_status.StateSlotC3Rom))
             {
                 return _rom.Read(address);
             }
 
             ushort offset = (ushort) (address - 0x0800);
 
-            if (BankSelect != 0)
+            if (_status.StateIntC8RomSlot != 0)
             {
-                byte? cardByte = _cards[BankSelect].ReadExtendedRom(offset);
+                byte? cardByte = _cards[_status.StateIntC8RomSlot].ReadExtendedRom(offset);
                 return cardByte ?? _floatingBus.Read();
             }
 
@@ -378,63 +324,27 @@ public class Slots : ISlots
     /// <exception cref="InvalidOperationException">
     /// Thrown if the address is outside the valid range ($C090-$CFFF / 0x0090-0x0FFF).
     /// </exception>
-    /// <remarks>
-    /// <para>
-    /// <strong>Address Decoding Logic:</strong>
-    /// </para>
-    /// <para>
-    /// <strong>$C090-$C0FF (Card I/O Space):</strong><br/>
-    /// If INTCXROM is enabled, writes to system ROM (usually a no-op). Otherwise, extracts
-    /// slot number from address bits 4-6 and calls the card's <see cref="ICard.WriteIO"/>.
-    /// Cards typically use this space for control registers, command triggers, and data output.
-    /// This range never modifies <see cref="BankSelect"/>.
-    /// </para>
-    /// <para>
-    /// <strong>$C100-$C7FF (Card ROM Space):</strong><br/>
-    /// If INTCXROM is enabled, writes to system ROM (usually a no-op). Otherwise, checks
-    /// SLOTCXROM (or SLOTC3ROM for slot 3) to determine card vs. system ROM. If using card
-    /// ROM, sets <see cref="BankSelect"/> to the slot number and calls <see cref="ICard.WriteRom"/>.
-    /// Most cards treat this as a no-op since ROM is read-only, but some cards may implement
-    /// writeable RAM in this space.
-    /// </para>
-    /// <para>
-    /// <strong>$C800-$CFFF (Extended ROM Space):</strong><br/>
-    /// If INTCXROM is enabled, writes to system ROM (usually a no-op). Otherwise, if
-    /// <see cref="BankSelect"/> is non-zero, calls that card's <see cref="ICard.WriteExtendedRom"/>.
-    /// If <see cref="BankSelect"/> is 0, the write is silently ignored (no floating bus effect).
-    /// </para>
-    /// <para>
-    /// <strong>Special Behavior at $CFFF:</strong><br/>
-    /// Writing to $CFFF (0x0FFF) disables extended ROM by setting <see cref="BankSelect"/>
-    /// to 0. The write still reaches the currently active card (if any) before being disabled.
-    /// </para>
-    /// </remarks>
+  
     /// <seealso cref="Read"/>
-    /// <seealso cref="BankSelect"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Write(ushort address, byte val)
     {
-        // $CFFF disables extended ROM (both read and write)
-        if (address == 0x0FFF)
-        {
-            BankSelect = 0;
-        }
-
         // $C090-$C0FF: Card I/O space
         if (address >= 0x0090 && address <= 0x00FF)
         {
             // INTCXROM overrides all card I/O and ROM
-            if (_status.StateIntCxRom)
-            {
-                // Internal ROM enabled, write to system ROM (usually no-op)
-                _rom.Write(address, val);
-                return;
-            }
+            //if (_status.StateIntCxRom)
+            //{
+            //    // Internal ROM enabled, write to system ROM (usually no-op)
+            //    _rom.Write(address, val);
+            //    return;
+            //}
 
             // Determine slot from address: $C090-$C09F=slot1, $C0A0-$C0AF=slot2, etc.
             int slot = ((address >> 4) & 0x07);
             byte offset = (byte) (address & 0x0F);
 
-            // Card I/O never changes BankSelect
+
             _cards[slot].WriteIO(offset, val);
             return;
         }
@@ -442,6 +352,10 @@ public class Slots : ISlots
         // $C100-$C7FF: Card ROM or System ROM writes
         if (address >= 0x0100 && address <= 0x07FF)
         {
+            int slot = (address >> 8) & 0x07;
+            byte offset = (byte) (address & 0xFF);
+            ManageC800((byte)(slot));
+
             // INTCXROM overrides SLOTCXROM and SLOTC3ROM
             if (_status.StateIntCxRom)
             {
@@ -450,8 +364,6 @@ public class Slots : ISlots
                 return;
             }
 
-            int slot = (address >> 8) & 0x07;
-            byte offset = (byte) (address & 0xFF);
 
             // Determine if this slot should use card ROM or system ROM
             bool useCardRom = !_status.StateIntCxRom;
@@ -465,7 +377,6 @@ public class Slots : ISlots
             if (useCardRom)
             {
                 // Card ROM enabled: ACTIVATE extended ROM and write to card
-                BankSelect = (byte) slot;
                 _cards[slot].WriteRom(offset, val);
             }
             else
@@ -479,18 +390,17 @@ public class Slots : ISlots
         // $C800-$CFFF: Extended ROM writes
         if (address >= 0x0800 && address <= 0x0FFF)
         {
-            // INTCXROM overrides extended ROM
-            if (_status.StateIntCxRom)
+            // We never write to interal ROM. Pointless.
+            if (_status.StateIntCxRom || _status.StateIntC8Rom)
             {
-                _rom.Write(address, val);
                 return;
             }
 
             ushort offset = (ushort) (address - 0x0800);
 
-            if (BankSelect != 0)
+            if (_status.StateIntC8RomSlot != 0)
             {
-                _cards[BankSelect].WriteExtendedRom(offset, val);
+                _cards[_status.StateIntC8RomSlot].WriteExtendedRom(offset, val);
             }
             return;
         }
@@ -610,53 +520,7 @@ public class Slots : ISlots
     /// <c>true</c> if the configuration was successfully applied; <c>false</c> if the metadata
     /// was invalid or any card failed to apply its configuration.
     /// </returns>
-    /// <remarks>
-    /// <para>
-    /// This method restores the slot configuration from metadata by:
-    /// </para>
-    /// <list type="number">
-    /// <item><description>Clearing all slots (removing all cards)</description></item>
-    /// <item><description>Parsing the JSON metadata</description></item>
-    /// <item><description>Installing each card by ID in its designated slot</description></item>
-    /// <item><description>Recursively applying each card's embedded metadata</description></item>
-    /// <item><description>Restoring the <see cref="BankSelect"/> state</description></item>
-    /// </list>
-    /// <para>
-    /// <strong>Empty String Handling:</strong><br/>
-    /// Passing an empty or whitespace-only string clears all slots, leaving the system
-    /// with empty slots (all <see cref="NullCard"/> instances). This represents the
-    /// default/unconfigured state.
-    /// </para>
-    /// <para>
-    /// <strong>Error Handling:</strong><br/>
-    /// If any card fails to install or configure, this method returns <c>false</c>. The
-    /// slot system may be left in a partial state where some cards are installed and
-    /// others are not. For transactional behavior, callers should capture the current
-    /// metadata before applying new metadata to enable rollback.
-    /// </para>
-    /// <para>
-    /// <strong>Card Factory Dependency:</strong><br/>
-    /// This method relies on <see cref="ICardFactory.GetCardWithId"/> to create card
-    /// instances. If a card ID in the metadata is not registered in the factory, that
-    /// slot will remain empty and the method will return <c>false</c>.
-    /// </para>
-    /// </remarks>
-    /// <example>
-    /// <code>
-    /// // Save current configuration
-    /// string backup = slots.GetMetadata();
-    /// 
-    /// // Load a different configuration
-    /// if (!slots.ApplyMetadata(savedConfiguration))
-    /// {
-    ///     // Restore backup on failure
-    ///     slots.ApplyMetadata(backup);
-    /// }
-    /// 
-    /// // Clear all slots
-    /// slots.ApplyMetadata(string.Empty);
-    /// </code>
-    /// </example>
+    
     public bool ApplyMetadata(string metadata)
     {
         // Empty string = clear all slots
@@ -742,6 +606,9 @@ public class Slots : ISlots
 
     public void Reset()
     {
+        _status.SetIntC8Rom(false);
+        _status.SetIntC8RomSlot(0);
+
         foreach (var card in _cards)
         {
             card.Reset();

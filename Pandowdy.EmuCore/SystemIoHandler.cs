@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore;
@@ -197,7 +198,7 @@ public class SystemIoHandler : ISystemIoHandler
     /// <returns>Byte value returned by the I/O handler, or $A0 if unhandled.</returns>
     /// <remarks>
     /// <para>
-    /// <strong>Handler Dispatch:</strong> Looks up the address in the _ioReadHandlers dictionary
+    /// <strong>Handler Dispatch:</strong> Looks up the address offset in the _ioReadHandlers array
     /// and invokes the handler function. If no handler is registered, falls back to legacy
     /// address range checks and returns appropriate values.
     /// </para>
@@ -210,9 +211,12 @@ public class SystemIoHandler : ISystemIoHandler
     /// enhancement will implement proper floating bus emulation.
     /// </para>
     /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private byte ReadFromIOSpace(ushort address)
     {
-        if (_ioReadHandlers.TryGetValue(address, out var handler))
+        int offset = address - 0xC000;
+        var handler = _ioReadHandlers[offset];
+        if (handler != null)
         {
             return handler();
         }
@@ -276,7 +280,7 @@ public class SystemIoHandler : ISystemIoHandler
     /// <param name="_">Byte value to write (usually ignored by handlers).</param>
     /// <remarks>
     /// <para>
-    /// <strong>Handler Dispatch:</strong> Looks up the address in the _ioWriteHandlers dictionary
+    /// <strong>Handler Dispatch:</strong> Looks up the address offset in the _ioWriteHandlers array
     /// and invokes the handler action. If no handler is registered, falls back to legacy
     /// address range checks.
     /// </para>
@@ -289,9 +293,12 @@ public class SystemIoHandler : ISystemIoHandler
     /// but not fully implemented.
     /// </para>
     /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void WriteToIOSpace(ushort address, byte _ /*data*/)
     {
-        if (_ioWriteHandlers.TryGetValue(address, out var writer))
+        int offset = address - 0xC000;
+        var writer = _ioWriteHandlers[offset];
+        if (writer != null)
         {
    //         Debug.WriteLine($"Found a write handler for IO value {address:X}");
 
@@ -300,7 +307,7 @@ public class SystemIoHandler : ISystemIoHandler
         }
         else
         {
-            Debug.WriteLine($"Could not find a write handler for IO value {address:X}");
+      //      Debug.WriteLine($"Could not find a write handler for IO value {address:X}");
         }
         if (address >= KEYSTRB_ && address <= KEYSTRB_ + 0x1F)
         {
@@ -341,22 +348,24 @@ public class SystemIoHandler : ISystemIoHandler
     private SoftSwitches _softSwitches;
 
     /// <summary>
-    /// Dictionary mapping I/O addresses to write handler actions.
+    /// Array mapping I/O offsets (0x00-0x8F) to write handler actions.
     /// </summary>
     /// <remarks>
+    /// Uses array instead of Dictionary for O(1) direct indexing without hashing overhead.
     /// Handlers receive the byte value written to the I/O address. Most handlers
     /// ignore the data value and simply toggle soft switches based on the address.
     /// </remarks>
-    private readonly Dictionary<ushort, Action<byte>> _ioWriteHandlers = [];
+    private readonly Action<byte>?[] _ioWriteHandlers = new Action<byte>?[0x90];
 
     /// <summary>
-    /// Dictionary mapping I/O addresses to read handler functions.
+    /// Array mapping I/O offsets (0x00-0x8F) to read handler functions.
     /// </summary>
     /// <remarks>
+    /// Uses array instead of Dictionary for O(1) direct indexing without hashing overhead.
     /// Handlers return the byte value to be read from the I/O address. Many handlers
     /// also have side effects (toggling soft switches, clearing keyboard latch, etc.).
     /// </remarks>
-    private readonly Dictionary<ushort, Func<byte>> _ioReadHandlers = [];
+    private readonly Func<byte>?[] _ioReadHandlers = new Func<byte>?[0x90];
 
     #region Constants 
     /// <summary>Start of Apple IIe I/O address space ($C000).</summary>
@@ -601,58 +610,58 @@ public class SystemIoHandler : ISystemIoHandler
     /// </remarks>
     private void InitIoWriteHandlers()
     {
-        // Simple soft-switch writes
-        _ioWriteHandlers[CLR80STORE_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Store80, false);
-        _ioWriteHandlers[SET80STORE_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Store80, true);
-        _ioWriteHandlers[RDMAINRAM_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.RamRd, false);
-        _ioWriteHandlers[RDCARDRAM_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.RamRd, true);
-        _ioWriteHandlers[WRMAINRAM_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.RamWrt, false);
-        _ioWriteHandlers[WRCARDRAM_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.RamWrt, true);
-        _ioWriteHandlers[SLOTCXROM_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.IntCxRom, false);
-        _ioWriteHandlers[INTCXROM_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.IntCxRom, true);
-        _ioWriteHandlers[STDZP_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.AltZp, false);
-        _ioWriteHandlers[ALTZP_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.AltZp, true);
-        _ioWriteHandlers[INTC3ROM_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.SlotC3Rom, false);
-        _ioWriteHandlers[SLOTC3ROM_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.SlotC3Rom, true);
-        _ioWriteHandlers[CLR80VID_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Vid80, false);
-        _ioWriteHandlers[SET80VID_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Vid80, true);
-        _ioWriteHandlers[CLRALTCHAR_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.AltChar, false);
-        _ioWriteHandlers[SETALTCHAR_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.AltChar, true);
-        _ioWriteHandlers[CLRTXT_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Text, false);
-        _ioWriteHandlers[SETTXT_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Text, true);
-        _ioWriteHandlers[CLRMIXED_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Mixed, false);
-        _ioWriteHandlers[SETMIXED_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Mixed, true);
-        _ioWriteHandlers[CLRPAGE2_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Page2, false);
-        _ioWriteHandlers[SETPAGE2_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Page2, true);
-        _ioWriteHandlers[CLRHIRES_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.HiRes, false);
-        _ioWriteHandlers[SETHIRES_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.HiRes, true);
-        _ioWriteHandlers[CLRAN0_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An0, false);
-        _ioWriteHandlers[SETAN0_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An0, true);
-        _ioWriteHandlers[CLRAN1_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An1, false);
-        _ioWriteHandlers[SETAN1_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An1, true);
-        _ioWriteHandlers[CLRAN2_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An2, false);
-        _ioWriteHandlers[SETAN2_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An2, true);
-        _ioWriteHandlers[CLRAN3_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An3, false);
-        _ioWriteHandlers[SETAN3_] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An3, true);
+        // Simple soft-switch writes (use offset = address - 0xC000)
+        _ioWriteHandlers[CLR80STORE_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Store80, false);
+        _ioWriteHandlers[SET80STORE_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Store80, true);
+        _ioWriteHandlers[RDMAINRAM_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.RamRd, false);
+        _ioWriteHandlers[RDCARDRAM_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.RamRd, true);
+        _ioWriteHandlers[WRMAINRAM_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.RamWrt, false);
+        _ioWriteHandlers[WRCARDRAM_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.RamWrt, true);
+        _ioWriteHandlers[SLOTCXROM_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.IntCxRom, false);
+        _ioWriteHandlers[INTCXROM_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.IntCxRom, true);
+        _ioWriteHandlers[STDZP_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.AltZp, false);
+        _ioWriteHandlers[ALTZP_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.AltZp, true);
+        _ioWriteHandlers[INTC3ROM_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.SlotC3Rom, false);
+        _ioWriteHandlers[SLOTC3ROM_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.SlotC3Rom, true);
+        _ioWriteHandlers[CLR80VID_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Vid80, false);
+        _ioWriteHandlers[SET80VID_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Vid80, true);
+        _ioWriteHandlers[CLRALTCHAR_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.AltChar, false);
+        _ioWriteHandlers[SETALTCHAR_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.AltChar, true);
+        _ioWriteHandlers[CLRTXT_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Text, false);
+        _ioWriteHandlers[SETTXT_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Text, true);
+        _ioWriteHandlers[CLRMIXED_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Mixed, false);
+        _ioWriteHandlers[SETMIXED_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Mixed, true);
+        _ioWriteHandlers[CLRPAGE2_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Page2, false);
+        _ioWriteHandlers[SETPAGE2_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.Page2, true);
+        _ioWriteHandlers[CLRHIRES_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.HiRes, false);
+        _ioWriteHandlers[SETHIRES_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.HiRes, true);
+        _ioWriteHandlers[CLRAN0_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An0, false);
+        _ioWriteHandlers[SETAN0_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An0, true);
+        _ioWriteHandlers[CLRAN1_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An1, false);
+        _ioWriteHandlers[SETAN1_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An1, true);
+        _ioWriteHandlers[CLRAN2_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An2, false);
+        _ioWriteHandlers[SETAN2_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An2, true);
+        _ioWriteHandlers[CLRAN3_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An3, false);
+        _ioWriteHandlers[SETAN3_ - 0xC000] = _ => _softSwitches.Set(SoftSwitches.SoftSwitchId.An3, true);
 
         // Banked block writes (unrolled) — note write-path semantics differ from read-path
-        _ioWriteHandlers[B2_RD_RAM_NO_WRT_] = _ => ApplyBankIoWriteFlags(false, B2_RD_RAM_NO_WRT_);
-        _ioWriteHandlers[B2_RD_RAM_NO_WRT_ALT_] = _ => ApplyBankIoWriteFlags(false, B2_RD_RAM_NO_WRT_ALT_);
-        _ioWriteHandlers[B2_RD_ROM_WRT_RAM_] = _ => ApplyBankIoWriteFlags(false, B2_RD_ROM_WRT_RAM_);
-        _ioWriteHandlers[B2_RD_ROM_WRT_RAM_ALT_] = _ => ApplyBankIoWriteFlags(false, B2_RD_ROM_WRT_RAM_ALT_);
-        _ioWriteHandlers[B2_RD_ROM_NO_WRT_] = _ => ApplyBankIoWriteFlags(false, B2_RD_ROM_NO_WRT_);
-        _ioWriteHandlers[B2_RD_ROM_NO_WRT_ALT_] = _ => ApplyBankIoWriteFlags(false, B2_RD_ROM_NO_WRT_ALT_);
-        _ioWriteHandlers[B2_RD_RAM_WRT_RAM_] = _ => ApplyBankIoWriteFlags(false, B2_RD_RAM_WRT_RAM_);
-        _ioWriteHandlers[B2_RD_RAM_WRT_RAM_ALT_] = _ => ApplyBankIoWriteFlags(false, B2_RD_RAM_WRT_RAM_ALT_);
+        _ioWriteHandlers[B2_RD_RAM_NO_WRT_ - 0xC000] = _ => ApplyBankIoWriteFlags(false, B2_RD_RAM_NO_WRT_);
+        _ioWriteHandlers[B2_RD_RAM_NO_WRT_ALT_ - 0xC000] = _ => ApplyBankIoWriteFlags(false, B2_RD_RAM_NO_WRT_ALT_);
+        _ioWriteHandlers[B2_RD_ROM_WRT_RAM_ - 0xC000] = _ => ApplyBankIoWriteFlags(false, B2_RD_ROM_WRT_RAM_);
+        _ioWriteHandlers[B2_RD_ROM_WRT_RAM_ALT_ - 0xC000] = _ => ApplyBankIoWriteFlags(false, B2_RD_ROM_WRT_RAM_ALT_);
+        _ioWriteHandlers[B2_RD_ROM_NO_WRT_ - 0xC000] = _ => ApplyBankIoWriteFlags(false, B2_RD_ROM_NO_WRT_);
+        _ioWriteHandlers[B2_RD_ROM_NO_WRT_ALT_ - 0xC000] = _ => ApplyBankIoWriteFlags(false, B2_RD_ROM_NO_WRT_ALT_);
+        _ioWriteHandlers[B2_RD_RAM_WRT_RAM_ - 0xC000] = _ => ApplyBankIoWriteFlags(false, B2_RD_RAM_WRT_RAM_);
+        _ioWriteHandlers[B2_RD_RAM_WRT_RAM_ALT_ - 0xC000] = _ => ApplyBankIoWriteFlags(false, B2_RD_RAM_WRT_RAM_ALT_);
 
-        _ioWriteHandlers[B1_RD_RAM_NO_WRT_] = _ => ApplyBankIoWriteFlags(true, B1_RD_RAM_NO_WRT_);
-        _ioWriteHandlers[B1_RD_RAM_NO_WRT_ALT_] = _ => ApplyBankIoWriteFlags(true, B1_RD_RAM_NO_WRT_ALT_);
-        _ioWriteHandlers[B1_RD_ROM_WRT_RAM_] = _ => ApplyBankIoWriteFlags(true, B1_RD_ROM_WRT_RAM_);
-        _ioWriteHandlers[B1_RD_ROM_WRT_RAM_ALT_] = _ => ApplyBankIoWriteFlags(true, B1_RD_ROM_WRT_RAM_ALT_);
-        _ioWriteHandlers[B1_RD_ROM_NO_WRT_] = _ => ApplyBankIoWriteFlags(true, B1_RD_ROM_NO_WRT_);
-        _ioWriteHandlers[B1_RD_ROM_NO_WRT_ALT_] = _ => ApplyBankIoWriteFlags(true, B1_RD_ROM_NO_WRT_ALT_);
-        _ioWriteHandlers[B1_RD_RAM_WRT_RAM_] = _ => ApplyBankIoWriteFlags(true, B1_RD_RAM_WRT_RAM_);
-        _ioWriteHandlers[B1_RD_RAM_WRT_RAM_ALT_] = _ => ApplyBankIoWriteFlags(true, B1_RD_RAM_WRT_RAM_ALT_);
+        _ioWriteHandlers[B1_RD_RAM_NO_WRT_ - 0xC000] = _ => ApplyBankIoWriteFlags(true, B1_RD_RAM_NO_WRT_);
+        _ioWriteHandlers[B1_RD_RAM_NO_WRT_ALT_ - 0xC000] = _ => ApplyBankIoWriteFlags(true, B1_RD_RAM_NO_WRT_ALT_);
+        _ioWriteHandlers[B1_RD_ROM_WRT_RAM_ - 0xC000] = _ => ApplyBankIoWriteFlags(true, B1_RD_ROM_WRT_RAM_);
+        _ioWriteHandlers[B1_RD_ROM_WRT_RAM_ALT_ - 0xC000] = _ => ApplyBankIoWriteFlags(true, B1_RD_ROM_WRT_RAM_ALT_);
+        _ioWriteHandlers[B1_RD_ROM_NO_WRT_ - 0xC000] = _ => ApplyBankIoWriteFlags(true, B1_RD_ROM_NO_WRT_);
+        _ioWriteHandlers[B1_RD_ROM_NO_WRT_ALT_ - 0xC000] = _ => ApplyBankIoWriteFlags(true, B1_RD_ROM_NO_WRT_ALT_);
+        _ioWriteHandlers[B1_RD_RAM_WRT_RAM_ - 0xC000] = _ => ApplyBankIoWriteFlags(true, B1_RD_RAM_WRT_RAM_);
+        _ioWriteHandlers[B1_RD_RAM_WRT_RAM_ALT_ - 0xC000] = _ => ApplyBankIoWriteFlags(true, B1_RD_RAM_WRT_RAM_ALT_);
     }
 
     /// <summary>
@@ -726,64 +735,64 @@ public class SystemIoHandler : ISystemIoHandler
     /// </remarks>
     private void InitIoReadHandlers()
     {
-        // Simple reads that only return composed values
-        _ioReadHandlers[KEYSTRB_] = () => { return _keyboard.ClearStrobe();  };
-        _ioReadHandlers[RD_LC_BANK1_] = () => (byte) (Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Bank1), _keyboard.PeekCurrentKeyValue()) ^ 0x80);
-        _ioReadHandlers[RD_LC_RAM] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.HighRead), _keyboard.PeekCurrentKeyValue());
-        _ioReadHandlers[RD_RAMRD_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.RamRd), _keyboard.PeekCurrentKeyValue());
-        _ioReadHandlers[RD_RAMWRT_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.RamWrt), _keyboard.PeekCurrentKeyValue());
-        _ioReadHandlers[RD_INTCXROM_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.IntCxRom), _keyboard.PeekCurrentKeyValue());
-        _ioReadHandlers[RD_ALTZP_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.AltZp), _keyboard.PeekCurrentKeyValue());
-        _ioReadHandlers[RD_SLOTC3ROM_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.SlotC3Rom), _keyboard.PeekCurrentKeyValue());
-        _ioReadHandlers[RD_80STORE_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Store80), _keyboard.PeekCurrentKeyValue());
-        _ioReadHandlers[RD_TEXT_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Text), _keyboard.PeekCurrentKeyValue());
-        _ioReadHandlers[RD_MIXED_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Mixed), _keyboard.PeekCurrentKeyValue());
-        _ioReadHandlers[RD_PAGE2_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Page2), _keyboard.PeekCurrentKeyValue());
-        _ioReadHandlers[RD_HIRES_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.HiRes), _keyboard.PeekCurrentKeyValue());
-        _ioReadHandlers[RD_ALTCHAR_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.AltChar), _keyboard.PeekCurrentKeyValue());
-        _ioReadHandlers[RD_80VID_] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Vid80), _keyboard.PeekCurrentKeyValue());
-        _ioReadHandlers[RD_VERTBLANK_] = () => { return (byte) ((byte) (_vblank.InVBlank ? 0x80 : 0x00) | _keyboard.PeekCurrentKeyValue() & 0x7f); };
-        _ioReadHandlers[TAPEIN_] = () => 0x00;
-        _ioReadHandlers[BUTTON0_] = () => (byte) (_gameController.GetButton(0) ? 0x80 : 0x00);
-        _ioReadHandlers[BUTTON1_] = () => (byte) (_gameController.GetButton(1) ? 0x80 : 0x00);
-        _ioReadHandlers[BUTTON2_] = () => (byte) (_gameController.GetButton(2) ? 0x80 : 0x00);
+        // Simple reads that only return composed values (use offset = address - 0xC000)
+        _ioReadHandlers[KEYSTRB_ - 0xC000] = () => { return _keyboard.ClearStrobe();  };
+        _ioReadHandlers[RD_LC_BANK1_ - 0xC000] = () => (byte) (Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Bank1), _keyboard.PeekCurrentKeyValue()) ^ 0x80);
+        _ioReadHandlers[RD_LC_RAM - 0xC000] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.HighRead), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_RAMRD_ - 0xC000] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.RamRd), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_RAMWRT_ - 0xC000] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.RamWrt), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_INTCXROM_ - 0xC000] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.IntCxRom), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_ALTZP_ - 0xC000] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.AltZp), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_SLOTC3ROM_ - 0xC000] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.SlotC3Rom), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_80STORE_ - 0xC000] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Store80), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_TEXT_ - 0xC000] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Text), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_MIXED_ - 0xC000] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Mixed), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_PAGE2_ - 0xC000] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Page2), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_HIRES_ - 0xC000] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.HiRes), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_ALTCHAR_ - 0xC000] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.AltChar), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_80VID_ - 0xC000] = () => Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.Vid80), _keyboard.PeekCurrentKeyValue());
+        _ioReadHandlers[RD_VERTBLANK_ - 0xC000] = () => { return (byte) ((byte) (_vblank.InVBlank ? 0x80 : 0x00) | _keyboard.PeekCurrentKeyValue() & 0x7f); };
+        _ioReadHandlers[TAPEIN_ - 0xC000] = () => 0x00;
+        _ioReadHandlers[BUTTON0_ - 0xC000] = () => (byte) (_gameController.GetButton(0) ? 0x80 : 0x00);
+        _ioReadHandlers[BUTTON1_ - 0xC000] = () => (byte) (_gameController.GetButton(1) ? 0x80 : 0x00);
+        _ioReadHandlers[BUTTON2_ - 0xC000] = () => (byte) (_gameController.GetButton(2) ? 0x80 : 0x00);
 
         // Reads that also toggle soft switches (Apple II behavior: reading addresses sets switches)
-        _ioReadHandlers[CLRTXT_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Text, false); return 0xA0; };
-        _ioReadHandlers[SETTXT_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Text, true); return 0xA0; };
-        _ioReadHandlers[CLRMIXED_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Mixed, false); return 0xA0; };
-        _ioReadHandlers[SETMIXED_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Mixed, true); return 0xA0; };
-        _ioReadHandlers[CLRPAGE2_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Page2, false); return 0xA0; };
-        _ioReadHandlers[SETPAGE2_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Page2, true); return 0xA0; };
-        _ioReadHandlers[CLRHIRES_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.HiRes, false); return 0xA0; };
-        _ioReadHandlers[SETHIRES_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.HiRes, true); return 0xA0; };
-        _ioReadHandlers[CLRAN0_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An0, false); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An0)); };
-        _ioReadHandlers[SETAN0_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An0, true); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An0)); };
-        _ioReadHandlers[CLRAN1_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An1, false); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An1)); };
-        _ioReadHandlers[SETAN1_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An1, true); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An1)); };
-        _ioReadHandlers[CLRAN2_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An2, false); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An2)); };
-        _ioReadHandlers[SETAN2_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An2, true); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An2)); };
-        _ioReadHandlers[CLRAN3_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An3, false); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An3)); };
-        _ioReadHandlers[SETAN3_] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An3, true); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An3)); };
+        _ioReadHandlers[CLRTXT_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Text, false); return 0xA0; };
+        _ioReadHandlers[SETTXT_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Text, true); return 0xA0; };
+        _ioReadHandlers[CLRMIXED_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Mixed, false); return 0xA0; };
+        _ioReadHandlers[SETMIXED_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Mixed, true); return 0xA0; };
+        _ioReadHandlers[CLRPAGE2_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Page2, false); return 0xA0; };
+        _ioReadHandlers[SETPAGE2_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.Page2, true); return 0xA0; };
+        _ioReadHandlers[CLRHIRES_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.HiRes, false); return 0xA0; };
+        _ioReadHandlers[SETHIRES_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.HiRes, true); return 0xA0; };
+        _ioReadHandlers[CLRAN0_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An0, false); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An0)); };
+        _ioReadHandlers[SETAN0_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An0, true); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An0)); };
+        _ioReadHandlers[CLRAN1_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An1, false); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An1)); };
+        _ioReadHandlers[SETAN1_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An1, true); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An1)); };
+        _ioReadHandlers[CLRAN2_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An2, false); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An2)); };
+        _ioReadHandlers[SETAN2_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An2, true); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An2)); };
+        _ioReadHandlers[CLRAN3_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An3, false); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An3)); };
+        _ioReadHandlers[SETAN3_ - 0xC000] = () => { _softSwitches.Set(SoftSwitches.SoftSwitchId.An3, true); return Utility.BuildHiBitVal(_softSwitches.Get(SoftSwitches.SoftSwitchId.An3)); };
 
         // Banked block reads (unrolled to individual addresses, sharing helper)
-        _ioReadHandlers[B2_RD_RAM_NO_WRT_] = () => { ApplyBankIoReadFlags(false, B2_RD_RAM_NO_WRT_); return 0xA0; };
-        _ioReadHandlers[B2_RD_RAM_NO_WRT_ALT_] = () => { ApplyBankIoReadFlags(false, B2_RD_RAM_NO_WRT_ALT_); return 0xA0; };
-        _ioReadHandlers[B2_RD_ROM_WRT_RAM_] = () => { ApplyBankIoReadFlags(false, B2_RD_ROM_WRT_RAM_); return 0xA0; };
-        _ioReadHandlers[B2_RD_ROM_WRT_RAM_ALT_] = () => { ApplyBankIoReadFlags(false, B2_RD_ROM_WRT_RAM_ALT_); return 0xA0; };
-        _ioReadHandlers[B2_RD_ROM_NO_WRT_] = () => { ApplyBankIoReadFlags(false, B2_RD_ROM_NO_WRT_); return 0xA0; };
-        _ioReadHandlers[B2_RD_ROM_NO_WRT_ALT_] = () => { ApplyBankIoReadFlags(false, B2_RD_ROM_NO_WRT_ALT_); return 0xA0; };
-        _ioReadHandlers[B2_RD_RAM_WRT_RAM_] = () => { ApplyBankIoReadFlags(false, B2_RD_RAM_WRT_RAM_); return 0xA0; };
-        _ioReadHandlers[B2_RD_RAM_WRT_RAM_ALT_] = () => { ApplyBankIoReadFlags(false, B2_RD_RAM_WRT_RAM_ALT_); return 0xA0; };
+        _ioReadHandlers[B2_RD_RAM_NO_WRT_ - 0xC000] = () => { ApplyBankIoReadFlags(false, B2_RD_RAM_NO_WRT_); return 0xA0; };
+        _ioReadHandlers[B2_RD_RAM_NO_WRT_ALT_ - 0xC000] = () => { ApplyBankIoReadFlags(false, B2_RD_RAM_NO_WRT_ALT_); return 0xA0; };
+        _ioReadHandlers[B2_RD_ROM_WRT_RAM_ - 0xC000] = () => { ApplyBankIoReadFlags(false, B2_RD_ROM_WRT_RAM_); return 0xA0; };
+        _ioReadHandlers[B2_RD_ROM_WRT_RAM_ALT_ - 0xC000] = () => { ApplyBankIoReadFlags(false, B2_RD_ROM_WRT_RAM_ALT_); return 0xA0; };
+        _ioReadHandlers[B2_RD_ROM_NO_WRT_ - 0xC000] = () => { ApplyBankIoReadFlags(false, B2_RD_ROM_NO_WRT_); return 0xA0; };
+        _ioReadHandlers[B2_RD_ROM_NO_WRT_ALT_ - 0xC000] = () => { ApplyBankIoReadFlags(false, B2_RD_ROM_NO_WRT_ALT_); return 0xA0; };
+        _ioReadHandlers[B2_RD_RAM_WRT_RAM_ - 0xC000] = () => { ApplyBankIoReadFlags(false, B2_RD_RAM_WRT_RAM_); return 0xA0; };
+        _ioReadHandlers[B2_RD_RAM_WRT_RAM_ALT_ - 0xC000] = () => { ApplyBankIoReadFlags(false, B2_RD_RAM_WRT_RAM_ALT_); return 0xA0; };
 
-        _ioReadHandlers[B1_RD_RAM_NO_WRT_] = () => { ApplyBankIoReadFlags(true, B1_RD_RAM_NO_WRT_); return 0xA0; };
-        _ioReadHandlers[B1_RD_RAM_NO_WRT_ALT_] = () => { ApplyBankIoReadFlags(true, B1_RD_RAM_NO_WRT_ALT_); return 0xA0; };
-        _ioReadHandlers[B1_RD_ROM_WRT_RAM_] = () => { ApplyBankIoReadFlags(true, B1_RD_ROM_WRT_RAM_); return 0xA0; };
-        _ioReadHandlers[B1_RD_ROM_WRT_RAM_ALT_] = () => { ApplyBankIoReadFlags(true, B1_RD_ROM_WRT_RAM_ALT_); return 0xA0; };
-        _ioReadHandlers[B1_RD_ROM_NO_WRT_] = () => { ApplyBankIoReadFlags(true, B1_RD_ROM_NO_WRT_); return 0xA0; };
-        _ioReadHandlers[B1_RD_ROM_NO_WRT_ALT_] = () => { ApplyBankIoReadFlags(true, B1_RD_ROM_NO_WRT_ALT_); return 0xA0; };
-        _ioReadHandlers[B1_RD_RAM_WRT_RAM_] = () => { ApplyBankIoReadFlags(true, B1_RD_RAM_WRT_RAM_); return 0xA0; };
-        _ioReadHandlers[B1_RD_RAM_WRT_RAM_ALT_] = () => { ApplyBankIoReadFlags(true, B1_RD_RAM_WRT_RAM_ALT_); return 0xA0; };
+        _ioReadHandlers[B1_RD_RAM_NO_WRT_ - 0xC000] = () => { ApplyBankIoReadFlags(true, B1_RD_RAM_NO_WRT_); return 0xA0; };
+        _ioReadHandlers[B1_RD_RAM_NO_WRT_ALT_ - 0xC000] = () => { ApplyBankIoReadFlags(true, B1_RD_RAM_NO_WRT_ALT_); return 0xA0; };
+        _ioReadHandlers[B1_RD_ROM_WRT_RAM_ - 0xC000] = () => { ApplyBankIoReadFlags(true, B1_RD_ROM_WRT_RAM_); return 0xA0; };
+        _ioReadHandlers[B1_RD_ROM_WRT_RAM_ALT_ - 0xC000] = () => { ApplyBankIoReadFlags(true, B1_RD_ROM_WRT_RAM_ALT_); return 0xA0; };
+        _ioReadHandlers[B1_RD_ROM_NO_WRT_ - 0xC000] = () => { ApplyBankIoReadFlags(true, B1_RD_ROM_NO_WRT_); return 0xA0; };
+        _ioReadHandlers[B1_RD_ROM_NO_WRT_ALT_ - 0xC000] = () => { ApplyBankIoReadFlags(true, B1_RD_ROM_NO_WRT_ALT_); return 0xA0; };
+        _ioReadHandlers[B1_RD_RAM_WRT_RAM_ - 0xC000] = () => { ApplyBankIoReadFlags(true, B1_RD_RAM_WRT_RAM_); return 0xA0; };
+        _ioReadHandlers[B1_RD_RAM_WRT_RAM_ALT_ - 0xC000] = () => { ApplyBankIoReadFlags(true, B1_RD_RAM_WRT_RAM_ALT_); return 0xA0; };
     }
 
     /// <summary>

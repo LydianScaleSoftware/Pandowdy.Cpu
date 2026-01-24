@@ -34,6 +34,7 @@
 //------------------------------------------------------------------------------
 
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Pandowdy.EmuCore.DataTypes;
 using Pandowdy.EmuCore.Services;
 
@@ -199,9 +200,13 @@ public sealed class SoftSwitches
     }
 
     /// <summary>
-    /// Internal dictionary mapping switch IDs to their corresponding SoftSwitch instances.
+    /// Array-based storage for switch values, indexed by SoftSwitchId enum value.
     /// </summary>
-    private Dictionary<SoftSwitchId, SoftSwitch> _switches = [];
+    /// <remarks>
+    /// Uses array instead of Dictionary for O(1) direct indexing without hashing overhead.
+    /// This is a hot path accessed on every soft switch read/write.
+    /// </remarks>
+    private readonly bool[] _switchValues = new bool[23]; // Count of SoftSwitchId values + 1
 
   
 
@@ -220,28 +225,29 @@ public sealed class SoftSwitches
         ArgumentNullException.ThrowIfNull(status);
         _status = status;
 
-        _switches[SoftSwitchId.Store80] = new SoftSwitch("80STORE", _status.State80Store);
-        _switches[SoftSwitchId.RamRd] = new SoftSwitch("RAMRD", _status.StateRamRd);
-        _switches[SoftSwitchId.RamWrt] = new SoftSwitch("RAMWRT", _status.StateRamWrt);
-        _switches[SoftSwitchId.IntCxRom] = new SoftSwitch("INTCXROM", _status.StateIntCxRom);
-        _switches[SoftSwitchId.AltZp] = new SoftSwitch("ALTZP", _status.StateAltZp);
-        _switches[SoftSwitchId.SlotC3Rom] = new SoftSwitch("SLOTC3ROM", _status.StateSlotC3Rom);
-        _switches[SoftSwitchId.Vid80] = new SoftSwitch("80VID", _status.StateShow80Col);
-        _switches[SoftSwitchId.AltChar] = new SoftSwitch("ALTCHAR", _status.StateAltCharSet);
-        _switches[SoftSwitchId.Text] = new SoftSwitch("TEXT", _status.StateTextMode);
-        _switches[SoftSwitchId.Mixed] = new SoftSwitch("MIXED", _status.StateMixed);
-        _switches[SoftSwitchId.Page2] = new SoftSwitch("PAGE2", _status.StatePage2);
-        _switches[SoftSwitchId.HiRes] = new SoftSwitch("HIRES", _status.StateHiRes);
-        _switches[SoftSwitchId.An0] = new SoftSwitch("AN0", _status.StateAnn0);
-        _switches[SoftSwitchId.An1] = new SoftSwitch("AN1", _status.StateAnn1);
-        _switches[SoftSwitchId.An2] = new SoftSwitch("AN2", _status.StateAnn2);
-        _switches[SoftSwitchId.An3] = new SoftSwitch("AN3", _status.StateAnn3_DGR);
-        _switches[SoftSwitchId.Bank1] = new SoftSwitch("BANK1", _status.StateUseBank1);
-        _switches[SoftSwitchId.HighWrite] = new SoftSwitch("HIGHWRITE", _status.StateHighWrite);
-        _switches[SoftSwitchId.HighRead] = new SoftSwitch("HIGHREAD", _status.StateHighRead);
-        _switches[SoftSwitchId.PreWrite] = new SoftSwitch("PREWRITE", _status.StatePreWrite);
-        _switches[SoftSwitchId.VBlank] = new SoftSwitch("VBLANK", _status.StateVBlank);
-        _switches[SoftSwitchId.IntC8Rom] = new SoftSwitch("INTC8ROM", _status.StateIntC8Rom);
+        // Initialize switch values from current status
+        _switchValues[(int)SoftSwitchId.Store80] = _status.State80Store;
+        _switchValues[(int)SoftSwitchId.RamRd] = _status.StateRamRd;
+        _switchValues[(int)SoftSwitchId.RamWrt] = _status.StateRamWrt;
+        _switchValues[(int)SoftSwitchId.IntCxRom] = _status.StateIntCxRom;
+        _switchValues[(int)SoftSwitchId.AltZp] = _status.StateAltZp;
+        _switchValues[(int)SoftSwitchId.SlotC3Rom] = _status.StateSlotC3Rom;
+        _switchValues[(int)SoftSwitchId.Vid80] = _status.StateShow80Col;
+        _switchValues[(int)SoftSwitchId.AltChar] = _status.StateAltCharSet;
+        _switchValues[(int)SoftSwitchId.Text] = _status.StateTextMode;
+        _switchValues[(int)SoftSwitchId.Mixed] = _status.StateMixed;
+        _switchValues[(int)SoftSwitchId.Page2] = _status.StatePage2;
+        _switchValues[(int)SoftSwitchId.HiRes] = _status.StateHiRes;
+        _switchValues[(int)SoftSwitchId.An0] = _status.StateAnn0;
+        _switchValues[(int)SoftSwitchId.An1] = _status.StateAnn1;
+        _switchValues[(int)SoftSwitchId.An2] = _status.StateAnn2;
+        _switchValues[(int)SoftSwitchId.An3] = _status.StateAnn3_DGR;
+        _switchValues[(int)SoftSwitchId.Bank1] = _status.StateUseBank1;
+        _switchValues[(int)SoftSwitchId.HighWrite] = _status.StateHighWrite;
+        _switchValues[(int)SoftSwitchId.HighRead] = _status.StateHighRead;
+        _switchValues[(int)SoftSwitchId.PreWrite] = _status.StatePreWrite;
+        _switchValues[(int)SoftSwitchId.VBlank] = _status.StateVBlank;
+        _switchValues[(int)SoftSwitchId.IntC8Rom] = _status.StateIntC8Rom;
 
         ResetAllSwitches();
     }
@@ -263,21 +269,23 @@ public sealed class SoftSwitches
     /// </remarks>
     public void ResetAllSwitches()
     {
-        foreach (var kvp in _switches)
+        // Reset all switches to false, except INTCXROM which defaults to true
+        for (int i = 0; i < _switchValues.Length; i++)
         {
-            //BUG: This isn't right most likely (see alternate line below)
-            kvp.Value.Value = (kvp.Key == SoftSwitchId.IntCxRom);
-            // TODO: kvp.Value.Value = false; // Default should be off for everything
-            SetStatus(kvp.Key, kvp.Value.Value); 
+            bool defaultValue = (i == (int)SoftSwitchId.IntCxRom);
+            _switchValues[i] = defaultValue;
+            SetStatus((SoftSwitchId)i, defaultValue);
         }
     }
 
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool QuietlySet(SoftSwitchId id, bool value)
     {
-        if (_switches.TryGetValue(id, out var softSwitch))
+        int index = (int)id;
+        if (index >= 0 && index < _switchValues.Length)
         {
-            softSwitch.Value = value;
+            _switchValues[index] = value;
             return true;
         }
         return false;
@@ -320,13 +328,11 @@ public sealed class SoftSwitches
     /// </summary>
     /// <param name="id">The identifier of the switch to query.</param>
     /// <returns>True if the switch is on (enabled), false if off (disabled) or not found.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Get(SoftSwitchId id)
     {
-        if (_switches.TryGetValue(id, out var softSwitch))
-        {
-            return softSwitch.Value;
-        }
-        return false;
+        int index = (int)id;
+        return index >= 0 && index < _switchValues.Length && _switchValues[index];
     }
 
 
