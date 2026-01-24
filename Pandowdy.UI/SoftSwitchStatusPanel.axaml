@@ -1,13 +1,18 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:viewmodels="clr-namespace:Pandowdy.UI.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="600"
-             x:Class="Pandowdy.UI.SoftSwitchStatusPanel"
-             x:DataType="viewmodels:SystemStatusViewModel">
+         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+         xmlns:viewmodels="clr-namespace:Pandowdy.UI.ViewModels"
+         xmlns:converters="clr-namespace:Pandowdy.UI.Converters"
+         mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="600"
+         x:Class="Pandowdy.UI.SoftSwitchStatusPanel"
+         x:DataType="viewmodels:SystemStatusViewModel">
     
-    <Border Padding="8" Margin="8" Background="#222" CornerRadius="4">
+<UserControl.Resources>
+    <converters:MhzDisplayConverter x:Key="MhzDisplayConverter"/>
+</UserControl.Resources>
+    
+<Border Padding="8" Margin="8" Background="#222" CornerRadius="4">
         <Grid RowDefinitions="Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto Auto"
               ColumnDefinitions="Auto Auto">
             <TextBlock Text="80STORE" Grid.Row="0" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
@@ -92,7 +97,7 @@
             <TextBlock Text="{Binding StateIntC8RomSlot}" Grid.Row="26" Grid.Column="1" Foreground="White" />
 
             <TextBlock Text="Current Mhz" Grid.Row="27" Grid.Column="0" Foreground="LightGray" Margin="0,0,8,2" />
-            <TextBlock Text="{Binding StateCurrentMhz, StringFormat='{}{0:F2}'}" Grid.Row="27" Grid.Column="1" Foreground="White" />
+            <TextBlock Text="{Binding StateCurrentMhz, Converter={StaticResource MhzDisplayConverter}}" Grid.Row="27" Grid.Column="1" Foreground="White" />
         </Grid>
     </Border>
 </UserControl>
