@@ -286,7 +286,8 @@ public class Slots : ISlots
 
         // $C800-$CFFF: Extended ROM 
         if (address >= 0x0800 && address <= 0x0FFF)
-        {   if (address == 0x0FFF)
+        {
+            if (address == 0x0FFF)
             {
                 ManageC800(255); // Reset C8Rom to peripheral ROM
             }
@@ -364,7 +365,7 @@ public class Slots : ISlots
                 return;
             }
 
-
+            
             // Determine if this slot should use card ROM or system ROM
             bool useCardRom = !_status.StateIntCxRom;
 
@@ -390,6 +391,11 @@ public class Slots : ISlots
         // $C800-$CFFF: Extended ROM writes
         if (address >= 0x0800 && address <= 0x0FFF)
         {
+            if (address == 0x0FFF)
+            {
+                ManageC800(255); // Reset C8Rom to peripheral ROM
+            }
+
             // We never write to interal ROM. Pointless.
             if (_status.StateIntCxRom || _status.StateIntC8Rom)
             {
