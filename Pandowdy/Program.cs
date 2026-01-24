@@ -51,6 +51,9 @@ namespace Pandowdy
 
                     services.AddSingleton<IGameControllerStatus, SimpleGameController>();
 
+                    // EmuCore - Telemetry
+                    services.AddSingleton<ITelemetryAggregator, TelemetryAggregator>();
+
                     services.AddSingleton<ICardFactory, CardFactory>();
                     services.AddSingleton<ISlots, Slots>();
 

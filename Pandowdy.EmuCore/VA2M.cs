@@ -7,7 +7,7 @@
 // RESPONSIBILITIES:
 //
 // 1. **Emulator Lifecycle:**
-//    - Construction and dependency injection (10 required dependencies)
+//    - Construction and dependency injection (11 required dependencies)
 //    - Resource loading (embedded ROM)
 //    - Disposal and cleanup (flash timer, rendering service)
 //
@@ -77,7 +77,7 @@ namespace Pandowdy.EmuCore;
 /// orchestrator that brings together all emulator subsystems.
 /// </para>
 /// <para>
-/// <strong>Dependencies (10):</strong>
+/// <strong>Dependencies (11):</strong>
 /// <list type="number">
 /// <item><strong>IEmulatorState:</strong> State snapshot sink for UI display</item>
 /// <item><strong>IFrameProvider:</strong> Frame sink for video rendering</item>
@@ -89,6 +89,7 @@ namespace Pandowdy.EmuCore;
 /// <item><strong>VideoMemorySnapshotPool:</strong> Memory-efficient snapshot pooling</item>
 /// <item><strong>IKeyboardSetter:</strong> Keyboard input injection (SingularKeyHandler)</item>
 /// <item><strong>IGameControllerStatus:</strong> Game controller state (SimpleGameController)</item>
+/// <item><strong>ITelemetryAggregator:</strong> Device telemetry message hub (singleton)</item>
 /// </list>
 /// </para>
 /// <para>
@@ -303,7 +304,25 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// </para>
     /// </remarks>
     public ISystemStatusProvider SystemStatus => _sysStatusSink;
-    
+
+    /// <summary>
+    /// Gets the telemetry stream for receiving device telemetry messages.
+    /// </summary>
+    /// <value>Read-only stream of telemetry messages from all devices (drives, cards, peripherals).</value>
+    /// <remarks>
+    /// <para>
+    /// <strong>Implementation:</strong> Returns the injected <see cref="ITelemetryAggregator"/> singleton
+    /// cast to read-only <see cref="ITelemetryStream"/>. Devices use the full aggregator internally,
+    /// but the UI only receives subscription access.
+    /// </para>
+    /// <para>
+    /// <strong>Interface Segregation:</strong> The UI receives only <see cref="ITelemetryStream"/> which
+    /// provides the Stream property. The full <see cref="ITelemetryAggregator"/> with CreateId and Publish
+    /// is only available to devices inside the emulator core.
+    /// </para>
+    /// </remarks>
+    public ITelemetryStream Telemetry => _telemetryAggregator;
+
     #endregion
     
     /// <summary>
@@ -320,7 +339,16 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// System status sink for publishing and mutating soft switch states.
     /// </summary>
     private readonly ISystemStatusMutator _sysStatusSink;
-    
+
+    /// <summary>
+    /// Telemetry aggregator for device telemetry messages.
+    /// </summary>
+    /// <remarks>
+    /// Singleton injected via DI. Devices request IDs from this aggregator and publish
+    /// telemetry messages. The UI subscribes to the stream for device status updates.
+    /// </remarks>
+    private readonly ITelemetryAggregator _telemetryAggregator;
+
     /// <summary>
     /// Frame generator for rendering Apple IIe video output.
     /// </summary>
@@ -413,6 +441,7 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// <param name="snapshotPool">Pool for reusing video memory snapshots to reduce GC pressure.</param>
     /// <param name="keyboardSetter">Keyboard setter for injecting key events from UI thread (shared with SystemIoHandler).</param>
     /// <param name="gameController">Game controller for pushbutton and paddle state (fires events to SystemStatusProvider).</param>
+    /// <param name="telemetryAggregator">Telemetry aggregator for device telemetry messages (singleton, shared with all devices).</param>
     /// <exception cref="ArgumentNullException">Thrown if any parameter is null.</exception>
     /// <remarks>
     /// <para>
@@ -457,7 +486,8 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         RenderingService renderingService,
         VideoMemorySnapshotPool snapshotPool,
         IKeyboardSetter keyboardSetter,
-        IGameControllerStatus gameController)
+        IGameControllerStatus gameController,
+        ITelemetryAggregator telemetryAggregator)
     {
         ArgumentNullException.ThrowIfNull(stateSink);
         ArgumentNullException.ThrowIfNull(frameSink);
@@ -469,11 +499,13 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         ArgumentNullException.ThrowIfNull(snapshotPool);
         ArgumentNullException.ThrowIfNull(keyboardSetter);
         ArgumentNullException.ThrowIfNull(gameController);
+        ArgumentNullException.ThrowIfNull(telemetryAggregator);
 
 
         _stateSink = stateSink;
         _frameSink = frameSink;
         _sysStatusSink = statusProvider;
+        _telemetryAggregator = telemetryAggregator;
         _frameGenerator = frameGenerator;
         _renderingService = renderingService;
         _snapshotPool = snapshotPool;
