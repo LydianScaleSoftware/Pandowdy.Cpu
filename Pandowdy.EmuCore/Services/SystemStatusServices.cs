@@ -37,6 +37,7 @@ namespace Pandowdy.EmuCore.Services;
 /// <param name="StateRamRd">RAMRD switch - reads from aux memory ($C002/$C003).</param>
 /// <param name="StateRamWrt">RAMWRT switch - writes to aux memory ($C004/$C005).</param>
 /// <param name="StateIntCxRom">INTCXROM switch - uses internal ROM vs slot ROMs ($C006/$C007).</param>
+/// <param name="StateIntC8Rom">INTC8ROM switch - uses internal C800-CFFF ROM vs slot 3 ROM ($C008/$C009).</param>
 /// <param name="StateAltZp">ALTZP switch - uses aux zero page and stack ($C008/$C009).</param>
 /// <param name="StateSlotC3Rom">SLOTC3ROM switch - enables slot 3 ROM ($C00A/$C00B).</param>
 /// <param name="StatePb0">Pushbutton 0 state (readable at $C061, bit 7) - synchronized from IGameControllerStatus.</param>
@@ -62,11 +63,14 @@ namespace Pandowdy.EmuCore.Services;
 /// <param name="StatePdl1">Paddle 1 analog value 0-255 (timer readable at $C064, bit 6) - synchronized from IGameControllerStatus.</param>
 /// <param name="StatePdl2">Paddle 2 analog value 0-255 (timer readable at $C065, bit 7) - synchronized from IGameControllerStatus.</param>
 /// <param name="StatePdl3">Paddle 3 analog value 0-255 (timer readable at $C065, bit 6) - synchronized from IGameControllerStatus.</param>
+/// <param name="StateIntC8RomSlot">IntC8RomSlotValue</param>
+/// <param name="StateCurrentMhz">Current emulated speed in Mhz></param>
 public record SystemStatusSnapshot(
     bool State80Store,
     bool StateRamRd,
     bool StateRamWrt,
-    bool StateIntCxRom, 
+    bool StateIntCxRom,
+    bool StateIntC8Rom,
     bool StateAltZp,
     bool StateSlotC3Rom,
     bool StatePb0,
@@ -91,7 +95,9 @@ public record SystemStatusSnapshot(
     byte StatePdl0,
     byte StatePdl1,
     byte StatePdl2,
-    byte StatePdl3
+    byte StatePdl3,
+    byte StateIntC8RomSlot,
+    double StateCurrentMhz
     );
 
 /// <summary>
@@ -140,7 +146,8 @@ public sealed class SystemStatusProvider : ISystemStatusMutator
         State80Store: false,
         StateRamRd: false,
         StateRamWrt: false,
-        StateIntCxRom: true,        // Apple IIe powers on with internal ROM enabled
+        StateIntCxRom: true,        // Bug: Apple IIe powers on with internal ROM enabled
+        StateIntC8Rom: false,
         StateAltZp: false,
         StateSlotC3Rom: false,
         StatePb0: false,
@@ -165,7 +172,9 @@ public sealed class SystemStatusProvider : ISystemStatusMutator
         StatePdl0: 0,
         StatePdl1: 0,
         StatePdl2: 0,
-        StatePdl3: 0);        
+        StatePdl3: 0,
+        StateIntC8RomSlot: 0,
+        StateCurrentMhz: 0.0);        
 
     // Reactive subject for observable pattern (replays current state to new subscribers)
     private readonly System.Reactive.Subjects.BehaviorSubject<SystemStatusSnapshot> _subject;
@@ -280,7 +289,13 @@ public sealed class SystemStatusProvider : ISystemStatusMutator
     
     /// <inheritdoc />
     public bool StateIntCxRom => _current.StateIntCxRom;
-    
+
+    /// <inheritdoc />
+    public bool StateIntC8Rom => _current.StateIntC8Rom;
+
+    /// <inheritdoc />
+    public byte StateIntC8RomSlot => _current.StateIntC8RomSlot;
+
     /// <inheritdoc />
     public bool StateAltZp => _current.StateAltZp;
     
@@ -357,6 +372,9 @@ public sealed class SystemStatusProvider : ISystemStatusMutator
     public byte Pdl3 => _current.StatePdl3;
 
     /// <inheritdoc />
+    public double StateCurrentMhz => _current.StateCurrentMhz;
+
+    /// <inheritdoc />
     public SystemStatusSnapshot Current => _current;
     
     /// <inheritdoc />
@@ -412,7 +430,7 @@ public sealed class SystemStatusProvider : ISystemStatusMutator
         _subject.OnNext(_current);
         Changed?.Invoke(this, _current);
 
-        // Check if any of the 11 memory-affecting switches changed
+        // Check if any of the 12 memory-affecting switches or the IntC8RomSlot changed
         if (oldSnapshot.StateRamRd != _current.StateRamRd ||
             oldSnapshot.StateRamWrt != _current.StateRamWrt ||
             oldSnapshot.StateAltZp != _current.StateAltZp ||
@@ -423,7 +441,9 @@ public sealed class SystemStatusProvider : ISystemStatusMutator
             oldSnapshot.StateSlotC3Rom != _current.StateSlotC3Rom ||
             oldSnapshot.StateHighWrite != _current.StateHighWrite ||
             oldSnapshot.StateUseBank1 != _current.StateUseBank1 ||
-            oldSnapshot.StateHighRead != _current.StateHighRead)
+            oldSnapshot.StateHighRead != _current.StateHighRead ||
+            oldSnapshot.StateIntC8Rom != _current.StateIntC8Rom ||
+            oldSnapshot.StateIntC8RomSlot != _current.StateIntC8RomSlot)
         {
             MemoryMappingChanged?.Invoke(this, _current);
         }
@@ -527,6 +547,14 @@ public sealed class SystemStatusProvider : ISystemStatusMutator
     /// <inheritdoc />
     public void SetFlashOn(bool flashOn) => Mutate(b => b.StateFlashOn = flashOn);
 
+    /// <inheritdoc />
+    public void SetIntC8Rom(bool intC8Rom) => Mutate(b => b.StateIntC8Rom = intC8Rom);
+
+    /// <inheritdoc />
+    public void SetIntC8RomSlot(byte slot) => Mutate(b => b.StateIntC8RomSlot = slot);
+
+    /// <inheritdoc />
+    public void SetCurrentMhz(double mhz) => Mutate(b => b.StateCurrentMhz = mhz);
     #endregion
 }
 
@@ -556,10 +584,13 @@ public sealed class SystemStatusSnapshotBuilder(SystemStatusSnapshot s)
     
     /// <summary>RAMWRT switch state.</summary>
     public bool StateRamWrt = s.StateRamWrt;
-    
+
     /// <summary>INTCXROM switch state.</summary>
     public bool StateIntCxRom = s.StateIntCxRom;
-    
+
+    /// <summary>INTC8ROM switch state.</summary>
+    public bool StateIntC8Rom = s.StateIntC8Rom;
+
     /// <summary>ALTZP switch state.</summary>
     public bool StateAltZp = s.StateAltZp;
     
@@ -626,6 +657,8 @@ public sealed class SystemStatusSnapshotBuilder(SystemStatusSnapshot s)
     public byte StatePdl1 = s.StatePdl1;
     public byte StatePdl2 = s.StatePdl2;
     public byte StatePdl3 = s.StatePdl3;
+    public byte StateIntC8RomSlot = s.StateIntC8RomSlot;
+    public double StateCurrentMhz = s.StateCurrentMhz;
 
 
 
@@ -638,10 +671,10 @@ public sealed class SystemStatusSnapshotBuilder(SystemStatusSnapshot s)
     /// same builder state. The builder remains mutable and can be modified after calling Build().
     /// </remarks>
     public SystemStatusSnapshot Build() => new(
-        State80Store, StateRamRd, StateRamWrt, StateIntCxRom, StateAltZp, StateSlotC3Rom,
+        State80Store, StateRamRd, StateRamWrt, StateIntCxRom, StateIntC8Rom, StateAltZp, StateSlotC3Rom,
         StatePb0, StatePb1, StatePb2, StateAnn0, StateAnn1, StateAnn2, StateAnn3,
         StatePage2, StateHiRes, StateMixed, StateTextMode, StateShow80Col, StateAltCharSet,
         StateFlashOn, StatePrewrite, StateUseBank1, StateHighRead, StateHighWrite, StateVBlank,
-        StatePdl0, StatePdl1, StatePdl2, StatePdl3);
+        StatePdl0, StatePdl1, StatePdl2, StatePdl3, StateIntC8RomSlot, StateCurrentMhz);
 }
 

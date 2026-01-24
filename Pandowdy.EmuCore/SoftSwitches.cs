@@ -33,6 +33,7 @@
 // appropriate events (Changed, MemoryMappingChanged) to notify subscribers.
 //------------------------------------------------------------------------------
 
+using System.Diagnostics;
 using Pandowdy.EmuCore.DataTypes;
 using Pandowdy.EmuCore.Services;
 
@@ -97,10 +98,10 @@ public sealed class SoftSwitches
         /// stack ($0100-$01FF) are mapped to auxiliary memory.
         /// </summary>
         AltZp,
-        
-        /// <summary>
+
+        /// /// <summary>
         /// SLOTC3ROM switch ($C00A/$C00B). When enabled, accesses to $C300-$C3FF
-        /// use internal ROM instead of slot 3 card ROM.
+        /// use slot 3 card ROM instead of internal ROM. Only applies when INTCXROM is OFF.
         /// </summary>
         SlotC3Rom,
         
@@ -189,7 +190,12 @@ public sealed class SoftSwitches
         /// <summary>
         /// VBlank switch ($C060). Indicates vertical blanking interval for video.
         /// </summary>
-        VBlank
+        VBlank,
+
+        /// <summary>
+        /// Status of Internal C800-CFFF ROM switch for slot 3 use (See Sather p. 5-28 (p. 100 of new edition))
+        /// </summary>
+        IntC8Rom
     }
 
     /// <summary>
@@ -235,6 +241,7 @@ public sealed class SoftSwitches
         _switches[SoftSwitchId.HighRead] = new SoftSwitch("HIGHREAD", _status.StateHighRead);
         _switches[SoftSwitchId.PreWrite] = new SoftSwitch("PREWRITE", _status.StatePreWrite);
         _switches[SoftSwitchId.VBlank] = new SoftSwitch("VBLANK", _status.StateVBlank);
+        _switches[SoftSwitchId.IntC8Rom] = new SoftSwitch("INTC8ROM", _status.StateIntC8Rom);
 
         ResetAllSwitches();
     }
@@ -258,7 +265,9 @@ public sealed class SoftSwitches
     {
         foreach (var kvp in _switches)
         {
+            //BUG: This isn't right most likely (see alternate line below)
             kvp.Value.Value = (kvp.Key == SoftSwitchId.IntCxRom);
+            // TODO: kvp.Value.Value = false; // Default should be off for everything
             SetStatus(kvp.Key, kvp.Value.Value); 
         }
     }
@@ -280,9 +289,7 @@ public sealed class SoftSwitches
     /// <param name="id">The identifier of the switch to modify.</param>
     /// <param name="value">The new state for the switch (true = on, false = off).</param>
     /// <remarks>
-    /// This method updates the switch state and immediately triggers responder callbacks,
-    /// which may cause memory remapping or video mode changes. The change counter for
-    /// the switch is automatically incremented if the value changes.
+    /// This immediately updates soft switch state and sets the corresponding status
     /// </remarks>
     public void Set(SoftSwitchId id, bool value)
     {
@@ -291,9 +298,20 @@ public sealed class SoftSwitches
         {
             if (value != oldVal)
             {
+    //            Debug.WriteLine($"Set id {id} to {value}");
+
                 SetStatus(id, value);  
             }
-        }    
+        //    else
+        //    {
+        ////        Debug.WriteLine($"Did not re-set id {id} to old value {value}");
+
+        //    }
+        }
+     //   else
+     //   {
+     ////       Debug.WriteLine($"Could not quietly set id {id}");
+     //   }
 
     }
 
@@ -402,7 +420,10 @@ public sealed class SoftSwitches
             case SoftSwitchId.VBlank:
                 _status.SetVBlank(value);
                 break;
-            
+
+            case SoftSwitchId.IntC8Rom:
+                _status.SetIntC8Rom(value);
+                break;
         }
     }
 }

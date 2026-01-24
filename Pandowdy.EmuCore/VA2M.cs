@@ -355,12 +355,12 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// Flash timer that toggles StateFlashOn at ~2.1 Hz (Apple IIe cursor blink rate).
     /// </summary>
     private Timer? _flashTimer;
-    
+
     /// <summary>
     /// Flash period matching Apple IIe cursor blink rate (~2.1 Hz = 476ms period).
     /// </summary>
     private static readonly TimeSpan FlashPeriod = TimeSpan.FromMilliseconds(1000/2.1);
-    
+
     /// <summary>
     /// Interlocked flag set by flash timer, consumed at VBlank to toggle flash state.
     /// </summary>
@@ -370,6 +370,32 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// frame boundaries to prevent flicker.
     /// </remarks>
     private int _pendingFlashToggle; // 0/1 flag set by timer, consumed on VBlank
+
+    /// <summary>
+    /// Maximum frame rendering rate when running unthrottled (FPS cap).
+    /// </summary>
+    /// <remarks>
+    /// When running unthrottled, the emulator can easily exceed 700+ FPS, but rendering
+    /// that many frames is wasteful since displays typically run at 60 Hz. This cap
+    /// prevents excessive snapshot captures and rendering work while still providing
+    /// smooth display at high speeds.
+    /// </remarks>
+    private const double MaxUnthrottledFps = 61.0;
+
+    /// <summary>
+    /// Stopwatch for tracking VBlank call frequency to limit rendering FPS.
+    /// </summary>
+    private readonly Stopwatch _vblankSw = Stopwatch.StartNew();
+
+    /// <summary>
+    /// Last VBlank timestamp (ticks) for FPS calculation.
+    /// </summary>
+    private long _lastVBlankTicks = 0;
+
+    /// <summary>
+    /// Minimum ticks between VBlank renders (based on MaxUnthrottledFps).
+    /// </summary>
+    private long _minVBlankTicks = 0;
 
 
     private IGameControllerStatus _gameController;
@@ -456,7 +482,10 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         Bus = bus;
         MemoryPool = memoryPool;
 
-       
+        // Calculate minimum ticks between VBlank renders for FPS cap
+        _minVBlankTicks = (long)(Stopwatch.Frequency / MaxUnthrottledFps);
+        _lastVBlankTicks = _vblankSw.ElapsedTicks;
+
         if (Bus is VA2MBus vb)
         {
             vb.VBlank += OnVBlank;
@@ -569,14 +598,22 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// <param name="e">Event arguments (unused).</param>
     /// <remarks>
     /// <para>
-    /// <strong>VBlank Timing:</strong> Fires every 17,030 cycles (~60 Hz), matching the
+    /// <strong>VBlank Timing:</strong> Fires every 17,030 cycles (~60 Hz at 1.023 MHz), matching the
     /// Apple IIe's vertical blanking interval. During VBlank, the video scanner is not
     /// drawing visible scanlines.
+    /// </para>
+    /// <para>
+    /// <strong>FPS Limiting (Unthrottled Mode):</strong> When running unthrottled, the emulator can
+    /// exceed 700+ FPS, but rendering that many frames is wasteful. This method limits rendering to
+    /// ~100 FPS by checking elapsed time since last render and exiting early if called too frequently.
+    /// Flash toggle still occurs at full rate to maintain cursor blink accuracy.
     /// </para>
     /// <para>
     /// <strong>Operations Performed:</strong>
     /// <list type="number">
     /// <item>Toggle flash state if timer has set the flag (cursor blinking)</item>
+    /// <item>Check elapsed time since last render (FPS limiting)</item>
+    /// <item>Exit early if FPS > 100 in unthrottled mode</item>
     /// <item>Capture memory snapshot (~1-3 microseconds)</item>
     /// <item>Attempt to enqueue snapshot for rendering (non-blocking)</item>
     /// </list>
@@ -593,18 +630,36 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// </remarks>
     private void OnVBlank(object? sender, EventArgs e)
     {
-        // Apply pending flash toggle at frame boundary for consistent rendering
+
+
+        // When running unthrottled, limit rendering to ~100 FPS to avoid wasteful work
+        // (emulator can easily hit 700+ FPS unthrottled, but rendering that fast is pointless)
+        if (!ThrottleEnabled)
+        {
+            long currentTicks = _vblankSw.ElapsedTicks;
+            long ticksSinceLastRender = currentTicks - _lastVBlankTicks;
+
+            // Exit early if not enough time has passed (rendering too fast)
+            if (ticksSinceLastRender < _minVBlankTicks)
+            {
+                return; // Skip this frame - rendering faster than 100 FPS
+            }
+
+            // Update last render time for next check
+            _lastVBlankTicks = currentTicks;
+        }
+        // Note: In throttled mode, VBlank fires at ~60 Hz naturally, no limiting needed
+        // Always apply pending flash toggle at frame boundary for consistent rendering
         if (Interlocked.Exchange(ref _pendingFlashToggle, 0) != 0)
         {
             _sysStatusSink.SetFlashOn(!_sysStatusSink.StateFlashOn);
         }
-
         // Capture video memory snapshot (fast - ~1-3 microseconds)
         var snapshot = CaptureVideoMemorySnapshot();
-        
+
         // Try to enqueue for rendering (non-blocking check)
-        bool _= _renderingService.TryEnqueueSnapshot(snapshot);
-        
+        bool _ = _renderingService.TryEnqueueSnapshot(snapshot);
+
         // If frame was skipped, that's fine - rendering couldn't keep up
         // Emulator continues at full speed, display shows last completed frame
     }
@@ -1091,7 +1146,8 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         int? basicLine = lineNum < 0xFA00 ? lineNum : null;
         var snapshot = new StateSnapshot((ushort) Bus.Cpu.PC, (byte)Bus.Cpu.SP, Bus.SystemClockCounter, basicLine, true, false);
         _stateSink.Update(snapshot);
-        
+
+
         // Report performance metrics every 5 seconds
         ReportPerformanceMetrics();
     }
@@ -1127,8 +1183,8 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         long currentTicks = _perfSw.ElapsedTicks;
         long ticksSinceLastReport = currentTicks - _perfLastReportTicks;
         
-        // Check if 5 seconds have elapsed
-        if (ticksSinceLastReport < Stopwatch.Frequency * 5)
+        // Check if 2 seconds have elapsed
+        if (ticksSinceLastReport < Stopwatch.Frequency * 2)
         {
             return;
         }
@@ -1138,7 +1194,7 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         long cyclesSinceLastReport = currentCycles - _perfLastCycles;
         double secondsElapsed = (double)ticksSinceLastReport / Stopwatch.Frequency;
         double effectiveMhz = (cyclesSinceLastReport / secondsElapsed) / 1_000_000.0;
-        
+
         // Calculate accuracy percentage if throttled
         string accuracyInfo = "";
         if (ThrottleEnabled)
@@ -1155,14 +1211,15 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         }
         
         // Include timestamp and actual interval for debugging timing issues
-        Debug.WriteLine(
-            $"[VA2M Performance @ {DateTime.Now:HH:mm:ss.fff}] " +
-            $"Interval: {secondsElapsed:F2}s | " +
-            $"Effective MHz: {effectiveMhz:F3}{accuracyInfo} | " +
-            $"Throttle: {(ThrottleEnabled ? "ON" : "OFF")} | " +
-            $"Total Cycles: {currentCycles:N0}"
-        );
-        
+        //Debug.WriteLine(
+        //    $"[VA2M Performance @ {DateTime.Now:HH:mm:ss.fff}] " +
+        //    $"Interval: {secondsElapsed:F2}s | " +
+        //    $"Effective MHz: {effectiveMhz:F3}{accuracyInfo} | " +
+        //    $"Throttle: {(ThrottleEnabled ? "ON" : "OFF")} | " +
+        //    $"Total Cycles: {currentCycles:N0}"
+        //);
+        _sysStatusSink.SetCurrentMhz(effectiveMhz);
+
         // Update for next report
         _perfLastReportTicks = currentTicks;
         _perfLastCycles = currentCycles;

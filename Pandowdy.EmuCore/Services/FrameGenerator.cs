@@ -231,6 +231,8 @@ internal sealed class SnapshotStatusProvider(SystemStatusSnapshot snapshot) : IS
     public bool StateRamRd => _snapshot.StateRamRd;
     public bool StateRamWrt => _snapshot.StateRamWrt;
     public bool StateIntCxRom => _snapshot.StateIntCxRom;
+    public bool StateIntC8Rom => _snapshot.StateIntC8Rom;
+    public byte StateIntC8RomSlot => _snapshot.StateIntC8RomSlot;
     public bool StateAltZp => _snapshot.StateAltZp;
     public bool StateSlotC3Rom => _snapshot.StateSlotC3Rom;
     public bool StatePb0 => _snapshot.StatePb0;
@@ -251,7 +253,8 @@ internal sealed class SnapshotStatusProvider(SystemStatusSnapshot snapshot) : IS
     public bool StateHighRead => _snapshot.StateHighRead;
     public bool StateHighWrite => _snapshot.StateHighWrite;
     public bool StateVBlank => _snapshot.StateVBlank;
-    
+    public double StateCurrentMhz => _snapshot.StateCurrentMhz;
+
     // Properties not captured in snapshot (not needed for rendering)
     public bool StatePreWrite => false;
     public byte CurrentKey => 0;
@@ -259,6 +262,8 @@ internal sealed class SnapshotStatusProvider(SystemStatusSnapshot snapshot) : IS
     public byte Pdl1 => 0;
     public byte Pdl2 => 0;
     public byte Pdl3 => 0;
+
+
     
     public SystemStatusSnapshot Current => _snapshot;
     

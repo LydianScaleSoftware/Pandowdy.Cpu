@@ -47,10 +47,12 @@ public sealed class SystemStatusViewModel : ReactiveObject
     /// <summary>
     /// Backing fields for all system status properties.
     /// </summary>
-    private bool _state80Store, _stateRamRd, _stateRamWrt, _stateIntCxRom, _stateAltZp, _stateSlotC3Rom,
+    private bool _state80Store, _stateRamRd, _stateRamWrt, _stateIntCxRom, _stateIntC8Rom,_stateAltZp, _stateSlotC3Rom,
                  _statePb0, _statePb1, _statePb2, _stateAnn0, _stateAnn1, _stateAnn2, _stateAnn3,
                  _statePage2, _stateHiRes, _stateMixed, _stateTextMode, _stateShow80Col, _stateAltCharSet, 
                  _stateFlashOn, _stateBank1, _statePrewrite, _stateHighRead, _stateHighWrite, _stateVBlank;
+    private byte _stateIntC8RomSlot;
+    private double _stateCurrentMhz;
 
     #endregion
 
@@ -111,7 +113,21 @@ public sealed class SystemStatusViewModel : ReactiveObject
         get => _stateIntCxRom;
         private set => this.RaiseAndSetIfChanged(ref _stateIntCxRom, value);
     }
-    
+
+    public bool StateIntC8Rom
+    {
+        get => _stateIntC8Rom;
+        private set => this.RaiseAndSetIfChanged(ref _stateIntC8Rom, value);
+    }
+
+    public byte StateIntC8RomSlot
+    {
+        get => _stateIntC8RomSlot;
+        private set => this.RaiseAndSetIfChanged(ref _stateIntC8RomSlot, value);
+    }
+
+
+
     /// <summary>
     /// Gets the state of the ALTZP soft switch.
     /// </summary>
@@ -465,6 +481,12 @@ public sealed class SystemStatusViewModel : ReactiveObject
 
     #endregion
 
+    public double StateCurrentMhz
+    {
+        get => _stateCurrentMhz;
+        private set => this.RaiseAndSetIfChanged(ref _stateCurrentMhz, value);
+    }
+
     #region Constructor
 
     /// <summary>
@@ -532,6 +554,8 @@ public sealed class SystemStatusViewModel : ReactiveObject
         StateRamRd = s.StateRamRd;
         StateRamWrt = s.StateRamWrt;
         StateIntCxRom = s.StateIntCxRom;
+        StateIntC8Rom = s.StateIntC8Rom;
+        StateIntC8RomSlot = s.StateIntC8RomSlot;
         StateAltZp = s.StateAltZp;
         StateSlotC3Rom = s.StateSlotC3Rom;
         
@@ -563,6 +587,9 @@ public sealed class SystemStatusViewModel : ReactiveObject
         
         // Vertical blanking interval
         StateVBlank = s.StateVBlank;
+
+        // Current emulated CPU speed in MHz
+        StateCurrentMhz = s.StateCurrentMhz;
     }
 
     #endregion

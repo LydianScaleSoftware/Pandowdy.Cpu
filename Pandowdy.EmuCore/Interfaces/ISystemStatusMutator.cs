@@ -90,6 +90,11 @@ public interface ISystemStatusMutator : ISystemStatusProvider
     /// </remarks>
     void SetSlotC3Rom(bool slotC3Rom);
 
+    void SetIntC8Rom(bool intC8Rom);
+
+    void SetIntC8RomSlot(byte slotNumber);
+
+    
     #endregion
 
     #region Video Mode Switch Mutations
@@ -290,5 +295,6 @@ public interface ISystemStatusMutator : ISystemStatusProvider
     /// </remarks>
     void SetFlashOn(bool flashOn);
 
+    void SetCurrentMhz(double mhz);
     #endregion
 }

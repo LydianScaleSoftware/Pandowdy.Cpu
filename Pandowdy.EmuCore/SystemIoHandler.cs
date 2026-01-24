@@ -293,8 +293,14 @@ public class SystemIoHandler : ISystemIoHandler
     {
         if (_ioWriteHandlers.TryGetValue(address, out var writer))
         {
+   //         Debug.WriteLine($"Found a write handler for IO value {address:X}");
+
             writer(_);
             return;
+        }
+        else
+        {
+            Debug.WriteLine($"Could not find a write handler for IO value {address:X}");
         }
         if (address >= KEYSTRB_ && address <= KEYSTRB_ + 0x1F)
         {

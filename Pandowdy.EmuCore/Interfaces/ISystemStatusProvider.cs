@@ -100,11 +100,17 @@ public interface ISystemStatusProvider
     /// or internal ROM. Independent of INTCXROM. Commonly used for 80-column card firmware.
     /// </remarks>
     bool StateSlotC3Rom { get; }
-    
+
+    bool StateIntC8Rom { get; }
+
+    byte StateIntC8RomSlot { get; }
+
     #endregion
-    
+
+    double StateCurrentMhz { get; }
+
     #region Game Controller and Keyboard
-    
+
     /// <summary>
     /// Gets the state of pushbutton 0 ($C061).
     /// </summary>
