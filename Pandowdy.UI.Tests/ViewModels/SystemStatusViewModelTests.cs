@@ -49,18 +49,25 @@ public class SystemStatusViewModelTests
     [Fact]
     public void Constructor_InitializesPropertiesFromCurrentSnapshot()
     {
-        // Arrange
+        // Arrange - Create provider and set some known non-default values
         var statusProvider = new SystemStatusProvider();
+        statusProvider.Mutate(s =>
+        {
+            s.State80Store = true;
+            s.StateRamRd = true;
+            s.StateHiRes = true;
+        });
 
         // Act
         var viewModel = new SystemStatusViewModel(statusProvider);
 
-        // Assert - Should match default snapshot values (Apple IIe power-on state)
-        Assert.False(viewModel.State80Store);
-        Assert.False(viewModel.StateRamRd);
-        Assert.True(viewModel.StateIntCxRom);
-        Assert.False(viewModel.StateBank1); // Default is false (Bank 2)
-        Assert.True(viewModel.StateTextMode); // Default is true (text mode on boot)
+        // Assert - ViewModel should reflect whatever the provider's current state is,
+        // regardless of what the default values are
+        Assert.Equal(statusProvider.State80Store, viewModel.State80Store);
+        Assert.Equal(statusProvider.StateRamRd, viewModel.StateRamRd);
+        Assert.Equal(statusProvider.StateHiRes, viewModel.StateHiRes);
+        Assert.Equal(statusProvider.StateTextMode, viewModel.StateTextMode);
+        Assert.Equal(statusProvider.StateIntCxRom, viewModel.StateIntCxRom);
     }
 
     [Fact]
