@@ -1,55 +1,79 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore;
 
 /// <summary>
-/// Implements the Apple II No-Slot Clock functionality.
-/// The No-Slot Clock uses a bit-banging protocol accessed through $C0n0-$C0nF
-/// where reads trigger clock/data operations based on the low nibble of the address.
+/// Implements the Dallas Semiconductor DS1216 "SmartWatch" (No-Slot Clock) functionality.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <strong>Hardware Protocol:</strong> The No-Slot Clock (NSC) is a real-time clock that
+/// piggybacks on ROM chips. It uses a bit-serial protocol where address line A0 (odd/even)
+/// transmits data bits, and bit 0 of read data returns clock information.
+/// </para>
+/// <para>
+/// <strong>Recognition Pattern:</strong> To unlock the clock, software must read 64 addresses
+/// where A0 matches the 64-bit pattern: $5C $A3 $3A $C5 $5C $A3 $3A $C5 (LSB first per byte).
+/// </para>
+/// <para>
+/// <strong>Data Format:</strong> After unlocking, the next 64 reads return clock data in bit 0:
+/// <list type="bullet">
+/// <item>Byte 0: Hundredths of seconds (00-99 BCD)</item>
+/// <item>Byte 1: Seconds (00-59 BCD)</item>
+/// <item>Byte 2: Minutes (00-59 BCD)</item>
+/// <item>Byte 3: Hours (00-23 BCD, 24-hour mode)</item>
+/// <item>Byte 4: Day of week (01-07, 1=Sunday)</item>
+/// <item>Byte 5: Day of month (01-31 BCD)</item>
+/// <item>Byte 6: Month (01-12 BCD)</item>
+/// <item>Byte 7: Year (00-99 BCD)</item>
+/// </list>
+/// </para>
+/// <para>
+/// <strong>Decorator Pattern:</strong> This class wraps another ISystemIoHandler (or ROM provider)
+/// and intercepts reads to implement the NSC protocol. The downstream handler provides the
+/// base ROM data, and this class modifies bit 0 when clock data is being read.
+/// </para>
+/// </remarks>
 public class NoSlotClockIoHandler : ISystemIoHandler
 {
-    private ISystemIoHandler _downstream;
-    private CpuClockingCounters _clockingCounters;
+    private readonly ISystemIoHandler _downstream;
+    private readonly CpuClockingCounters _clockingCounters;
 
-    // No-Slot Clock state
-    private bool _isUnlocked;
-    private int _unlockSequenceIndex;
-    private int _bitPosition;
-    private int _byteIndex; // Track which byte (0-7) we're currently reading
-    private byte _currentByte;
-    private ClockMode _mode;
-    private bool _writeMode;
-    private ulong _lastUnlockAccessTick;
+    // NSC state machine
+    private NscState _state;
+    private int _bitIndex;  // 0-63 for recognition/data bits
 
     // Time offset: stores difference between emulator time and system time
-    // Positive = emulator time is ahead, Negative = emulator time is behind
-    private long _timeOffsetTicks = 0;
+    private long _timeOffsetTicks;
 
-    // Cached clock registers (written when clock is set)
-    private byte[] _clockRegisters = new byte[8];
-    private bool _clockRegistersValid = false;
+    // Cached 64-bit clock data for current read cycle
+    private ulong _clockData;
 
-    // The unlock sequence: reading addresses in this specific pattern
-    private static readonly byte[] UnlockSequence = [ 0x5, 0xA, 0x5, 0xA ];
-    
-    // Timeout for unlock sequence: ~100 cycles between accesses
-    // (adjustable based on real hardware behavior)
-    private const ulong UnlockTimeoutCycles = 100;
+    // The 64-bit recognition pattern (DS1216 specification)
+    // Pattern: $5C $A3 $3A $C5 $5C $A3 $3A $C5 (read LSB first within each byte)
+    // Binary: 01011100 10100011 00111010 11000101 01011100 10100011 00111010 11000101
+    private const ulong RecognitionPattern = 0xC53AA35CC53AA35C;
 
-    private enum ClockMode
+    // Current pattern being matched (built up bit by bit)
+    private ulong _patternAccumulator;
+
+    private enum NscState
     {
-        Locked,
-        ReadClock,
-        ReadCompare,
-        Write
+        /// <summary>Waiting for recognition pattern.</summary>
+        Matching,
+        /// <summary>Pattern matched, returning clock data in bit 0.</summary>
+        ReadingData,
+        /// <summary>Pattern matched, accepting write data in A0.</summary>
+        WritingData
     }
 
+    /// <summary>
+    /// Initializes a new No-Slot Clock handler wrapping the specified downstream handler.
+    /// </summary>
+    /// <param name="downstream">The ROM or I/O handler to wrap.</param>
+    /// <param name="clockingCounters">CPU clocking counters (currently unused but reserved for timing).</param>
     public NoSlotClockIoHandler(ISystemIoHandler downstream, CpuClockingCounters clockingCounters)
     {   
         ArgumentNullException.ThrowIfNull(downstream);
@@ -59,18 +83,20 @@ public class NoSlotClockIoHandler : ISystemIoHandler
         Reset();
     }
 
+    /// <summary>
+    /// Resets the NSC state machine to pattern-matching mode.
+    /// </summary>
+    /// <remarks>
+    /// Time offset is preserved across resets (battery-backed behavior).
+    /// </remarks>
     public void Reset()
     {
         _downstream.Reset();
-        _isUnlocked = false;
-        _unlockSequenceIndex = 0;
-        _bitPosition = 0;
-        _byteIndex = 0;
-        _currentByte = 0;
-        _mode = ClockMode.Locked;
-        _writeMode = false;
-        _lastUnlockAccessTick = 0ul;
-        // Note: We don't reset _timeOffsetTicks - it persists across resets
+        _state = NscState.Matching;
+        _bitIndex = 0;
+        _patternAccumulator = 0;
+        _clockData = 0;
+        // Note: _timeOffsetTicks persists across resets (battery-backed)
     }
 
     /// <summary>
@@ -79,330 +105,202 @@ public class NoSlotClockIoHandler : ISystemIoHandler
     /// <param name="emulatorTime">The desired emulator time.</param>
     public void SetClockTime(DateTime emulatorTime)
     {
-        DateTime systemTime = DateTime.Now;
-        _timeOffsetTicks = emulatorTime.Ticks - systemTime.Ticks;
-        _clockRegistersValid = false; // Invalidate cached registers
+        _timeOffsetTicks = emulatorTime.Ticks - DateTime.Now.Ticks;
     }
 
     /// <summary>
     /// Gets the current emulator clock time (system time + offset).
     /// </summary>
-    /// <returns>The current emulator time.</returns>
     public DateTime GetClockTime()
     {
-        DateTime systemTime = DateTime.Now;
-        return new DateTime(systemTime.Ticks + _timeOffsetTicks);
+        return new DateTime(DateTime.Now.Ticks + _timeOffsetTicks);
     }
 
-    public int Size
+    /// <inheritdoc />
+    public int Size => _downstream.Size;
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public byte Read(ushort offset)
     {
-        get { return _downstream.Size; }
-    }
+        // Get the base ROM/IO data from downstream
+        byte romData = _downstream.Read(offset);
 
-    public byte Read(ushort loc)
-    {
-        byte lowNibble = (byte)(loc & 0x0F);
+        // Extract A0 (address bit 0) - this is the input bit from the Apple II
+        bool a0 = (offset & 0x01) != 0;
 
-        // No-Slot Clock detection and operation
-        if (lowNibble <= 0x0B)
+        switch (_state)
         {
-            return HandleNoSlotClockRead(lowNibble);
-        }
+            case NscState.Matching:
+                return HandlePatternMatching(romData, a0);
 
-        // Pass through to downstream handler
-        return _downstream.Read(loc);
-    }
+            case NscState.ReadingData:
+                return HandleDataRead(romData);
 
-    public void Write(ushort loc, byte val)
-    {
-        byte lowNibble = (byte)(loc & 0x0F);
-
-        // No-Slot Clock write operations
-        if (lowNibble <= 0x0B && _isUnlocked)
-        {
-            HandleNoSlotClockWrite(lowNibble, val);
-            return;
-        }
-
-        // Pass through to downstream handler
-        _downstream.Write(loc, val);
-    }
-
-    private byte HandleNoSlotClockRead(byte offset)
-    {
-        // Check for unlock sequence
-        if (!_isUnlocked)
-        {
-            ulong currentTick = _clockingCounters.TotalCycles;
-            
-            // Check for timeout between unlock sequence accesses
-            if (_unlockSequenceIndex > 0)
-            {
-                ulong cyclesSinceLastAccess = currentTick - _lastUnlockAccessTick;
-                if (cyclesSinceLastAccess > UnlockTimeoutCycles)
-                {
-                    // Timeout - reset unlock sequence
-                    _unlockSequenceIndex = 0;
-                }
-            }
-            
-            if (offset == UnlockSequence[_unlockSequenceIndex])
-            {
-                _unlockSequenceIndex++;
-                _lastUnlockAccessTick = currentTick;
-                
-                if (_unlockSequenceIndex >= UnlockSequence.Length)
-                {
-                    _isUnlocked = true;
-                    _unlockSequenceIndex = 0;
-                    _bitPosition = 0;
-                    _byteIndex = 0;
-                    _mode = ClockMode.ReadClock;
-                    _writeMode = false;
-                }
-            }
-            else
-            {
-                // Wrong sequence, reset
-                _unlockSequenceIndex = 0;
-            }
-            return _downstream.Read((ushort)(0xC000 | offset));
-        }
-
-        // Once unlocked, handle clock operations
-        switch (offset)
-        {
-            case 0x0: // Read data bit 0
-                return ReadClockBit();
-
-            case 0x1: // Shift clock data
-                ShiftClockData();
-                return 0x00;
-
-            case 0x2: // Enable write mode
-                _writeMode = true;
-                _byteIndex = 0; // Reset to first byte for writing
-                return 0x00;
-
-            case 0x3: // Disable write mode / Enable read mode
-                _writeMode = false;
-                return 0x00;
-
-            case 0x4: // Load next byte for reading
-                _byteIndex = 0; // Reset to first byte
-                LoadNextClockByte();
-                return 0x00;
-
-            case 0x5: // Part of unlock sequence when locked
-            case 0xA: // Part of unlock sequence when locked
-                return 0x00;
+            case NscState.WritingData:
+                HandleDataWrite(a0);
+                return romData;
 
             default:
-                // Other addresses don't affect clock state
-                return 0x00;
+                return romData;
         }
     }
 
-    private void HandleNoSlotClockWrite(byte offset, byte val)
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Write(ushort offset, byte val)
     {
-        if (!_writeMode)
-        {
-            return;
-        }
-
-        switch (offset)
-        {
-            case 0x0: // Write data bit
-                WriteClockBit((val & 0x01) != 0);
-                break;
-
-            case 0x1: // Shift clock data
-                ShiftClockData();
-                break;
-
-            case 0x4: // Store current byte to clock
-                StoreClockByte();
-                break;
-        }
+        // NSC doesn't intercept writes in the traditional sense
+        // Write operations still trigger the A0 protocol on reads
+        _downstream.Write(offset, val);
     }
 
-    private byte ReadClockBit()
+    /// <summary>
+    /// Handles pattern matching state - looking for the 64-bit recognition sequence.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private byte HandlePatternMatching(byte romData, bool a0)
     {
-        // Read the current bit from the current byte
-        byte bit = (byte)((_currentByte >> _bitPosition) & 0x01);
-        return (byte)(bit != 0 ? 0x80 : 0x00); // NSC returns bit in high bit of byte
-    }
+        // Shift in the new bit (A0) to the pattern accumulator
+        _patternAccumulator = (_patternAccumulator >> 1) | (a0 ? 0x8000000000000000UL : 0UL);
+        _bitIndex++;
 
-    private void ShiftClockData()
-    {
-        _bitPosition++;
-        if (_bitPosition >= 8)
+        // Check if we've matched the full 64-bit pattern
+        if (_bitIndex >= 64 && _patternAccumulator == RecognitionPattern)
         {
-            _bitPosition = 0;
-            
-            // Only auto-advance byte index in read mode
-            if (!_writeMode)
-            {
-                _byteIndex++; // Move to next byte
-                if (_byteIndex >= 8)
-                {
-                    _byteIndex = 0; // Wrap around after 8 bytes
-                }
-                // Auto-load next byte after 8 bits
-                LoadNextClockByte();
-            }
+            // Pattern matched! Transition to reading data
+            _state = NscState.ReadingData;
+            _bitIndex = 0;
+            _clockData = BuildClockData();
         }
+
+        // Return unmodified ROM data during pattern matching
+        return romData;
     }
 
-    private void WriteClockBit(bool bitValue)
+    /// <summary>
+    /// Handles data read state - returning clock data in bit 0.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private byte HandleDataRead(byte romData)
     {
-        if (bitValue)
+        // Extract the current clock bit
+        bool clockBit = ((_clockData >> _bitIndex) & 1) != 0;
+
+        // Replace bit 0 of ROM data with clock bit
+        byte result = (byte)((romData & 0xFE) | (clockBit ? 1 : 0));
+
+        _bitIndex++;
+        if (_bitIndex >= 64)
         {
-            _currentByte |= (byte)(1 << _bitPosition);
+            // All 64 bits read, return to matching state
+            _state = NscState.Matching;
+            _bitIndex = 0;
+            _patternAccumulator = 0;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Handles data write state - accepting clock data via A0.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void HandleDataWrite(bool a0)
+    {
+        // Set or clear the current bit based on A0
+        if (a0)
+        {
+            _clockData |= (1UL << _bitIndex);
         }
         else
         {
-            _currentByte &= (byte)~(1 << _bitPosition);
-        }
-    }
-
-    private void LoadNextClockByte()
-    {
-        // Load the next byte from the clock registers
-        // The No-Slot Clock has 8 bytes of time data in BCD format:
-        // Byte 0: Centiseconds (00-99)
-        // Byte 1: Seconds (00-59)
-        // Byte 2: Minutes (00-59)
-        // Byte 3: Hours (00-23)
-        // Byte 4: Day of week (00-06, 0=Sunday)
-        // Byte 5: Day of month (01-31)
-        // Byte 6: Month (01-12)
-        // Byte 7: Year (00-99)
-
-        // Get current emulator time
-        DateTime emulatorTime = GetClockTime();
-
-        // Convert to BCD format based on current byte index
-        _currentByte = _byteIndex switch
-        {
-            0 => DecimalToBcd(emulatorTime.Millisecond / 10), // Centiseconds (0-99)
-            1 => DecimalToBcd(emulatorTime.Second),           // Seconds (00-59)
-            2 => DecimalToBcd(emulatorTime.Minute),           // Minutes (00-59)
-            3 => DecimalToBcd(emulatorTime.Hour),             // Hours (00-23)
-            4 => DecimalToBcd((int)emulatorTime.DayOfWeek),   // Day of week (0=Sunday)
-            5 => DecimalToBcd(emulatorTime.Day),              // Day of month (01-31)
-            6 => DecimalToBcd(emulatorTime.Month),            // Month (01-12)
-            7 => DecimalToBcd(emulatorTime.Year % 100),       // Year (00-99)
-            _ => 0x00
-        };
-
-        _bitPosition = 0;
-    }
-
-    private void StoreClockByte()
-    {
-        // Store the current byte to the clock registers
-        // Cache the written byte for later calculation of new time offset
-
-        if (_byteIndex >= 0 && _byteIndex < _clockRegisters.Length)
-        {
-            _clockRegisters[_byteIndex] = _currentByte;
-            
-            // If all 8 bytes have been written, recalculate time offset
-            if (_byteIndex == 7)
-            {
-                _clockRegistersValid = true;
-                RecalculateTimeOffset();
-                _byteIndex = 0; // Reset for next write cycle
-            }
-            else
-            {
-                _byteIndex++; // Move to next byte
-            }
+            _clockData &= ~(1UL << _bitIndex);
         }
 
-        _currentByte = 0;
-        _bitPosition = 0;
+        _bitIndex++;
+        if (_bitIndex >= 64)
+        {
+            // All 64 bits written, apply the new time
+            ApplyWrittenClockData();
+            _state = NscState.Matching;
+            _bitIndex = 0;
+            _patternAccumulator = 0;
+        }
     }
 
     /// <summary>
-    /// Converts a decimal value to BCD (Binary-Coded Decimal) format.
+    /// Builds the 64-bit clock data from the current emulator time.
     /// </summary>
-    /// <param name="value">Decimal value (0-99).</param>
-    /// <returns>BCD-encoded byte.</returns>
-    private static byte DecimalToBcd(int value)
+    private ulong BuildClockData()
     {
-        if (value < 0 || value > 99)
-        {
-            return 0x00; // Invalid value
-        }
-        
-        int tens = value / 10;
-        int ones = value % 10;
-        return (byte)((tens << 4) | ones);
+        DateTime time = GetClockTime();
+
+        // Pack 8 BCD bytes into 64 bits (LSB first within each byte, byte 0 first)
+        ulong data = 0;
+        data |= (ulong)DecimalToBcd(time.Millisecond / 10);           // Byte 0: Centiseconds
+        data |= (ulong)DecimalToBcd(time.Second) << 8;                // Byte 1: Seconds
+        data |= (ulong)DecimalToBcd(time.Minute) << 16;               // Byte 2: Minutes
+        data |= (ulong)DecimalToBcd(time.Hour) << 24;                 // Byte 3: Hours
+        data |= (ulong)DecimalToBcd((int)time.DayOfWeek + 1) << 32;   // Byte 4: Day of week (1=Sunday)
+        data |= (ulong)DecimalToBcd(time.Day) << 40;                  // Byte 5: Day of month
+        data |= (ulong)DecimalToBcd(time.Month) << 48;                // Byte 6: Month
+        data |= (ulong)DecimalToBcd(time.Year % 100) << 56;           // Byte 7: Year
+
+        return data;
     }
 
     /// <summary>
-    /// Converts a BCD (Binary-Coded Decimal) value to decimal.
+    /// Applies written clock data to update the time offset.
     /// </summary>
-    /// <param name="bcd">BCD-encoded byte.</param>
-    /// <returns>Decimal value (0-99).</returns>
-    private static int BcdToDecimal(byte bcd)
+    private void ApplyWrittenClockData()
     {
-        int tens = (bcd >> 4) & 0x0F;
-        int ones = bcd & 0x0F;
-        return tens * 10 + ones;
-    }
-
-    /// <summary>
-    /// Recalculates the time offset based on newly written clock registers.
-    /// </summary>
-    private void RecalculateTimeOffset()
-    {
-        if (!_clockRegistersValid)
-        {
-            return;
-        }
-
         try
         {
-            // Parse BCD values from clock registers
-            int centiseconds = BcdToDecimal(_clockRegisters[0]);
-            int seconds = BcdToDecimal(_clockRegisters[1]);
-            int minutes = BcdToDecimal(_clockRegisters[2]);
-            int hours = BcdToDecimal(_clockRegisters[3]);
-            int dayOfWeek = BcdToDecimal(_clockRegisters[4]); // Not used for DateTime
-            int day = BcdToDecimal(_clockRegisters[5]);
-            int month = BcdToDecimal(_clockRegisters[6]);
-            int year = BcdToDecimal(_clockRegisters[7]);
+            // Extract BCD bytes from the 64-bit data
+            int centiseconds = BcdToDecimal((byte)(_clockData & 0xFF));
+            int seconds = BcdToDecimal((byte)((_clockData >> 8) & 0xFF));
+            int minutes = BcdToDecimal((byte)((_clockData >> 16) & 0xFF));
+            int hours = BcdToDecimal((byte)((_clockData >> 24) & 0xFF));
+            int dayOfWeek = BcdToDecimal((byte)((_clockData >> 32) & 0xFF)); // Not used
+            int day = BcdToDecimal((byte)((_clockData >> 40) & 0xFF));
+            int month = BcdToDecimal((byte)((_clockData >> 48) & 0xFF));
+            int year = BcdToDecimal((byte)((_clockData >> 56) & 0xFF));
 
-            // Convert 2-digit year to 4-digit year (assume 2000-2099)
-            year += 2000;
+            // Convert 2-digit year (assume 2000-2099 for Y2K compliance)
+            year += (year < 80) ? 2000 : 1900;
 
-            // Build DateTime from registers
-            DateTime writtenTime = new (
-                year,
-                month,
-                day,
-                hours,
-                minutes,
-                seconds,
-                centiseconds * 10); // Centiseconds to milliseconds
-
-            // Calculate new offset
-            DateTime systemTime = DateTime.Now;
-            _timeOffsetTicks = writtenTime.Ticks - systemTime.Ticks;
+            DateTime writtenTime = new(year, month, day, hours, minutes, seconds, centiseconds * 10);
+            _timeOffsetTicks = writtenTime.Ticks - DateTime.Now.Ticks;
         }
         catch (ArgumentOutOfRangeException)
         {
-            // Invalid date/time values - ignore the write
-            // This can happen if the software writes invalid BCD values
+            // Invalid BCD values - ignore the write
         }
     }
 
+    /// <summary>
+    /// Converts a decimal value (0-99) to BCD format.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static byte DecimalToBcd(int value)
+    {
+        return (byte)(((value / 10) << 4) | (value % 10));
+    }
+
+    /// <summary>
+    /// Converts a BCD byte to decimal value.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int BcdToDecimal(byte bcd)
+    {
+        return ((bcd >> 4) * 10) + (bcd & 0x0F);
+    }
+
+    /// <inheritdoc />
     public byte this[ushort offset]
     {
-        get { return Read(offset); }
-        set { Write(offset, value); }
+        get => Read(offset);
+        set => Write(offset, value);
     }
 }

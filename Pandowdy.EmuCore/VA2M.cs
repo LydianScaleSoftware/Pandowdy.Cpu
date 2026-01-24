@@ -1148,8 +1148,7 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         _stateSink.Update(snapshot);
 
 
-        // Report performance metrics every 5 seconds
-        ReportPerformanceMetrics();
+        ReportPerformanceMetricsAsNeeded();
     }
 
     /// <summary>
@@ -1178,7 +1177,7 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// </list>
     /// </para>
     /// </remarks>
-    private void ReportPerformanceMetrics()
+    private void ReportPerformanceMetricsAsNeeded()
     {
         long currentTicks = _perfSw.ElapsedTicks;
         long ticksSinceLastReport = currentTicks - _perfLastReportTicks;
@@ -1196,28 +1195,32 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         double effectiveMhz = (cyclesSinceLastReport / secondsElapsed) / 1_000_000.0;
 
         // Calculate accuracy percentage if throttled
-        string accuracyInfo = "";
+#if DebugMhz
+        string accuracyInfo;
+
         if (ThrottleEnabled)
         {
             double targetMhz = TargetHz / 1_000_000.0;
             double accuracyPercent = (effectiveMhz / targetMhz) * 100.0;
             double errorPercent = Math.Abs(100.0 - accuracyPercent);
             double errorPpm = errorPercent * 10000.0; // Parts per million
-            
+
+
             accuracyInfo = $" (Target: {targetMhz:F3} MHz, Accuracy: {accuracyPercent:F2}%, Error: {errorPpm:F0} ppm)";
-            
             // Add adaptive throttling diagnostics
             accuracyInfo += $" [SpinWait: {_adaptiveSpinWaitIterations}, ErrorAccum: {_throttleErrorAccumulator:F6}]";
+
         }
-        
+
         // Include timestamp and actual interval for debugging timing issues
-        //Debug.WriteLine(
-        //    $"[VA2M Performance @ {DateTime.Now:HH:mm:ss.fff}] " +
-        //    $"Interval: {secondsElapsed:F2}s | " +
-        //    $"Effective MHz: {effectiveMhz:F3}{accuracyInfo} | " +
-        //    $"Throttle: {(ThrottleEnabled ? "ON" : "OFF")} | " +
-        //    $"Total Cycles: {currentCycles:N0}"
-        //);
+        Debug.WriteLine(
+            $"[VA2M Performance @ {DateTime.Now:HH:mm:ss.fff}] " +
+            $"Interval: {secondsElapsed:F2}s | " +
+            $"Effective MHz: {effectiveMhz:F3}{accuracyInfo} | " +
+            $"Throttle: {(ThrottleEnabled ? "ON" : "OFF")} | " +
+            $"Total Cycles: {currentCycles:N0}"
+        );
+#endif
         _sysStatusSink.SetCurrentMhz(effectiveMhz);
 
         // Update for next report
