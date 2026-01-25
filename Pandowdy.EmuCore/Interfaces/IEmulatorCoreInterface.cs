@@ -241,103 +241,37 @@ public interface IEmulatorCoreInterface : IKeyboardSetter
     /// are published through reactive streams. Subscribe to <see cref="ISystemStatusProvider.Stream"/> or
     /// <see cref="ISystemStatusProvider.Changed"/> event to receive updates.
     /// </para>
-    /// <para>
-            /// <strong>Use Cases:</strong> Display soft switch status panel, show video mode indicators, monitor
-            /// memory configuration, display game controller state, debug system behavior.
-            /// </para>
-            /// </remarks>
-            ISystemStatusProvider SystemStatus { get; }
+        /// <para>
+        /// <strong>Use Cases:</strong> Display soft switch status panel, show video mode indicators, monitor
+        /// memory configuration, display game controller state, debug system behavior.
+        /// </para>
+        /// </remarks>
+        ISystemStatusProvider SystemStatus { get; }
 
-            /// <summary>
-            /// Gets the telemetry stream for receiving device telemetry messages.
-            /// </summary>
-            /// <value>Read-only stream of telemetry messages from all devices (drives, cards, peripherals).</value>
-            /// <remarks>
-            /// <para>
-            /// <strong>Thread Safety:</strong> Thread-safe read-only property. The returned <see cref="ITelemetryStream"/>
-            /// interface provides a reactive stream for device telemetry that can be subscribed to from any thread.
-            /// </para>
-            /// <para>
-            /// <strong>Interface Segregation:</strong> This property exposes only the read-only <see cref="ITelemetryStream"/>
-            /// interface, not the full <see cref="ITelemetryAggregator"/>. The UI can subscribe to messages but cannot
-            /// create telemetry IDs or publish messages (those are internal operations for devices).
-            /// </para>
-            /// <para>
-            /// <strong>Observable Pattern:</strong> Devices publish telemetry messages (motor state, track position,
-            /// disk insertion, etc.) through the aggregator. Subscribe to <see cref="ITelemetryStream.Stream"/>
-            /// and filter by category or device ID to receive specific device updates.
-            /// </para>
-            /// <para>
-            /// <strong>Thread Marshaling:</strong> Subscribers must use <c>ObserveOn(RxApp.MainThreadScheduler)</c>
-            /// to marshal callbacks to the UI thread before updating bound properties.
-            /// </para>
-            /// <para>
-            /// <strong>Use Cases:</strong> Display drive activity indicators (motor on, track number), show disk
-            /// insertion/ejection notifications, monitor peripheral status, implement diagnostic views.
-            /// </para>
-                /// </remarks>
-                ITelemetryStream Telemetry { get; }
+        /// <summary>
+        /// Gets the disk status provider for monitoring disk drive states.
+        /// </summary>
+        /// <value>Read-only stream of disk drive status snapshots.</value>
+        /// <remarks>
+        /// <para>
+        /// <strong>Thread Safety:</strong> Thread-safe read-only property. The returned <see cref="Services.IDiskStatusProvider"/>
+        /// interface provides a reactive stream for disk drive status that can be subscribed to from any thread.
+        /// </para>
+        /// <para>
+        /// <strong>Observable Pattern:</strong> Disk drives publish status changes (motor state, track position,
+        /// disk insertion, etc.) through the provider. Subscribe to <see cref="Services.IDiskStatusProvider.Stream"/>
+        /// to receive drive status updates.
+        /// </para>
+        /// <para>
+        /// <strong>Thread Marshaling:</strong> Subscribers must use <c>ObserveOn(RxApp.MainThreadScheduler)</c>
+        /// to marshal callbacks to the UI thread before updating bound properties.
+        /// </para>
+        /// <para>
+        /// <strong>Use Cases:</strong> Display drive activity indicators (motor on, track number), show disk
+        /// insertion/ejection notifications, implement drive status panel.
+        /// </para>
+        /// </remarks>
+        Services.IDiskStatusProvider DiskStatus { get; }
 
-                #endregion
-
-                #region Telemetry Resend Requests (Thread-Safe Queueing)
-
-                /// <summary>
-                /// Queues a request for all telemetry providers to resend their current state.
-                /// </summary>
-                /// <remarks>
-                /// <para>
-                /// <strong>Thread Safety:</strong> Thread-safe. Can be called from any thread (typically UI thread).
-                /// The request is queued and processed at the next instruction boundary on the emulator thread,
-                /// consistent with other cross-thread operations (keyboard, pushbuttons).
-                /// </para>
-                /// <para>
-                /// <strong>Deduplication:</strong> Multiple pending requests of the same type may be deduplicated
-                /// before processing to reduce unnecessary traffic.
-                /// </para>
-                /// <para>
-                /// <strong>Use sparingly:</strong> Broadcast requests generate traffic from all providers.
-                /// Prefer <see cref="RequestTelemetryResendByCategory"/> or <see cref="RequestTelemetryResendById"/>
-                /// when you only need state from specific providers.
-                /// </para>
-                /// </remarks>
-                void RequestTelemetryResend();
-
-                /// <summary>
-                /// Queues a request for a specific telemetry provider to resend its current state.
-                /// </summary>
-                /// <param name="providerId">The numeric ID of the provider.</param>
-                /// <remarks>
-                /// <para>
-                /// <strong>Thread Safety:</strong> Thread-safe. Can be called from any thread (typically UI thread).
-                /// The request is queued and processed at the next instruction boundary on the emulator thread.
-                /// </para>
-                /// <para>
-                /// <strong>Deduplication:</strong> Multiple pending requests for the same provider ID may be
-                /// deduplicated before processing.
-                /// </para>
-                /// </remarks>
-                void RequestTelemetryResendById(int providerId);
-
-                /// <summary>
-                /// Queues a request for all telemetry providers of a category to resend their current state.
-                /// </summary>
-                /// <param name="category">The category name (e.g., "DiskII", "Printer").</param>
-                /// <remarks>
-                /// <para>
-                /// <strong>Thread Safety:</strong> Thread-safe. Can be called from any thread (typically UI thread).
-                /// The request is queued and processed at the next instruction boundary on the emulator thread.
-                /// </para>
-                /// <para>
-                /// <strong>Deduplication:</strong> Multiple pending requests for the same category may be
-                /// deduplicated before processing.
-                /// </para>
-                /// <para>
-                /// <strong>Use Case:</strong> Ideal for ViewModel initialization - request all disk drive states
-                /// without knowing specific provider IDs.
-                /// </para>
-                /// </remarks>
-                void RequestTelemetryResendByCategory(string category);
-
-                #endregion
-            }
+        #endregion
+    }

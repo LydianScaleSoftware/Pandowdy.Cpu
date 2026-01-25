@@ -1,6 +1,7 @@
 using Pandowdy.EmuCore.DataTypes;
 using Pandowdy.EmuCore.DiskII;
 using Pandowdy.EmuCore.Interfaces;
+using Pandowdy.EmuCore.Services;
 
 namespace Pandowdy.EmuCore.Cards;
 
@@ -44,12 +45,12 @@ public class DiskIIControllerCard16Sector : DiskIIControllerCard
     /// </summary>
     /// <param name="cpuClocking">The CPU clocking counters for timing operations.</param>
     /// <param name="factory">Factory for creating drive instances.</param>
-    /// <param name="telemetry">Telemetry aggregator for publishing state changes.</param>
+    /// <param name="statusMutator">Status mutator for publishing controller state changes.</param>
     public DiskIIControllerCard16Sector(
         CpuClockingCounters cpuClocking,
         IDiskIIFactory factory,
-        ITelemetryAggregator telemetry)
-        : base(cpuClocking, factory, telemetry)
+        IDiskStatusMutator statusMutator)
+        : base(cpuClocking, factory, statusMutator)
     {
     }
 
@@ -71,6 +72,6 @@ public class DiskIIControllerCard16Sector : DiskIIControllerCard
     /// <inheritdoc />
     public override ICard Clone()
     {
-        return new DiskIIControllerCard16Sector(_clocking, _diskIIFactory, _telemetry);
+        return new DiskIIControllerCard16Sector(_clocking, _diskIIFactory, _statusMutator);
     }
 }

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Pandowdy.EmuCore.DataTypes;
 using Pandowdy.EmuCore.DiskII;
 using Pandowdy.EmuCore.Interfaces;
+using Pandowdy.EmuCore.Services;
 
 namespace Pandowdy.EmuCore.Cards;
 
@@ -29,8 +30,9 @@ namespace Pandowdy.EmuCore.Cards;
 /// Software must poll the register and handle timing (approximately 4 CPU cycles per bit).
 /// </para>
 /// <para>
-/// <strong>Telemetry:</strong> This controller publishes telemetry messages for phase changes,
-/// motor-off scheduling, and sector detection. Drives publish their own motor/track/disk state.
+/// <strong>Status Integration:</strong> This controller uses <see cref="IDiskStatusMutator"/> to
+/// publish phase changes, motor-off scheduling, and sector detection to the UI.
+/// Drives publish their own motor/track/disk state through the <see cref="DiskIIStatusDecorator"/>.
 /// </para>
 /// </remarks>
 public abstract class DiskIIControllerCard : ICard
@@ -38,8 +40,7 @@ public abstract class DiskIIControllerCard : ICard
     protected readonly CpuClockingCounters _clocking;
     protected IDiskIIDrive[] _drives = [];
     protected readonly IDiskIIFactory _diskIIFactory;
-    protected readonly ITelemetryAggregator _telemetry;
-    protected readonly TelemetryId _telemetryId;
+    protected readonly IDiskStatusMutator _statusMutator;
     protected SlotNumber _slotNumber = SlotNumber.Unslotted;
 
     /// <inheritdoc />
@@ -136,22 +137,19 @@ public abstract class DiskIIControllerCard : ICard
     /// </summary>
     /// <param name="cpuClocking">The CPU clocking counters for timing operations.</param>
     /// <param name="diskIIFactory">Factory for creating drive instances.</param>
-    /// <param name="telemetry">Telemetry aggregator for publishing state changes.</param>
+    /// <param name="statusMutator">Status mutator for publishing controller state changes.</param>
     protected DiskIIControllerCard(
         CpuClockingCounters cpuClocking,
         IDiskIIFactory diskIIFactory,
-        ITelemetryAggregator telemetry)
+        IDiskStatusMutator statusMutator)
     {
         ArgumentNullException.ThrowIfNull(cpuClocking);
         ArgumentNullException.ThrowIfNull(diskIIFactory);
-        ArgumentNullException.ThrowIfNull(telemetry);
+        ArgumentNullException.ThrowIfNull(statusMutator);
 
         _clocking = cpuClocking;
         _diskIIFactory = diskIIFactory;
-        _telemetry = telemetry;
-
-        // Register with telemetry system
-        _telemetryId = telemetry.CreateId(DiskIIConstants.TelemetryCategory);
+        _statusMutator = statusMutator;
 
         // Subscribe to VBlank for periodic motor-off checking
         // This ensures motor-off happens even when no disk I/O is occurring
@@ -475,13 +473,13 @@ public abstract class DiskIIControllerCard : ICard
     /// <param name="scheduled">True if motor-off is scheduled, false if cancelled or completed.</param>
     private void UpdateMotorOffScheduledStatus(bool scheduled)
     {
+        int slotNumber = (int)_slotNumber;
         int driveNumber = _selectedDriveIndex + 1; // Convert 0-based to 1-based
-#if Telemetry
-        _telemetry.Publish(new TelemetryMessage(
-            _telemetryId,
-            "motor-off-scheduled",
-            new DiskIIMessage($"Drive {driveNumber}: Motor-off {(scheduled ? "scheduled" : "cancelled/completed")}")));
-#endif
+
+        _statusMutator.MutateDrive(slotNumber, driveNumber, builder =>
+        {
+            builder.MotorOffScheduled = scheduled;
+        });
     }
 
     /// <summary>
@@ -489,14 +487,13 @@ public abstract class DiskIIControllerCard : ICard
     /// </summary>
     private void UpdatePhaseState()
     {
+        int slotNumber = (int)_slotNumber;
         int driveNumber = _selectedDriveIndex + 1;
-#if Telemetry
 
-        _telemetry.Publish(new TelemetryMessage(
-            _telemetryId,
-            "phase",
-            new DiskIIMessage($"Drive {driveNumber}: Phase={Convert.ToString(_currentPhase, 2).PadLeft(4, '0')}")));
-#endif
+        _statusMutator.MutateDrive(slotNumber, driveNumber, builder =>
+        {
+            builder.PhaseState = _currentPhase;
+        });
     }
 
     /// <summary>
@@ -504,13 +501,14 @@ public abstract class DiskIIControllerCard : ICard
     /// </summary>
     private void UpdateTrackAndSector(double track, int sector)
     {
+        int slotNumber = (int)_slotNumber;
         int driveNumber = _selectedDriveIndex + 1;
-#if Telemetry
-        _telemetry.Publish(new TelemetryMessage(
-            _telemetryId,
-            "sector",
-            new DiskIIMessage($"Drive {driveNumber}: Track={track:F2}, Sector={sector}")));
-#endif
+
+        _statusMutator.MutateDrive(slotNumber, driveNumber, builder =>
+        {
+            builder.Track = track;
+            builder.Sector = sector;
+        });
     }
 
     /// <summary>
@@ -530,41 +528,40 @@ public abstract class DiskIIControllerCard : ICard
     protected virtual void HandleDriveSelection(byte ioAddr)
     {
         ProcessBits(_clocking.TotalCycles);
-        int oldDriveIndex = _selectedDriveIndex;
-        _selectedDriveIndex = (ioAddr & 0x01); // 0xA = drive 0, 0xB = drive 1
+                int oldDriveIndex = _selectedDriveIndex;
+                _selectedDriveIndex = (ioAddr & 0x01); // 0xA = drive 0, 0xB = drive 1
 
-        if (oldDriveIndex != _selectedDriveIndex)
-        {
-#if ControllerDebug
-            Debug.WriteLine($"[{_clocking.TotalCycles}] 💿 DRIVE SELECT: Drive {_selectedDriveIndex + 1} (was Drive {oldDriveIndex + 1})");
-#endif
+                if (oldDriveIndex != _selectedDriveIndex)
+                {
+        #if ControllerDebug
+                    Debug.WriteLine($"[{_clocking.TotalCycles}] 💿 DRIVE SELECT: Drive {_selectedDriveIndex + 1} (was Drive {oldDriveIndex + 1})");
+        #endif
 
-            // Handle OLD drive: schedule motor-off and clear phases
-            var oldDrive = _drives[oldDriveIndex];
-            if (oldDrive != null && oldDrive.MotorOn)
-            {
-                // Schedule motor-off for the deselected drive (1-second delay)
-                _motorOffScheduledCycle = _clocking.TotalCycles + MotorOffDelayCycles;
-#if ControllerDebug
-                Debug.WriteLine($"[{_clocking.TotalCycles}] ⏱️ MOTOR-OFF SCHEDULED for Drive {oldDriveIndex + 1} at cycle {_motorOffScheduledCycle}");
-#endif
+                    // Handle OLD drive: schedule motor-off and clear phases
+                    var oldDrive = _drives[oldDriveIndex];
+                    if (oldDrive != null && oldDrive.MotorOn)
+                    {
+                        // Schedule motor-off for the deselected drive (1-second delay)
+                        _motorOffScheduledCycle = _clocking.TotalCycles + MotorOffDelayCycles;
+        #if ControllerDebug
+                        Debug.WriteLine($"[{_clocking.TotalCycles}] ⏱️ MOTOR-OFF SCHEDULED for Drive {oldDriveIndex + 1} at cycle {_motorOffScheduledCycle}");
+        #endif
 
-#if Telemetry
-                // Publish telemetry for old drive's motor-off scheduling
-                _telemetry.Publish(new TelemetryMessage(
-                    _telemetryId,
-                    "motor-off-scheduled",
-                    new DiskIIMessage($"Drive {oldDriveIndex + 1}: Motor-off scheduled (drive switch)")));
-#endif
+                        // Update status for old drive's motor-off scheduling
+                        int slotNumber = (int)_slotNumber;
+                        _statusMutator.MutateDrive(slotNumber, oldDriveIndex + 1, builder =>
+                        {
+                            builder.MotorOffScheduled = true;
+                        });
+                    }
+
+                    // Clear controller phases during drive switch (common hardware behavior)
+                    _currentPhase = 0;
+
+                    // Handle NEW drive: phases start at ---- (software will activate as needed)
+                    UpdatePhaseState();
+                }
             }
-
-            // Clear controller phases during drive switch (common hardware behavior)
-            _currentPhase = 0;
-
-            // Handle NEW drive: phases start at ---- (software will activate as needed)
-            UpdatePhaseState();
-        }
-    }
 
     /// <summary>
     /// Handles Q6/Q7 control line reads and data operations.

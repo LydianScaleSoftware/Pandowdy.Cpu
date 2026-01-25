@@ -1,21 +1,19 @@
 using System.Diagnostics;
-using Pandowdy.EmuCore.DataTypes;
 using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore.DiskII;
 
 /// <summary>
-/// Implements a Disk II floppy disk drive with mechanical head positioning, motor control,
-/// and telemetry integration.
+/// Implements a Disk II floppy disk drive with mechanical head positioning and motor control.
 /// </summary>
 /// <remarks>
 /// <para>
 /// This class simulates the physical characteristics of a Disk II drive:
 /// <list type="bullet">
 /// <item>Stepper motor with quarter-track positioning (0-139 quarter-tracks = 0-34.75 whole tracks)</item>
-/// <item>Motor on/off control with state change telemetry</item>
+/// <item>Motor on/off control</item>
 /// <item>Read/write operations through an <see cref="IDiskImageProvider"/></item>
-/// <item>Disk insert/eject operations with telemetry notifications</item>
+/// <item>Disk insert/eject operations</item>
 /// </list>
 /// </para>
 /// <para>
@@ -24,19 +22,15 @@ namespace Pandowdy.EmuCore.DiskII;
 /// matches real hardware where the drive mechanism is separate from the disk media.
 /// </para>
 /// <para>
-/// <strong>Telemetry Integration:</strong> This drive publishes telemetry messages for
-/// state changes (motor on/off, track changes, disk insert/eject). The UI layer can
-/// subscribe to these messages to display drive status without polling.
+/// <strong>Status Updates:</strong> For UI integration, wrap this drive with
+/// <see cref="DiskIIStatusDecorator"/> which synchronizes state changes with
+/// the <see cref="Services.IDiskStatusMutator"/>.
 /// </para>
 /// </remarks>
 public class DiskIIDrive : IDiskIIDrive
 {
     private IDiskImageProvider? _imageProvider;
     private readonly IDiskImageFactory? _diskImageFactory;
-    private readonly ITelemetryAggregator _telemetry;
-    private readonly TelemetryId _telemetryId;
-    private readonly int _slotNumber;
-    private readonly int _driveNumber;
     private int _quarterSteps;
     private bool _motorOn;
     private bool _hitMinLogged;
@@ -49,58 +43,21 @@ public class DiskIIDrive : IDiskIIDrive
     /// Initializes a new instance of the <see cref="DiskIIDrive"/> class.
     /// </summary>
     /// <param name="name">Name for the drive (e.g., "Slot6-D1").</param>
-    /// <param name="telemetry">The telemetry aggregator for publishing state changes.</param>
-    /// <param name="slotNumber">The slot number (1-7) where the controller card is installed.</param>
-    /// <param name="driveNumber">The drive number (1 or 2) for this drive.</param>
     /// <param name="imageProvider">Optional disk image provider. If null, the drive behaves as if no disk is inserted.</param>
     /// <param name="diskImageFactory">Optional factory for creating disk image providers when inserting disks.</param>
     public DiskIIDrive(
         string name,
-        ITelemetryAggregator telemetry,
-        int slotNumber,
-        int driveNumber,
         IDiskImageProvider? imageProvider = null,
         IDiskImageFactory? diskImageFactory = null)
     {
         Name = name ?? "Unnamed";
-        _telemetry = telemetry ?? throw new ArgumentNullException(nameof(telemetry));
-        _slotNumber = slotNumber;
-        _driveNumber = driveNumber;
         _imageProvider = imageProvider;
         _diskImageFactory = diskImageFactory;
-
-        // Register with telemetry system
-        _telemetryId = telemetry.CreateId(DiskIIConstants.TelemetryCategory);
-
-        // Subscribe to resend requests
-        _telemetry.ResendRequests.Subscribe(request =>
-        {
-            if (request.MatchesProvider(_telemetryId))
-            {
-                PublishFullState();
-            }
-        });
 
         Reset();
 
         // Notify image provider of initial track position
         _imageProvider?.SetQuarterTrack(_quarterSteps);
-    }
-
-    /// <summary>
-    /// Publishes the complete current state of the drive.
-    /// </summary>
-    /// <remarks>
-    /// Called in response to resend requests to ensure the UI has current state.
-    /// </remarks>
-    private void PublishFullState()
-    {
-#if Telemetry
-        _telemetry.Publish(new TelemetryMessage(
-            _telemetryId,
-            "state",
-            new DiskIIMessage($"Slot {_slotNumber} Drive {_driveNumber}: Motor={(_motorOn ? "ON" : "OFF")}, Track={Track:F2}, Disk={(_imageProvider != null ? Path.GetFileName(_imageProvider.FilePath) : "None")}")));
-#endif
     }
 
     /// <inheritdoc />
@@ -114,38 +71,24 @@ public class DiskIIDrive : IDiskIIDrive
         // Eject current disk if any
         EjectDisk();
 
-        // Load new disk
-        _imageProvider = _diskImageFactory.CreateProvider(diskImagePath);
-        _imageProvider.SetQuarterTrack(_quarterSteps);
+            // Load new disk
+            _imageProvider = _diskImageFactory.CreateProvider(diskImagePath);
+            _imageProvider.SetQuarterTrack(_quarterSteps);
 
-        Debug.WriteLine($"Drive '{Name}': Inserted disk '{diskImagePath}'");
-#if Telemetry
-        _telemetry.Publish(new TelemetryMessage(
-            _telemetryId,
-            "disk-inserted",
-            new DiskIIMessage($"Disk inserted: {Path.GetFileName(diskImagePath)}")));
-#endif
-    }
+            Debug.WriteLine($"Drive '{Name}': Inserted disk '{diskImagePath}'");
+        }
 
     /// <inheritdoc />
     public void EjectDisk()
     {
         if (_imageProvider != null)
         {
-            string fileName = Path.GetFileName(_imageProvider.FilePath);
-
             // Flush any pending writes and dispose
             _imageProvider.Flush();
             _imageProvider.Dispose();
             _imageProvider = null;
 
             Debug.WriteLine($"Drive '{Name}': Ejected disk");
-#if Telemetry
-            _telemetry.Publish(new TelemetryMessage(
-                _telemetryId,
-                "disk-ejected",
-                new DiskIIMessage($"Disk ejected: {fileName}")));
-#endif
         }
     }
 
@@ -172,12 +115,6 @@ public class DiskIIDrive : IDiskIIDrive
             {
                 _motorOn = value;
                 Debug.WriteLine($"Drive '{Name}' motor turned {(value ? "ON" : "OFF")}");
-#if Telemetry
-                _telemetry.Publish(new TelemetryMessage(
-                    _telemetryId,
-                    "motor",
-                    new DiskIIMessage($"Motor {(value ? "ON" : "OFF")}")));
-#endif
             }
         }
     }
@@ -191,7 +128,6 @@ public class DiskIIDrive : IDiskIIDrive
     /// <inheritdoc />
     public void StepToHigherTrack()
     {
-        int previousQuarterTrack = _quarterSteps;
         _quarterSteps++;
 
         if (_quarterSteps > DiskIIConstants.MaxQuarterTracks)
@@ -212,23 +148,11 @@ public class DiskIIDrive : IDiskIIDrive
 
         // Notify image provider of track change
         _imageProvider?.SetQuarterTrack(_quarterSteps);
-
-        // Publish telemetry if track changed
-        if (_quarterSteps != previousQuarterTrack)
-        {
-#if Telemetry
-            _telemetry.Publish(new TelemetryMessage(
-                _telemetryId,
-                "track",
-                new DiskIIMessage($"Track {Track:F2}")));
-#endif
-        }
     }
 
     /// <inheritdoc />
     public void StepToLowerTrack()
     {
-        int previousQuarterTrack = _quarterSteps;
         _quarterSteps--;
 
         if (_quarterSteps < 0)
@@ -249,17 +173,6 @@ public class DiskIIDrive : IDiskIIDrive
 
         // Notify image provider of track change
         _imageProvider?.SetQuarterTrack(_quarterSteps);
-
-        // Publish telemetry if track changed
-        if (_quarterSteps != previousQuarterTrack)
-        {
-#if Telemetry
-            _telemetry.Publish(new TelemetryMessage(
-                _telemetryId,
-                "track",
-                new DiskIIMessage($"Track {Track:F2}")));
-#endif
-        }
     }
 
     /// <inheritdoc />

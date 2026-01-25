@@ -54,8 +54,11 @@ namespace Pandowdy
 
                     services.AddSingleton<IGameControllerStatus, SimpleGameController>();
 
-                    // EmuCore - Telemetry
-                    services.AddSingleton<ITelemetryAggregator, TelemetryAggregator>();
+                    // Disk Status Provider - provides observable disk status for UI
+                    // Single instance shared between EmuCore (mutator) and UI (provider)
+                    services.AddSingleton<DiskStatusProvider>();
+                    services.AddSingleton<IDiskStatusProvider>(sp => sp.GetRequiredService<DiskStatusProvider>());
+                    services.AddSingleton<IDiskStatusMutator>(sp => sp.GetRequiredService<DiskStatusProvider>());
 
                     services.AddSingleton<ICardFactory, CardFactory>();
                     services.AddSingleton<ISlots, Slots>();
@@ -175,13 +178,13 @@ namespace Pandowdy
             {
                 // Example: Insert a disk image into Drive 1
                 // diskController.Drives[0].InsertDisk(@"E:\XPS Diagnostic IIe 1.0.5.nib");
-                diskController.Drives[0].InsertDisk(@"E:\test.nib");
+                diskController.Drives[0].InsertDisk(@"E:\test.woz");
                 // diskController.Drives[0].InsertDisk(@"E:\A2eDiagnostics_v2.1.nib");
                 // diskController.Drives[0].InsertDisk(@"E:\missing_ring_good.nib");
 
                 // Example: Insert a disk image into Drive 2
                 // diskController.Drives[1].InsertDisk(@"C:\path\to\data.dsk");
-                diskController.Drives[1].InsertDisk(@"E:\blank.nib");
+                //diskController.Drives[1].InsertDisk(@"E:\blank.nib");
             }
 
             return Task.CompletedTask;

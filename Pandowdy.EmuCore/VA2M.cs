@@ -89,7 +89,7 @@ namespace Pandowdy.EmuCore;
 /// <item><strong>VideoMemorySnapshotPool:</strong> Memory-efficient snapshot pooling</item>
 /// <item><strong>IKeyboardSetter:</strong> Keyboard input injection (SingularKeyHandler)</item>
 /// <item><strong>IGameControllerStatus:</strong> Game controller state (SimpleGameController)</item>
-/// <item><strong>ITelemetryAggregator:</strong> Device telemetry message hub (singleton)</item>
+/// <item><strong>IDiskStatusProvider:</strong> Disk drive status observable (singleton)</item>
 /// </list>
 /// </para>
 /// <para>
@@ -306,48 +306,43 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     public ISystemStatusProvider SystemStatus => _sysStatusSink;
 
     /// <summary>
-    /// Gets the telemetry stream for receiving device telemetry messages.
+    /// Gets the disk status provider for monitoring disk drive states.
     /// </summary>
-    /// <value>Read-only stream of telemetry messages from all devices (drives, cards, peripherals).</value>
+    /// <value>Read-only stream of disk drive status snapshots.</value>
     /// <remarks>
     /// <para>
-    /// <strong>Implementation:</strong> Returns the injected <see cref="ITelemetryAggregator"/> singleton
-    /// cast to read-only <see cref="ITelemetryStream"/>. Devices use the full aggregator internally,
-    /// but the UI only receives subscription access.
-    /// </para>
-    /// <para>
-    /// <strong>Interface Segregation:</strong> The UI receives only <see cref="ITelemetryStream"/> which
-    /// provides the Stream property. The full <see cref="ITelemetryAggregator"/> with CreateId and Publish
-    /// is only available to devices inside the emulator core.
+    /// <strong>Implementation:</strong> Returns the injected <see cref="Services.IDiskStatusProvider"/> singleton.
+    /// Disk drives and controllers update status through the mutator interface, while the UI subscribes
+    /// to the provider for status updates.
     /// </para>
     /// </remarks>
-    public ITelemetryStream Telemetry => _telemetryAggregator;
+    public Services.IDiskStatusProvider DiskStatus => _diskStatusProvider;
 
     #endregion
-    
+
     /// <summary>
     /// Emulator state sink for publishing CPU state snapshots.
     /// </summary>
     private readonly IEmulatorState _stateSink; 
-    
+
     /// <summary>
     /// Frame provider for publishing rendered video frames.
     /// </summary>
     private readonly IFrameProvider _frameSink; 
-    
+
     /// <summary>
     /// System status sink for publishing and mutating soft switch states.
     /// </summary>
     private readonly ISystemStatusMutator _sysStatusSink;
 
     /// <summary>
-    /// Telemetry aggregator for device telemetry messages.
+    /// Disk status provider for monitoring disk drive states.
     /// </summary>
     /// <remarks>
-    /// Singleton injected via DI. Devices request IDs from this aggregator and publish
-    /// telemetry messages. The UI subscribes to the stream for device status updates.
+    /// Singleton injected via DI. Disk drives register and publish state changes through
+    /// the mutator interface. The UI subscribes to the provider for status updates.
     /// </remarks>
-    private readonly ITelemetryAggregator _telemetryAggregator;
+    private readonly Services.IDiskStatusProvider _diskStatusProvider;
 
     /// <summary>
     /// Frame generator for rendering Apple IIe video output.
@@ -441,7 +436,7 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// <param name="snapshotPool">Pool for reusing video memory snapshots to reduce GC pressure.</param>
     /// <param name="keyboardSetter">Keyboard setter for injecting key events from UI thread (shared with SystemIoHandler).</param>
     /// <param name="gameController">Game controller for pushbutton and paddle state (fires events to SystemStatusProvider).</param>
-    /// <param name="telemetryAggregator">Telemetry aggregator for device telemetry messages (singleton, shared with all devices).</param>
+    /// <param name="diskStatusProvider">Disk status provider for monitoring disk drive states (singleton, shared with UI).</param>
     /// <exception cref="ArgumentNullException">Thrown if any parameter is null.</exception>
     /// <remarks>
     /// <para>
@@ -477,36 +472,36 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// </para>
     /// </remarks>
     public VA2M(
-        IEmulatorState stateSink, 
-        IFrameProvider frameSink, 
-        ISystemStatusMutator statusProvider, 
-        IAppleIIBus bus, 
-        AddressSpaceController memoryPool, 
-        IFrameGenerator frameGenerator,
-        RenderingService renderingService,
-        VideoMemorySnapshotPool snapshotPool,
-        IKeyboardSetter keyboardSetter,
-        IGameControllerStatus gameController,
-        ITelemetryAggregator telemetryAggregator)
-    {
-        ArgumentNullException.ThrowIfNull(stateSink);
-        ArgumentNullException.ThrowIfNull(frameSink);
-        ArgumentNullException.ThrowIfNull(statusProvider);
-        ArgumentNullException.ThrowIfNull(bus);
-        ArgumentNullException.ThrowIfNull(memoryPool);
-        ArgumentNullException.ThrowIfNull(frameGenerator);
-        ArgumentNullException.ThrowIfNull(renderingService);
-        ArgumentNullException.ThrowIfNull(snapshotPool);
-        ArgumentNullException.ThrowIfNull(keyboardSetter);
-        ArgumentNullException.ThrowIfNull(gameController);
-        ArgumentNullException.ThrowIfNull(telemetryAggregator);
+            IEmulatorState stateSink, 
+            IFrameProvider frameSink, 
+            ISystemStatusMutator statusProvider, 
+            IAppleIIBus bus, 
+            AddressSpaceController memoryPool, 
+            IFrameGenerator frameGenerator,
+            RenderingService renderingService,
+            VideoMemorySnapshotPool snapshotPool,
+            IKeyboardSetter keyboardSetter,
+            IGameControllerStatus gameController,
+            Services.IDiskStatusProvider diskStatusProvider)
+        {
+            ArgumentNullException.ThrowIfNull(stateSink);
+            ArgumentNullException.ThrowIfNull(frameSink);
+            ArgumentNullException.ThrowIfNull(statusProvider);
+            ArgumentNullException.ThrowIfNull(bus);
+            ArgumentNullException.ThrowIfNull(memoryPool);
+            ArgumentNullException.ThrowIfNull(frameGenerator);
+            ArgumentNullException.ThrowIfNull(renderingService);
+            ArgumentNullException.ThrowIfNull(snapshotPool);
+            ArgumentNullException.ThrowIfNull(keyboardSetter);
+            ArgumentNullException.ThrowIfNull(gameController);
+            ArgumentNullException.ThrowIfNull(diskStatusProvider);
 
 
-        _stateSink = stateSink;
-        _frameSink = frameSink;
-        _sysStatusSink = statusProvider;
-        _telemetryAggregator = telemetryAggregator;
-        _frameGenerator = frameGenerator;
+            _stateSink = stateSink;
+            _frameSink = frameSink;
+            _sysStatusSink = statusProvider;
+            _diskStatusProvider = diskStatusProvider;
+            _frameGenerator = frameGenerator;
         _renderingService = renderingService;
         _snapshotPool = snapshotPool;
         _keyboardSetter = keyboardSetter;
@@ -617,19 +612,16 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         // Only process pending commands at instruction boundaries to maintain 6502 atomicity.
         // Without this check, a Reset() or InterruptRequest() from another thread could
         // execute mid-instruction, violating the 6502's atomic instruction guarantee.
-        if (Bus.Cpu != null && !Bus.Cpu.IsInstructionComplete())
-        {
-            return;
-        }
+            if (Bus.Cpu != null && !Bus.Cpu.IsInstructionComplete())
+            {
+                return;
+            }
 
-        while (_pending.TryDequeue(out var act))
-        {
-            try { act(); } catch { Debug.WriteLine($"Exception during ProcessPending()"); }
+            while (_pending.TryDequeue(out var act))
+            {
+                try { act(); } catch { Debug.WriteLine($"Exception during ProcessPending()"); }
+            }
         }
-
-        // Process telemetry resend requests with deduplication
-        ProcessPendingResendRequests();
-    }
 
     /// <summary>
     /// Handles VBlank event from the bus, triggering frame rendering and flash toggle.
@@ -1346,150 +1338,6 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     {
         Enqueue(() =>  _gameController.SetButton(num,pressed));
     }
-
-    #region Telemetry Resend Request Methods
-
-    /// <summary>
-    /// Queues a request for all telemetry providers to resend their current state.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <strong>Thread Safety:</strong> Thread-safe. Can be called from any thread (typically UI thread).
-    /// The request is queued and processed at the next instruction boundary on the emulator thread.
-    /// </para>
-    /// <para>
-    /// <strong>Deduplication:</strong> Multiple pending "all" requests are deduplicated - only one
-    /// request of type <see cref="ResendScope.All"/> will be processed per batch.
-    /// </para>
-    /// </remarks>
-    public void RequestTelemetryResend()
-    {
-        EnqueueResendRequest(ResendRequest.All);
-    }
-
-    /// <summary>
-    /// Queues a request for a specific telemetry provider to resend its current state.
-    /// </summary>
-    /// <param name="providerId">The numeric ID of the provider.</param>
-    /// <remarks>
-    /// <para>
-    /// <strong>Thread Safety:</strong> Thread-safe. Can be called from any thread (typically UI thread).
-    /// The request is queued and processed at the next instruction boundary on the emulator thread.
-    /// </para>
-    /// <para>
-    /// <strong>Deduplication:</strong> Multiple pending requests for the same provider ID are
-    /// deduplicated - only one request per provider ID will be processed per batch.
-    /// </para>
-    /// </remarks>
-    public void RequestTelemetryResendById(int providerId)
-    {
-        EnqueueResendRequest(ResendRequest.ForProvider(providerId));
-    }
-
-    /// <summary>
-    /// Queues a request for all telemetry providers of a category to resend their current state.
-    /// </summary>
-    /// <param name="category">The category name (e.g., "DiskII", "Printer").</param>
-    /// <remarks>
-    /// <para>
-    /// <strong>Thread Safety:</strong> Thread-safe. Can be called from any thread (typically UI thread).
-    /// The request is queued and processed at the next instruction boundary on the emulator thread.
-    /// </para>
-    /// <para>
-    /// <strong>Deduplication:</strong> Multiple pending requests for the same category are
-    /// deduplicated - only one request per category will be processed per batch.
-    /// </para>
-    /// </remarks>
-    public void RequestTelemetryResendByCategory(string category)
-    {
-        ArgumentNullException.ThrowIfNull(category);
-        EnqueueResendRequest(ResendRequest.ForCategory(category));
-    }
-
-    /// <summary>
-    /// Queue of pending telemetry resend requests awaiting processing.
-    /// </summary>
-    /// <remarks>
-    /// Separate from the main command queue to enable deduplication. Processed at instruction
-    /// boundaries along with other pending commands.
-    /// </remarks>
-    private readonly ConcurrentQueue<ResendRequest> _pendingResendRequests = new();
-
-    /// <summary>
-    /// Enqueues a resend request for processing on the emulator thread.
-    /// </summary>
-    /// <param name="request">The resend request to enqueue.</param>
-    private void EnqueueResendRequest(ResendRequest request)
-    {
-        _pendingResendRequests.Enqueue(request);
-    }
-
-    /// <summary>
-    /// Processes pending telemetry resend requests with deduplication.
-    /// </summary>
-    /// <remarks>
-    /// Called from <see cref="ProcessAnyPendingActions"/> at instruction boundaries.
-    /// Deduplicates requests: only one "All" request, one request per category, and
-    /// one request per provider ID will be published per processing batch.
-    /// </remarks>
-    private void ProcessPendingResendRequests()
-    {
-        if (_pendingResendRequests.IsEmpty)
-        {
-            return;
-        }
-
-        // Collect all pending requests for deduplication
-        var requests = new List<ResendRequest>();
-        while (_pendingResendRequests.TryDequeue(out var request))
-        {
-            requests.Add(request);
-        }
-
-        // Deduplicate: keep only unique requests
-        // - One "All" request covers everything, so dedupe to single All
-        // - One request per unique category
-        // - One request per unique provider ID
-        var hasAll = false;
-        var categories = new HashSet<string>();
-        var providerIds = new HashSet<int>();
-
-        foreach (var request in requests)
-        {
-            switch (request.Scope)
-            {
-                case ResendScope.All:
-                    hasAll = true;
-                    break;
-                case ResendScope.ByCategory when request.Category != null:
-                    categories.Add(request.Category);
-                    break;
-                case ResendScope.ById when request.ProviderId.HasValue:
-                    providerIds.Add(request.ProviderId.Value);
-                    break;
-            }
-        }
-
-        // If "All" was requested, publish just that (it covers everything)
-        if (hasAll)
-        {
-            _telemetryAggregator.PublishResendRequest(ResendRequest.All);
-            return;
-        }
-
-        // Otherwise, publish category and ID requests
-        foreach (var category in categories)
-        {
-            _telemetryAggregator.PublishResendRequest(ResendRequest.ForCategory(category));
-        }
-
-        foreach (var providerId in providerIds)
-        {
-            _telemetryAggregator.PublishResendRequest(ResendRequest.ForProvider(providerId));
-        }
-    }
-
-    #endregion
 
 
 

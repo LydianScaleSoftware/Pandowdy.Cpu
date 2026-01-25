@@ -1,69 +1,70 @@
 using Pandowdy.EmuCore.DiskII.Providers;
 using Pandowdy.EmuCore.Interfaces;
+using Pandowdy.EmuCore.Services;
 
 namespace Pandowdy.EmuCore.DiskII;
 
 /// <summary>
-/// Factory for creating Disk II drives with telemetry integration.
+/// Factory for creating Disk II drives with status integration.
 /// </summary>
 /// <remarks>
 /// <para>
 /// <strong>Decorator Chain:</strong> Creates drives wrapped in decorators:
 /// <code>
-/// DiskIIDebugDecorator → DiskIIDrive (with telemetry)
+/// DiskIIDebugDecorator → DiskIIStatusDecorator → DiskIIDrive
 /// </code>
-/// - <see cref="DiskIIDrive"/>: Core drive implementation with telemetry publishing
+/// - <see cref="DiskIIDrive"/>: Core drive implementation
+/// - <see cref="DiskIIStatusDecorator"/>: Synchronizes state with <see cref="IDiskStatusMutator"/>
 /// - <see cref="DiskIIDebugDecorator"/>: Adds diagnostic logging (outermost layer)
 /// </para>
 /// <para>
-/// <strong>Telemetry Integration:</strong> The core drive publishes telemetry messages
-/// for motor state, track position, and disk operations. The status decorator pattern
-/// from the original code is replaced by direct telemetry publishing.
+/// <strong>Status Integration:</strong> The <see cref="DiskIIStatusDecorator"/> automatically
+/// registers the drive with the status provider and publishes state changes for motor,
+/// track position, and disk operations.
 /// </para>
 /// <para>
 /// <strong>Slot/Drive Parsing:</strong> Parses drive names in the format "SlotX-DY"
 /// (e.g., "Slot6-D1" → Slot 6, Drive 1) to assign proper slot and drive numbers
-/// for telemetry identification.
+/// for status tracking.
 /// </para>
 /// </remarks>
 public class DiskIIFactory : IDiskIIFactory
 {
     private readonly IDiskImageFactory _imageFactory;
-    private readonly ITelemetryAggregator _telemetry;
+    private readonly IDiskStatusMutator _statusMutator;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DiskIIFactory"/> class.
     /// </summary>
     /// <param name="imageFactory">Factory for creating disk image providers.</param>
-    /// <param name="telemetry">Telemetry aggregator for publishing drive state.</param>
-    public DiskIIFactory(IDiskImageFactory imageFactory, ITelemetryAggregator telemetry)
+    /// <param name="statusMutator">Status mutator for registering drives and publishing state.</param>
+    public DiskIIFactory(IDiskImageFactory imageFactory, IDiskStatusMutator statusMutator)
     {
         _imageFactory = imageFactory ?? throw new ArgumentNullException(nameof(imageFactory));
-        _telemetry = telemetry ?? throw new ArgumentNullException(nameof(telemetry));
+        _statusMutator = statusMutator ?? throw new ArgumentNullException(nameof(statusMutator));
     }
 
     /// <summary>
     /// Creates a Disk II drive with no disk inserted.
     /// </summary>
     /// <param name="driveName">Name for the drive (e.g., "Slot6-D1").</param>
-    /// <returns>A new drive instance with no disk, wrapped in debug decorator.</returns>
+    /// <returns>A new drive instance with no disk, wrapped in decorators.</returns>
     public IDiskIIDrive CreateDrive(string driveName)
     {
         // Parse slot and drive numbers from name
         var (slotNumber, driveNumber) = ParseDriveName(driveName);
 
-        // Create core drive with telemetry (no disk inserted)
+        // Create core drive (no disk inserted)
         var coreDrive = new DiskIIDrive(
             driveName,
-            _telemetry,
-            slotNumber,
-            driveNumber,
             imageProvider: null,
             diskImageFactory: _imageFactory);
 
-        return coreDrive;
+        // Wrap in status decorator for UI integration
+        var statusDrive = new DiskIIStatusDecorator(coreDrive, _statusMutator, slotNumber, driveNumber);
+
         // Wrap in debug decorator for diagnostic logging (outermost layer)
-       // return new DiskIIDebugDecorator(coreDrive);
+        return new DiskIIDebugDecorator(statusDrive);
     }
 
     /// <summary>
@@ -80,18 +81,17 @@ public class DiskIIFactory : IDiskIIFactory
         // Create image provider
         IDiskImageProvider provider = _imageFactory.CreateProvider(diskImagePath);
 
-        // Create core drive with telemetry and disk
+        // Create core drive with disk
         var coreDrive = new DiskIIDrive(
             driveName,
-            _telemetry,
-            slotNumber,
-            driveNumber,
             imageProvider: provider,
             diskImageFactory: _imageFactory);
 
-        return coreDrive;
+        // Wrap in status decorator for UI integration
+        var statusDrive = new DiskIIStatusDecorator(coreDrive, _statusMutator, slotNumber, driveNumber);
+
         // Wrap in debug decorator (outermost layer)
-      //  return new DiskIIDebugDecorator(coreDrive);
+        return new DiskIIDebugDecorator(statusDrive);
     }
 
     /// <summary>
