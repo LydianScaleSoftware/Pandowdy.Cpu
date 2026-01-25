@@ -6,7 +6,7 @@
 
 | Status | Details |
 |--------|---------|
-| **Branch** | `notelem` |
+| **Branch** | `develop` |
 | **Tests** | 1224 tests passing ✅ |
 | **Last Milestone** | Disk II Integration Complete (Phase 8E) |
 | **Next Focus** | GUI Disk Management Features (Task 5) |
@@ -306,6 +306,68 @@ if (Bus is VA2MBus vb)
 
 ---
 
+### Task 11: Conditional Compilation for Disk Provider Debug Output (Medium Priority)
+
+**Goal:** Reduce performance impact of debugging output in disk provider classes.
+
+**Status:** ⏳ NOT STARTED
+
+**Current State:**
+- Disk provider classes output excessive debugging information
+- Debug output causes performance degradation during normal operation
+- No way to selectively enable/disable disk provider debugging
+
+**Problem:**
+- Performance is impacted by always-on informative debug output
+- Too much noise in debug console during normal operation
+- Need conditional compilation to control routine disk-related debugging
+- Warning/error messages about unexpected conditions should remain active
+
+**Proposed Solution:**
+Wrap **informative** debugging output with conditional compilation directives. Keep warning/error messages active:
+
+```csharp
+// Wrap informative messages (routine operation status):
+#if DebugDiskProviders
+    Debug.WriteLine($"Track {track}, Sector {sector}, reading...");
+    Debug.WriteLine($"Motor on, seeking to track {quarterTrack}");
+#endif
+
+// Keep warning/error messages active (unexpected conditions):
+Debug.WriteLine($"WARNING: Invalid track number {track}, clamping to valid range");
+Debug.WriteLine($"ERROR: Checksum mismatch in sector {sector}");
+Debug.WriteLine($"WARNING: Disk image size {size} does not match expected {expected}");
+```
+
+**Criteria for Wrapping:**
+- ✅ **Wrap:** Routine status, progress updates, normal operation flow
+- ✅ **Wrap:** Verbose bit/byte-level read/write logging
+- ✅ **Wrap:** Track/sector position updates during normal seeks
+- ❌ **Keep Active:** Warnings about unexpected/invalid data
+- ❌ **Keep Active:** Error conditions or data corruption detection
+- ❌ **Keep Active:** Clamping/recovery from invalid states
+
+**Files to Modify:**
+- `Pandowdy.EmuCore\DiskII\Providers\NibDiskImageProvider.cs`
+- `Pandowdy.EmuCore\DiskII\Providers\SectorDiskImageProvider.cs`
+- `Pandowdy.EmuCore\DiskII\Providers\InternalWozDiskImageProvider.cs`
+- `Pandowdy.EmuCore\DiskII\Providers\WozDiskImageProvider.cs`
+- `Pandowdy.EmuCore\DiskII\GcrEncoder.cs` (if debug output exists)
+- `Pandowdy.EmuCore\DiskII\DiskIIDrive.cs` (if debug output exists)
+- `Pandowdy.EmuCore\DiskII\DiskIIDebugDecorator.cs` (may need special handling)
+
+**Implementation Notes:**
+- Use `#if DebugDiskProviders` directive (not `DEBUG` which is too broad)
+- Keep debug code in place for future troubleshooting
+- Consider adding documentation on how to enable disk debugging
+- Verify performance improvement after changes
+
+**Priority:** Medium (performance impact, needed sooner than later)
+
+**Related:** See Task 8 (Race Conditions at High Speeds)
+
+---
+
 ## Completed Tasks
 
 ### ✅ Disk II Integration (Phases 1-8E)
@@ -375,11 +437,13 @@ public bool IsEnabled { get; set; } = true;
 
 ### 3. Other Style Guidelines
 
-- Use `var` for local variables when type is obvious
 - Prefer expression-bodied members for simple one-liners
 - Use nullable reference types (`string?`, `object?`)
 - Follow naming conventions: PascalCase for public members, camelCase for private fields with `_` prefix
 - 4-space indentation
+- Prefer using Primary Constructors when class initialization is straightforward
+- Prefer field default initializers for small, read‑only arrays and collections; use new[] { ... } for literal content and Array.Empty<T>() for empty arrays to avoid unnecessary allocations.
+- Use `var` for other local variables when type is obvious
 
 ---
 
