@@ -95,10 +95,12 @@ public class DiskIIDrive : IDiskIIDrive
     /// </remarks>
     private void PublishFullState()
     {
+#if Telemetry
         _telemetry.Publish(new TelemetryMessage(
             _telemetryId,
             "state",
             new DiskIIMessage($"Slot {_slotNumber} Drive {_driveNumber}: Motor={(_motorOn ? "ON" : "OFF")}, Track={Track:F2}, Disk={(_imageProvider != null ? Path.GetFileName(_imageProvider.FilePath) : "None")}")));
+#endif
     }
 
     /// <inheritdoc />
@@ -117,10 +119,12 @@ public class DiskIIDrive : IDiskIIDrive
         _imageProvider.SetQuarterTrack(_quarterSteps);
 
         Debug.WriteLine($"Drive '{Name}': Inserted disk '{diskImagePath}'");
+#if Telemetry
         _telemetry.Publish(new TelemetryMessage(
             _telemetryId,
             "disk-inserted",
             new DiskIIMessage($"Disk inserted: {Path.GetFileName(diskImagePath)}")));
+#endif
     }
 
     /// <inheritdoc />
@@ -136,10 +140,12 @@ public class DiskIIDrive : IDiskIIDrive
             _imageProvider = null;
 
             Debug.WriteLine($"Drive '{Name}': Ejected disk");
+#if Telemetry
             _telemetry.Publish(new TelemetryMessage(
                 _telemetryId,
                 "disk-ejected",
                 new DiskIIMessage($"Disk ejected: {fileName}")));
+#endif
         }
     }
 
@@ -166,10 +172,12 @@ public class DiskIIDrive : IDiskIIDrive
             {
                 _motorOn = value;
                 Debug.WriteLine($"Drive '{Name}' motor turned {(value ? "ON" : "OFF")}");
+#if Telemetry
                 _telemetry.Publish(new TelemetryMessage(
                     _telemetryId,
                     "motor",
                     new DiskIIMessage($"Motor {(value ? "ON" : "OFF")}")));
+#endif
             }
         }
     }
@@ -208,10 +216,12 @@ public class DiskIIDrive : IDiskIIDrive
         // Publish telemetry if track changed
         if (_quarterSteps != previousQuarterTrack)
         {
+#if Telemetry
             _telemetry.Publish(new TelemetryMessage(
                 _telemetryId,
                 "track",
                 new DiskIIMessage($"Track {Track:F2}")));
+#endif
         }
     }
 
@@ -243,10 +253,12 @@ public class DiskIIDrive : IDiskIIDrive
         // Publish telemetry if track changed
         if (_quarterSteps != previousQuarterTrack)
         {
+#if Telemetry
             _telemetry.Publish(new TelemetryMessage(
                 _telemetryId,
                 "track",
                 new DiskIIMessage($"Track {Track:F2}")));
+#endif
         }
     }
 

@@ -6,10 +6,10 @@
 
 | Status | Details |
 |--------|---------|
-| **Progress** | All Phases Complete ✅ |
+| **Progress** | Phases 1-7 Complete ✅ |
 | **Tests** | 1224 total (259 Disk II tests) |
 | **Branch** | `re_disking` (was `piecemealing`) |
-| **Next Step** | Integration complete! See Next Steps section. |
+| **Next Step** | Phase 8: GUI Status Display |
 
 **What's Done:**
 - ✅ Phase 1: Foundation (VBlankOccurred event, DiskIIConstants, telemetry payloads)
@@ -21,7 +21,7 @@
 - ✅ Phase 7: Integration Tests (28 tests covering telemetry flow, motor timeout, multi-drive)
 
 **What's Next:**
-- See "Next Steps (Post-Integration)" section for future improvements
+- Phase 8: GUI Status Display for disk drives
 
 **Key Decision Made:**
 - `DiskIIStatusDecorator` was **NOT imported** - its functionality was replaced by direct telemetry publishing in `DiskIIDrive`. See Issue #2 in Integration Issues section.
@@ -68,10 +68,11 @@ This document provides a comprehensive plan for integrating the Disk II emulatio
 9. [Phase 5: Controller Card](#phase-5-controller-card) ✅ COMPLETED
 10. [Phase 6: Factory Registration](#phase-6-factory-registration) ✅ COMPLETED
 11. [Phase 7: Tests](#phase-7-tests) ✅ COMPLETED
-12. [Telemetry Integration](#telemetry-integration)
-13. [Code Style Corrections](#code-style-corrections)
-14. [Verification Checklist](#verification-checklist)
-15. [Next Steps (Post-Integration)](#next-steps-post-integration)
+12. [Phase 8: GUI Status Display](#phase-8-gui-status-display)
+13. [Telemetry Integration](#telemetry-integration)
+14. [Code Style Corrections](#code-style-corrections)
+15. [Verification Checklist](#verification-checklist)
+16. [Next Steps (Post-Integration)](#next-steps-post-integration)
 
 ---
 
@@ -1016,6 +1017,225 @@ Created in Phase 4.2 (DiskIIDrive with telemetry).
 
 ---
 
+## Phase 8: GUI Status Display
+
+**Goal:** Add GUI components to display Disk II drive status (motor on/off, track position, disk inserted).
+
+> **Status:** Reference code imported ✅. Ready for transformation.
+
+### Source Files in `Pandowdy.DiskImportCode`
+
+| File | Purpose | Transformation Notes |
+|------|---------|---------------------|
+| `DiskStatusPanel.axaml` | Container panel with header + scrollable drive list | Keep layout, update namespace |
+| `DiskStatusPanel.axaml.cs` | Code-behind (simple) | Keep as-is |
+| `DiskStatusPanelViewModel.cs` | Container ViewModel, manages drive widgets | Replace `IDiskStatusProvider` with `ITelemetryAggregator` |
+| `DiskStatusWidget.axaml` | Single drive status display | Keep layout, update namespace |
+| `DiskStatusWidget.axaml.cs` | Code-behind (simple) | Keep as-is |
+| `DiskStatusWidgetViewModel.cs` | Drive state display with formatting | Replace `DiskDriveStatusSnapshot` with telemetry |
+
+### Step 8.1: Design Telemetry Message Format ⏳
+
+**Goal:** Define typed telemetry payloads to replace the `DiskDriveStatusSnapshot` pattern.
+
+**Current Problem:**
+- Reference code uses `IDiskStatusProvider` + `DiskDriveStatusSnapshot` (doesn't exist)
+- Need to convert to telemetry-based approach
+
+**Data Required by Widget (from `DiskStatusWidgetViewModel`):**
+
+| Property | Type | Source |
+|----------|------|--------|
+| `DiskId` | string | e.g., "S6D1" - slot + drive identifier |
+| `DiskImageFilename` | string | Filename only (no path) |
+| `DiskImagePath` | string | Full path for tooltip |
+| `IsReadOnly` | bool | Write protection status |
+| `Track` | double | Current track (0-34.75) |
+| `Sector` | int | Current sector (-1 if unknown) |
+| `PhaseState` | byte | 4-bit stepper motor phases |
+| `MotorOn` | bool | Motor running |
+| `MotorOffScheduled` | bool | Motor-off pending |
+| `SlotNumber` | int | For ordering (1-7) |
+| `DriveNumber` | int | For ordering (1-2) |
+
+**Proposed Telemetry Payloads:**
+
+```csharp
+// In Pandowdy.EmuCore\DataTypes\DiskIITelemetryPayloads.cs
+
+/// <summary>Full drive state snapshot for UI consumption.</summary>
+public readonly record struct DiskIIDriveStatePayload(
+    int SlotNumber,
+    int DriveNumber,
+    string DiskId,
+    string? DiskImageFilename,
+    string? DiskImagePath,
+    bool IsReadOnly,
+    double Track,
+    int Sector,
+    bool MotorOn,
+    bool MotorOffScheduled,
+    byte PhaseState);
+
+/// <summary>Motor state change notification.</summary>
+public readonly record struct DiskIIMotorPayload(bool MotorOn);
+
+/// <summary>Track/sector position update.</summary>
+public readonly record struct DiskIIPositionPayload(double Track, int Sector);
+
+/// <summary>Disk inserted notification.</summary>
+public readonly record struct DiskIIDiskInsertedPayload(string Filename, string Path, bool IsReadOnly);
+
+/// <summary>Disk ejected notification.</summary>
+public readonly record struct DiskIIDiskEjectedPayload();
+
+/// <summary>Phase state update.</summary>
+public readonly record struct DiskIIPhasePayload(byte PhaseState);
+
+/// <summary>Motor-off scheduled/cancelled.</summary>
+public readonly record struct DiskIIMotorOffScheduledPayload(bool Scheduled);
+```
+
+**Message Type Keys:**
+
+| Payload Type | MessageType Key |
+|--------------|-----------------|
+| `DiskIIDriveStatePayload` | "state" |
+| `DiskIIMotorPayload` | "motor" |
+| `DiskIIPositionPayload` | "position" |
+| `DiskIIDiskInsertedPayload` | "disk-inserted" |
+| `DiskIIDiskEjectedPayload` | "disk-ejected" |
+| `DiskIIPhasePayload` | "phase" |
+| `DiskIIMotorOffScheduledPayload` | "motor-off-scheduled" |
+
+### Step 8.2: Update DiskIIDrive Telemetry Publishing
+
+**File:** `Pandowdy.EmuCore\DiskII\DiskIIDrive.cs`
+
+**Changes:**
+1. Replace `DiskIIMessage` with typed payloads
+2. Publish `DiskIIDriveStatePayload` on resend requests
+3. Publish specific payloads for each state change
+
+### Step 8.3: Update DiskIIControllerCard Telemetry Publishing
+
+**File:** `Pandowdy.EmuCore\Cards\DiskIIControllerCard.cs`
+
+**Changes:**
+1. Replace `DiskIIMessage` with typed payloads
+2. Publish `DiskIIPhasePayload` for phase changes
+3. Publish `DiskIIMotorOffScheduledPayload` for motor-off scheduling
+
+### Step 8.4: Create Controls Directory Structure
+
+**Target Structure:**
+```
+Pandowdy.UI/
+├── Controls/
+│   ├── DiskStatusPanel.axaml         (from DiskImportCode)
+│   ├── DiskStatusPanel.axaml.cs      (from DiskImportCode)
+│   ├── DiskStatusWidget.axaml        (from DiskImportCode)
+│   └── DiskStatusWidget.axaml.cs     (from DiskImportCode)
+└── ViewModels/
+    ├── DiskStatusPanelViewModel.cs   (transformed)
+    └── DiskStatusWidgetViewModel.cs  (transformed)
+```
+
+### Step 8.5: Import and Transform DiskStatusWidgetViewModel
+
+**Source:** `Pandowdy.DiskImportCode\DiskStatusWidgetViewModel.cs`  
+**Target:** `Pandowdy.UI\ViewModels\DiskStatusWidgetViewModel.cs`
+
+**Changes:**
+1. Remove `DiskDriveStatusSnapshot` dependency
+2. Store state locally with individual properties
+3. Update via `UpdateFromPayload(DiskIIDriveStatePayload)` method
+4. Keep all display formatting logic (TrackSectorText, PhaseText, MotorText)
+
+### Step 8.6: Import and Transform DiskStatusPanelViewModel
+
+**Source:** `Pandowdy.DiskImportCode\DiskStatusPanelViewModel.cs`  
+**Target:** `Pandowdy.UI\ViewModels\DiskStatusPanelViewModel.cs`
+
+**Changes:**
+1. Remove `IDiskStatusProvider` dependency
+2. Add `ITelemetryAggregator` dependency
+3. Subscribe to telemetry stream filtered by `DiskIIConstants.TelemetryCategory`
+4. Route messages to correct widget based on `TelemetryId`
+5. Request resend on initialization to populate initial state
+
+**Pattern:**
+```csharp
+public DiskStatusPanelViewModel(ITelemetryAggregator telemetry)
+{
+    _telemetry = telemetry;
+    Drives = new ObservableCollection<DiskStatusWidgetViewModel>();
+    
+    // Subscribe to DiskII telemetry
+    _telemetry.Stream
+        .Where(m => m.SourceId.Category == DiskIIConstants.TelemetryCategory)
+        .ObserveOn(RxApp.MainThreadScheduler)
+        .Subscribe(HandleTelemetryMessage);
+    
+    // Request current state from all drives
+    _telemetry.RequestResend(DiskIIConstants.TelemetryCategory);
+}
+
+private void HandleTelemetryMessage(TelemetryMessage msg)
+{
+    switch (msg.Payload)
+    {
+        case DiskIIDriveStatePayload state:
+            UpdateOrCreateWidget(msg.SourceId, state);
+            break;
+        case DiskIIMotorPayload motor:
+            UpdateWidgetMotor(msg.SourceId, motor.MotorOn);
+            break;
+        // ... etc
+    }
+}
+```
+
+### Step 8.7: Import AXAML Controls
+
+**Action:** Copy AXAML files with namespace updates.
+
+1. Copy `DiskStatusPanel.axaml` → `Pandowdy.UI\Controls\`
+2. Copy `DiskStatusPanel.axaml.cs` → `Pandowdy.UI\Controls\`
+3. Copy `DiskStatusWidget.axaml` → `Pandowdy.UI\Controls\`
+4. Copy `DiskStatusWidget.axaml.cs` → `Pandowdy.UI\Controls\`
+
+### Step 8.8: Integrate with MainWindow
+
+**File:** `Pandowdy.UI\MainWindow.axaml`
+
+**Changes:**
+- Add `DiskStatusPanel` to right side of window
+- Wire up `DiskStatusPanelViewModel` in DI
+
+### Step 8.9: Register DI Services
+
+**File:** `Pandowdy\Program.cs`
+
+**Add:**
+```csharp
+services.AddTransient<DiskStatusPanelViewModel>();
+```
+
+### Step 8.10: Add Unit Tests
+
+**Files to Create:**
+- `Pandowdy.UI.Tests\ViewModels\DiskStatusWidgetViewModelTests.cs`
+- `Pandowdy.UI.Tests\ViewModels\DiskStatusPanelViewModelTests.cs`
+
+### Step 8.11: Verify Build and Test
+
+- Ensure all components compile
+- Run unit tests
+- Manual testing with disk operations
+
+---
+
 ## Telemetry Integration
 
 ### Current Approach (Simplified for Development)
@@ -1247,12 +1467,137 @@ After the Disk II integration is complete, the following refactoring tasks shoul
 
 ### NS-4: Look at why mixed HGR flickers when 80-Column text is active. 
 
-**Crrent State:**
+**Current State:**
 - Apparent bug with rendering when 80-col mode is on and HGR is active.  Might exist on full-screen HGR too.
-- Need to investiate.
+- Need to investigate.
 - Probably a timing issue related to VBlank or rendering.
 - It actually looks like maybe a race condition. This happens with GR mode too.  The flicker is a quick swap where aux memory's contents are being drawn.
 
+---
+
+### NS-5: GUI Disk Management Features
+
+**Goal:** Add user-facing disk management capabilities to the GUI.
+
+**Features to Implement:**
+
+1. **Insert Disk Image from GUI**
+   - File open dialog to select disk images
+   - Support all formats: .dsk, .do, .po, .nib, .woz, .2mg
+   - Menu item: File → Insert Disk → Drive 1 / Drive 2
+   - Keyboard shortcuts (e.g., Ctrl+1, Ctrl+2)
+
+2. **Eject Disk from GUI**
+   - Context menu on drive status panel
+   - Menu item: File → Eject Disk → Drive 1 / Drive 2
+   - Confirmation if disk has unsaved changes (write support)
+
+3. **Swap Drive 1 and Drive 2 Disk Images**
+   - Quick swap button/menu item
+   - Useful for programs that expect different disk in different drive
+   - Keyboard shortcut (e.g., Ctrl+Shift+S for swap)
+
+4. **Drag and Drop Support**
+   - Drop disk image file onto drive status panel
+   - Drop onto main window defaults to Drive 1
+
+5. **Recent Disk Images**
+   - Track recently used disk images
+   - Quick access submenu
+
+**Priority:** Medium - Implement after Phase 8 (GUI Status Display) is complete.
+
+---
+
+### NS-6: Clear Pending Keystrokes on Reset
+
+**Issue:** When `Reset()` is called, any pending keystrokes in the `QueuedKeyHandler` buffer should be cleared.
+
+**Current Behavior:** Unknown - needs investigation.
+
+**Expected Behavior:** Reset clears the keyboard buffer to prevent stale input after reset.
+
+**Files to Modify:**
+- `Pandowdy.EmuCore\QueuedKeyHandler.cs` - Add buffer clear on reset
+- Possibly hook into VA2M reset sequence
+
+**Priority:** Low
+
+---
+
+### NS-7: Handle BRK Loops in Interrupt Handler
+
+**Issue:** If there's a BRK instruction inside the BRK interrupt handler itself, it causes an infinite CPU loop.
+
+**Current Behavior:** CPU loops indefinitely.
+
+**Expected Behavior:** Detect and break out of BRK loops, possibly with a cycle limit or pattern detection.
+
+**Investigation Needed:**
+- Determine how real hardware handles this scenario
+- Consider adding a "runaway detection" feature
+
+**Priority:** Low
+
+---
+
+### NS-8: Check for Race Conditions at High Speeds
+
+**Issue:** Potential race conditions when running at unthrottled speeds.
+
+**Areas to Investigate:**
+- Video memory access during rendering
+- Disk II bit timing at high cycle rates
+- VBlank event handling
+- Telemetry message publishing
+
+**Related:** See NS-4 (HGR flicker issue) - may be related.
+
+**Priority:** Medium
+
+---
+
+### NS-9: Multi-Drive Operation Deep Dive
+
+**Goal:** Thorough testing and debugging of multi-drive operation in the controller card.
+
+**Test Scenarios:**
+- Switching between drives during active read
+- Both motors running simultaneously
+- Motor-off timing with drive switching
+- Phase state when switching drives
+- Programs that use both drives (e.g., copy utilities)
+
+**Files to Focus On:**
+- `Pandowdy.EmuCore\Cards\DiskIIControllerCard.cs`
+
+**Priority:** Medium
+
+---
+
+### NS-10: SectorDiskImageProvider Debugging
+
+**Issue:** Potential issues with the sector-based disk image provider (DSK/DO/PO formats that require GCR synthesis).
+
+**Symptoms:** Unknown - needs investigation.
+
+**Areas to Investigate:**
+- GCR encoding correctness
+- Track synthesis timing
+- Sector interleaving
+- Address field generation
+- Checksum calculation
+
+**Related Files:**
+- `Pandowdy.EmuCore\DiskII\Providers\SectorDiskImageProvider.cs`
+- `Pandowdy.EmuCore\DiskII\GcrEncoder.cs`
+
+**Test Strategy:**
+- Compare synthesized NIB output with known-good NIB files
+- Test with DOS 3.3 and ProDOS system disks
+- Verify sector reads return correct data
+
+**Priority:** High (blocks DSK/DO/PO format support)
 
 ---
 
@@ -1280,7 +1625,8 @@ After the Disk II integration is complete, the following refactoring tasks shoul
 | `InternalWozDiskImageProvider.cs` | `DiskII/Providers/` | Import | Use `DiskIIConstants` |
 | `WozDiskImageProvider.cs` | `DiskII/Providers/` | Import | Use `DiskIIConstants` |
 
+
 ---
 
 *Document Created: 2025*  
-*Last Updated: All Phases Complete - Disk II Integration Finished (259 Disk II tests, 1224 total)*
+*Last Updated: Phase 8 detailed with reference code analysis and telemetry message design*

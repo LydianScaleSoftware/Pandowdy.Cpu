@@ -467,10 +467,12 @@ public abstract class DiskIIControllerCard : ICard
     private void UpdateMotorOffScheduledStatus(bool scheduled)
     {
         int driveNumber = _selectedDriveIndex + 1; // Convert 0-based to 1-based
+#if Telemetry
         _telemetry.Publish(new TelemetryMessage(
             _telemetryId,
             "motor-off-scheduled",
             new DiskIIMessage($"Drive {driveNumber}: Motor-off {(scheduled ? "scheduled" : "cancelled/completed")}")));
+#endif
     }
 
     /// <summary>
@@ -479,10 +481,13 @@ public abstract class DiskIIControllerCard : ICard
     private void UpdatePhaseState()
     {
         int driveNumber = _selectedDriveIndex + 1;
+#if Telemetry
+
         _telemetry.Publish(new TelemetryMessage(
             _telemetryId,
             "phase",
             new DiskIIMessage($"Drive {driveNumber}: Phase={Convert.ToString(_currentPhase, 2).PadLeft(4, '0')}")));
+#endif
     }
 
     /// <summary>
@@ -491,10 +496,12 @@ public abstract class DiskIIControllerCard : ICard
     private void UpdateTrackAndSector(double track, int sector)
     {
         int driveNumber = _selectedDriveIndex + 1;
+#if Telemetry
         _telemetry.Publish(new TelemetryMessage(
             _telemetryId,
             "sector",
             new DiskIIMessage($"Drive {driveNumber}: Track={track:F2}, Sector={sector}")));
+#endif
     }
 
     /// <summary>
@@ -529,11 +536,13 @@ public abstract class DiskIIControllerCard : ICard
                 _motorOffScheduledCycle = _clocking.TotalCycles + MotorOffDelayCycles;
                 Debug.WriteLine($"[{_clocking.TotalCycles}] ⏱️ MOTOR-OFF SCHEDULED for Drive {oldDriveIndex + 1} at cycle {_motorOffScheduledCycle}");
 
+#if Telemetry
                 // Publish telemetry for old drive's motor-off scheduling
                 _telemetry.Publish(new TelemetryMessage(
                     _telemetryId,
                     "motor-off-scheduled",
                     new DiskIIMessage($"Drive {oldDriveIndex + 1}: Motor-off scheduled (drive switch)")));
+#endif
             }
 
             // Clear controller phases during drive switch (common hardware behavior)
