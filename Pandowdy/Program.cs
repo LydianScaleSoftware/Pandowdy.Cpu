@@ -9,6 +9,9 @@ using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.UI.ViewModels;
 using Pandowdy.EmuCore.Services;
 using Pandowdy.EmuCore.DataTypes;
+using Pandowdy.EmuCore.Cards;
+using Pandowdy.EmuCore.DiskII;
+using Pandowdy.EmuCore.DiskII.Providers;
 
 namespace Pandowdy
 {
@@ -74,8 +77,14 @@ namespace Pandowdy
 
                     services.AddSingleton<ISystemIoHandler, SystemIoHandler>();
 
+                    // Disk II subsystem
+                    services.AddSingleton<IDiskImageFactory, DiskImageFactory>();
+                    services.AddSingleton<IDiskIIFactory, DiskIIFactory>();
+
                     // Cards
                     services.AddTransient<ICard, NullCard>();
+                    services.AddTransient<ICard, DiskIIControllerCard16Sector>();
+                    services.AddTransient<ICard, DiskIIControllerCard13Sector>();
 
                     // Threaded rendering services
                     services.AddSingleton<VideoMemorySnapshotPool>(sp => new VideoMemorySnapshotPool(maxPoolSize: 4));
@@ -144,6 +153,7 @@ namespace Pandowdy
 
                     services.AddSingleton<VA2M>();
                     
+                    
                     // Register IEmulatorCoreInterface alias for VA2M
                     // This allows the UI to depend on the core interface abstraction instead of concrete VA2M type,
                     // providing explicit thread-safe contract and preventing accidental cross-thread calls
@@ -154,8 +164,23 @@ namespace Pandowdy
                 });
         }
 
-        private static Task InitializeCoreAsync(IServiceProvider _)
+        private static Task InitializeCoreAsync(IServiceProvider services)
         {
+            // Install Disk II controller in slot 6 (standard Apple II configuration)
+            var slots = services.GetRequiredService<ISlots>();
+            slots.InstallCard(10, SlotNumber.Slot6); // 10 = DiskIIControllerCard16Sector
+
+            // Insert a disk into Drive 1 (optional - for testing)
+            if (slots.GetCardIn(SlotNumber.Slot6) is DiskIIControllerCard diskController)
+            {
+                // Example: Insert a disk image into Drive 1
+//                diskController.Drives[0].InsertDisk(@"E:\XPS Diagnostic IIe 1.0.5.nib");
+                diskController.Drives[0].InsertDisk(@"E:\A2eDiagnostics_v2.1.nib");
+
+                // Example: Insert a disk image into Drive 2
+                // diskController.Drives[1].InsertDisk(@"C:\path\to\data.dsk");
+            }
+
             return Task.CompletedTask;
         }
     }

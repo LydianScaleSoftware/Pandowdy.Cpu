@@ -5,11 +5,11 @@
 ## 📊 Current State Summary
 
 | Status | Details |
-|--------|---------||
-| **Progress** | Phases 1-5 Complete ✅ |
+|--------|---------|
+| **Progress** | Phases 1-6 Complete ✅ |
 | **Tests** | 1196 passing |
 | **Branch** | `re_disking` (was `piecemealing`) |
-| **Next Step** | Phase 6: Factory Registration |
+| **Next Step** | Phase 7: Integration Tests |
 
 **What's Done:**
 - ✅ Phase 1: Foundation (VBlankOccurred event, DiskIIConstants, telemetry payloads)
@@ -17,9 +17,9 @@
 - ✅ Phase 3: Disk Image Providers (GcrEncoder, NibDiskImageProvider, SectorDiskImageProvider, InternalWozDiskImageProvider, WozDiskImageProvider, DiskImageFactory)
 - ✅ Phase 4: Drive Implementation (NullDiskIIDrive, DiskIIDrive, DiskIIDebugDecorator, DiskIIFactory, MockTelemetryAggregator)
 - ✅ Phase 5: Controller Card (DiskIIControllerCard base, 16-sector, 13-sector variants + 53 tests)
+- ✅ Phase 6: Factory Registration (DI registrations in Program.cs)
 
 **What's Next:**
-- Phase 6: Register Disk II cards in CardFactory
 - Phase 7: Integration tests
 
 **Key Decision Made:**
@@ -65,7 +65,7 @@ This document provides a comprehensive plan for integrating the Disk II emulatio
 7. [Phase 3: Disk Image Providers](#phase-3-disk-image-providers) ✅ COMPLETED
 8. [Phase 4: Drive Implementation](#phase-4-drive-implementation) ✅ COMPLETED
 9. [Phase 5: Controller Card](#phase-5-controller-card) ✅ COMPLETED
-10. [Phase 6: Factory Registration](#phase-6-factory-registration)
+10. [Phase 6: Factory Registration](#phase-6-factory-registration) ✅ COMPLETED
 11. [Phase 7: Tests](#phase-7-tests)
 12. [Telemetry Integration](#telemetry-integration)
 13. [Code Style Corrections](#code-style-corrections)
@@ -908,24 +908,54 @@ All card components compile correctly.
 
 ---
 
-## Phase 6: Factory Registration
+## Phase 6: Factory Registration ✅ COMPLETED
 
 **Goal:** Register Disk II cards with CardFactory.
 
-### Step 6.1: Modify CardFactory
+### Step 6.1: Register DI Services ✅ COMPLETED
 
-**File:** `Pandowdy.EmuCore\Services\CardFactory.cs`
+**File:** `Pandowdy\Program.cs`
 
-**Changes:**
-1. Add dependency on `ITelemetryAggregator`
-2. Add dependency on `IDiskImageFactory`
-3. Create `IDiskIIFactory` instance
-4. Register DiskIIControllerCard16Sector
-5. Register DiskIIControllerCard13Sector
+**Changes Applied:**
 
-### Step 6.2: Verify Build
+1. Added using statements:
+   ```csharp
+   using Pandowdy.EmuCore.Cards;
+   using Pandowdy.EmuCore.DiskII;
+   using Pandowdy.EmuCore.DiskII.Providers;
+   ```
 
-Ensure CardFactory compiles and all cards are registered.
+2. Registered Disk II subsystem services:
+   ```csharp
+   // Disk II subsystem
+   services.AddSingleton<IDiskImageFactory, DiskImageFactory>();
+   services.AddSingleton<IDiskIIFactory, DiskIIFactory>();
+   ```
+
+3. Registered Disk II controller cards:
+   ```csharp
+   // Cards
+   services.AddTransient<ICard, NullCard>();
+   services.AddTransient<ICard, DiskIIControllerCard16Sector>();
+   services.AddTransient<ICard, DiskIIControllerCard13Sector>();
+   ```
+
+**DI Resolution Chain:**
+- `DiskImageFactory` - no dependencies (simple factory)
+- `DiskIIFactory` - depends on `IDiskImageFactory`, `ITelemetryAggregator`
+- `DiskIIControllerCard16Sector` - depends on `CpuClockingCounters`, `IDiskIIFactory`, `ITelemetryAggregator`
+- `DiskIIControllerCard13Sector` - depends on `CpuClockingCounters`, `IDiskIIFactory`, `ITelemetryAggregator`
+
+### Step 6.2: Verify Build ✅ COMPLETED
+
+Build successful. All 1196 tests pass.
+
+**Cards Now Available in CardFactory:**
+| Id | Name | Description |
+|----|------|-------------|
+| 0 | (Empty Slot) | NullCard |
+| 10 | Disk II | Disk II Controller - 16-Sector ROM |
+| 11 | Disk II (13-Sector) | Disk II Controller - 13-Sector ROM |
 
 ---
 
@@ -1263,4 +1293,4 @@ After the Disk II integration is complete, the following refactoring tasks shoul
 ---
 
 *Document Created: 2025*  
-*Last Updated: Phase 5 Complete - Controller Card with telemetry (1196 total tests)*
+*Last Updated: Phase 6 Complete - Factory Registration (1196 total tests)*
