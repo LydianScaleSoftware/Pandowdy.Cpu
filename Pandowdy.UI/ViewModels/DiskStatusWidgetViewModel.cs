@@ -103,7 +103,7 @@ public class DiskStatusWidgetViewModel(DiskDriveStatusSnapshot initialSnapshot) 
             char p1 = (_snapshot.PhaseState & 0b0010) != 0 ? '+' : '-';
             char p2 = (_snapshot.PhaseState & 0b0100) != 0 ? '+' : '-';
             char p3 = (_snapshot.PhaseState & 0b1000) != 0 ? '+' : '-';
-            return $"Ï•:{p0}{p1}{p2}{p3}";
+            return $"ϕ:{p0}{p1}{p2}{p3}";
         }
     }
 
@@ -112,8 +112,8 @@ public class DiskStatusWidgetViewModel(DiskDriveStatusSnapshot initialSnapshot) 
     /// </summary>
     /// <remarks>
     /// <list type="bullet">
-    /// <item>"âŒš" = Motor-off scheduled (delayed)</item>
-    /// <item>"âš¡" = Motor running</item>
+    /// <item>"⌚" = Motor-off scheduled (delayed)</item>
+    /// <item>"⚡" = Motor running</item>
     /// </list>
     /// </remarks>
     public string MotorText
@@ -123,11 +123,11 @@ public class DiskStatusWidgetViewModel(DiskDriveStatusSnapshot initialSnapshot) 
             var status = "";
             if (_snapshot.MotorOffScheduled)
             {
-                status += "âŒš";
+                status += "⌚";
             }
             if (_snapshot.MotorOn)
             {
-                status += "âš¡";
+                status += "⚡";
             }
             return status;
         }

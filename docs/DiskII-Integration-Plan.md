@@ -1,15 +1,21 @@
 # Disk II Integration Plan
 
+> ⚠️ **THIS DOCUMENT IS ARCHIVED**  
+> **Status:** Completed - Phases 1-8E Complete ✅  
+> **Date Completed:** 2025-01-25  
+> **Successor Document:** See `docs/Development-Roadmap.md` for ongoing tasks
+
 ---
 
-## 📊 Current State Summary
+## 📊 Final State Summary
 
 | Status | Details |
 |--------|---------|
 | **Progress** | Phases 1-8E Complete ✅ |
 | **Tests** | 1224 tests passing ✅ |
 | **Branch** | `notelem` (was `re_disking`) |
-| **Next Step** | Integration Complete - See Post-Integration Tasks |
+| **Status** | Integration Complete - Document Archived |
+| **Next Steps** | See `docs/Development-Roadmap.md` |
 
 **What's Done:**
 - ✅ Phase 1: Foundation (VBlankOccurred event, DiskIIConstants, ~~telemetry payloads~~)
