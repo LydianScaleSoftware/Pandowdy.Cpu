@@ -1,12 +1,39 @@
 # Disk II Integration Plan
 
+---
+
+## 📊 Current State Summary
+
+| Status | Details |
+|--------|---------||
+| **Progress** | Phases 1-5 Complete ✅ |
+| **Tests** | 1196 passing |
+| **Branch** | `re_disking` (was `piecemealing`) |
+| **Next Step** | Phase 6: Factory Registration |
+
+**What's Done:**
+- ✅ Phase 1: Foundation (VBlankOccurred event, DiskIIConstants, telemetry payloads)
+- ✅ Phase 2: Interfaces (IDiskImageProvider, IDiskIIDrive, IDiskImageFactory, IDiskIIFactory)
+- ✅ Phase 3: Disk Image Providers (GcrEncoder, NibDiskImageProvider, SectorDiskImageProvider, InternalWozDiskImageProvider, WozDiskImageProvider, DiskImageFactory)
+- ✅ Phase 4: Drive Implementation (NullDiskIIDrive, DiskIIDrive, DiskIIDebugDecorator, DiskIIFactory, MockTelemetryAggregator)
+- ✅ Phase 5: Controller Card (DiskIIControllerCard base, 16-sector, 13-sector variants + 53 tests)
+
+**What's Next:**
+- Phase 6: Register Disk II cards in CardFactory
+- Phase 7: Integration tests
+
+**Key Decision Made:**
+- `DiskIIStatusDecorator` was **NOT imported** - its functionality was replaced by direct telemetry publishing in `DiskIIDrive`. See Issue #2 in Integration Issues section.
+
+---
+
 ## Overview
 
 This document provides a comprehensive plan for integrating the Disk II emulation code from `Pandowdy.DiskImportCode` into `Pandowdy.EmuCore`. The code implements full Disk II controller card and drive emulation, supporting multiple disk image formats (NIB, WOZ, DSK/DO/PO).
 
 **Source Project:** `Pandowdy.DiskImportCode` (temporary staging project, **READ-ONLY**)  
 **Target Project:** `Pandowdy.EmuCore`  
-**Branch:** `piecemealing`
+**Branch:** `re_disking`
 
 ### Import Process
 
@@ -37,13 +64,30 @@ This document provides a comprehensive plan for integrating the Disk II emulatio
 6. [Phase 2: Interfaces](#phase-2-interfaces) ✅ COMPLETED
 7. [Phase 3: Disk Image Providers](#phase-3-disk-image-providers) ✅ COMPLETED
 8. [Phase 4: Drive Implementation](#phase-4-drive-implementation) ✅ COMPLETED
-9. [Phase 5: Controller Card](#phase-5-controller-card)
+9. [Phase 5: Controller Card](#phase-5-controller-card) ✅ COMPLETED
 10. [Phase 6: Factory Registration](#phase-6-factory-registration)
 11. [Phase 7: Tests](#phase-7-tests)
 12. [Telemetry Integration](#telemetry-integration)
 13. [Code Style Corrections](#code-style-corrections)
 14. [Verification Checklist](#verification-checklist)
 15. [Next Steps (Post-Integration)](#next-steps-post-integration)
+
+---
+
+### Quick Reference: Key Files Created
+
+**For Phase 5, you may want to examine these existing implementations for patterns:**
+
+| File | Purpose |
+|------|---------|
+| `Pandowdy.EmuCore\DiskII\DiskIIDrive.cs` | Telemetry integration pattern (constructor, publishing) |
+| `Pandowdy.EmuCore\DiskII\DiskIIFactory.cs` | How drives are created with telemetry |
+| `Pandowdy.EmuCore\Interfaces\ICard.cs` | ICard interface the controller must implement |
+| `Pandowdy.EmuCore\DataTypes\CpuClockingCounters.cs` | VBlankOccurred event to subscribe to |
+| `Pandowdy.EmuCore.Tests\Helpers\MockTelemetryAggregator.cs` | Mock for testing telemetry |
+
+**Source file for Phase 5:**
+- `Pandowdy.DiskImportCode\DiskIIControllerCards.cs` (~1150 lines, split into 3 target files)
 
 ---
 
@@ -743,28 +787,32 @@ All drive components compile correctly. Full test suite passes (1089 tests).
 
 ---
 
-## Phase 5: Controller Card
+## Phase 5: Controller Card ✅ COMPLETED
 
 **Goal:** Add controller card implementations.
 
-### Step 5.1: Create Cards folder
+### Step 5.1: Create Cards folder ✅ COMPLETED
 
-Create directory: `Pandowdy.EmuCore\Cards\` (if not exists)
+Created directory: `Pandowdy.EmuCore\Cards\`
 
-### Step 5.2: Extract DiskIIControllerCard Base Class
+### Step 5.2: Extract DiskIIControllerCard Base Class ✅ COMPLETED
 
 **Source:** `Pandowdy.DiskImportCode\DiskIIControllerCards.cs` (lines 32-1070)  
 **Target:** `Pandowdy.EmuCore\Cards\DiskIIControllerCard.cs`
 
-**Changes:**
-1. Update namespace to `Pandowdy.EmuCore.Cards`
-2. Remove `IDiskStatusMutator` dependency
-3. Add `ITelemetryAggregator` dependency
-4. Create telemetry ID for controller-level events
-5. Replace `_diskStatusMutator.MutateDrive(...)` calls with telemetry publishes
-6. Update constructor to use `IDiskIIFactory` properly
-7. Use `DiskIIConstants` for timing values
-8. Fix brace style throughout
+**Changes Applied:**
+1. Updated namespace to `Pandowdy.EmuCore.Cards`
+2. Removed `IDiskStatusMutator` dependency
+3. Added `ITelemetryAggregator` dependency (required in constructor)
+4. Created telemetry ID for controller-level events
+5. Replaced `_diskStatusMutator.MutateDrive(...)` calls with telemetry publishes using `DiskIIMessage`
+6. Added `Slot` property implementation (required by ICard interface)
+7. Used `DiskIIConstants.CyclesPerBit` for timing values
+8. Fixed brace style throughout
+9. Extracted large nested logic in `ProcessBits()` into helper methods:
+   - `ProcessAddressFieldByte()`
+   - `ProcessDataFieldByte()`
+   - `CheckForPrologues()`
 
 **Key Telemetry Changes:**
 
@@ -772,60 +820,91 @@ Create directory: `Pandowdy.EmuCore\Cards\` (if not exists)
 // In UpdatePhaseState():
 private void UpdatePhaseState()
 {
-    // Publish phase state through telemetry
-    // Note: Drives publish their own state; controller publishes phase
+    int driveNumber = _selectedDriveIndex + 1;
     _telemetry.Publish(new TelemetryMessage(
-        _telemetryId, 
-        "phase", 
-        new { DriveIndex = _selectedDriveIndex + 1, Phase = _currentPhase }));
+        _telemetryId,
+        "phase",
+        new DiskIIMessage($"Drive {driveNumber}: Phase={Convert.ToString(_currentPhase, 2).PadLeft(4, '0')}")));
 }
 
 // In UpdateMotorOffScheduledStatus():
 private void UpdateMotorOffScheduledStatus(bool scheduled)
 {
+    int driveNumber = _selectedDriveIndex + 1;
     _telemetry.Publish(new TelemetryMessage(
         _telemetryId,
         "motor-off-scheduled",
-        new { DriveIndex = _selectedDriveIndex + 1, Scheduled = scheduled }));
+        new DiskIIMessage($"Drive {driveNumber}: Motor-off {(scheduled ? "scheduled" : "cancelled/completed")}")));
 }
 
 // In UpdateTrackAndSector():
 private void UpdateTrackAndSector(double track, int sector)
 {
+    int driveNumber = _selectedDriveIndex + 1;
     _telemetry.Publish(new TelemetryMessage(
         _telemetryId,
         "sector",
-        new DiskIITrackInfo(track, sector)));
+        new DiskIIMessage($"Drive {driveNumber}: Track={track:F2}, Sector={sector}")));
 }
 ```
 
-### Step 5.3: Extract DiskIIControllerCard16Sector
+### Step 5.3: Extract DiskIIControllerCard16Sector ✅ COMPLETED
 
 **Source:** `Pandowdy.DiskImportCode\DiskIIControllerCards.cs` (lines 1072-1113)  
 **Target:** `Pandowdy.EmuCore\Cards\DiskIIControllerCard16Sector.cs`
 
-**Changes:**
-- Separate file with 16-sector boot ROM
-- Update constructor signature
-- Use `DiskIIConstants`
+**Changes Applied:**
+- Separate file with 16-sector boot ROM (256 bytes)
+- Updated constructor signature with telemetry parameter
+- Id = 10
+- Name = "Disk II"
+- Description = "Disk II Controller - 16-Sector ROM"
 
-### Step 5.4: Extract DiskIIControllerCard13Sector
+### Step 5.4: Extract DiskIIControllerCard13Sector ✅ COMPLETED
 
 **Source:** `Pandowdy.DiskImportCode\DiskIIControllerCards.cs` (lines 1115-1152)  
 **Target:** `Pandowdy.EmuCore\Cards\DiskIIControllerCard13Sector.cs`
 
-**Changes:**
-- Separate file with 13-sector boot ROM
-- Update constructor signature
-- Use `DiskIIConstants`
+**Changes Applied:**
+- Separate file with 13-sector boot ROM (256 bytes)
+- Updated constructor signature with telemetry parameter
+- Id = 11
+- Name = "Disk II (13-Sector)"
+- Description = "Disk II Controller - 13-Sector ROM"
 
-### Step 5.5: Add ICard.Slot Property
+### Step 5.5: Add ICard.Slot Property ✅ COMPLETED
 
-The current import code stores `_slotNumber` but ICard now has a `Slot` property. Need to implement this.
+Implemented `Slot` property in base class `DiskIIControllerCard`:
+- Property returns `_slotNumber` field
+- Initially `SlotNumber.Unslotted`
+- Set to actual slot in `OnInstalled(SlotNumber slot)`
 
-### Step 5.6: Verify Build
+### Step 5.6: Verify Build ✅ COMPLETED
 
-Ensure all card components compile correctly.
+All card components compile correctly.
+
+### Step 5.7: Add Unit Tests ✅ COMPLETED
+
+**File:** `Pandowdy.EmuCore.Tests\Cards\DiskIIControllerCardTests.cs` (53 tests)
+
+**Test Categories:**
+- Constructor tests (5 tests): null parameter rejection, valid construction
+- ICard interface tests - 16 Sector (5 tests): Name, Description, Id, Slot, Clone
+- ICard interface tests - 13 Sector (4 tests): Name, Description, Id, Clone
+- OnInstalled tests (5 tests): slot assignment, drive creation, naming
+- ROM tests - 16 Sector (3 tests): valid bytes, boot signature
+- ROM tests - 13 Sector (2 tests): valid bytes, differs from 16-sector
+- I/O Read tests (12 tests): phase, motor, drive select, Q6/Q7
+- I/O Write tests (3 tests): phase, motor, ROM write protection
+- Reset tests (3 tests): motor off, cancel schedule, drive selection
+- Extended ROM tests (2 tests): returns null, write is no-op
+- Metadata tests (3 tests): get/apply metadata
+- Motor off delay tests (3 tests): delayed off, VBlank timing, cancel
+- Stepper motor tests (1 test): phase control moves head
+
+**Test Helpers Created:**
+- `MockDiskIIFactory` - Mock factory for creating test drives
+- `MockDiskIIDrive` - Mock drive for controller testing
 
 ---
 
@@ -1184,4 +1263,4 @@ After the Disk II integration is complete, the following refactoring tasks shoul
 ---
 
 *Document Created: 2025*  
-*Last Updated: Phase 4 Complete - Drive Implementation with telemetry (1089 total tests)*
+*Last Updated: Phase 5 Complete - Controller Card with telemetry (1196 total tests)*
