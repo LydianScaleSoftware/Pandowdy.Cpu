@@ -11,6 +11,26 @@ public class CpuClockingCounters
     private ulong _nextVblankCycle;
 
     /// <summary>
+    /// Event fired when a VBlank transition occurs (~60 Hz).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Subscribers can use this for timing-dependent operations that need to run
+    /// periodically but don't require cycle-accurate precision. Examples include:
+    /// <list type="bullet">
+    /// <item>Disk II motor-off timeout checking (1-second delay)</item>
+    /// <item>Periodic status updates</item>
+    /// <item>Animation timing</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Threading:</strong> This event fires on the emulator thread during
+    /// <see cref="CheckAndAdvanceVBlank"/>. Subscribers should avoid blocking operations.
+    /// </para>
+    /// </remarks>
+    public event Action? VBlankOccurred;
+
+    /// <summary>
     /// Number of CPU cycles between VBlank events (17,030 = 262 scanlines × 65 cycles/scanline).
     /// </summary>
     /// <remarks>
@@ -158,6 +178,9 @@ public class CpuClockingCounters
             ResetVBlankCounter();
         }
         while (_totalCycleCount >= _nextVblankCycle);
+
+        // Notify subscribers (e.g., disk controller motor-off timing)
+        VBlankOccurred?.Invoke();
 
         return true;
     }
