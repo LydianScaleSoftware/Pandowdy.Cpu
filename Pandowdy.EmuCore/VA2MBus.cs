@@ -69,7 +69,23 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// Manages total CPU cycle count, VBlank counter, and VBlank timing logic.
     /// Provides global access to accurate timing information for all components.
     /// </remarks>
-    private CpuClockingCounters _clockCounters;
+    private readonly CpuClockingCounters _clockCounters;
+
+    /// <summary>
+    /// Gets the CPU clocking counters for timing-dependent components.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Components that need VBlank timing (e.g., Disk II controller for motor-off delay)
+    /// should subscribe to <see cref="CpuClockingCounters.VBlankOccurred"/> via this property.
+    /// </para>
+    /// <para>
+    /// <strong>Single Source of Truth:</strong> CpuClockingCounters is the authoritative
+    /// source for all timing information. The <see cref="VBlank"/> event on this class
+    /// is deprecated in favor of <see cref="CpuClockingCounters.VBlankOccurred"/>.
+    /// </para>
+    /// </remarks>
+    public CpuClockingCounters ClockCounters => _clockCounters;
 
     /// <summary>
     /// Gets the AddressSpaceController for direct memory access.
@@ -102,22 +118,18 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// </summary>
     /// <remarks>
     /// <para>
+    /// <strong>DEPRECATED:</strong> Subscribe to <see cref="ClockCounters"/>.<see cref="CpuClockingCounters.VBlankOccurred"/>
+    /// instead. CpuClockingCounters is the single source of truth for VBlank timing.
+    /// </para>
+    /// <para>
     /// <strong>Timing:</strong> Fires at 1,023,000 Hz / 17,030 cycles ≈ 60.06 Hz (NTSC).
     /// </para>
     /// <para>
     /// <strong>Thread Context:</strong> Always raised on the emulator thread. UI subscribers
     /// must marshal to UI thread via Dispatcher.BeginInvoke or similar.
     /// </para>
-    /// <para>
-    /// <strong>Use Cases:</strong>
-    /// <list type="bullet">
-    /// <item>Frame rendering synchronization</item>
-    /// <item>Cursor blink timing</item>
-    /// <item>Status snapshot generation</item>
-    /// <item>Audio buffer flushing</item>
-    /// </list>
-    /// </para>
     /// </remarks>
+    [Obsolete("Use ClockCounters.VBlankOccurred instead. CpuClockingCounters is the single source of truth for VBlank timing.")]
     public event EventHandler? VBlank;
 
     /// <summary>Start of system I/O space ($C000).</summary>
@@ -265,11 +277,15 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         _clockCounters.DecrementVBlankCounter(1);
 
         // Check if VBlank should fire (handles catch-up automatically)
+        // CpuClockingCounters.VBlankOccurred is the authoritative event (invoked inside CheckAndAdvanceVBlank)
+        // The legacy VBlank event below is maintained for backward compatibility during migration
         if (_clockCounters.CheckAndAdvanceVBlank())
         {
             if (!_disposed)
             {
+#pragma warning disable CS0618 // VBlank is obsolete - maintained for backward compatibility
                 VBlank?.Invoke(this, EventArgs.Empty);
+#pragma warning restore CS0618
             }
         }
     }
@@ -366,7 +382,9 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         }
 
         _disposed = true;
+#pragma warning disable CS0618 // VBlank is obsolete - cleanup still needed
         VBlank = null;
+#pragma warning restore CS0618
     }
 
     /// <summary>

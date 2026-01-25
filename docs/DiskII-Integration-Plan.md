@@ -4,9 +4,26 @@
 
 This document provides a comprehensive plan for integrating the Disk II emulation code from `Pandowdy.DiskImportCode` into `Pandowdy.EmuCore`. The code implements full Disk II controller card and drive emulation, supporting multiple disk image formats (NIB, WOZ, DSK/DO/PO).
 
-**Source Project:** `Pandowdy.DiskImportCode` (temporary staging project)  
+**Source Project:** `Pandowdy.DiskImportCode` (temporary staging project, **READ-ONLY**)  
 **Target Project:** `Pandowdy.EmuCore`  
 **Branch:** `piecemealing`
+
+### Import Process
+
+> **IMPORTANT:** The `Pandowdy.DiskImportCode` project is a **read-only staging area** containing
+> reference code. Files are **NOT modified in place**. Instead:
+>
+> 1. **Read** source file from `Pandowdy.DiskImportCode\{file}.cs` as reference
+> 2. **Create new file** in `Pandowdy.EmuCore\{target-folder}\{file}.cs`
+> 3. **Apply transformations** during creation:
+>    - Update namespace to match target location
+>    - Replace `IDiskStatusMutator` with `ITelemetryAggregator`
+>    - Use `DiskIIConstants` instead of magic numbers
+>    - Fix code style per project standards
+> 4. **Verify build** after each file import
+>
+> Some files (like `DiskIIStatusDecorator.cs`) are **not imported at all** because their
+> functionality is replaced by the telemetry pattern.
 
 ---
 
@@ -16,7 +33,7 @@ This document provides a comprehensive plan for integrating the Disk II emulatio
 2. [Architecture Overview](#architecture-overview)
 3. [Integration Issues & Resolutions](#integration-issues--resolutions)
 4. [Target File Structure](#target-file-structure)
-5. [Phase 1: Foundation](#phase-1-foundation)
+5. [Phase 1: Foundation](#phase-1-foundation) ✅ COMPLETED
 6. [Phase 2: Interfaces](#phase-2-interfaces)
 7. [Phase 3: Disk Image Providers](#phase-3-disk-image-providers)
 8. [Phase 4: Drive Implementation](#phase-4-drive-implementation)
@@ -26,6 +43,7 @@ This document provides a comprehensive plan for integrating the Disk II emulatio
 12. [Telemetry Integration](#telemetry-integration)
 13. [Code Style Corrections](#code-style-corrections)
 14. [Verification Checklist](#verification-checklist)
+15. [Next Steps (Post-Integration)](#next-steps-post-integration)
 
 ---
 
@@ -125,45 +143,57 @@ New:        DiskIIDebugDecorator → DiskIIDrive
 
 **Problem:** `DiskIIControllerCard` subscribes to `_clocking.VBlankOccurred` (line 141) but this event doesn't exist in `CpuClockingCounters`.
 
-**Resolution:** Add `VBlankOccurred` event to `CpuClockingCounters` that fires when `CheckAndAdvanceVBlank()` returns true.
+**Resolution:** ✅ **COMPLETED** - Added `VBlankOccurred` event to `CpuClockingCounters` that fires when `CheckAndAdvanceVBlank()` returns true.
+
+**Changes Made:**
+1. Added `VBlankOccurred` event declaration to `CpuClockingCounters`
+2. Invoke event in `CheckAndAdvanceVBlank()` before returning true
+3. Added `ClockCounters` property to `VA2MBus` to expose the counters
+4. Marked `VA2MBus.VBlank` as `[Obsolete]` - use `ClockCounters.VBlankOccurred` instead
+5. Added pragma suppressions in VA2M.cs and VA2MBus.cs for backward compatibility
 
 **File:** `Pandowdy.EmuCore\DataTypes\CpuClockingCounters.cs`
 
 ```csharp
-// Add event declaration
+// Event declaration (added)
 public event Action? VBlankOccurred;
 
-// Modify CheckAndAdvanceVBlank() to invoke event
-public bool CheckAndAdvanceVBlank()
-{
-    if (_totalCycleCount < _nextVblankCycle)
-    {
-        return false;
-    }
-
-    do
-    {
-        _nextVblankCycle += CyclesPerVBlank;
-        ResetVBlankCounter();
-    }
-    while (_totalCycleCount >= _nextVblankCycle);
-
-    // Fire event for subscribers (e.g., disk controller motor-off timing)
-    VBlankOccurred?.Invoke();
-    
-    return true;
-}
+// In CheckAndAdvanceVBlank() - fires before returning true
+VBlankOccurred?.Invoke();
 ```
+
+**File:** `Pandowdy.EmuCore\VA2MBus.cs`
+
+```csharp
+// New property to expose ClockCounters
+public CpuClockingCounters ClockCounters => _clockCounters;
+
+// VBlank event marked obsolete
+[Obsolete("Use ClockCounters.VBlankOccurred instead.")]
+public event EventHandler? VBlank;
+```
+
+**Architecture:** `CpuClockingCounters` is now the single source of truth for VBlank timing.
+New components should subscribe to `ClockCounters.VBlankOccurred`.
 
 ---
 
 ### Issue 2: IDiskStatusMutator Doesn't Exist
 
-**Problem:** The original code uses `IDiskStatusMutator` for status updates, but this interface doesn't exist.
+**Problem:** The original code in `Pandowdy.DiskImportCode` uses `IDiskStatusMutator` for status updates, but this interface doesn't exist in `Pandowdy.EmuCore` and we don't want to create it.
 
-**Resolution:** Replace with `ITelemetryAggregator` pattern. The drive will publish telemetry messages directly.
+**Resolution:** Replace with `ITelemetryAggregator` pattern during import. Files are copied from the read-only `Pandowdy.DiskImportCode` staging area and modified during import into `Pandowdy.EmuCore`.
 
-**Old Pattern (in DiskIIStatusDecorator):**
+**Files Affected During Import:**
+
+| Source File | Action | Changes During Import |
+|-------------|--------|----------------------|
+| `DiskIIStatusDecorator.cs` | **DO NOT IMPORT** | Entire file skipped - pattern replaced by telemetry |
+| `DiskIIDrive.cs` | Import + Modify | Add `ITelemetryAggregator` dependency, publish telemetry |
+| `DiskIIFactory.cs` | Import + Modify | Remove `IDiskStatusMutator`, remove decorator from chain |
+| `DiskIIControllerCards.cs` | Import + Modify | Replace `_diskStatusMutator` with `_telemetry` |
+
+**Old Pattern (in DiskIIStatusDecorator - will not be imported):**
 ```csharp
 _statusMutator.MutateDrive(_slotNumber, _driveNumber, builder =>
 {
@@ -171,24 +201,31 @@ _statusMutator.MutateDrive(_slotNumber, _driveNumber, builder =>
 });
 ```
 
-**New Pattern (direct in DiskIIDrive):**
+**New Pattern (in DiskIIDrive after import to Pandowdy.EmuCore):**
 ```csharp
-_telemetry.Publish(new TelemetryMessage(_telemetryId, "motor", _motorOn));
+// Simple debug messages during development
+_telemetry.Publish(new TelemetryMessage(_telemetryId, "debug", 
+    new DiskIIMessage("Disk Motor is now ON")));
+_telemetry.Publish(new TelemetryMessage(_telemetryId, "debug", 
+    new DiskIIMessage($"Seeking to Track {Track:F2}")));
 ```
 
-**Telemetry Message Types for DiskII:**
+**Import Workflow:**
+1. Read source file from `Pandowdy.DiskImportCode\{filename}.cs` (reference only)
+2. Create new file in `Pandowdy.EmuCore\DiskII\{filename}.cs`
+3. Apply namespace changes, telemetry integration, style fixes
+4. Verify build after each file
 
-| MessageType | Payload | Description |
-|-------------|---------|-------------|
-| `"motor"` | `bool` | Motor on/off state |
-| `"track"` | `double` | Current track position (e.g., 17.25) |
-| `"sector"` | `int` | Current sector being accessed |
-| `"disk-inserted"` | `string` | Disk image filename |
-| `"disk-ejected"` | `null` | Disk was ejected |
-| `"write-protect"` | `bool` | Write protection state |
-| `"phase"` | `byte` | Phase state bitfield (4 bits) |
-| `"motor-off-scheduled"` | `bool` | Motor-off pending (1-sec delay) |
-| `"state"` | `DiskIIState` | Full state snapshot (for resend) |
+**Telemetry Payload Type for DiskII (Simplified):**
+
+During development, use `DiskIIMessage` with descriptive text:
+```csharp
+new DiskIIMessage("Disk Motor is now ON")
+new DiskIIMessage($"Seeking to Track {Track:F2}, Sector {Sector}")
+new DiskIIMessage($"Disk inserted: {filename}")
+```
+
+See Telemetry Integration section for future typed payload approach.
 
 ---
 
@@ -325,11 +362,11 @@ Pandowdy.EmuCore.Tests/
 
 ---
 
-## Phase 1: Foundation
+## Phase 1: Foundation ✅ COMPLETED
 
 **Goal:** Add prerequisite infrastructure to EmuCore.
 
-### Step 1.1: Add VBlankOccurred Event
+### Step 1.1: Add VBlankOccurred Event ✅ COMPLETED
 
 **File:** `Pandowdy.EmuCore\DataTypes\CpuClockingCounters.cs`
 
@@ -349,53 +386,77 @@ public event Action? VBlankOccurred;
 VBlankOccurred?.Invoke();
 ```
 
-### Step 1.2: Create DiskIIConstants
+### Step 1.2: Create DiskIIConstants ✅ COMPLETED
 
 **File:** `Pandowdy.EmuCore\DiskII\DiskIIConstants.cs`
 
-Create new file with shared constants (see Issue 5 resolution above).
+**Constants Created:**
 
-### Step 1.3: Create Telemetry Payload Types
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `CyclesPerBit` | 45.0/11.0 | CPU cycles per disk bit (~4.09) |
+| `TrackCount` | 35 | Tracks on 5.25" disk |
+| `BytesPerNibTrack` | 6656 | Bytes per NIB track |
+| `BitsPerTrack` | 53,248 | Bits per track |
+| `MaxQuarterTracks` | 140 | Max quarter-track position |
+| `SectorsPerTrack16` | 16 | 16-sector format |
+| `SectorsPerTrack13` | 13 | 13-sector format |
+| `BytesPerSector` | 256 | Bytes per sector |
+| `TotalBytes16Sector` | 143,360 | Total disk bytes (16-sector) |
+| `TotalBytes13Sector` | 116,480 | Total disk bytes (13-sector) |
+| `MotorOffDelayFrames` | 60 | ~1 second at 60 Hz |
+| `TelemetryCategory` | "DiskII" | Telemetry device type |
+
+### Step 1.3: Create Telemetry Payload Types ✅ COMPLETED (Simplified)
 
 **File:** `Pandowdy.EmuCore\DataTypes\DiskIITelemetryPayloads.cs`
 
+**Simplified for Development:**
+During initial development, we use a single simple message type for debugging:
+
 ```csharp
-namespace Pandowdy.EmuCore.DataTypes;
-
-/// <summary>
-/// Full state snapshot for a Disk II drive, used for telemetry resend requests.
-/// </summary>
-/// <param name="SlotNumber">Slot where the controller is installed (1-7).</param>
-/// <param name="DriveNumber">Drive number on the controller (1-2).</param>
-/// <param name="MotorOn">Current motor state.</param>
-/// <param name="Track">Current track position (e.g., 17.25).</param>
-/// <param name="Sector">Last accessed sector (0-15), or -1 if unknown.</param>
-/// <param name="DiskImageFilename">Filename of inserted disk, or empty if none.</param>
-/// <param name="IsWriteProtected">Whether disk is write-protected.</param>
-/// <param name="PhaseState">Stepper motor phase bitfield (4 bits).</param>
-/// <param name="MotorOffScheduled">Whether motor-off is pending (1-sec delay).</param>
-public readonly record struct DiskIIState(
-    int SlotNumber,
-    int DriveNumber,
-    bool MotorOn,
-    double Track,
-    int Sector,
-    string DiskImageFilename,
-    bool IsWriteProtected,
-    byte PhaseState,
-    bool MotorOffScheduled);
-
-/// <summary>
-/// Track change payload for Disk II telemetry.
-/// </summary>
-/// <param name="Track">New track position.</param>
-/// <param name="Sector">Current sector, or -1 if unknown.</param>
-public readonly record struct DiskIITrackInfo(double Track, int Sector);
+public readonly record struct DiskIIMessage(string Message)
+{
+    public override string ToString() => Message;
+}
 ```
 
-### Step 1.4: Verify Build
+**Usage Example:**
+```csharp
+// In DiskIIDrive:
+_telemetry.Publish(new TelemetryMessage(_telemetryId, "debug", 
+    new DiskIIMessage("Disk Motor is now ON")));
+_telemetry.Publish(new TelemetryMessage(_telemetryId, "debug", 
+    new DiskIIMessage($"Seeking to Track {Track:F2}")));
+```
+
+**Future Enhancement:**
+When the GUI is ready to consume telemetry, this will be replaced with typed message records
+(DiskIIMotorMessage, DiskIITrackMessage, etc.) that allow pattern matching and structured data access.
+The typed approach is documented in the Telemetry Integration section below for reference.
+
+### Step 1.4: Verify Build ✅ COMPLETED
 
 After Phase 1 changes, run build to ensure no regressions.
+
+### Step 1.5: Add Unit Tests for VBlankOccurred ✅ COMPLETED
+
+**File:** `Pandowdy.EmuCore.Tests\CpuClockingCountersTests.cs`
+
+**Tests Created (10 total):**
+
+| Test | Description |
+|------|-------------|
+| `VBlankOccurred_DoesNotFire_BeforeVBlankCycle` | Event doesn't fire before threshold |
+| `VBlankOccurred_Fires_WhenVBlankCycleReached` | Event fires at correct cycle |
+| `VBlankOccurred_FiresOncePerFrame` | Event fires exactly once per 17,030 cycles |
+| `VBlankOccurred_FiresOnlyOnce_WhenMultipleFramesSkipped` | Catch-up logic works (no spam) |
+| `VBlankOccurred_NoSubscribers_DoesNotThrow` | Safe when no handlers attached |
+| `CheckAndAdvanceVBlank_ReturnsFalse_BeforeVBlankCycle` | Returns false before threshold |
+| `CheckAndAdvanceVBlank_ReturnsTrue_WhenVBlankCycleReached` | Returns true at threshold |
+| `CheckAndAdvanceVBlank_AdvancesNextVBlankCycle` | NextVBlankCycle advances correctly |
+| `Reset_ClearsEventSubscription_DoesNotAffectSubscribers` | Reset preserves event handlers |
+| `Reset_ResetsNextVBlankCycle_ToVBlankStartCycle` | Reset restores initial state |
 
 ---
 
@@ -835,47 +896,54 @@ public class MockTelemetryAggregator : ITelemetryAggregator
 
 ## Telemetry Integration
 
-### Category and Message Types
+### Current Approach (Simplified for Development)
 
-| Category | MessageType | Payload Type | Description |
-|----------|-------------|--------------|-------------|
-| `DiskII` | `motor` | `bool` | Motor on/off |
-| `DiskII` | `track` | `double` | Track position (0-34.75) |
-| `DiskII` | `sector` | `DiskIITrackInfo` | Track + sector |
-| `DiskII` | `disk-inserted` | `string` | Disk filename |
-| `DiskII` | `disk-ejected` | `null` | Disk removed |
-| `DiskII` | `write-protect` | `bool` | Write protection |
-| `DiskII` | `phase` | `{ DriveIndex, Phase }` | Stepper phases |
-| `DiskII` | `motor-off-scheduled` | `{ DriveIndex, Scheduled }` | Motor-off pending |
-| `DiskII` | `state` | `DiskIIState` | Full state snapshot |
-
-### UI Subscription Pattern
+During initial development, we use a single simple `DiskIIMessage` type for debug output:
 
 ```csharp
-// In DiskStatusViewModel:
-public DiskStatusViewModel(ITelemetryStream telemetry)
-{
-    telemetry.Stream
-        .Where(m => m.SourceId.Category == "DiskII")
-        .ObserveOn(RxApp.MainThreadScheduler)
-        .Subscribe(HandleDiskTelemetry);
-    
-    // Request current state on startup
-    // (Via IEmulatorCoreInterface.RequestTelemetryResendByCategory)
-}
+// Publisher:
+_telemetry.Publish(new TelemetryMessage(_telemetryId, "debug", 
+    new DiskIIMessage("Disk Motor is now ON")));
 
+// Subscriber (debug logging):
+telemetry.Stream
+    .Where(m => m.SourceId.Category == "DiskII")
+    .Subscribe(m => Debug.WriteLine($"[{m.SourceId}] {m.Payload}"));
+```
+
+### Future Approach (Typed Payloads)
+
+When the GUI is ready to consume telemetry, replace `DiskIIMessage` with typed records:
+
+| Future Payload Type | Key | Value(s) | Description |
+|---------------------|-----|----------|-------------|
+| `DiskIIMotorMessage` | "motor" | `bool Value` | Motor on/off |
+| `DiskIITrackMessage` | "track" | `double Value` | Track position (0-34.75) |
+| `DiskIITrackSectorMessage` | "track-sector" | `double Track, int Sector` | Track + sector |
+| `DiskIIDiskInsertedMessage` | "disk-inserted" | `string Value` | Disk filename |
+| `DiskIIDiskEjectedMessage` | "disk-ejected" | (none) | Disk removed |
+| `DiskIIWriteProtectMessage` | "write-protect" | `bool Value` | Write protection |
+| `DiskIIPhaseMessage` | "phase" | `int DriveIndex, byte Value` | Stepper phases |
+| `DiskIIMotorOffScheduledMessage` | "motor-off-scheduled" | `int DriveIndex, bool Value` | Motor-off pending |
+| `DiskIIStateMessage` | "state" | (full state snapshot) | Complete state |
+
+### Future UI Subscription Pattern
+
+```csharp
+// In DiskStatusViewModel (future):
 private void HandleDiskTelemetry(TelemetryMessage msg)
 {
-    switch (msg.MessageType)
+    // Pattern match on payload type - no string switching needed!
+    switch (msg.Payload)
     {
-        case "motor":
-            UpdateMotorState(msg.SourceId.Id, (bool)msg.Payload!);
+        case DiskIIMotorMessage motor:
+            UpdateMotorState(msg.SourceId.Id, motor.Value);
             break;
-        case "track":
-            UpdateTrack(msg.SourceId.Id, (double)msg.Payload!);
+        case DiskIITrackMessage track:
+            UpdateTrack(msg.SourceId.Id, track.Value);
             break;
-        case "state":
-            UpdateFullState((DiskIIState)msg.Payload!);
+        case DiskIIStateMessage state:
+            UpdateFullState(state);
             break;
         // ... etc
     }
@@ -972,28 +1040,123 @@ Store test disk images in `assets/test-disks/`:
 
 ---
 
+## Next Steps (Post-Integration)
+
+After the Disk II integration is complete, the following refactoring tasks should be addressed:
+
+### NS-1: Migrate VA2M to CpuClockingCounters.VBlankOccurred
+
+**Current State:**
+- `VA2M` subscribes to `VA2MBus.VBlank` event (now marked `[Obsolete]`)
+- `VA2MBus.VBlank` uses `EventHandler` signature `(object? sender, EventArgs e)`
+- `CpuClockingCounters.VBlankOccurred` uses simpler `Action` signature
+
+**Problem:**
+- Two VBlank events fire on every frame (redundant)
+- `VA2MBus.VBlank` is deprecated but still in use
+- Inconsistent event patterns
+
+**Proposed Solution:**
+
+1. **Option A: Change OnVBlank signature** (Breaking change for tests)
+   ```csharp
+   // Change from:
+   private void OnVBlank(object? sender, EventArgs e)
+   
+   // To:
+   private void OnVBlank()
+   ```
+   Then subscribe via: `vb.ClockCounters.VBlankOccurred += OnVBlank;`
+
+2. **Option B: Use lambda adapter** (Non-breaking)
+   ```csharp
+   if (Bus is VA2MBus vb)
+   {
+       vb.ClockCounters.VBlankOccurred += () => OnVBlank(null, EventArgs.Empty);
+   }
+   ```
+
+3. **Option C: Inject CpuClockingCounters directly into VA2M** (Cleanest long-term)
+   - Add `CpuClockingCounters` as a constructor parameter
+   - Subscribe directly: `clockCounters.VBlankOccurred += OnVBlank;`
+   - Remove `VA2MBus.VBlank` entirely
+
+**Recommended:** Option C for cleanest architecture, but requires updating VA2M's 11 constructor parameters to 12.
+
+**Files to Modify:**
+- `Pandowdy.EmuCore\VA2M.cs` - Update constructor and subscription
+- `Pandowdy.EmuCore\VA2MBus.cs` - Remove `VBlank` event entirely
+- `Pandowdy.EmuCore.Tests\Helpers\VA2MTestHelpers.cs` - Update test factory
+- Any tests that mock/verify VBlank behavior
+
+**Priority:** Low - Current pragma suppressions work fine. Address after Disk II integration is stable.
+
+---
+
+### NS-2: Remove VA2MBus.VBlank Event
+
+**Prerequisite:** NS-1 must be completed first.
+
+**Steps:**
+1. Remove `[Obsolete]` attribute and event declaration from `VA2MBus.cs`
+2. Remove event invocation in `Clock()` method
+3. Remove null assignment in `Dispose()` method
+4. Update documentation to remove VBlank references
+5. Run full test suite to verify no regressions
+
+**Files to Modify:**
+- `Pandowdy.EmuCore\VA2MBus.cs`
+
+---
+
+### NS-3: Consider IAppleIIBus Interface Update
+
+**Current State:**
+- `IAppleIIBus` doesn't expose `ClockCounters`
+- Components that need timing must cast to `VA2MBus`
+
+**Proposed:**
+- Add `CpuClockingCounters ClockCounters { get; }` to `IAppleIIBus` interface
+- Or create a new interface `ITimingProvider` that components can request
+
+**Impact:** Would allow Disk II controller to receive `IAppleIIBus` instead of needing direct `CpuClockingCounters` injection.
+
+---
+
+### NS-4: Look at why mixed HGR flickers when 80-Column text is active. 
+
+**Crrent State:**
+- Apparent bug with rendering when 80-col mode is on and HGR is active.  Might exist on full-screen HGR too.
+- Need to investiate.
+- Probably a timing issue related to VBlank or rendering.
+
+---
+
 ## Appendix: File Mapping Summary
 
-| Source File | Target Location | Action |
-|-------------|-----------------|--------|
-| `IDiskImageProvider.cs` | `Interfaces/` | Copy |
-| `IDiskIIDrive.cs` | `Interfaces/` | Copy |
-| `IDiskImageFactory.cs` | `Interfaces/` | Copy |
-| `IDiskIIFactory` (inline) | `Interfaces/IDiskIIFactory.cs` | Extract |
-| `DiskIIControllerCards.cs` | `Cards/DiskIIControllerCard*.cs` | Split into 3 |
-| `DiskIIDrive.cs` | `DiskII/` | Modify for telemetry |
-| `DiskIIFactory.cs` | `DiskII/` | Simplify |
-| `DiskIIDebugDecorator.cs` | `DiskII/` | Copy |
-| `DiskIIStatusDecorator.cs` | N/A | **Do not copy** |
-| `NullDiskIIDrive.cs` | `DiskII/` | Copy |
-| `GcrEncoder.cs` | `DiskII/` | Copy |
-| `DiskImageFactory.cs` | `DiskII/Providers/` | Copy |
-| `NibDiskImageProvider.cs` | `DiskII/Providers/` | Copy |
-| `SectorDiskImageProvider.cs` | `DiskII/Providers/` | Copy |
-| `InternalWozDiskImageProvider.cs` | `DiskII/Providers/` | Copy |
-| `WozDiskImageProvider.cs` | `DiskII/Providers/` | Copy |
+> **Note:** "Import" means reading from the read-only source and creating a new file in the target.
+> Files are transformed during import (namespace changes, telemetry integration, style fixes).
+
+| Source File | Target Location | Action | Notes |
+|-------------|-----------------|--------|-------|
+| `IDiskImageProvider.cs` | `Interfaces/` | Import | Namespace only |
+| `IDiskIIDrive.cs` | `Interfaces/` | Import | Namespace + docs |
+| `IDiskImageFactory.cs` | `Interfaces/` | Import | Namespace only |
+| `IDiskIIFactory` (inline) | `Interfaces/IDiskIIFactory.cs` | Extract | New file from inline def |
+| `DiskIIControllerCards.cs` | `Cards/DiskIIControllerCard*.cs` | Split + Modify | 3 files, add telemetry |
+| `DiskIIDrive.cs` | `DiskII/` | Import + Modify | Add `ITelemetryAggregator` |
+| `DiskIIFactory.cs` | `DiskII/` | Import + Modify | Remove status decorator |
+| `DiskIIDebugDecorator.cs` | `DiskII/` | Import | Style fixes only |
+| `DiskIIStatusDecorator.cs` | N/A | **SKIP** | Replaced by telemetry |
+| `NullDiskIIDrive.cs` | `DiskII/` | Import | Style fixes only |
+| `GcrEncoder.cs` | `DiskII/` | Import | Use `DiskIIConstants` |
+| `DiskImageFactory.cs` | `DiskII/Providers/` | Import | Namespace change |
+| `NibDiskImageProvider.cs` | `DiskII/Providers/` | Import | Use `DiskIIConstants` |
+| `SectorDiskImageProvider.cs` | `DiskII/Providers/` | Import | Use `DiskIIConstants` |
+| `InternalWozDiskImageProvider.cs` | `DiskII/Providers/` | Import | Use `DiskIIConstants` |
+| `WozDiskImageProvider.cs` | `DiskII/Providers/` | Import | Use `DiskIIConstants` |
 
 ---
 
 *Document Created: 2025*  
-*Last Updated: Phase 1.1 Complete - VBlankOccurred event added*
+*Last Updated: Phase 1 Complete - Added CpuClockingCountersTests.cs (10 tests)*

@@ -518,9 +518,14 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         _minVBlankTicks = (long)(Stopwatch.Frequency / MaxUnthrottledFps);
         _lastVBlankTicks = _vblankSw.ElapsedTicks;
 
+        // Subscribe to VBlank for frame rendering
+        // TODO: Refactor to subscribe to ClockCounters.VBlankOccurred directly
+        // when OnVBlank signature is updated to match Action delegate.
         if (Bus is VA2MBus vb)
         {
+#pragma warning disable CS0618 // VBlank is obsolete - planned refactor
             vb.VBlank += OnVBlank;
+#pragma warning restore CS0618
         }
         
         // Start flash timer
