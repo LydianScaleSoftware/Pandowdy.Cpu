@@ -8,11 +8,11 @@ namespace Pandowdy.Cpu.Tests;
 
 /// <summary>
 /// Tests for interrupt handling: IRQ, NMI, Reset, and interrupt priorities.
-/// Uses CMOS65C02 as the default variant for interrupt testing.
+/// Uses WDC65C02 as the default variant for interrupt testing.
 /// </summary>
 public class InterruptTests : CpuTestBase
 {
-    protected override CpuVariant Variant => CpuVariant.CMOS65C02;
+    protected override CpuVariant Variant => CpuVariant.WDC65C02;
 
     #region Reset Tests
 
@@ -426,7 +426,7 @@ public class InterruptTests : CpuTestBase
         // STP (0xDB) - 65C02 only
         LoadAndReset(0xDB);
 
-        StepInstruction(CpuVariant.CMOS65C02);
+        StepInstruction(CpuVariant.WDC65C02);
 
         Assert.Equal(CpuStatus.Stopped, CurrentState.Status);
     }
@@ -437,7 +437,7 @@ public class InterruptTests : CpuTestBase
         // WAI (0xCB) - 65C02 only
         LoadAndReset(0xCB);
 
-        StepInstruction(CpuVariant.CMOS65C02);
+        StepInstruction(CpuVariant.WDC65C02);
 
         Assert.Equal(CpuStatus.Waiting, CurrentState.Status);
     }
@@ -447,7 +447,7 @@ public class InterruptTests : CpuTestBase
     {
         LoadAndReset(0xDB);
 
-        int cycles = StepInstruction(CpuVariant.CMOS65C02);
+        int cycles = StepInstruction(CpuVariant.WDC65C02);
 
         Assert.Equal(3, cycles);
     }
@@ -457,7 +457,7 @@ public class InterruptTests : CpuTestBase
     {
         LoadAndReset(0xCB);
 
-        int cycles = StepInstruction(CpuVariant.CMOS65C02);
+        int cycles = StepInstruction(CpuVariant.WDC65C02);
 
         Assert.Equal(3, cycles);
     }

@@ -14,7 +14,7 @@ public class Rockwell65C02Tests : CoreInstructionTests
 {
     protected override CpuVariant Variant => CpuVariant.ROCKWELL65C02;
 
-    #region JMP Indirect Bug Fix (Same as CMOS)
+    #region JMP Indirect Bug Fix (Same as WDC)
 
     [Fact]
     public void JMP_Indirect_FixedPageBoundaryBug()
@@ -510,7 +510,7 @@ public class Rockwell65C02Tests : CoreInstructionTests
 
     #endregion
 
-        #region STP/WAI (Should work like CMOS)
+        #region STP/WAI (Should work like WDC)
 
         [Fact]
         public void STP_Works()

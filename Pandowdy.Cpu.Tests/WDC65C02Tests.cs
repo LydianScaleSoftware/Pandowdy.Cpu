@@ -10,9 +10,9 @@ namespace Pandowdy.Cpu.Tests;
 /// Tests for WDC 65C02 CPU.
 /// Inherits all core instruction tests and adds 65C02-specific tests.
 /// </summary>
-public class CMOS65C02Tests : CoreInstructionTests
+public class WDC65C02Tests : CoreInstructionTests
 {
-    protected override CpuVariant Variant => CpuVariant.CMOS65C02;
+    protected override CpuVariant Variant => CpuVariant.WDC65C02;
 
     #region JMP Indirect Bug Fix
 

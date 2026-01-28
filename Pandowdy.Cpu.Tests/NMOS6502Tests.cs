@@ -7,7 +7,7 @@ using Xunit;
 namespace Pandowdy.Cpu.Tests;
 
 /// <summary>
-/// Tests for NMOS 6502 CPU with undocumented opcodes.
+/// Tests for NMOS 6502 CPU with illegal opcodes.
 /// Inherits all core instruction tests and adds NMOS-specific tests.
 /// </summary>
 public class NMOS6502Tests : CoreInstructionTests
@@ -32,7 +32,7 @@ public class NMOS6502Tests : CoreInstructionTests
 
     #endregion
 
-    #region Undocumented Opcodes
+    #region Illegal Opcodes
 
     [Fact]
     public void LAX_ZeroPage_LoadsAAndX()
@@ -334,7 +334,7 @@ public class NMOS6502Tests : CoreInstructionTests
 
     #endregion
 
-    #region Cycle Count Tests for Undocumented Addressing Modes
+    #region Cycle Count Tests for Illegal Addressing Modes
 
     [Fact]
     public void DCP_Absolute_Takes6Cycles()

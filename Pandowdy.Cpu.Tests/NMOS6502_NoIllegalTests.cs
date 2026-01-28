@@ -7,13 +7,13 @@ using Xunit;
 namespace Pandowdy.Cpu.Tests;
 
 /// <summary>
-/// Tests for NMOS 6502 CPU without undocumented opcodes.
+/// Tests for NMOS 6502 CPU without illegal opcodes.
 /// Inherits all core instruction tests.
 /// This variant treats undefined opcodes as NOPs.
 /// </summary>
-public class NMOS6502_NoUndocTests : CoreInstructionTests
+public class NMOS6502_NoIllegalTests : CoreInstructionTests
 {
-    protected override CpuVariant Variant => CpuVariant.NMOS6502_NO_UNDOC;
+    protected override CpuVariant Variant => CpuVariant.NMOS6502_NO_ILLEGAL;
 
     #region JMP Indirect Page Boundary Bug (NMOS specific)
 
@@ -148,12 +148,12 @@ public class NMOS6502_NoUndocTests : CoreInstructionTests
 
     #endregion
 
-    #region Undefined Opcodes Don't Execute as Undocumented Operations
+    #region Undefined Opcodes Don't Execute as Illegal Operations
 
     [Fact]
     public void Opcode0xA7_DoesNotExecuteLAX()
     {
-        // On NO_UNDOC variant, 0xA7 should NOT load both A and X
+        // On NO_ILLEGAL variant, 0xA7 should NOT load both A and X
         LoadAndReset(0xA7, 0x10);
         CpuBuffer.Current.A = 0x00;
         CpuBuffer.Prev.A = 0x00;
@@ -163,7 +163,7 @@ public class NMOS6502_NoUndocTests : CoreInstructionTests
 
         StepInstruction();
 
-        // In NO_UNDOC mode, this should be treated as something else
+        // In NO_ILLEGAL mode, this should be treated as something else
         // (likely unimplemented/NOP behavior)
         Assert.NotEqual((0x42, 0x42), (CurrentState.A, CurrentState.X));
         }
@@ -171,7 +171,7 @@ public class NMOS6502_NoUndocTests : CoreInstructionTests
         [Fact]
         public void Opcode0x87_DoesNotExecuteSAX()
         {
-            // On NO_UNDOC variant, 0x87 should NOT store A AND X
+            // On NO_ILLEGAL variant, 0x87 should NOT store A AND X
             LoadAndReset(0x87, 0x10);
             CpuBuffer.Current.A = 0xF0;
             CpuBuffer.Prev.A = 0xF0;
@@ -215,7 +215,7 @@ public class NMOS6502_NoUndocTests : CoreInstructionTests
 
                 int cycles = StepInstruction();
 
-                // Every opcode should execute without crashing (NO_UNDOC treats undefined as NOPs)
+                // Every opcode should execute without crashing (NO_ILLEGAL treats undefined as NOPs)
                 Assert.True(cycles > 0, $"Opcode 0x{opcode:X2} should take at least 1 cycle");
                 Assert.True(
                     CurrentState.Status == CpuStatus.Running ||
