@@ -77,13 +77,16 @@ Pandowdy.Cpu.Example/  # Example usage application
 
 - [CPU Usage Guide](docs/CpuUsageGuide.md) — Detailed usage instructions and examples
 - [API Reference](docs/ApiReference.md) — Complete API documentation for Cpu, CpuState, and CpuStateBuffer
+- [Building](BUILDING.md) — Build instructions, running tests, and project structure
 
-## Building
+## Quick Build
 
 ```bash
 dotnet build
 dotnet test
 ```
+
+For detailed build instructions, external test suites, and troubleshooting, see [BUILDING.md](BUILDING.md).
 
 ## License
 
