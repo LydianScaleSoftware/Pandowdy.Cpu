@@ -1,4 +1,30 @@
-# Pandowdy.Cpu v1.0.0
+# Pandowdy.Cpu Release Notes
+
+---
+
+## v2.0.0
+
+**Release Date:** January 30, 2026
+
+### What's New
+
+- **Pure C# Implementation**: The entire CPU emulator is now implemented in C#, simplifying the build process and reducing dependencies.
+- **Single Package**: All functionality is in the `Pandowdy.Cpu` package:
+  - `Cpu` static class with `Clock`, `Step`, `Run`, `Reset`, `CurrentOpcode`, and `CyclesRemaining` methods
+  - `MicroOps` static class with all micro-operation implementations
+  - `Pipelines` static class with all opcode pipeline definitions
+  - `CpuState`, `CpuStateBuffer`, `CpuVariant`, `CpuStatus` types
+  - `IPandowdyCpuBus` interface
+
+### Validation
+
+- All 2,149 unit tests pass
+- Klaus Dormann functional tests pass for all variants
+- Tom Harte SingleStepTests pass for all variants (cycle-accurate validation)
+
+---
+
+## v1.0.0
 
 **Release Date:** January 2025
 

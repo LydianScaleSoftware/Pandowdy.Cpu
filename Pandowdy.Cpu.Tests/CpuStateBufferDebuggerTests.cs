@@ -69,7 +69,7 @@ public class CpuStateBufferDebuggerTests : CpuTestBase
         CpuBuffer.Prev.PC = 0x0400;
         CpuBuffer.Current.PC = 0x0402; // Sequential (2-byte instruction)
         CpuBuffer.Current.InstructionComplete = true;
-        CpuBuffer.Current.Pipeline = new System.Action<CpuState, CpuState, IPandowdyCpuBus>[2];
+        CpuBuffer.Current.Pipeline = new MicroOp[2];
 
         Assert.False(CpuBuffer.JumpOccurred);
     }
@@ -81,7 +81,7 @@ public class CpuStateBufferDebuggerTests : CpuTestBase
         CpuBuffer.Prev.PC = 0x0400;
         CpuBuffer.Current.PC = 0x0800; // Non-sequential jump
         CpuBuffer.Current.InstructionComplete = true;
-        CpuBuffer.Current.Pipeline = new System.Action<CpuState, CpuState, IPandowdyCpuBus>[3]; // JMP is 3 bytes
+        CpuBuffer.Current.Pipeline = new MicroOp[3]; // JMP is 3 bytes
 
         Assert.True(CpuBuffer.JumpOccurred);
     }
@@ -93,7 +93,7 @@ public class CpuStateBufferDebuggerTests : CpuTestBase
         CpuBuffer.Prev.PC = 0x0400;
         CpuBuffer.Current.PC = 0x1000; // JSR target
         CpuBuffer.Current.InstructionComplete = true;
-        CpuBuffer.Current.Pipeline = new System.Action<CpuState, CpuState, IPandowdyCpuBus>[6]; // JSR is 6 cycles
+        CpuBuffer.Current.Pipeline = new MicroOp[6]; // JSR is 6 cycles
 
         Assert.True(CpuBuffer.JumpOccurred);
     }

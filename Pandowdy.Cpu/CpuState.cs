@@ -250,7 +250,7 @@ public class CpuState
     /// where prev is the state at instruction start and current is the working state.
     /// </para>
     /// </remarks>
-    public Action<CpuState, CpuState, IPandowdyCpuBus>[] Pipeline { get; set; } = [];
+    public MicroOp[] Pipeline { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the index of the next micro-operation to execute in the pipeline.

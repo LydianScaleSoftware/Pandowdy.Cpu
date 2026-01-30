@@ -206,7 +206,7 @@ public class InterruptEdgeCaseTests : CpuTestBase
         SetupCpu();
         Bus.SetNmiVector(0x9000);
         CpuBuffer.Current.SP = 0xFF;
-        CpuBuffer.Current.Pipeline = new System.Action<CpuState, CpuState, IPandowdyCpuBus>[5];
+        CpuBuffer.Current.Pipeline = new MicroOp[5];
         CpuBuffer.Current.PipelineIndex = 3;
         CpuBuffer.Current.SignalNmi();
 
@@ -223,7 +223,7 @@ public class InterruptEdgeCaseTests : CpuTestBase
         Bus.SetIrqVector(0x8000);
         CpuBuffer.Current.SP = 0xFF;
         CpuBuffer.Current.InterruptDisableFlag = false;
-        CpuBuffer.Current.Pipeline = new System.Action<CpuState, CpuState, IPandowdyCpuBus>[5];
+        CpuBuffer.Current.Pipeline = new MicroOp[5];
         CpuBuffer.Current.PipelineIndex = 3;
         CpuBuffer.Current.SignalIrq();
 

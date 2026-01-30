@@ -1,19 +1,21 @@
 <Project>
   <PropertyGroup>
     <!-- Version Information -->
-    <Version>1.0.0</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
+    <Version>2.0.0</Version>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
 
     <!-- Package Information -->
     <Authors>Mark D. Long</Authors>
     <Company>Lydian Scale Software</Company>
     <Product>Pandowdy.Cpu</Product>
     <Copyright>Copyright 2025 Mark D. Long</Copyright>
-    <Description>A cycle-accurate 6502/65C02 CPU emulator for .NET</Description>
-    <PackageTags>6502;65C02;emulator;cpu;retro;8-bit</PackageTags>
+    <Description>A cycle-accurate 6502/65C02 CPU emulator for .NET. Pure C# implementation with no external dependencies.</Description>
+    <PackageTags>6502;65C02;emulator;cpu;retro;8-bit;cycle-accurate</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>pandowdy_128.png</PackageIcon>
     <PackageProjectUrl>https://github.com/markdavidlong/Pandowdy.Cpu</PackageProjectUrl>
+    <PackageReleaseNotes>v2.0.0: Pure C# implementation. Pandowdy.Cpu.Core has been merged into Pandowdy.Cpu.</PackageReleaseNotes>
 
     <!-- Repository Information -->
     <RepositoryUrl>https://github.com/markdavidlong/Pandowdy.Cpu</RepositoryUrl>

@@ -7,16 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\README.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="MicroOps.fs" />
-    <Compile Include="Pipelines.fs" />
-    <Compile Include="Cpu.fs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Pandowdy.Cpu\Pandowdy.Cpu.csproj" />
   </ItemGroup>
 

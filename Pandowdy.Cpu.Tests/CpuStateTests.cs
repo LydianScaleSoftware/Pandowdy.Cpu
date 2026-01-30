@@ -64,7 +64,7 @@ public class CpuStateTests
     {
         var state = new CpuState
         {
-            Pipeline = new Action<CpuState, CpuState, IPandowdyCpuBus>[5],
+            Pipeline = new MicroOp[5],
             PipelineIndex = 3,
             InstructionComplete = true
         };
@@ -270,7 +270,7 @@ public class CpuStateTests
     [Fact]
     public void CopyFrom_CopiesPipelineState()
     {
-        var pipeline = new Action<CpuState, CpuState, IPandowdyCpuBus>[3];
+        var pipeline = new MicroOp[3];
         var source = new CpuState
         {
             Pipeline = pipeline,

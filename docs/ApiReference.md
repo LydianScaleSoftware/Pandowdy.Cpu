@@ -4,7 +4,7 @@ This document provides a comprehensive reference for the Pandowdy.Cpu library AP
 
 ## Table of Contents
 
-- [Cpu Module](#cpu-module)
+- [Cpu Class](#cpu-class)
 - [CpuState Class](#cpustate-class)
 - [CpuStateBuffer Class](#cpustatebuffer-class)
 - [IPandowdyCpuBus Interface](#ipandowdycpubus-interface)
@@ -12,9 +12,9 @@ This document provides a comprehensive reference for the Pandowdy.Cpu library AP
 
 ---
 
-## Cpu Module
+## Cpu Class
 
-The `Cpu` module (defined in F#) provides the main execution engine for the CPU emulator.
+The `Cpu` static class provides the main execution engine for the CPU emulator.
 
 ### Methods
 

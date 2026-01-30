@@ -1,6 +1,6 @@
 # Pandowdy.CPU Emulator
 
-A cycle-accurate 6502/65C02 CPU emulator written in C# and F# for .NET 8.
+A cycle-accurate 6502/65C02 CPU emulator written in C# for .NET 8.
 
 ## Features
 
@@ -10,6 +10,7 @@ A cycle-accurate 6502/65C02 CPU emulator written in C# and F# for .NET 8.
 - **Double-Buffered State** — Clean instruction boundaries for debugging, single-stepping, and state comparison
 - **Interrupt Support** — IRQ, NMI, and Reset with proper priority handling
 - **Extensible Bus Interface** — Simple `IPandowdyCpuBus` interface for custom memory maps and I/O
+- **Pure C#** — Single NuGet package with no F# dependencies
 
 ## Validation
 
@@ -67,10 +68,16 @@ Console.WriteLine($"A = ${cpuBuffer.Current.A:X2}"); // A = $42
 ## Project Structure
 
 ```
-Pandowdy.Cpu/          # Core types (CpuState, CpuStateBuffer, IPandowdyCpuBus)
-Pandowdy.Cpu.Core/     # F# CPU implementation (micro-ops, pipelines)
-Pandowdy.Cpu.Tests/    # xUnit test suite
-Pandowdy.Cpu.Example/  # Example usage application
+Pandowdy.Cpu/              # Core library (CPU, MicroOps, Pipelines, CpuState, CpuStateBuffer)
+Pandowdy.Cpu.Tests/        # xUnit test suite (2,149 tests)
+Pandowdy.Cpu.Dormann-Tests/ # Klaus Dormann functional test runner
+Pandowdy.Cpu.Harte-SST-Tests/ # Tom Harte SingleStepTests runner
+```
+
+## Installation
+
+```bash
+dotnet add package Pandowdy.Cpu
 ```
 
 ## Documentation

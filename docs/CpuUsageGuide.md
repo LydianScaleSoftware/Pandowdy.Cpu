@@ -787,16 +787,16 @@ Value at $0200: $0A
 
 ## API Reference
 
-### Cpu Module (F#)
+### Cpu Class
 
-| Function | Signature | Description |
-|----------|-----------|-------------|
-| `Clock` | `CpuVariant -> CpuStateBuffer -> IPandowdyCpuBus -> bool` | Execute one cycle |
-| `Step` | `CpuVariant -> CpuStateBuffer -> IPandowdyCpuBus -> int` | Execute one instruction, returns cycles |
-| `Run` | `CpuVariant -> CpuStateBuffer -> IPandowdyCpuBus -> int -> int` | Execute n cycles |
-| `Reset` | `CpuStateBuffer -> IPandowdyCpuBus -> unit` | Reset CPU |
-| `CurrentOpcode` | `CpuStateBuffer -> IPandowdyCpuBus -> byte` | Get current opcode |
-| `CyclesRemaining` | `CpuStateBuffer -> int` | Get remaining pipeline cycles |
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `Clock` | `bool Clock(CpuVariant, CpuStateBuffer, IPandowdyCpuBus)` | Execute one cycle |
+| `Step` | `int Step(CpuVariant, CpuStateBuffer, IPandowdyCpuBus)` | Execute one instruction, returns cycles |
+| `Run` | `int Run(CpuVariant, CpuStateBuffer, IPandowdyCpuBus, int)` | Execute n cycles |
+| `Reset` | `void Reset(CpuStateBuffer, IPandowdyCpuBus)` | Reset CPU |
+| `CurrentOpcode` | `byte CurrentOpcode(CpuStateBuffer, IPandowdyCpuBus)` | Get current opcode |
+| `CyclesRemaining` | `int CyclesRemaining(CpuStateBuffer)` | Get remaining pipeline cycles |
 
 ### CpuState Class
 

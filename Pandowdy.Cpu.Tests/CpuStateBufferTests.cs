@@ -103,7 +103,7 @@ public class CpuStateBufferTests
         var buffer = new CpuStateBuffer();
         buffer.Current.A = 0x42;
         buffer.Current.PipelineIndex = 5;
-        buffer.Current.Pipeline = new Action<CpuState, CpuState, IPandowdyCpuBus>[10];
+        buffer.Current.Pipeline = new MicroOp[10];
         buffer.Current.InstructionComplete = true;
 
         buffer.SwapIfComplete();

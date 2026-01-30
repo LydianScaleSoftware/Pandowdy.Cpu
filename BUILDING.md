@@ -88,15 +88,14 @@ See [Pandowdy.Cpu.Harte-SST-Tests/README.md](Pandowdy.Cpu.Harte-SST-Tests/README
 
 ```
 Pandowdy.Cpu/                  # Core library (C#)
+├── Cpu.cs                    # Clock, Step, Run, Reset functions
 ├── CpuState.cs               # CPU state and registers
 ├── CpuStateBuffer.cs         # Double-buffered state
 ├── CpuVariant.cs             # CPU variant enum
+├── MicroOps.cs               # Micro-operation implementations
+├── Pipelines.cs              # Opcode pipeline definitions
+├── Pipelines.*.cs            # Pipeline partial classes (Alu, Branch, etc.)
 └── IPandowdyCpuBus.cs        # Bus interface
-
-Pandowdy.Cpu.Core/             # CPU execution engine (F#)
-├── Cpu.fs                    # Clock, Step, Run, Reset functions
-├── Pipelines.fs              # Micro-op pipelines for all opcodes
-└── MicroOps.fs               # Individual micro-operations
 
 Pandowdy.Cpu.Tests/            # Unit tests (xUnit)
 ├── *OpcodeTests.cs           # Opcode-specific tests
@@ -131,10 +130,6 @@ If you see "Applying source changes while the application is running" errors:
 2. Check Task Manager for orphaned processes
 3. Close and reopen Visual Studio
 4. Run `dotnet clean && dotnet build`
-
-### F# Compilation Slow
-
-The F# project (Pandowdy.Cpu.Core) contains large pipeline definitions. Initial compilation may take 10-20 seconds. Subsequent builds use incremental compilation.
 
 ### Test Discovery Issues
 
