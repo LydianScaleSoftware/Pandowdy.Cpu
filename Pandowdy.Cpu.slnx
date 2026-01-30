@@ -1,7 +1,6 @@
 <Solution>
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
-    <Project Path="Pandowdy.Cpu.Harte-SST-Tests/Pandowdy.Cpu.Harte-SST-Tests.csproj" Id="bbf81fae-d0f9-4b79-84f2-0b51783a5e8a" />
   </Folder>
   <Folder Name="/Solution Items/docs/">
     <File Path="BUILDING.md" />
@@ -16,4 +15,5 @@
     <BuildDependency Project="Pandowdy.Cpu/Pandowdy.Cpu.csproj" />
   </Project>
   <Project Path="Pandowdy.Cpu/Pandowdy.Cpu.csproj" />
+    <Project Path="Pandowdy.Cpu.Harte-SST-Tests/Pandowdy.Cpu.Harte-SST-Tests.csproj" Id="bbf81fae-d0f9-4b79-84f2-0b51783a5e8a" />
 </Solution>
