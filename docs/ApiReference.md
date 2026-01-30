@@ -405,8 +405,8 @@ Writes a byte to the specified address.
 |-------|-------------|
 | `NMOS6502` | Original NMOS 6502 with illegal/undocumented opcodes |
 | `NMOS6502_NO_ILLEGAL` | NMOS 6502 with undefined opcodes as NOPs |
-| `WDC65C02` | WDC 65C02 with new instructions (STZ, PHX, BRA, etc.) |
-| `ROCKWELL65C02` | Rockwell 65C02 with bit manipulation (RMB, SMB, BBR, BBS) |
+| `WDC65C02` | Later WDC 65C02 (W65C02S) with all CMOS instructions including RMB/SMB/BBR/BBS |
+| `ROCKWELL65C02` | Rockwell 65C02 with bit manipulation (same as WDC but WAI/STP are NOPs) |
 
 ### CpuStatus
 

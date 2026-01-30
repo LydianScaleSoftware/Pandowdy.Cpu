@@ -97,8 +97,8 @@ public enum CpuVariant
 {
     NMOS6502,             // Original NMOS 6502 with illegal opcodes
     NMOS6502_NO_ILLEGAL,  // NMOS 6502, undefined opcodes treated as NOPs
-    WDC65C02,            // WDC 65C02 with new instructions (STZ, PHX, etc.)
-    ROCKWELL65C02         // Rockwell 65C02 with bit manipulation (RMB, SMB, BBR, BBS)
+    WDC65C02,             // Later WDC 65C02 with all CMOS instructions including RMB/SMB/BBR/BBS
+    ROCKWELL65C02         // Rockwell 65C02 (same as WDC but NOPs for WAI/STP)
 }
 ```
 
@@ -112,9 +112,14 @@ public enum CpuVariant
 | INC A, DEC A | ❌ | ❌ | ✅ | ✅ |
 | BRA (branch always) | ❌ | ❌ | ✅ | ✅ |
 | TRB, TSB | ❌ | ❌ | ✅ | ✅ |
-| STP, WAI | ❌ | ❌ | ✅ | ✅ |
-| RMB, SMB, BBR, BBS | ❌ | ❌ | ❌ | ✅ |
+| STP, WAI | ❌ | ❌ | ✅ | ❌ (NOPs) |
+| RMB, SMB, BBR, BBS | ❌ | ❌ | ✅ | ✅ |
 | JAM/KIL opcodes | ✅ (freezes) | ❌ | ❌ | ❌ |
+
+> **Note:** The `WDC65C02` variant models later WDC 65C02 chips (W65C02S) which include
+> the Rockwell bit manipulation instructions (RMB, SMB, BBR, BBS). The `ROCKWELL65C02`
+> variant is functionally identical except that WAI and STP are treated as NOPs since
+> original Rockwell chips did not implement these instructions.
 
 ---
 
