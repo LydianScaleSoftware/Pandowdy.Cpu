@@ -16,21 +16,7 @@
   - `CpuState`, `CpuStateBuffer`, `CpuVariant`, `CpuStatus` types
   - `IPandowdyCpuBus` interface
 
-### Validation
-
-- All 2,149 unit tests pass
-- Klaus Dormann functional tests pass for all variants
-- Tom Harte SingleStepTests pass for all variants (cycle-accurate validation)
-
----
-
-## v1.0.0
-
-**Release Date:** January 2025
-
-Initial release of the cycle-accurate 6502/65C02 CPU emulator for .NET.
-
-## Features
+### Features
 
 - **Cycle-Accurate Emulation** — Micro-op pipeline architecture provides true cycle-level timing, validated against real hardware traces
 - **Four CPU Variants:**
@@ -42,7 +28,7 @@ Initial release of the cycle-accurate 6502/65C02 CPU emulator for .NET.
 - **Full Interrupt Support** — IRQ, NMI, and Reset with proper priority handling
 - **Stateless Core** — CPU execution engine is stateless; all state lives in `CpuStateBuffer`
 
-## Validation
+### Validation
 
 All CPU variants pass industry-standard test suites:
 
@@ -55,28 +41,30 @@ All CPU variants pass industry-standard test suites:
 
 The Tom Harte tests validate not only final register state but also **cycle-by-cycle bus activity** for every opcode.
 
-## Requirements
+- All 2,149 unit tests pass
+
+### Requirements
 
 - .NET 8.0 or later
 
-## Installation
+### Installation
 
-### NuGet Package Manager
+#### NuGet Package Manager
 ```
-Install-Package Pandowdy.Cpu -Version 1.0.0
-```
-
-### .NET CLI
-```
-dotnet add package Pandowdy.Cpu --version 1.0.0
+Install-Package Pandowdy.Cpu -Version 2.0.0
 ```
 
-### PackageReference
+#### .NET CLI
+```
+dotnet add package Pandowdy.Cpu --version 2.0.0
+```
+
+#### PackageReference
 ```xml
-<PackageReference Include="Pandowdy.Cpu" Version="1.0.0" />
+<PackageReference Include="Pandowdy.Cpu" Version="2.0.0" />
 ```
 
-## Quick Start
+### Quick Start
 
 ```csharp
 using Pandowdy.Cpu;
@@ -96,16 +84,24 @@ int cycles = Cpu.Step(CpuVariant.WDC65C02, cpuBuffer, bus);
 Console.WriteLine($"A = ${cpuBuffer.Current.A:X2}"); // A = $42
 ```
 
-## Documentation
+### Documentation
 
 - [README](https://github.com/markdavidlong/Pandowdy.Cpu/blob/main/README.md)
 - [CPU Usage Guide](https://github.com/markdavidlong/Pandowdy.Cpu/blob/main/docs/CpuUsageGuide.md)
 - [API Reference](https://github.com/markdavidlong/Pandowdy.Cpu/blob/main/docs/ApiReference.md)
 
-## License
+### License
 
 Apache License 2.0
 
-## Author
+### Author
 
 Copyright 2026 Mark D. Long
+
+---
+
+## v1.0.0
+
+**Release Date:** January 2025
+
+Initial internal release (not published).
