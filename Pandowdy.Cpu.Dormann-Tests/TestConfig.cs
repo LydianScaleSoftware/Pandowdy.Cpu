@@ -131,6 +131,48 @@ public class TestConfig
     };
 
     /// <summary>
+    /// Configuration for the 6502 interrupt test (NMOS - without WAI test).
+    /// </summary>
+    [JsonPropertyName("nmosInterruptTest")]
+    public TestFileConfig NmosInterruptTest { get; set; } = new()
+    {
+        HexFile = "6502_interrupt_test.hex",
+        StartAddress = "0400",
+        SuccessAddress = "06F5"  // Success before WAI tests (NMOS doesn't have WAI)
+    };
+
+    /// <summary>
+    /// Configuration for the 6502 interrupt test (CMOS - with WAI test).
+    /// </summary>
+    /// <remarks>
+    /// The test runner automates the manual WAI tests by jumping PC from $0719
+    /// (automated test success) to $071F (WAI test start) and signaling IRQ
+    /// when the CPU enters Waiting status. The success address here is not used
+    /// for CMOS variants since the runner checks internally for $0719 then $0750.
+    /// </remarks>
+    [JsonPropertyName("cmosInterruptTest")]
+    public TestFileConfig CmosInterruptTest { get; set; } = new()
+    {
+        HexFile = "65C02_interrupt_test.hex",
+        StartAddress = "0400",
+        SuccessAddress = "0719"  // Automated test success (WAI tests handled internally)
+    };
+
+    /// <summary>
+    /// Legacy configuration for backward compatibility.
+    /// </summary>
+    /// <remarks>
+    /// This is a legacy entry. Use <see cref="NmosInterruptTest"/> or <see cref="CmosInterruptTest"/> instead.
+    /// </remarks>
+    [JsonPropertyName("interruptTest")]
+    public TestFileConfig InterruptTest { get; set; } = new()
+    {
+        HexFile = "6502_interrupt_test.hex",
+        StartAddress = "0400",
+        SuccessAddress = "06F5"  // NMOS success address (same as NmosInterruptTest)
+    };
+
+    /// <summary>
     /// Default configuration file name.
     /// </summary>
     public const string DefaultConfigFileName = "dormann-tests.json";

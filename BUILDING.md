@@ -113,16 +113,6 @@ docs/                          # Documentation
 └── ApiReference.md           # Complete API reference
 ```
 
-## NuGet Package
-
-To create a NuGet package:
-
-```bash
-dotnet pack -c Release
-```
-
-The package will be created in `bin/Release/`.
-
 ## Troubleshooting
 
 ### Build Errors: ENC0097

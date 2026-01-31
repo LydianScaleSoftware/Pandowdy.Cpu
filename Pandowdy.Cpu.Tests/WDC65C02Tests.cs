@@ -12,7 +12,7 @@ namespace Pandowdy.Cpu.Tests;
 /// </summary>
 public class WDC65C02Tests : CoreInstructionTests
 {
-    protected override CpuVariant Variant => CpuVariant.WDC65C02;
+    protected override CpuVariant Variant => CpuVariant.Wdc65C02;
 
     #region JMP Indirect Bug Fix
 
@@ -240,7 +240,7 @@ public class WDC65C02Tests : CoreInstructionTests
         Bus.SetResetVector(0x04F0);
         Bus.Memory[0x04F0] = 0x80;
         Bus.Memory[0x04F1] = 0x10;
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
 
         int cycles = StepInstruction();
 

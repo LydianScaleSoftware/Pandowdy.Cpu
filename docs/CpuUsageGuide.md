@@ -1,6 +1,6 @@
 # Pandowdy 6502/65C02 CPU Emulator Usage Guide
 
-This guide demonstrates how to use the `Cpu`, `CpuState`, and `CpuStateBuffer` classes to emulate 6502-family processors.
+This guide demonstrates how to use the `IPandowdyCpu`, `CpuFactory`, `CpuState`, and `CpuStateBuffer` classes to emulate 6502-family processors.
 
 ## Table of Contents
 
@@ -24,7 +24,8 @@ The CPU emulator uses a micro-op pipeline architecture for cycle-accurate emulat
 
 | Component | Description |
 |-----------|-------------|
-| `Cpu` | Static execution engine with `Clock`, `Step`, `Run`, and `Reset` functions |
+| `IPandowdyCpu` | Interface for CPU instances with `Clock`, `Step`, `Run`, and `Reset` methods |
+| `CpuFactory` | Factory for creating CPU instances by variant |
 | `CpuState` | Complete CPU state including registers, flags, and execution status |
 | `CpuStateBuffer` | Double-buffered state for clean instruction boundaries and debugging |
 | `IPandowdyCpuBus` | Interface for memory read/write operations |
@@ -47,9 +48,9 @@ The CPU emulator uses a micro-op pipeline architecture for cycle-accurate emulat
          │                        │
          │                        ▼
          │              ┌─────────────────┐
-         │              │   Cpu.Clock()   │
-         │              │   Cpu.Step()    │
-         │              │   Cpu.Run()     │
+         │              │   cpu.Clock()   │
+         │              │   cpu.Step()    │
+         │              │   cpu.Run()     │
          │              └────────┬────────┘
          │                       │
          │                       ▼
@@ -59,7 +60,7 @@ The CPU emulator uses a micro-op pipeline architecture for cycle-accurate emulat
                         └─────────────────┘
 ```
 
-After `Cpu.Step()` returns:
+After `cpu.Step()` returns:
 - **`Prev`** = CPU state *before* the instruction executed
 - **`Current`** = CPU state *after* the instruction executed
 
@@ -80,14 +81,15 @@ byte[] program = { 0xA9, 0x42, 0x8D, 0x00, 0x02 }; // LDA #$42, STA $0200
 bus.LoadProgram(0x0400, program);
 bus.SetResetVector(0x0400);
 
-// 3. Create the CPU state buffer
+// 3. Create the CPU state buffer and CPU instance
 var cpuBuffer = new CpuStateBuffer();
+var cpu = CpuFactory.Create(CpuVariant.Wdc65C02, cpuBuffer);
 
 // 4. Reset the CPU (loads PC from reset vector)
-Cpu.Reset(cpuBuffer, bus);
+cpu.Reset(bus);
 
 // 5. Execute instructions
-int cycles = Cpu.Step(CpuVariant.WDC65C02, cpuBuffer, bus);
+int cycles = cpu.Step(bus);
 Console.WriteLine($"Instruction took {cycles} cycles");
 Console.WriteLine($"A = ${cpuBuffer.Current.A:X2}");
 ```
@@ -101,17 +103,17 @@ The emulator supports four CPU variants:
 ```csharp
 public enum CpuVariant
 {
-    NMOS6502,             // Original NMOS 6502 with illegal opcodes
-    NMOS6502_NO_ILLEGAL,  // NMOS 6502, undefined opcodes treated as NOPs
-    WDC65C02,             // Later WDC 65C02 with all CMOS instructions including RMB/SMB/BBR/BBS
-    ROCKWELL65C02         // Rockwell 65C02 (same as WDC but NOPs for WAI/STP)
+    Nmos6502,        // Original NMOS 6502 with illegal opcodes
+    Nmos6502Simple,  // NMOS 6502, undefined opcodes treated as NOPs
+    Wdc65C02,        // Later WDC 65C02 with all CMOS instructions including RMB/SMB/BBR/BBS
+    Rockwell65C02    // Rockwell 65C02 (same as WDC but NOPs for WAI/STP)
 }
 ```
 
 ### Variant Differences
 
-| Feature | NMOS6502 | NMOS6502_NO_ILLEGAL | WDC65C02 | ROCKWELL65C02 |
-|---------|----------|-------------------|-----------|---------------|
+| Feature | Nmos6502 | Nmos6502Simple | Wdc65C02 | Rockwell65C02 |
+|---------|----------|----------------|----------|---------------|
 | Illegal opcodes | ✅ | ❌ (NOPs) | ❌ | ❌ |
 | JMP ($xxFF) bug | ✅ | ✅ | ❌ (fixed) | ❌ (fixed) |
 | STZ, PHX, PHY, PLX, PLY | ❌ | ❌ | ✅ | ✅ |
@@ -121,9 +123,10 @@ public enum CpuVariant
 | STP, WAI | ❌ | ❌ | ✅ | ❌ (NOPs) |
 | RMB, SMB, BBR, BBS | ❌ | ❌ | ✅ | ✅ |
 | JAM/KIL opcodes | ✅ (freezes) | ❌ | ❌ | ❌ |
+| D flag cleared on IRQ/NMI | ❌ | ❌ | ✅ | ✅ |
 
-> **Note:** The `WDC65C02` variant models later WDC 65C02 chips (W65C02S) which include
-> the Rockwell bit manipulation instructions (RMB, SMB, BBR, BBS). The `ROCKWELL65C02`
+> **Note:** The `Wdc65C02` variant models later WDC 65C02 chips (W65C02S) which include
+> the Rockwell bit manipulation instructions (RMB, SMB, BBR, BBS). The `Rockwell65C02`
 > variant is functionally identical except that WAI and STP are treated as NOPs since
 > original Rockwell chips did not implement these instructions.
 
@@ -137,8 +140,9 @@ All CPU variants pass [Klaus Dormann's 6502/65C02 Functional Tests](https://gith
 |------|-------------|----------|
 | **6502 Functional Test** | Comprehensive test of all documented 6502 instructions | All |
 | **6502 Decimal Test** | BCD arithmetic validation | All |
-| **65C02 Extended Opcodes Test (WDC)** | 65C02-specific instructions | WDC65C02 |
-| **65C02 Extended Opcodes Test (Rockwell)** | Includes RMB/SMB/BBR/BBS | ROCKWELL65C02 |
+| **6502 Interrupt Test** | IRQ/NMI interrupt handling | All |
+| **65C02 Extended Opcodes Test (WDC)** | 65C02-specific instructions | Wdc65C02 |
+| **65C02 Extended Opcodes Test (Rockwell)** | Includes RMB/SMB/BBR/BBS | Rockwell65C02 |
 
 ---
 
@@ -245,12 +249,14 @@ public class SystemBus : IPandowdyCpuBus
 
 ## CPU Execution
 
-### Single Cycle: `Cpu.Clock()`
+### Single Cycle: `cpu.Clock()`
 
 Executes one CPU clock cycle. Returns `true` when an instruction completes.
 
 ```csharp
-bool instructionComplete = Cpu.Clock(CpuVariant.WDC65C02, cpuBuffer, bus);
+var cpu = CpuFactory.Create(CpuVariant.Wdc65C02, cpuBuffer);
+
+bool instructionComplete = cpu.Clock(bus);
 
 if (instructionComplete)
 {
@@ -258,16 +264,16 @@ if (instructionComplete)
 }
 ```
 
-### Single Instruction: `Cpu.Step()`
+### Single Instruction: `cpu.Step()`
 
 Executes cycles until one instruction completes. Returns the cycle count.
 
 ```csharp
-int cycles = Cpu.Step(CpuVariant.WDC65C02, cpuBuffer, bus);
+int cycles = cpu.Step(bus);
 Console.WriteLine($"Instruction took {cycles} cycles");
 ```
 
-### Multiple Cycles: `Cpu.Run()`
+### Multiple Cycles: `cpu.Run()`
 
 Executes a specified number of cycles. Useful for running at a target frequency.
 
@@ -275,26 +281,29 @@ Executes a specified number of cycles. Useful for running at a target frequency.
 // Run for approximately 1MHz (1,000,000 cycles per second)
 // At 60 FPS, that's ~16,667 cycles per frame
 int cyclesPerFrame = 16667;
-int actualCycles = Cpu.Run(CpuVariant.WDC65C02, cpuBuffer, bus, cyclesPerFrame);
+int actualCycles = cpu.Run(bus, cyclesPerFrame);
 ```
 
-### Reset: `Cpu.Reset()`
+### Reset: `cpu.Reset()`
 
 Initializes the CPU and loads PC from the reset vector.
 
 ```csharp
-Cpu.Reset(cpuBuffer, bus);
+cpu.Reset(bus);
 // PC is now loaded from $FFFC-$FFFD
 ```
 
-### Helper Functions
+### Accessing Opcode Information
 
 ```csharp
-// Get the opcode of the current/previous instruction
-byte opcode = Cpu.CurrentOpcode(cpuBuffer, bus);
+// Get the opcode of the current instruction (set during fetch)
+byte opcode = cpuBuffer.Current.CurrentOpcode;
+
+// Get the address where the opcode was fetched from
+ushort opcodeAddress = cpuBuffer.Current.OpcodeAddress;
 
 // Get remaining cycles in current instruction pipeline
-int remaining = Cpu.CyclesRemaining(cpuBuffer);
+int remaining = cpuBuffer.Current.CyclesRemaining;
 ```
 
 ---
@@ -387,7 +396,7 @@ The double-buffer architecture enables powerful debugging capabilities.
 
 ```csharp
 // Execute one instruction
-Cpu.Step(variant, cpuBuffer, bus);
+cpu.Step(bus);
 
 // Compare before and after
 CpuState before = cpuBuffer.Prev;
@@ -408,7 +417,7 @@ foreach (string reg in cpuBuffer.ChangedRegisters)
 ### Detecting Instruction Types
 
 ```csharp
-Cpu.Step(variant, cpuBuffer, bus);
+cpu.Step(bus);
 
 if (cpuBuffer.JumpOccurred)
 {
@@ -458,16 +467,16 @@ if (cpuBuffer.StackActivityOccurred)
 ```csharp
 public class SimpleDebugger
 {
-    private readonly CpuVariant _variant;
+    private readonly IPandowdyCpu _cpu;
     private readonly CpuStateBuffer _buffer;
     private readonly IPandowdyCpuBus _bus;
     private readonly HashSet<ushort> _breakpoints = new();
 
     public SimpleDebugger(CpuVariant variant, CpuStateBuffer buffer, IPandowdyCpuBus bus)
     {
-        _variant = variant;
         _buffer = buffer;
         _bus = bus;
+        _cpu = CpuFactory.Create(variant, buffer);
     }
 
     public void AddBreakpoint(ushort address) => _breakpoints.Add(address);
@@ -475,7 +484,7 @@ public class SimpleDebugger
 
     public void Step()
     {
-        int cycles = Cpu.Step(_variant, _buffer, _bus);
+        int cycles = _cpu.Step(_bus);
         PrintState(cycles);
     }
 
@@ -483,7 +492,7 @@ public class SimpleDebugger
     {
         do
         {
-            Cpu.Step(_variant, _buffer, _bus);
+            _cpu.Step(_bus);
         } while (!_breakpoints.Contains(_buffer.Current.PC) &&
                  _buffer.Current.Status == CpuStatus.Running);
     }
@@ -518,19 +527,23 @@ public class SimpleDebugger
 ### Signaling Interrupts
 
 ```csharp
-CpuState state = cpuBuffer.Current;
+// Create CPU instance
+var cpu = CpuFactory.Create(CpuVariant.Wdc65C02, cpuBuffer);
 
 // Signal an IRQ (handled if I flag is clear)
-state.SignalIrq();
+cpu.SignalIrq();
 
 // Signal an NMI (non-maskable, always handled)
-state.SignalNmi();
+cpu.SignalNmi();
 
 // Signal a Reset (highest priority)
-state.SignalReset();
+cpu.SignalReset();
 
 // Clear a pending IRQ (for level-triggered behavior)
-state.ClearIrq();
+cpu.ClearIrq();
+
+// Handle pending interrupt at instruction boundary
+bool handled = cpu.HandlePendingInterrupt(bus);
 ```
 
 ### Interrupt Priority
@@ -548,30 +561,49 @@ Interrupts are checked at instruction boundaries in this order:
 | Reset | $FFFC-$FFFD | Hardware Reset |
 | IRQ/BRK | $FFFE-$FFFF | Interrupt Request / Break |
 
+### D-Flag Behavior on Interrupts
+
+The D (decimal) flag behavior on interrupts differs by CPU variant:
+- **NMOS 6502** (`Nmos6502`, `Nmos6502Simple`): D flag is **unchanged** on IRQ/NMI/BRK
+- **65C02** (`Wdc65C02`, `Rockwell65C02`): D flag is **cleared** on IRQ/NMI/BRK
+
+This is automatic based on CPU variant - no configuration needed.
+
 ### Example: Timer Interrupt
 
 ```csharp
 public class TimerSystem
 {
+    private readonly IPandowdyCpu _cpu;
     private readonly CpuStateBuffer _buffer;
     private readonly IPandowdyCpuBus _bus;
     private int _timerCounter;
     private const int TimerPeriod = 1000; // cycles
 
-    public void RunFrame(CpuVariant variant, int cyclesPerFrame)
+    public TimerSystem(CpuVariant variant, CpuStateBuffer buffer, IPandowdyCpuBus bus)
+    {
+        _buffer = buffer;
+        _bus = bus;
+        _cpu = CpuFactory.Create(variant, buffer);
+    }
+
+    public void RunFrame(int cyclesPerFrame)
     {
         int cyclesRun = 0;
         while (cyclesRun < cyclesPerFrame)
         {
-            int cycles = Cpu.Step(variant, _buffer, _bus);
+            int cycles = _cpu.Step(_bus);
             cyclesRun += cycles;
             _timerCounter += cycles;
 
             if (_timerCounter >= TimerPeriod)
             {
                 _timerCounter -= TimerPeriod;
-                _buffer.Current.SignalIrq();
+                _cpu.SignalIrq();
             }
+
+            // Handle pending interrupt at instruction boundary
+            _cpu.HandlePendingInterrupt(_bus);
         }
     }
 }
@@ -587,10 +619,12 @@ if (cpuBuffer.Current.Status == CpuStatus.Waiting)
 {
     // CPU is suspended, won't execute instructions
     // Signal an interrupt to wake it
-    cpuBuffer.Current.SignalIrq();
-    
+    cpu.SignalIrq();
+    cpu.HandlePendingInterrupt(bus);
+
     // Or signal NMI
-    cpuBuffer.Current.SignalNmi();
+    cpu.SignalNmi();
+    cpu.HandlePendingInterrupt(bus);
 }
 
 // Note: WAI allows IRQ to wake the CPU even if I flag is set
@@ -622,7 +656,7 @@ cpuBuffer.Prev.IgnoreHaltStopWait = true;
 
 // Now JAM, STP, and WAI will set status to Bypassed
 // PC advances normally, CPU continues executing
-Cpu.Step(variant, cpuBuffer, bus);
+cpu.Step(bus);
 
 // Check if a halt was bypassed
 if (cpuBuffer.Current.Status == CpuStatus.Bypassed)
@@ -631,7 +665,7 @@ if (cpuBuffer.Current.Status == CpuStatus.Bypassed)
 }
 
 // Reset clears the Bypassed status
-Cpu.Reset(cpuBuffer, bus);
+cpu.Reset(bus);
 
 // Or manually reset to Running
 cpuBuffer.Current.Status = CpuStatus.Running;
@@ -692,14 +726,12 @@ public class EmulatorExample
         bus.LoadProgram(0x0400, program);
         bus.SetResetVector(0x0400);
 
-        // Create CPU state buffer
+        // Create CPU state buffer and CPU instance
         var cpuBuffer = new CpuStateBuffer();
-
-        // Choose CPU variant
-        var variant = CpuVariant.WDC65C02;
+        var cpu = CpuFactory.Create(CpuVariant.Wdc65C02, cpuBuffer);
 
         // Reset CPU
-        Cpu.Reset(cpuBuffer, bus);
+        cpu.Reset(bus);
 
         Console.WriteLine("Starting emulation...\n");
 
@@ -713,7 +745,7 @@ public class EmulatorExample
             ushort pc = cpuBuffer.Current.PC;
 
             // Execute one instruction
-            int cycles = Cpu.Step(variant, cpuBuffer, bus);
+            int cycles = cpu.Step(bus);
             totalCycles += cycles;
             instructionCount++;
 
@@ -742,6 +774,7 @@ public class RamBus : IPandowdyCpuBus
     public byte[] Memory { get; } = new byte[65536];
 
     public byte CpuRead(ushort address) => Memory[address];
+    public byte Peek(ushort address) => Memory[address];
     public void Write(ushort address, byte value) => Memory[address] = value;
 
     public void LoadProgram(ushort start, byte[] program)
@@ -793,16 +826,36 @@ Value at $0200: $0A
 
 ## API Reference
 
-### Cpu Class
+### IPandowdyCpu Interface
+
+| Method/Property | Signature | Description |
+|-----------------|-----------|-------------|
+| `Clock` | `bool Clock(IPandowdyCpuBus)` | Execute one cycle, returns true when instruction completes |
+| `Step` | `int Step(IPandowdyCpuBus)` | Execute one instruction, returns cycles |
+| `Run` | `int Run(IPandowdyCpuBus, int)` | Execute up to n cycles |
+| `Reset` | `void Reset(IPandowdyCpuBus)` | Reset CPU and load PC from reset vector |
+| `SignalIrq` | `void SignalIrq()` | Signal an IRQ interrupt |
+| `SignalNmi` | `void SignalNmi()` | Signal an NMI interrupt |
+| `SignalReset` | `void SignalReset()` | Signal a hardware reset |
+| `ClearIrq` | `void ClearIrq()` | Clear pending IRQ |
+| `HandlePendingInterrupt` | `bool HandlePendingInterrupt(IPandowdyCpuBus)` | Handle pending interrupt, returns true if handled |
+| `Variant` | `CpuVariant` | The CPU variant this instance emulates |
+| `Buffer` | `CpuStateBuffer` | Get/set the state buffer (allows swapping) |
+
+### CpuFactory Class
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `Clock` | `bool Clock(CpuVariant, CpuStateBuffer, IPandowdyCpuBus)` | Execute one cycle |
-| `Step` | `int Step(CpuVariant, CpuStateBuffer, IPandowdyCpuBus)` | Execute one instruction, returns cycles |
-| `Run` | `int Run(CpuVariant, CpuStateBuffer, IPandowdyCpuBus, int)` | Execute n cycles |
-| `Reset` | `void Reset(CpuStateBuffer, IPandowdyCpuBus)` | Reset CPU |
-| `CurrentOpcode` | `byte CurrentOpcode(CpuStateBuffer, IPandowdyCpuBus)` | Get current opcode |
-| `CyclesRemaining` | `int CyclesRemaining(CpuStateBuffer)` | Get remaining pipeline cycles |
+| `Create` | `IPandowdyCpu Create(CpuVariant, CpuStateBuffer)` | Create a CPU instance for the specified variant |
+
+### CPU Classes
+
+| Class | Variant | Description |
+|-------|---------|-------------|
+| `Cpu6502` | `Nmos6502` | NMOS 6502 with illegal opcodes |
+| `Cpu6502Simple` | `Nmos6502Simple` | NMOS 6502, illegal opcodes as NOPs |
+| `Cpu65C02` | `Wdc65C02` | WDC 65C02 |
+| `Cpu65C02Rockwell` | `Rockwell65C02` | Rockwell 65C02 |
 
 ### CpuState Class
 
@@ -813,7 +866,17 @@ Value at $0200: $0A
 | `PC` | `ushort` | Program Counter |
 | `P` | `byte` | Processor Status |
 | `Status` | `CpuStatus` | Execution status |
+| `CurrentOpcode` | `byte` | Opcode being executed |
+| `OpcodeAddress` | `ushort` | Address where opcode was fetched |
+| `CyclesRemaining` | `int` | Remaining cycles in current instruction |
+| `PendingInterrupt` | `PendingInterrupt` | Pending interrupt signal |
 | `IgnoreHaltStopWait` | `bool` | Bypass halt instructions |
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `Clone` | `CpuState Clone()` | Create a deep copy of this state |
+| `CopyFrom` | `void CopyFrom(CpuState)` | Copy values from another state (no allocation) |
+| `Reset` | `void Reset()` | Reset to power-on defaults (no bus interaction) |
 
 ### CpuStateBuffer Class
 

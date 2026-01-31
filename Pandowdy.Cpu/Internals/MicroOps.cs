@@ -99,7 +99,10 @@ internal static class MicroOps
     /// </summary>
     public static readonly MicroOp FetchOpcode = (prev, current, bus) =>
     {
-        SetTempByte(current, bus.CpuRead(current.PC));
+        current.OpcodeAddress = current.PC;
+        byte opcode = bus.CpuRead(current.PC);
+        current.CurrentOpcode = opcode;
+        SetTempByte(current, opcode);
         current.PC++;
     };
 

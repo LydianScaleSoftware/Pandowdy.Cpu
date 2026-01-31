@@ -12,7 +12,7 @@ namespace Pandowdy.Cpu.Tests;
 /// </summary>
 public class Rockwell65C02Tests : CoreInstructionTests
 {
-    protected override CpuVariant Variant => CpuVariant.ROCKWELL65C02;
+    protected override CpuVariant Variant => CpuVariant.Rockwell65C02;
 
     #region JMP Indirect Bug Fix (Same as WDC)
 

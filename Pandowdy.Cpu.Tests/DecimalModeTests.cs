@@ -12,7 +12,7 @@ namespace Pandowdy.Cpu.Tests;
 /// </summary>
 public class DecimalModeTests : CpuTestBase
 {
-    protected override CpuVariant Variant => CpuVariant.WDC65C02;
+    protected override CpuVariant Variant => CpuVariant.Wdc65C02;
 
     #region ADC Decimal Mode - Basic Operations
 
@@ -272,7 +272,7 @@ public class DecimalModeTests : CpuTestBase
         CpuBuffer.Current.CarryFlag = false;
         CpuBuffer.Prev.CarryFlag = false;
 
-        StepInstruction(CpuVariant.NMOS6502);
+        StepInstruction(CpuVariant.Nmos6502);
 
         Assert.Equal(0x00, CurrentState.A);
         Assert.False(CurrentState.ZeroFlag, "NMOS: Z flag should be based on binary sum (0x9A != 0)");
@@ -291,7 +291,7 @@ public class DecimalModeTests : CpuTestBase
         CpuBuffer.Current.CarryFlag = false;
         CpuBuffer.Prev.CarryFlag = false;
 
-        StepInstruction(CpuVariant.WDC65C02);
+        StepInstruction(CpuVariant.Wdc65C02);
 
         Assert.Equal(0x00, CurrentState.A);
         Assert.True(CurrentState.ZeroFlag, "CMOS: Z flag should be based on BCD result (0x00 is zero)");
@@ -310,7 +310,7 @@ public class DecimalModeTests : CpuTestBase
         CpuBuffer.Current.CarryFlag = false;
         CpuBuffer.Prev.CarryFlag = false;
 
-        StepInstruction(CpuVariant.NMOS6502);
+        StepInstruction(CpuVariant.Nmos6502);
 
         Assert.Equal(0x89, CurrentState.A);
         Assert.True(CurrentState.NegativeFlag, "NMOS: N flag should be based on intermediate result");
@@ -329,7 +329,7 @@ public class DecimalModeTests : CpuTestBase
         CpuBuffer.Current.CarryFlag = false;
         CpuBuffer.Prev.CarryFlag = false;
 
-        StepInstruction(CpuVariant.WDC65C02);
+        StepInstruction(CpuVariant.Wdc65C02);
 
         Assert.Equal(0x89, CurrentState.A);
         Assert.True(CurrentState.NegativeFlag, "CMOS: N flag should be based on BCD result (0x89 has bit 7 set)");
@@ -348,7 +348,7 @@ public class DecimalModeTests : CpuTestBase
         CpuBuffer.Current.CarryFlag = true;
         CpuBuffer.Prev.CarryFlag = true;
 
-        StepInstruction(CpuVariant.NMOS6502);
+        StepInstruction(CpuVariant.Nmos6502);
 
         Assert.Equal(0x00, CurrentState.A);
         Assert.True(CurrentState.ZeroFlag);
@@ -367,7 +367,7 @@ public class DecimalModeTests : CpuTestBase
         CpuBuffer.Current.CarryFlag = true;
         CpuBuffer.Prev.CarryFlag = true;
 
-        StepInstruction(CpuVariant.WDC65C02);
+        StepInstruction(CpuVariant.Wdc65C02);
 
         Assert.Equal(0x00, CurrentState.A);
         Assert.True(CurrentState.ZeroFlag);
@@ -506,7 +506,7 @@ public class DecimalModeTests : CpuTestBase
     [InlineData(0x09, 0x01, 0x10, false)] // Low nibble wrap
     public void ADC_Decimal_ProducesCorrectResult_AllVariants(byte a, byte m, byte expected, bool expectedCarry)
     {
-        foreach (var variant in new[] { CpuVariant.NMOS6502, CpuVariant.NMOS6502_NO_ILLEGAL, CpuVariant.WDC65C02, CpuVariant.ROCKWELL65C02 })
+        foreach (var variant in new[] { CpuVariant.Nmos6502, CpuVariant.Nmos6502Simple, CpuVariant.Wdc65C02, CpuVariant.Rockwell65C02 })
         {
             LoadAndReset([0x69, m]); // ADC #m
             CpuBuffer.Current.A = a;
@@ -530,7 +530,7 @@ public class DecimalModeTests : CpuTestBase
     [InlineData(0x10, 0x01, 0x09, true)]  // Low nibble borrow
     public void SBC_Decimal_ProducesCorrectResult_AllVariants(byte a, byte m, byte expected, bool expectedCarry)
     {
-        foreach (var variant in new[] { CpuVariant.NMOS6502, CpuVariant.NMOS6502_NO_ILLEGAL, CpuVariant.WDC65C02, CpuVariant.ROCKWELL65C02 })
+        foreach (var variant in new[] { CpuVariant.Nmos6502, CpuVariant.Nmos6502Simple, CpuVariant.Wdc65C02, CpuVariant.Rockwell65C02 })
         {
             LoadAndReset([0xE9, m]); // SBC #m
             CpuBuffer.Current.A = a;

@@ -81,11 +81,51 @@ public class CpuStateTests
     public void Reset_ClearsPendingInterrupt()
     {
         var state = new CpuState();
-        state.SignalNmi();
+        state.PendingInterrupt = PendingInterrupt.Nmi;
 
         state.Reset();
 
         Assert.Equal(PendingInterrupt.None, state.PendingInterrupt);
+    }
+
+    [Fact]
+    public void Reset_ClearsOpcodeTracking()
+    {
+        var state = new CpuState
+        {
+            CurrentOpcode = 0xA9,
+            OpcodeAddress = 0x1234
+        };
+
+        state.Reset();
+
+        Assert.Equal(0, state.CurrentOpcode);
+        Assert.Equal(0, state.OpcodeAddress);
+    }
+
+    [Fact]
+    public void Clone_CreatesIndependentCopy()
+    {
+        var state = new CpuState
+        {
+            A = 0x42,
+            X = 0x10,
+            PC = 0x2000,
+            CurrentOpcode = 0xEA,
+            OpcodeAddress = 0x2000
+        };
+
+        var clone = state.Clone();
+
+        Assert.NotSame(state, clone);
+        Assert.Equal(state.A, clone.A);
+        Assert.Equal(state.X, clone.X);
+        Assert.Equal(state.PC, clone.PC);
+        Assert.Equal(state.CurrentOpcode, clone.CurrentOpcode);
+        Assert.Equal(state.OpcodeAddress, clone.OpcodeAddress);
+
+        clone.A = 0x99;
+        Assert.NotEqual(state.A, clone.A);
     }
 
     #endregion
@@ -310,97 +350,97 @@ public class CpuStateTests
     [Fact]
     public void SignalIrq_SetsPendingInterrupt()
     {
-        var state = new CpuState();
+        var cpu = CreateCpu(out _, out var buffer);
 
-        state.SignalIrq();
+        cpu.SignalIrq();
 
-        Assert.Equal(PendingInterrupt.Irq, state.PendingInterrupt);
+        Assert.Equal(PendingInterrupt.Irq, buffer.Current.PendingInterrupt);
     }
 
     [Fact]
     public void SignalIrq_DoesNotOverrideNmi()
     {
-        var state = new CpuState();
-        state.SignalNmi();
+        var cpu = CreateCpu(out _, out var buffer);
+        cpu.SignalNmi();
 
-        state.SignalIrq();
+        cpu.SignalIrq();
 
-        Assert.Equal(PendingInterrupt.Nmi, state.PendingInterrupt);
+        Assert.Equal(PendingInterrupt.Nmi, buffer.Current.PendingInterrupt);
     }
 
     [Fact]
     public void SignalNmi_SetsPendingInterrupt()
     {
-        var state = new CpuState();
+        var cpu = CreateCpu(out _, out var buffer);
 
-        state.SignalNmi();
+        cpu.SignalNmi();
 
-        Assert.Equal(PendingInterrupt.Nmi, state.PendingInterrupt);
+        Assert.Equal(PendingInterrupt.Nmi, buffer.Current.PendingInterrupt);
     }
 
     [Fact]
     public void SignalNmi_OverridesIrq()
     {
-        var state = new CpuState();
-        state.SignalIrq();
+        var cpu = CreateCpu(out _, out var buffer);
+        cpu.SignalIrq();
 
-        state.SignalNmi();
+        cpu.SignalNmi();
 
-        Assert.Equal(PendingInterrupt.Nmi, state.PendingInterrupt);
+        Assert.Equal(PendingInterrupt.Nmi, buffer.Current.PendingInterrupt);
     }
 
     [Fact]
-    public void SignalNmi_DoesNotOverrideReset()
+    public void SignalNmi_OverridesReset()
     {
-        var state = new CpuState();
-        state.SignalReset();
+        var cpu = CreateCpu(out _, out var buffer);
+        cpu.SignalReset();
 
-        state.SignalNmi();
+        cpu.SignalNmi();
 
-        Assert.Equal(PendingInterrupt.Reset, state.PendingInterrupt);
+        Assert.Equal(PendingInterrupt.Nmi, buffer.Current.PendingInterrupt);
     }
 
     [Fact]
     public void SignalReset_SetsPendingInterrupt()
     {
-        var state = new CpuState();
+        var cpu = CreateCpu(out _, out var buffer);
 
-        state.SignalReset();
+        cpu.SignalReset();
 
-        Assert.Equal(PendingInterrupt.Reset, state.PendingInterrupt);
+        Assert.Equal(PendingInterrupt.Reset, buffer.Current.PendingInterrupt);
     }
 
     [Fact]
     public void SignalReset_OverridesAll()
     {
-        var state = new CpuState();
-        state.SignalNmi();
+        var cpu = CreateCpu(out _, out var buffer);
+        cpu.SignalNmi();
 
-        state.SignalReset();
+        cpu.SignalReset();
 
-        Assert.Equal(PendingInterrupt.Reset, state.PendingInterrupt);
+        Assert.Equal(PendingInterrupt.Reset, buffer.Current.PendingInterrupt);
     }
 
     [Fact]
     public void ClearIrq_ClearsPendingIrq()
     {
-        var state = new CpuState();
-        state.SignalIrq();
+        var cpu = CreateCpu(out _, out var buffer);
+        cpu.SignalIrq();
 
-        state.ClearIrq();
+        cpu.ClearIrq();
 
-        Assert.Equal(PendingInterrupt.None, state.PendingInterrupt);
+        Assert.Equal(PendingInterrupt.None, buffer.Current.PendingInterrupt);
     }
 
     [Fact]
     public void ClearIrq_DoesNotClearNmi()
     {
-        var state = new CpuState();
-        state.SignalNmi();
+        var cpu = CreateCpu(out _, out var buffer);
+        cpu.SignalNmi();
 
-        state.ClearIrq();
+        cpu.ClearIrq();
 
-        Assert.Equal(PendingInterrupt.Nmi, state.PendingInterrupt);
+        Assert.Equal(PendingInterrupt.Nmi, buffer.Current.PendingInterrupt);
     }
 
     #endregion
@@ -410,72 +450,62 @@ public class CpuStateTests
     [Fact]
     public void HandlePendingInterrupt_Reset_LoadsResetVector()
     {
-        var state = new CpuState();
-        var bus = new TestRamBus();
+        var cpu = CreateCpu(out var bus, out var buffer);
         bus.SetResetVector(0x8000);
-        state.SignalReset();
+        cpu.SignalReset();
 
-        bool handled = state.HandlePendingInterrupt(bus);
+        bool handled = cpu.HandlePendingInterrupt(bus);
 
         Assert.True(handled);
-        Assert.Equal(0x8000, state.PC);
-        Assert.Equal(PendingInterrupt.None, state.PendingInterrupt);
+        Assert.Equal(0x8000, buffer.Current.PC);
+        Assert.Equal(PendingInterrupt.None, buffer.Current.PendingInterrupt);
     }
 
     [Fact]
     public void HandlePendingInterrupt_Reset_ResetsRegisters()
     {
-        var state = new CpuState
-        {
-            A = 0xFF,
-            X = 0xFF,
-            Y = 0xFF
-        };
-        var bus = new TestRamBus();
-        state.SignalReset();
+        var cpu = CreateCpu(out var bus, out var buffer);
+        buffer.Current.A = 0xFF;
+        buffer.Current.X = 0xFF;
+        buffer.Current.Y = 0xFF;
+        cpu.SignalReset();
 
-        state.HandlePendingInterrupt(bus);
+        cpu.HandlePendingInterrupt(bus);
 
-        Assert.Equal(0, state.A);
-        Assert.Equal(0, state.X);
-        Assert.Equal(0, state.Y);
-        Assert.Equal(0xFD, state.SP);
+        Assert.Equal(0, buffer.Current.A);
+        Assert.Equal(0, buffer.Current.X);
+        Assert.Equal(0, buffer.Current.Y);
+        Assert.Equal(0xFD, buffer.Current.SP);
     }
 
     [Fact]
     public void HandlePendingInterrupt_Nmi_LoadsNmiVector()
     {
-        var state = new CpuState
-        {
-            PC = 0x1234,
-            SP = 0xFF
-        };
-        var bus = new TestRamBus();
+        var cpu = CreateCpu(out var bus, out var buffer);
         bus.SetNmiVector(0x9000);
-        state.SignalNmi();
+        buffer.Current.PC = 0x1234;
+        buffer.Current.SP = 0xFF;
+        cpu.SignalNmi();
 
-        bool handled = state.HandlePendingInterrupt(bus);
+        bool handled = cpu.HandlePendingInterrupt(bus);
 
         Assert.True(handled);
-        Assert.Equal(0x9000, state.PC);
+        Assert.Equal(0x9000, buffer.Current.PC);
     }
 
     [Fact]
     public void HandlePendingInterrupt_Nmi_PushesStateToStack()
     {
-        var state = new CpuState
-        {
-            PC = 0x1234,
-            SP = 0xFF,
-            P = 0x00
-        };
-        var bus = new TestRamBus();
+        var cpu = CreateCpu(out var bus, out var buffer);
         bus.SetNmiVector(0x9000);
-        state.SignalNmi();
+        buffer.Current.PC = 0x1234;
+        buffer.Current.SP = 0xFF;
+        buffer.Current.P = 0x00;
+        cpu.SignalNmi();
 
-        state.HandlePendingInterrupt(bus);
+        cpu.HandlePendingInterrupt(bus);
 
-        Assert.Equal(0xFC, state.SP);
+        Assert.Equal(0xFC, buffer.Current.SP);
         Assert.Equal(0x12, bus.Memory[0x01FF]);
         Assert.Equal(0x34, bus.Memory[0x01FE]);
     }
@@ -483,103 +513,100 @@ public class CpuStateTests
     [Fact]
     public void HandlePendingInterrupt_Nmi_SetsInterruptDisable()
     {
-        var state = new CpuState
-        {
-            SP = 0xFF,
-            InterruptDisableFlag = false
-        };
-        var bus = new TestRamBus();
-        state.SignalNmi();
+        var cpu = CreateCpu(out var bus, out var buffer);
+        buffer.Current.SP = 0xFF;
+        buffer.Current.InterruptDisableFlag = false;
+        cpu.SignalNmi();
 
-        state.HandlePendingInterrupt(bus);
+        cpu.HandlePendingInterrupt(bus);
 
-        Assert.True(state.InterruptDisableFlag);
+        Assert.True(buffer.Current.InterruptDisableFlag);
     }
 
     [Fact]
     public void HandlePendingInterrupt_Irq_LoadsIrqVector()
     {
-        var state = new CpuState
-        {
-            PC = 0x1234,
-            SP = 0xFF,
-            InterruptDisableFlag = false
-        };
-        var bus = new TestRamBus();
+        var cpu = CreateCpu(out var bus, out var buffer);
         bus.SetIrqVector(0xA000);
-        state.SignalIrq();
+        buffer.Current.PC = 0x1234;
+        buffer.Current.SP = 0xFF;
+        buffer.Current.InterruptDisableFlag = false;
+        cpu.SignalIrq();
 
-        bool handled = state.HandlePendingInterrupt(bus);
+        bool handled = cpu.HandlePendingInterrupt(bus);
 
         Assert.True(handled);
-        Assert.Equal(0xA000, state.PC);
+        Assert.Equal(0xA000, buffer.Current.PC);
     }
 
     [Fact]
     public void HandlePendingInterrupt_Irq_IgnoredWhenInterruptDisabled()
     {
-        var state = new CpuState
-        {
-            PC = 0x1234,
-            SP = 0xFF,
-            InterruptDisableFlag = true
-        };
-        var bus = new TestRamBus();
+        var cpu = CreateCpu(out var bus, out var buffer);
         bus.SetIrqVector(0xA000);
-        state.SignalIrq();
+        buffer.Current.PC = 0x1234;
+        buffer.Current.SP = 0xFF;
+        buffer.Current.InterruptDisableFlag = true;
+        cpu.SignalIrq();
 
-        bool handled = state.HandlePendingInterrupt(bus);
+        bool handled = cpu.HandlePendingInterrupt(bus);
 
         Assert.False(handled);
-        Assert.Equal(0x1234, state.PC);
+        Assert.Equal(0x1234, buffer.Current.PC);
     }
 
     [Fact]
     public void HandlePendingInterrupt_Irq_HandledWhenWaitingEvenIfDisabled()
     {
-        var state = new CpuState
-        {
-            PC = 0x1234,
-            SP = 0xFF,
-            Status = CpuStatus.Waiting,
-            InterruptDisableFlag = true
-        };
-        var bus = new TestRamBus();
+        var cpu = CreateCpu(out var bus, out var buffer);
         bus.SetIrqVector(0xA000);
-        state.SignalIrq();
+        buffer.Current.PC = 0x1234;
+        buffer.Current.SP = 0xFF;
+        buffer.Current.Status = CpuStatus.Waiting;
+        buffer.Current.InterruptDisableFlag = true;
+        cpu.SignalIrq();
 
-        bool handled = state.HandlePendingInterrupt(bus);
+        bool handled = cpu.HandlePendingInterrupt(bus);
 
         Assert.True(handled);
-        Assert.Equal(CpuStatus.Running, state.Status);
+        Assert.Equal(CpuStatus.Running, buffer.Current.Status);
     }
 
     [Fact]
     public void HandlePendingInterrupt_Nmi_ResumesFromWaiting()
     {
-        var state = new CpuState
-        {
-            SP = 0xFF,
-            Status = CpuStatus.Waiting
-        };
-        var bus = new TestRamBus();
-        state.SignalNmi();
+        var cpu = CreateCpu(out var bus, out var buffer);
+        buffer.Current.SP = 0xFF;
+        buffer.Current.Status = CpuStatus.Waiting;
+        cpu.SignalNmi();
 
-        state.HandlePendingInterrupt(bus);
+        cpu.HandlePendingInterrupt(bus);
 
-        Assert.Equal(CpuStatus.Running, state.Status);
+        Assert.Equal(CpuStatus.Running, buffer.Current.Status);
     }
 
     [Fact]
     public void HandlePendingInterrupt_None_ReturnsFalse()
     {
-        var state = new CpuState();
-        var bus = new TestRamBus();
+        var cpu = CreateCpu(out var bus, out var buffer);
+        buffer.Current.PendingInterrupt = PendingInterrupt.None;
 
-        bool handled = state.HandlePendingInterrupt(bus);
+        bool handled = cpu.HandlePendingInterrupt(bus);
 
         Assert.False(handled);
     }
 
     #endregion
+
+    private static IPandowdyCpu CreateCpu(out TestRamBus bus, out CpuStateBuffer buffer)
+    {
+        bus = new TestRamBus();
+        bus.SetResetVector(0x8000);
+        bus.SetIrqVector(0xA000);
+        bus.SetNmiVector(0x9000);
+        buffer = new CpuStateBuffer();
+        var cpu = CpuFactory.Create(CpuVariant.Nmos6502, buffer);
+        cpu.Reset(bus);
+        return cpu;
+    }
 }

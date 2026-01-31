@@ -13,7 +13,7 @@ namespace Pandowdy.Cpu.Tests;
 /// </summary>
 public class NMOS6502OpcodeTests : CpuTestBase
 {
-    protected override CpuVariant Variant => CpuVariant.NMOS6502;
+    protected override CpuVariant Variant => CpuVariant.Nmos6502;
 
     #region LDA - Load Accumulator (All Addressing Modes)
 
@@ -1003,7 +1003,7 @@ public class NMOS6502OpcodeTests : CpuTestBase
         Bus.SetResetVector(0x04F0); // Near end of page
         Bus.Memory[0x04F0] = 0xF0; // BEQ
         Bus.Memory[0x04F1] = 0x20; // +32 -> crosses to 0x0512
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
         CpuBuffer.Current.ZeroFlag = true;
         CpuBuffer.Prev.ZeroFlag = true;
         int cycles = StepInstruction();
@@ -1018,7 +1018,7 @@ public class NMOS6502OpcodeTests : CpuTestBase
         Bus.SetResetVector(0x0500);
         Bus.Memory[0x0500] = 0xD0; // BNE
         Bus.Memory[0x0501] = 0xFE; // -2 (but signed, goes back)
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
         CpuBuffer.Current.ZeroFlag = false;
         CpuBuffer.Prev.ZeroFlag = false;
 
@@ -1034,7 +1034,7 @@ public class NMOS6502OpcodeTests : CpuTestBase
         Bus.SetResetVector(0x0500);
         Bus.Memory[0x0500] = 0xD0; // BNE
         Bus.Memory[0x0501] = 0x80; // -128 signed
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
         CpuBuffer.Current.ZeroFlag = false;
         CpuBuffer.Prev.ZeroFlag = false;
 
@@ -1246,7 +1246,7 @@ public class NMOS6502OpcodeTests : CpuTestBase
         Bus.Memory[0x0402] = 0x80; // Target: $8000
         Bus.Memory[0x0403] = 0xEA; // NOP (next instruction)
         Bus.Memory[0x8000] = 0x60; // RTS
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
         CpuBuffer.Current.SP = 0xFF;
         CpuBuffer.Prev.SP = 0xFF;
 

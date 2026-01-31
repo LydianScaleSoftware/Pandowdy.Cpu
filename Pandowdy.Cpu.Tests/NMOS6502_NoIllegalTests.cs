@@ -13,7 +13,7 @@ namespace Pandowdy.Cpu.Tests;
 /// </summary>
 public class NMOS6502_NoIllegalTests : CoreInstructionTests
 {
-    protected override CpuVariant Variant => CpuVariant.NMOS6502_NO_ILLEGAL;
+    protected override CpuVariant Variant => CpuVariant.Nmos6502Simple;
 
     #region JMP Indirect Page Boundary Bug (NMOS specific)
 

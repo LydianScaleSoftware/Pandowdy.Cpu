@@ -5,7 +5,7 @@
 namespace Pandowdy.Cpu.Tests;
 
 /// <summary>
-/// Base class for CPU instruction tests providing common setup and helper methods.
+/// Base class for CPU instruction tests using the instance-based CPU API.
 /// Each CPU variant should have its own derived test class.
 /// </summary>
 public abstract class CpuTestBase
@@ -21,15 +21,22 @@ public abstract class CpuTestBase
 
     protected TestRamBus Bus { get; private set; } = null!;
     protected CpuStateBuffer CpuBuffer { get; private set; } = null!;
+    protected IPandowdyCpu Cpu { get; private set; } = null!;
 
     protected void SetupCpu()
     {
+        SetupCpu(Variant);
+    }
+
+    protected void SetupCpu(CpuVariant variant)
+    {
         Bus = new TestRamBus();
         CpuBuffer = new CpuStateBuffer();
+        Cpu = CpuFactory.Create(variant, CpuBuffer);
         Bus.SetResetVector(ProgramStart);
         Bus.SetIrqVector(IrqHandler);
         Bus.SetNmiVector(NmiHandler);
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
     }
 
     /// <summary>
@@ -39,7 +46,7 @@ public abstract class CpuTestBase
     {
         SetupCpu();
         Bus.LoadProgram(ProgramStart, program);
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
     }
 
     /// <summary>
@@ -48,7 +55,7 @@ public abstract class CpuTestBase
     /// </summary>
     protected int StepInstruction()
     {
-        return Cpu.Step(Variant, CpuBuffer, Bus);
+        return Cpu.Step(Bus);
     }
 
     /// <summary>
@@ -56,7 +63,12 @@ public abstract class CpuTestBase
     /// </summary>
     protected int StepInstruction(CpuVariant variant)
     {
-        return Cpu.Step(variant, CpuBuffer, Bus);
+        if (Cpu.Variant != variant)
+        {
+            Cpu = CpuFactory.Create(variant, CpuBuffer);
+        }
+
+        return Cpu.Step(Bus);
     }
 
     /// <summary>
@@ -72,11 +84,16 @@ public abstract class CpuTestBase
     /// </summary>
     protected int ExecuteInstruction(CpuVariant variant)
     {
+        if (Cpu.Variant != variant)
+        {
+            Cpu = CpuFactory.Create(variant, CpuBuffer);
+        }
+
         int cycles = 0;
         bool complete = false;
         while (!complete)
         {
-            complete = Cpu.Clock(variant, CpuBuffer, Bus);
+            complete = Cpu.Clock(Bus);
             cycles++;
         }
         return cycles;

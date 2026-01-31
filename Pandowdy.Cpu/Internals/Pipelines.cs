@@ -31,10 +31,10 @@ internal static partial class Pipelines
     /// <returns>An array of 256 pipeline arrays, one for each opcode.</returns>
     public static MicroOp[][] GetPipelines(CpuVariant variant) => variant switch
     {
-        CpuVariant.NMOS6502 => Pipelines6502,
-        CpuVariant.NMOS6502_NO_ILLEGAL => Pipelines6502NoIllegal,
-        CpuVariant.WDC65C02 => Pipelines65C02,
-        CpuVariant.ROCKWELL65C02 => Pipelines65C02Rockwell,
+        CpuVariant.Nmos6502 => Pipelines6502,
+        CpuVariant.Nmos6502Simple => Pipelines6502NoIllegal,
+        CpuVariant.Wdc65C02 => Pipelines65C02,
+        CpuVariant.Rockwell65C02 => Pipelines65C02Rockwell,
         _ => Pipelines6502
     };
 

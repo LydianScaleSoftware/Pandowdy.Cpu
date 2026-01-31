@@ -16,7 +16,7 @@ namespace Pandowdy.Cpu.Tests;
 /// </summary>
 public class CpuStateBufferDebuggerTests : CpuTestBase
 {
-    protected override CpuVariant Variant => CpuVariant.WDC65C02;
+    protected override CpuVariant Variant => CpuVariant.Wdc65C02;
 
     #region PcChanged Tests
 
@@ -45,7 +45,7 @@ public class CpuStateBufferDebuggerTests : CpuTestBase
     {
         // Execute partial instruction to see PC change during execution
         LoadAndReset([0xAD, 0x34, 0x12]); // LDA $1234 (4 cycles)
-        Cpu.Clock(Variant, CpuBuffer, Bus); // First cycle advances PC
+        Cpu.Clock(Bus); // First cycle advances PC
 
         Assert.True(CpuBuffer.PcChanged);
     }
@@ -58,7 +58,7 @@ public class CpuStateBufferDebuggerTests : CpuTestBase
     public void JumpOccurred_ReturnsFalse_WhenInstructionNotComplete()
     {
         LoadAndReset([0xAD, 0x34, 0x12]); // LDA $1234 (4 cycles)
-        Cpu.Clock(Variant, CpuBuffer, Bus); // Execute 1 cycle
+        Cpu.Clock(Bus); // Execute 1 cycle
 
         Assert.False(CpuBuffer.JumpOccurred);
     }
@@ -582,7 +582,7 @@ public class CpuStateBufferDebuggerTests : CpuTestBase
     {
         // Execute partial instruction to observe state differences
         LoadAndReset([0xA9, 0x42]); // LDA #$42
-        Cpu.Clock(Variant, CpuBuffer, Bus); // First cycle - fetch opcode
+        Cpu.Clock(Bus); // First cycle - fetch opcode
 
         // During execution, PC should have changed
         Assert.True(CpuBuffer.PcChanged);
@@ -598,9 +598,9 @@ public class CpuStateBufferDebuggerTests : CpuTestBase
         SetMemory(0x1310, 0x42);
 
         // Execute through the address calculation cycles
-        Cpu.Clock(Variant, CpuBuffer, Bus); // Cycle 1: Fetch opcode
-        Cpu.Clock(Variant, CpuBuffer, Bus); // Cycle 2: Fetch low address
-        Cpu.Clock(Variant, CpuBuffer, Bus); // Cycle 3: Fetch high address + add X
+        Cpu.Clock(Bus); // Cycle 1: Fetch opcode
+        Cpu.Clock(Bus); // Cycle 2: Fetch low address
+        Cpu.Clock(Bus); // Cycle 3: Fetch high address + add X
 
         // At this point, TempAddress should show page crossing
         Assert.True(CpuBuffer.PageCrossed);

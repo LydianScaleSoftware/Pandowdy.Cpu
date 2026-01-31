@@ -1,4 +1,4 @@
-﻿// Copyright 2026 Mark D. Long
+// Copyright 2026 Mark D. Long
 // Licensed under the Apache License, Version 2.0
 // See LICENSE file for details
 
@@ -42,6 +42,7 @@ internal class Program
 
         // Allow test path override via command line or environment variable
         var testPath = GetTestPath(args);
+  
 
         if (!Directory.Exists(testPath))
         {

@@ -23,10 +23,10 @@ public class HarteTestRunner(string testBasePath)
     /// </summary>
     private static readonly Dictionary<string, (CpuVariant Variant, string TestFolder)> VariantMap = new()
     {
-        ["NMOS6502"] = (CpuVariant.NMOS6502, "6502"),
-        ["NMOS6502_NO_ILLEGAL"] = (CpuVariant.NMOS6502_NO_ILLEGAL, "6502"),
-        ["ROCKWELL65C02"] = (CpuVariant.ROCKWELL65C02, "rockwell65c02"),
-        ["WDC65C02"] = (CpuVariant.WDC65C02, "wdc65c02")
+        ["Nmos6502"] = (CpuVariant.Nmos6502, "6502"),
+        ["Nmos6502Simple"] = (CpuVariant.Nmos6502Simple, "6502"),
+        ["Rockwell65C02"] = (CpuVariant.Rockwell65C02, "rockwell65c02"),
+        ["Wdc65C02"] = (CpuVariant.Wdc65C02, "wdc65c02")
     };
 
     /// <summary>
@@ -95,7 +95,7 @@ public class HarteTestRunner(string testBasePath)
 
         var cpuVariant = variantInfo.Variant;
         var testFolder = variantInfo.TestFolder;
-        var skipIllegal = cpuVariant == CpuVariant.NMOS6502_NO_ILLEGAL;
+        var skipIllegal = cpuVariant == CpuVariant.Nmos6502Simple;
 
         var variantPath = Path.Combine(_testBasePath, testFolder);
         if (!Directory.Exists(variantPath))
@@ -263,10 +263,12 @@ public class HarteTestRunner(string testBasePath)
             var testCases = LoadTestCases(testFilePath);
             summary.TotalTests = testCases.Count;
 
+            var cpu = CpuFactory.Create(variant, _cpuBuffer);
+
             for (int testIndex = 0; testIndex < testCases.Count; testIndex++)
             {
                 var testCase = testCases[testIndex];
-                var result = RunSingleTest(testCase, variant, testMode);
+                var result = RunSingleTest(testCase, cpu, testMode);
                 result.TestIndex = testIndex;
                 if (result.Passed)
                 {
@@ -326,7 +328,7 @@ public class HarteTestRunner(string testBasePath)
     /// <param name="testCase">The test case to run.</param>
     /// <param name="variant">The CPU variant to test.</param>
     /// <param name="testMode">Whether to run bookend or complete validation.</param>
-    private HarteTestResult RunSingleTest(HarteTestCase testCase, CpuVariant variant, TestMode testMode)
+    private HarteTestResult RunSingleTest(HarteTestCase testCase, IPandowdyCpu cpu, TestMode testMode)
     {
         var result = new HarteTestResult
         {
@@ -376,7 +378,7 @@ public class HarteTestRunner(string testBasePath)
             }
 
             // Execute one instruction
-            result.ActualCycles = Cpu.Step(variant, _cpuBuffer, _bus);
+            result.ActualCycles = cpu.Step(_bus);
 
             // Stop cycle tracking
             if (testMode == TestMode.Complete)
@@ -573,7 +575,7 @@ public class HarteTestRunner(string testBasePath)
     /// </summary>
     private string? VerifyFinalState(HarteState expected)
     {
-        var actual = _cpuBuffer.Prev; // After Step, committed state is in Prev
+        var actual = _cpuBuffer.Current; // After Step, the result state is in Current
 
         // Check registers
         if (actual.PC != (ushort)expected.PC)

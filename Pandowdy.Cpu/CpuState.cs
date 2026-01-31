@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0
 // See LICENSE file for details
 
+using System;
 using Pandowdy.Cpu.Internals;
 
 namespace Pandowdy.Cpu;
@@ -234,6 +235,25 @@ public class CpuState
     /// </remarks>
     public ushort TempValue { get; set; }
 
+    /// <summary>
+    /// Gets or sets the opcode byte currently being executed.
+    /// </summary>
+    /// <remarks>
+    /// Set during instruction fetch. Useful for debugging and disassembly.
+    /// Initialized to 0 in constructor and Reset().
+    /// </remarks>
+    public byte CurrentOpcode { get; set; }
+
+    /// <summary>
+    /// Gets or sets the address from which the current opcode was read.
+    /// </summary>
+    /// <remarks>
+    /// Set during instruction fetch. This is the PC value at the start of the instruction,
+    /// eliminating guesswork about the PC's relationship to the current instruction.
+    /// Initialized to 0 in constructor and Reset().
+    /// </remarks>
+    public ushort OpcodeAddress { get; set; }
+
     // ========================================
     // Pipeline Execution State
     // ========================================
@@ -267,6 +287,14 @@ public class CpuState
     /// When true, the CPU will swap buffers and check for pending interrupts.
     /// </remarks>
     public bool InstructionComplete { get; set; }
+
+    /// <summary>
+    /// Gets the number of clock cycles remaining in the current instruction.
+    /// </summary>
+    /// <remarks>
+    /// Returns 0 when no instruction is in progress.
+    /// </remarks>
+    public int CyclesRemaining => Pipeline.Length - PipelineIndex;
 
     /// <summary>
     /// Gets or sets the current execution status of the CPU.
@@ -374,6 +402,8 @@ public class CpuState
 
         TempAddress = 0;
         TempValue = 0;
+        CurrentOpcode = 0;
+        OpcodeAddress = 0;
 
         Pipeline = [];
         PipelineIndex = 0;
@@ -407,6 +437,8 @@ public class CpuState
 
             TempAddress = other.TempAddress;
             TempValue = other.TempValue;
+            CurrentOpcode = other.CurrentOpcode;
+            OpcodeAddress = other.OpcodeAddress;
 
             // Share the pipeline array reference (immutable during execution)
             Pipeline = other.Pipeline;
@@ -414,6 +446,22 @@ public class CpuState
             InstructionComplete = other.InstructionComplete;
             Status = other.Status;
             PendingInterrupt = other.PendingInterrupt;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of this CPU state.
+        /// </summary>
+        /// <returns>A new <see cref="CpuState"/> instance with all values copied.</returns>
+        /// <remarks>
+        /// Use this for save states or when you need an independent copy.
+        /// For hot-path updates where you want to avoid allocation, use
+        /// <see cref="CopyFrom"/> on an existing instance instead.
+        /// </remarks>
+        public CpuState Clone()
+        {
+            var clone = new CpuState();
+            clone.CopyFrom(this);
+            return clone;
         }
 
         // ========================================
@@ -468,294 +516,4 @@ public class CpuState
 
         /// <summary>Gets or sets the Negative flag. Set when the result has bit 7 set (negative in signed arithmetic).</summary>
         public bool NegativeFlag { get => GetFlag(FlagN); set => SetFlag(FlagN, value); }
-
-        // ========================================
-        // Interrupt Vector Addresses
-        // ========================================
-
-        /// <summary>Memory address of the NMI vector ($FFFA-$FFFB).</summary>
-        private const ushort NmiVector = 0xFFFA;
-
-        /// <summary>Memory address of the Reset vector ($FFFC-$FFFD).</summary>
-        private const ushort ResetVector = 0xFFFC;
-
-        /// <summary>Memory address of the IRQ/BRK vector ($FFFE-$FFFF).</summary>
-        private const ushort IrqVector = 0xFFFE;
-
-        // ========================================
-        // Interrupt Signal Methods
-        // ========================================
-
-        /// <summary>
-        /// Signals an IRQ (Interrupt Request).
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// The IRQ will be serviced at the next instruction boundary if the
-        /// <see cref="InterruptDisableFlag"/> is clear. If the I flag is set,
-        /// the IRQ remains pending until the flag is cleared.
-        /// </para>
-        /// <para>
-        /// IRQ has the lowest priority. If an NMI or Reset is already pending,
-        /// the IRQ signal is ignored.
-        /// </para>
-        /// </remarks>
-        public void SignalIrq()
-        {
-            // Only set if no higher priority interrupt is pending
-            if (PendingInterrupt == PendingInterrupt.None)
-            {
-                PendingInterrupt = PendingInterrupt.Irq;
-            }
-        }
-
-        /// <summary>
-        /// Signals an NMI (Non-Maskable Interrupt).
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// The NMI will be serviced at the next instruction boundary.
-        /// Unlike IRQ, NMI cannot be disabled by the I flag.
-        /// </para>
-        /// <para>
-        /// NMI has higher priority than IRQ but lower than Reset.
-        /// If a Reset is already pending, the NMI signal is ignored.
-        /// </para>
-        /// </remarks>
-        public void SignalNmi()
-        {
-            // NMI has priority over IRQ, but not Reset
-            if (PendingInterrupt != PendingInterrupt.Reset)
-            {
-                PendingInterrupt = PendingInterrupt.Nmi;
-            }
-        }
-
-        /// <summary>
-        /// Signals a hardware Reset.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Reset has the highest priority and will always be serviced at the
-        /// next instruction boundary. All other pending interrupts are superseded.
-        /// </para>
-        /// <para>
-        /// When handled, Reset reinitializes all CPU registers and loads PC
-        /// from the reset vector at $FFFC-$FFFD.
-        /// </para>
-        /// </remarks>
-        public void SignalReset()
-        {
-            // Reset has highest priority
-            PendingInterrupt = PendingInterrupt.Reset;
-        }
-
-        /// <summary>
-        /// Clears a pending IRQ signal.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// Use this for level-triggered IRQ behavior. Call when the IRQ line
-        /// goes high (inactive) to clear the pending interrupt before it is serviced.
-        /// </para>
-        /// <para>
-        /// Only clears the pending interrupt if it is an IRQ; NMI and Reset
-        /// signals are not affected.
-        /// </para>
-        /// </remarks>
-        public void ClearIrq()
-        {
-            if (PendingInterrupt == PendingInterrupt.Irq)
-            {
-                PendingInterrupt = PendingInterrupt.None;
-            }
-        }
-
-        // ========================================
-        // Interrupt Handler Methods
-        // ========================================
-
-        /// <summary>
-        /// Checks for and handles any pending interrupt.
-        /// </summary>
-        /// <param name="bus">The bus interface for reading vectors and writing to the stack.</param>
-        /// <returns><c>true</c> if an interrupt was handled; <c>false</c> if no interrupt was pending or IRQ was masked.</returns>
-        /// <remarks>
-        /// <para>
-        /// This method should be called at instruction boundaries (when <see cref="InstructionComplete"/> is true).
-        /// It checks for pending interrupts in priority order: Reset > NMI > IRQ.
-        /// </para>
-        /// <para>
-        /// For IRQ, the interrupt is only serviced if the <see cref="InterruptDisableFlag"/> is clear,
-        /// unless the CPU is in <see cref="CpuStatus.Waiting"/> state (WAI instruction allows
-        /// IRQ to wake the CPU even when I flag is set).
-        /// </para>
-        /// </remarks>
-        public bool HandlePendingInterrupt(IPandowdyCpuBus bus)
-        {
-            switch (PendingInterrupt)
-            {
-                case PendingInterrupt.Reset:
-                    HandleReset(bus);
-                    return true;
-
-                case PendingInterrupt.Nmi:
-                    HandleNmi(bus);
-                    return true;
-
-                case PendingInterrupt.Irq:
-                    // IRQ is ignored if I flag is set (unless we're in Waiting state)
-                    if (InterruptDisableFlag && Status != CpuStatus.Waiting)
-                    {
-                        return false;
-                    }
-
-                    HandleIrq(bus);
-                    return true;
-
-                default:
-                    return false;
-            }
-        }
-
-        /// <summary>
-        /// Handles an NMI (Non-Maskable Interrupt).
-        /// </summary>
-        /// <param name="bus">The bus interface for reading the vector and writing to the stack.</param>
-        /// <remarks>
-        /// <para>Performs the following sequence:</para>
-        /// <list type="number">
-        ///   <item><description>Push PC high byte to stack</description></item>
-        ///   <item><description>Push PC low byte to stack</description></item>
-        ///   <item><description>Push P to stack (with B clear, U set)</description></item>
-        ///   <item><description>Set the I flag</description></item>
-        ///   <item><description>Load PC from NMI vector ($FFFA-$FFFB)</description></item>
-        /// </list>
-        /// <para>If the CPU was in <see cref="CpuStatus.Waiting"/> state, it resumes to <see cref="CpuStatus.Running"/>.</para>
-        /// </remarks>
-        private void HandleNmi(IPandowdyCpuBus bus)
-        {
-            PendingInterrupt = PendingInterrupt.None;
-
-            // Push PC high byte
-            bus.Write((ushort) (0x0100 + SP), (byte) (PC >> 8));
-            SP--;
-
-            // Push PC low byte
-            bus.Write((ushort) (0x0100 + SP), (byte) (PC & 0xFF));
-            SP--;
-
-            // Push P with B flag clear (NMI clears B, U always set)
-        byte statusToPush = (byte) ((P | FlagU) & ~FlagB);
-        bus.Write((ushort) (0x0100 + SP), statusToPush);
-        SP--;
-
-        // Set I flag
-            P |= FlagI;
-
-            // Load PC from NMI vector
-            byte low = bus.CpuRead(NmiVector);
-            byte high = bus.CpuRead((ushort) (NmiVector + 1));
-            PC = (ushort) ((high << 8) | low);
-
-            // Clear pipeline and resume if waiting
-            Pipeline = [];
-            PipelineIndex = 0;
-            InstructionComplete = false;
-            if (Status == CpuStatus.Waiting)
-            {
-                Status = CpuStatus.Running;
-            }
-        }
-
-        /// <summary>
-        /// Handles an IRQ (Interrupt Request).
-        /// </summary>
-        /// <param name="bus">The bus interface for reading the vector and writing to the stack.</param>
-        /// <remarks>
-        /// <para>Performs the following sequence:</para>
-        /// <list type="number">
-        ///   <item><description>Push PC high byte to stack</description></item>
-        ///   <item><description>Push PC low byte to stack</description></item>
-        ///   <item><description>Push P to stack (with B clear, U set)</description></item>
-        ///   <item><description>Set the I flag</description></item>
-        ///   <item><description>Load PC from IRQ vector ($FFFE-$FFFF)</description></item>
-        /// </list>
-        /// <para>If the CPU was in <see cref="CpuStatus.Waiting"/> state, it resumes to <see cref="CpuStatus.Running"/>.</para>
-        /// </remarks>
-        private void HandleIrq(IPandowdyCpuBus bus)
-        {
-            PendingInterrupt = PendingInterrupt.None;
-
-            // Push PC high byte
-            bus.Write((ushort) (0x0100 + SP), (byte) (PC >> 8));
-            SP--;
-
-            // Push PC low byte
-            bus.Write((ushort) (0x0100 + SP), (byte) (PC & 0xFF));
-            SP--;
-
-            // Push P with B flag clear (IRQ clears B, U always set)
-            byte statusToPush = (byte) ((P | FlagU) & ~FlagB);
-            bus.Write((ushort) (0x0100 + SP), statusToPush);
-            SP--;
-
-            // Set I flag
-            P |= FlagI;
-
-            // Load PC from IRQ vector
-            byte low = bus.CpuRead(IrqVector);
-            byte high = bus.CpuRead((ushort) (IrqVector + 1));
-            PC = (ushort) ((high << 8) | low);
-
-            // Clear pipeline and resume if waiting
-            Pipeline = [];
-            PipelineIndex = 0;
-            InstructionComplete = false;
-            if (Status == CpuStatus.Waiting)
-            {
-                Status = CpuStatus.Running;
-            }
-        }
-
-        /// <summary>
-        /// Handles a hardware Reset.
-        /// </summary>
-        /// <param name="bus">The bus interface for reading the reset vector.</param>
-        /// <remarks>
-        /// <para>Reinitializes the CPU to power-on state:</para>
-        /// <list type="bullet">
-        ///   <item><description>A, X, Y = 0</description></item>
-        ///   <item><description>SP = $FD</description></item>
-        ///   <item><description>P = $24 (U and I flags set)</description></item>
-        ///   <item><description>Load PC from reset vector ($FFFC-$FFFD)</description></item>
-        ///   <item><description>Status = Running</description></item>
-        /// </list>
-        /// <para>Unlike NMI/IRQ, Reset does not push anything to the stack.</para>
-        /// </remarks>
-        private void HandleReset(IPandowdyCpuBus bus)
-        {
-            PendingInterrupt = PendingInterrupt.None;
-
-            // Reset registers
-            A = 0;
-            X = 0;
-            Y = 0;
-            P = FlagU | FlagI;  // Unused always set, IRQ disabled
-            SP = 0xFD;          // Stack pointer after reset sequence
-
-            TempAddress = 0;
-            TempValue = 0;
-
-            // Load PC from reset vector
-            byte low = bus.CpuRead(ResetVector);
-            byte high = bus.CpuRead((ushort) (ResetVector + 1));
-            PC = (ushort) ((high << 8) | low);
-
-        // Clear pipeline and set to running
-        Pipeline = [];
-        PipelineIndex = 0;
-        InstructionComplete = false;
-        Status = CpuStatus.Running;
-    }
 }

@@ -6,6 +6,7 @@
     <File Path="BUILDING.md" />
     <File Path="docs/ApiReference.md" />
     <File Path="docs/CpuUsageGuide.md" />
+    <File Path="docs/v3-refactoring-plan.md" />
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>

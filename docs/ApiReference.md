@@ -4,7 +4,9 @@ This document provides a comprehensive reference for the Pandowdy.Cpu library AP
 
 ## Table of Contents
 
-- [Cpu Class](#cpu-class)
+- [IPandowdyCpu Interface](#ipandowdycpu-interface)
+- [CpuFactory Class](#cpufactory-class)
+- [CPU Classes](#cpu-classes)
 - [CpuState Class](#cpustate-class)
 - [CpuStateBuffer Class](#cpustatebuffer-class)
 - [IPandowdyCpuBus Interface](#ipandowdycpubus-interface)
@@ -12,23 +14,21 @@ This document provides a comprehensive reference for the Pandowdy.Cpu library AP
 
 ---
 
-## Cpu Class
+## IPandowdyCpu Interface
 
-The `Cpu` static class provides the main execution engine for the CPU emulator.
+The `IPandowdyCpu` interface defines the contract for all CPU implementations.
 
-### Methods
+### Execution Methods
 
 #### Clock
 
 ```csharp
-bool Clock(CpuVariant variant, CpuStateBuffer buffer, IPandowdyCpuBus bus)
+bool Clock(IPandowdyCpuBus bus)
 ```
 
 Executes a single CPU clock cycle.
 
 **Parameters:**
-- `variant` — The CPU variant to emulate (NMOS6502, WDC65C02, etc.)
-- `buffer` — The double-buffered CPU state
 - `bus` — The memory/IO bus interface
 
 **Returns:** `true` if an instruction completed on this cycle; `false` otherwise.
@@ -43,14 +43,12 @@ Executes a single CPU clock cycle.
 #### Step
 
 ```csharp
-int Step(CpuVariant variant, CpuStateBuffer buffer, IPandowdyCpuBus bus)
+int Step(IPandowdyCpuBus bus)
 ```
 
 Executes a single complete instruction.
 
 **Parameters:**
-- `variant` — The CPU variant to emulate
-- `buffer` — The double-buffered CPU state
 - `bus` — The memory/IO bus interface
 
 **Returns:** The number of cycles consumed by the instruction.
@@ -65,14 +63,12 @@ Executes a single complete instruction.
 #### Run
 
 ```csharp
-int Run(CpuVariant variant, CpuStateBuffer buffer, IPandowdyCpuBus bus, int maxCycles)
+int Run(IPandowdyCpuBus bus, int maxCycles)
 ```
 
 Executes for a specified number of clock cycles.
 
 **Parameters:**
-- `variant` — The CPU variant to emulate
-- `buffer` — The double-buffered CPU state
 - `bus` — The memory/IO bus interface
 - `maxCycles` — Maximum number of cycles to execute
 
@@ -87,13 +83,12 @@ Executes for a specified number of clock cycles.
 #### Reset
 
 ```csharp
-void Reset(CpuStateBuffer buffer, IPandowdyCpuBus bus)
+void Reset(IPandowdyCpuBus bus)
 ```
 
 Performs a hardware reset of the CPU.
 
 **Parameters:**
-- `buffer` — The double-buffered CPU state
 - `bus` — The memory/IO bus interface (for reading reset vector)
 
 **Remarks:**
@@ -103,34 +98,157 @@ Performs a hardware reset of the CPU.
 
 ---
 
-#### CurrentOpcode
+### Interrupt Methods
+
+#### SignalIrq
 
 ```csharp
-byte CurrentOpcode(CpuStateBuffer buffer, IPandowdyCpuBus bus)
+void SignalIrq()
 ```
 
-Gets the opcode of the currently executing instruction.
+Signals an IRQ (Interrupt Request).
 
-**Parameters:**
-- `buffer` — The double-buffered CPU state
-- `bus` — The memory/IO bus interface
-
-**Returns:** The opcode byte at the current instruction's PC.
+**Remarks:**
+- The IRQ will be serviced at the next instruction boundary if the I flag is clear.
+- If the I flag is set, the IRQ remains pending until the flag is cleared.
+- IRQ has the lowest priority; if an NMI or Reset is already pending, the IRQ is ignored.
 
 ---
 
-#### CyclesRemaining
+#### SignalNmi
 
 ```csharp
-int CyclesRemaining(CpuStateBuffer buffer)
+void SignalNmi()
 ```
 
-Gets the number of cycles remaining in the current instruction's pipeline.
+Signals an NMI (Non-Maskable Interrupt).
+
+**Remarks:**
+- The NMI will be serviced at the next instruction boundary.
+- NMI cannot be disabled by the I flag.
+- NMI has higher priority than IRQ but lower than Reset.
+
+---
+
+#### SignalReset
+
+```csharp
+void SignalReset()
+```
+
+Signals a hardware Reset.
+
+**Remarks:**
+- Reset has the highest priority and will always be serviced at the next instruction boundary.
+- All other pending interrupts are superseded.
+
+---
+
+#### ClearIrq
+
+```csharp
+void ClearIrq()
+```
+
+Clears a pending IRQ signal.
+
+**Remarks:**
+- Use for level-triggered IRQ behavior.
+- Call when the IRQ line goes high (inactive) to clear the pending interrupt before it is serviced.
+- Only clears the pending interrupt if it is an IRQ; NMI and Reset signals are not affected.
+
+---
+
+#### HandlePendingInterrupt
+
+```csharp
+bool HandlePendingInterrupt(IPandowdyCpuBus bus)
+```
+
+Checks for and handles any pending interrupt.
 
 **Parameters:**
-- `buffer` — The double-buffered CPU state
+- `bus` — The memory/IO bus interface
 
-**Returns:** The count of micro-ops yet to execute.
+**Returns:** `true` if an interrupt was handled; `false` if no interrupt was pending or IRQ was masked.
+
+**Remarks:**
+- Should be called at instruction boundaries.
+- Checks for pending interrupts in priority order: Reset > NMI > IRQ.
+- For IRQ, the interrupt is only serviced if the I flag is clear, unless the CPU is in Waiting state.
+- D-flag clearing behavior depends on CPU variant:
+  - NMOS 6502: D flag is NOT cleared on IRQ/NMI
+  - 65C02: D flag IS cleared on IRQ/NMI
+
+---
+
+### Properties
+
+#### Variant
+
+```csharp
+CpuVariant Variant { get; }
+```
+
+Gets the CPU variant this instance emulates.
+
+---
+
+#### Buffer
+
+```csharp
+CpuStateBuffer Buffer { get; set; }
+```
+
+Gets or sets the CPU state buffer.
+
+**Remarks:**
+- The buffer is settable to allow swapping state buffers at runtime without constructing a new CPU instance.
+- Useful for scenarios like switching between multiple emulated machines, save/restore, or testing.
+
+---
+
+## CpuFactory Class
+
+Factory for creating CPU instances by variant.
+
+### Create
+
+```csharp
+static IPandowdyCpu Create(CpuVariant variant, CpuStateBuffer buffer)
+```
+
+Creates a CPU instance for the specified variant.
+
+**Parameters:**
+- `variant` — The CPU variant to emulate
+- `buffer` — The state buffer to use
+
+**Returns:** An `IPandowdyCpu` instance for the specified variant.
+
+**Example:**
+```csharp
+var buffer = new CpuStateBuffer();
+var cpu = CpuFactory.Create(CpuVariant.Wdc65C02, buffer);
+cpu.Reset(bus);
+```
+
+---
+
+## CPU Classes
+
+Concrete CPU implementations, all implementing `IPandowdyCpu`:
+
+| Class | Variant | Description |
+|-------|---------|-------------|
+| `Cpu6502` | `Nmos6502` | NMOS 6502 with undocumented/illegal opcodes |
+| `Cpu6502Simple` | `Nmos6502Simple` | NMOS 6502 with illegal opcodes treated as NOPs |
+| `Cpu65C02` | `Wdc65C02` | WDC 65C02 with all CMOS instructions |
+| `Cpu65C02Rockwell` | `Rockwell65C02` | Rockwell 65C02 (WAI/STP are NOPs) |
+
+**D-Flag Behavior on Interrupts:**
+- `Cpu6502`, `Cpu6502Simple`: D flag is NOT cleared on IRQ/NMI/BRK
+- `Cpu65C02`, `Cpu65C02Rockwell`: D flag IS cleared on IRQ/NMI/BRK
 
 ---
 
@@ -185,6 +303,9 @@ Convenience properties for accessing individual flags in the P register:
 | `InstructionComplete` | `bool` | True when current instruction has finished |
 | `Pipeline` | `Action[]` | Array of micro-ops for current instruction |
 | `PipelineIndex` | `int` | Index of next micro-op to execute |
+| `CyclesRemaining` | `int` | Computed: remaining cycles in current instruction |
+| `CurrentOpcode` | `byte` | The opcode byte currently being executed |
+| `OpcodeAddress` | `ushort` | The address from which the opcode was read |
 | `IgnoreHaltStopWait` | `bool` | When true, JAM/STP/WAI are treated as NOPs |
 
 ### Temporary State Properties
@@ -204,6 +325,26 @@ void Reset()
 
 Resets the CPU state to power-on defaults (A=X=Y=0, SP=$FD, P=$24, etc.).
 
+**Remarks:**
+- This is a self-contained state reset with no bus interaction.
+- Use `cpu.Reset(bus)` to also load the reset vector.
+
+---
+
+#### Clone
+
+```csharp
+CpuState Clone()
+```
+
+Creates a deep copy of this CPU state.
+
+**Returns:** A new `CpuState` instance with all values copied.
+
+**Remarks:**
+- Use for save states or when you need an independent copy.
+- For hot-path updates where you want to avoid allocation, use `CopyFrom()` instead.
+
 ---
 
 #### CopyFrom
@@ -212,7 +353,11 @@ Resets the CPU state to power-on defaults (A=X=Y=0, SP=$FD, P=$24, etc.).
 void CopyFrom(CpuState other)
 ```
 
-Copies all state from another CpuState instance.
+Copies all state from another `CpuState` instance (no allocation).
+
+**Remarks:**
+- Use this in hot paths to minimize GC pressure.
+- More efficient than `Clone()` when you already have a target instance.
 
 ---
 
@@ -224,69 +369,6 @@ void SetFlag(byte flag, bool value)
 ```
 
 Low-level methods to get/set individual status flags using bit masks.
-
----
-
-### Interrupt Signal Methods
-
-#### SignalIrq
-
-```csharp
-void SignalIrq()
-```
-
-Signals an IRQ (Interrupt Request). The interrupt will be serviced at the next instruction boundary if the I flag is clear.
-
----
-
-#### SignalNmi
-
-```csharp
-void SignalNmi()
-```
-
-Signals an NMI (Non-Maskable Interrupt). Cannot be disabled by the I flag. Higher priority than IRQ.
-
----
-
-#### SignalReset
-
-```csharp
-void SignalReset()
-```
-
-Signals a hardware Reset. Highest priority; reinitializes the CPU.
-
----
-
-#### ClearIrq
-
-```csharp
-void ClearIrq()
-```
-
-Clears a pending IRQ signal. Used for level-triggered IRQ behavior.
-
----
-
-#### HandlePendingInterrupt
-
-```csharp
-bool HandlePendingInterrupt(IPandowdyCpuBus bus)
-```
-
-Checks for and handles any pending interrupt.
-
-**Parameters:**
-- `bus` — The memory/IO bus interface (for reading vectors and pushing to stack)
-
-**Returns:** `true` if an interrupt was handled; `false` if none pending or IRQ was masked.
-
-**Remarks:**
-- Should be called by the emulator host at instruction boundaries.
-- Handles interrupts in priority order: Reset > NMI > IRQ.
-- For IRQ, respects the I flag unless CPU is in Waiting state (WAI).
-- Pushes PC and P to stack, loads PC from appropriate vector.
 
 ---
 
@@ -411,10 +493,10 @@ Writes a byte to the specified address.
 
 | Value | Description |
 |-------|-------------|
-| `NMOS6502` | Original NMOS 6502 with illegal/undocumented opcodes |
-| `NMOS6502_NO_ILLEGAL` | NMOS 6502 with undefined opcodes as NOPs |
-| `WDC65C02` | Later WDC 65C02 (W65C02S) with all CMOS instructions including RMB/SMB/BBR/BBS |
-| `ROCKWELL65C02` | Rockwell 65C02 with bit manipulation (same as WDC but WAI/STP are NOPs) |
+| `Nmos6502` | Original NMOS 6502 with illegal/undocumented opcodes |
+| `Nmos6502Simple` | NMOS 6502 with undefined opcodes as NOPs |
+| `Wdc65C02` | Later WDC 65C02 (W65C02S) with all CMOS instructions including RMB/SMB/BBR/BBS |
+| `Rockwell65C02` | Rockwell 65C02 with bit manipulation (same as WDC but WAI/STP are NOPs) |
 
 ### CpuStatus
 
@@ -443,17 +525,18 @@ Writes a byte to the specified address.
 // Setup
 var bus = new MyBusImplementation();
 var buffer = new CpuStateBuffer();
-Cpu.Reset(buffer, bus);
+var cpu = CpuFactory.Create(CpuVariant.Wdc65C02, buffer);
+cpu.Reset(bus);
 
 // Main loop
 while (running)
 {
     // Execute one instruction
-    int cycles = Cpu.Step(CpuVariant.WDC65C02, buffer, bus);
-    
+    int cycles = cpu.Step(bus);
+
     // Check for pending interrupts (emulator host responsibility)
-    buffer.Current.HandlePendingInterrupt(bus);
-    
+    cpu.HandlePendingInterrupt(bus);
+
     // Update system timing
     systemCycles += cycles;
 }
@@ -464,11 +547,14 @@ while (running)
 ## Interrupt Handling Example
 
 ```csharp
+// Create CPU
+var cpu = CpuFactory.Create(CpuVariant.Wdc65C02, buffer);
+
 // Signal an IRQ from hardware
-buffer.Current.SignalIrq();
+cpu.SignalIrq();
 
 // At instruction boundary, handle it
-if (buffer.Current.HandlePendingInterrupt(bus))
+if (cpu.HandlePendingInterrupt(bus))
 {
     // Interrupt was serviced, PC now at ISR
 }
@@ -477,8 +563,8 @@ if (buffer.Current.HandlePendingInterrupt(bus))
 if (buffer.Current.Status == CpuStatus.Waiting)
 {
     // CPU is waiting - signal interrupt to wake it
-    buffer.Current.SignalIrq();
-    buffer.Current.HandlePendingInterrupt(bus);
+    cpu.SignalIrq();
+    cpu.HandlePendingInterrupt(bus);
     // CPU is now Running and at ISR
 }
 ```

@@ -24,5 +24,20 @@
     "hexFile": "65c02_extended_opcodes_test.hex",
     "startAddress": "0400",
     "successAddress": "24F1"
+  },
+  "nmosInterruptTest": {
+    "hexFile": "6502_interrupt_test.hex",
+    "startAddress": "0400",
+    "successAddress": "06F5"
+  },
+  "cmosInterruptTest": {
+    "hexFile": "65C02_interrupt_test.hex",
+    "startAddress": "0400",
+    "successAddress": "0719"
+  },
+  "interruptTest": {
+    "hexFile": "6502_interrupt_test.hex",
+    "startAddress": "0400",
+    "successAddress": "06F5"
   }
 }

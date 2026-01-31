@@ -12,7 +12,7 @@ namespace Pandowdy.Cpu.Tests;
 /// </summary>
 public class NMOS6502IllegalOpcodeTests : CpuTestBase
 {
-    protected override CpuVariant Variant => CpuVariant.NMOS6502;
+    protected override CpuVariant Variant => CpuVariant.Nmos6502;
 
     #region LAX - Load A and X (All Addressing Modes)
 

@@ -13,7 +13,7 @@ namespace Pandowdy.Cpu.Tests;
 /// </summary>
 public class InterruptEdgeCaseTests : CpuTestBase
 {
-    protected override CpuVariant Variant => CpuVariant.WDC65C02;
+    protected override CpuVariant Variant => CpuVariant.Wdc65C02;
 
     #region IRQ While Waiting Tests
 
@@ -26,9 +26,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         CpuBuffer.Current.SP = 0xFF;
         CpuBuffer.Current.Status = CpuStatus.Waiting;
         CpuBuffer.Current.InterruptDisableFlag = true;
-        CpuBuffer.Current.SignalIrq();
+        Cpu.SignalIrq();
 
-        bool handled = CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        bool handled = Cpu.HandlePendingInterrupt(Bus);
 
         Assert.True(handled);
         Assert.Equal(0x8000, CpuBuffer.Current.PC);
@@ -43,9 +43,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         CpuBuffer.Current.SP = 0xFF;
         CpuBuffer.Current.Status = CpuStatus.Waiting;
         CpuBuffer.Current.InterruptDisableFlag = false;
-        CpuBuffer.Current.SignalIrq();
+        Cpu.SignalIrq();
 
-        bool handled = CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        bool handled = Cpu.HandlePendingInterrupt(Bus);
 
         Assert.True(handled);
         Assert.Equal(0x8000, CpuBuffer.Current.PC);
@@ -61,9 +61,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         CpuBuffer.Current.Status = CpuStatus.Running;
         CpuBuffer.Current.InterruptDisableFlag = true;
         CpuBuffer.Current.PC = 0x0400;
-        CpuBuffer.Current.SignalIrq();
+        Cpu.SignalIrq();
 
-        bool handled = CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        bool handled = Cpu.HandlePendingInterrupt(Bus);
 
         Assert.False(handled);
         Assert.Equal(0x0400, CpuBuffer.Current.PC); // PC unchanged
@@ -81,9 +81,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         Bus.SetNmiVector(0x9000);
         CpuBuffer.Current.SP = 0xFF;
         CpuBuffer.Current.Status = CpuStatus.Waiting;
-        CpuBuffer.Current.SignalNmi();
+        Cpu.SignalNmi();
 
-        bool handled = CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        bool handled = Cpu.HandlePendingInterrupt(Bus);
 
         Assert.True(handled);
         Assert.Equal(0x9000, CpuBuffer.Current.PC);
@@ -99,9 +99,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         CpuBuffer.Current.SP = 0xFF;
         CpuBuffer.Current.Status = CpuStatus.Waiting;
         CpuBuffer.Current.InterruptDisableFlag = true;
-        CpuBuffer.Current.SignalNmi();
+        Cpu.SignalNmi();
 
-        bool handled = CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        bool handled = Cpu.HandlePendingInterrupt(Bus);
 
         Assert.True(handled);
         Assert.Equal(0x9000, CpuBuffer.Current.PC);
@@ -118,9 +118,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         SetupCpu();
         Bus.SetResetVector(0xA000);
         CpuBuffer.Current.Status = CpuStatus.Waiting;
-        CpuBuffer.Current.SignalReset();
+        Cpu.SignalReset();
 
-        bool handled = CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        bool handled = Cpu.HandlePendingInterrupt(Bus);
 
         Assert.True(handled);
         Assert.Equal(0xA000, CpuBuffer.Current.PC);
@@ -140,7 +140,7 @@ public class InterruptEdgeCaseTests : CpuTestBase
         ushort originalPC = CpuBuffer.Current.PC;
         byte originalA = CpuBuffer.Current.A;
 
-        Cpu.Clock(Variant, CpuBuffer, Bus);
+        Cpu.Clock(Bus);
 
         Assert.Equal(originalPC, CpuBuffer.Current.PC);
         Assert.Equal(originalA, CpuBuffer.Current.A);
@@ -155,7 +155,7 @@ public class InterruptEdgeCaseTests : CpuTestBase
         CpuBuffer.Prev.Status = CpuStatus.Jammed;
         ushort originalPC = CpuBuffer.Current.PC;
 
-        Cpu.Clock(Variant, CpuBuffer, Bus);
+        Cpu.Clock(Bus);
 
         Assert.Equal(originalPC, CpuBuffer.Current.PC);
         Assert.Equal(CpuStatus.Jammed, CpuBuffer.Current.Status);
@@ -168,7 +168,7 @@ public class InterruptEdgeCaseTests : CpuTestBase
         CpuBuffer.Current.Status = CpuStatus.Stopped;
         CpuBuffer.Prev.Status = CpuStatus.Stopped;
 
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
 
         Assert.Equal(CpuStatus.Running, CpuBuffer.Current.Status);
     }
@@ -180,7 +180,7 @@ public class InterruptEdgeCaseTests : CpuTestBase
         CpuBuffer.Current.Status = CpuStatus.Jammed;
         CpuBuffer.Prev.Status = CpuStatus.Jammed;
 
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
 
         Assert.Equal(CpuStatus.Running, CpuBuffer.Current.Status);
     }
@@ -192,7 +192,7 @@ public class InterruptEdgeCaseTests : CpuTestBase
         CpuBuffer.Current.Status = CpuStatus.Waiting;
         CpuBuffer.Prev.Status = CpuStatus.Waiting;
 
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
 
         Assert.Equal(CpuStatus.Running, CpuBuffer.Current.Status);
     }
@@ -209,9 +209,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         CpuBuffer.Current.SP = 0xFF;
         CpuBuffer.Current.Pipeline = new MicroOp[5];
         CpuBuffer.Current.PipelineIndex = 3;
-        CpuBuffer.Current.SignalNmi();
+        Cpu.SignalNmi();
 
-        CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        Cpu.HandlePendingInterrupt(Bus);
 
         Assert.Empty(CpuBuffer.Current.Pipeline);
         Assert.Equal(0, CpuBuffer.Current.PipelineIndex);
@@ -226,9 +226,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         CpuBuffer.Current.InterruptDisableFlag = false;
         CpuBuffer.Current.Pipeline = new MicroOp[5];
         CpuBuffer.Current.PipelineIndex = 3;
-        CpuBuffer.Current.SignalIrq();
+        Cpu.SignalIrq();
 
-        CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        Cpu.HandlePendingInterrupt(Bus);
 
         Assert.Empty(CpuBuffer.Current.Pipeline);
         Assert.Equal(0, CpuBuffer.Current.PipelineIndex);
@@ -244,7 +244,7 @@ public class InterruptEdgeCaseTests : CpuTestBase
         SetupCpu();
         CpuBuffer.Current.PendingInterrupt = PendingInterrupt.None;
 
-        bool handled = CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        bool handled = Cpu.HandlePendingInterrupt(Bus);
 
         Assert.False(handled);
     }
@@ -255,7 +255,7 @@ public class InterruptEdgeCaseTests : CpuTestBase
         SetupCpu();
         CpuBuffer.Current.PendingInterrupt = PendingInterrupt.None;
 
-        CpuBuffer.Current.ClearIrq();
+        Cpu.ClearIrq();
 
         Assert.Equal(PendingInterrupt.None, CpuBuffer.Current.PendingInterrupt);
     }
@@ -264,9 +264,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
     public void ClearIrq_DoesNotClearReset()
     {
         SetupCpu();
-        CpuBuffer.Current.SignalReset();
+        Cpu.SignalReset();
 
-        CpuBuffer.Current.ClearIrq();
+        Cpu.ClearIrq();
 
         Assert.Equal(PendingInterrupt.Reset, CpuBuffer.Current.PendingInterrupt);
     }
@@ -282,9 +282,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         Bus.SetIrqVector(0x8000);
         CpuBuffer.Current.SP = 0xFF;
         CpuBuffer.Current.InterruptDisableFlag = false;
-        CpuBuffer.Current.SignalIrq();
+        Cpu.SignalIrq();
 
-        CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        Cpu.HandlePendingInterrupt(Bus);
 
         Assert.Equal(0xFC, CpuBuffer.Current.SP); // 0xFF - 3 = 0xFC
     }
@@ -295,9 +295,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         SetupCpu();
         Bus.SetNmiVector(0x9000);
         CpuBuffer.Current.SP = 0xFF;
-        CpuBuffer.Current.SignalNmi();
+        Cpu.SignalNmi();
 
-        CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        Cpu.HandlePendingInterrupt(Bus);
 
         Assert.Equal(0xFC, CpuBuffer.Current.SP);
     }
@@ -311,9 +311,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         CpuBuffer.Current.SP = 0x02;
         CpuBuffer.Current.PC = 0x1234;
         CpuBuffer.Current.InterruptDisableFlag = false;
-        CpuBuffer.Current.SignalIrq();
+        Cpu.SignalIrq();
 
-        CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        Cpu.HandlePendingInterrupt(Bus);
 
         // SP wraps: 0x02 -> 0x01 -> 0x00 -> 0xFF
         Assert.Equal(0xFF, CpuBuffer.Current.SP);
@@ -334,9 +334,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         Bus.Memory[0xFFFF] = 0x12;
         CpuBuffer.Current.SP = 0xFF;
         CpuBuffer.Current.InterruptDisableFlag = false;
-        CpuBuffer.Current.SignalIrq();
+        Cpu.SignalIrq();
 
-        CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        Cpu.HandlePendingInterrupt(Bus);
 
         Assert.Equal(0x1234, CpuBuffer.Current.PC);
     }
@@ -348,9 +348,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         Bus.Memory[0xFFFA] = 0x78;
         Bus.Memory[0xFFFB] = 0x56;
         CpuBuffer.Current.SP = 0xFF;
-        CpuBuffer.Current.SignalNmi();
+        Cpu.SignalNmi();
 
-        CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        Cpu.HandlePendingInterrupt(Bus);
 
         Assert.Equal(0x5678, CpuBuffer.Current.PC);
     }
@@ -361,9 +361,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         SetupCpu();
         Bus.Memory[0xFFFC] = 0xBC;
         Bus.Memory[0xFFFD] = 0x9A;
-        CpuBuffer.Current.SignalReset();
+        Cpu.SignalReset();
 
-        CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        Cpu.HandlePendingInterrupt(Bus);
 
         Assert.Equal(0x9ABC, CpuBuffer.Current.PC);
     }
@@ -380,9 +380,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         CpuBuffer.Current.SP = 0xFF;
         CpuBuffer.Current.P = 0x00; // Clear all flags
         CpuBuffer.Current.InterruptDisableFlag = false;
-        CpuBuffer.Current.SignalIrq();
+        Cpu.SignalIrq();
 
-        CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        Cpu.HandlePendingInterrupt(Bus);
 
         byte pushedP = Bus.Memory[0x01FD];
         Assert.True((pushedP & CpuState.FlagU) != 0, "U flag should be set in pushed status");
@@ -396,9 +396,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         Bus.SetNmiVector(0x9000);
         CpuBuffer.Current.SP = 0xFF;
         CpuBuffer.Current.P = 0x00;
-        CpuBuffer.Current.SignalNmi();
+        Cpu.SignalNmi();
 
-        CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        Cpu.HandlePendingInterrupt(Bus);
 
         byte pushedP = Bus.Memory[0x01FD];
         Assert.True((pushedP & CpuState.FlagU) != 0, "U flag should be set");
@@ -413,9 +413,9 @@ public class InterruptEdgeCaseTests : CpuTestBase
         CpuBuffer.Current.SP = 0xFF;
         CpuBuffer.Current.P = CpuState.FlagC | CpuState.FlagZ | CpuState.FlagN; // Set C, Z, N
         CpuBuffer.Current.InterruptDisableFlag = false;
-        CpuBuffer.Current.SignalIrq();
+        Cpu.SignalIrq();
 
-        CpuBuffer.Current.HandlePendingInterrupt(Bus);
+        Cpu.HandlePendingInterrupt(Bus);
 
         byte pushedP = Bus.Memory[0x01FD];
         Assert.True((pushedP & CpuState.FlagC) != 0, "C flag should be preserved");

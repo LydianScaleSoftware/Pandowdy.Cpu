@@ -2,6 +2,108 @@
 
 ---
 
+## v3.0.0
+
+**Release Date:** TBD
+
+### Overview
+
+v3.0 is a major refactoring that replaces the static `Cpu` class with an instance-based API using `IPandowdyCpu` and `CpuFactory`. This enables cleaner code, better testability, and variant-specific behavior without passing parameters to every method.
+
+### Breaking Changes
+
+#### API Changes
+
+| Change | Details |
+|--------|---------|
+| **Static `Cpu` class removed** | Use `CpuFactory.Create(variant, buffer)` to create CPU instances |
+| **`CpuVariant` enum renamed** | `NMOS6502` → `Nmos6502`, `NMOS6502_NO_ILLEGAL` → `Nmos6502Simple`, `WDC65C02` → `Wdc65C02`, `ROCKWELL65C02` → `Rockwell65C02` |
+| **Interrupt methods moved** | `SignalIrq()`, `SignalNmi()`, `SignalReset()`, `ClearIrq()`, `HandlePendingInterrupt()` moved from `CpuState` to `IPandowdyCpu` |
+| **`ClearDecimalOnInterrupt` removed** | D-flag behavior is now automatic based on CPU variant |
+
+#### Migration Example
+
+**Before (v2.x):**
+```csharp
+var buffer = new CpuStateBuffer();
+Cpu.Reset(buffer, bus);
+Cpu.Step(CpuVariant.WDC65C02, buffer, bus);
+buffer.Current.SignalIrq();
+buffer.Current.HandlePendingInterrupt(bus);
+```
+
+**After (v3.0):**
+```csharp
+var buffer = new CpuStateBuffer();
+var cpu = CpuFactory.Create(CpuVariant.Wdc65C02, buffer);
+cpu.Reset(bus);
+cpu.Step(bus);
+cpu.SignalIrq();
+cpu.HandlePendingInterrupt(bus);
+```
+
+### New Features
+
+#### Instance-Based CPU API
+
+- **`IPandowdyCpu` interface** — Defines the contract for all CPU implementations
+- **`CpuFactory.Create()`** — Factory method to create CPU instances by variant
+- **Concrete CPU classes** — `Cpu6502`, `Cpu6502Simple`, `Cpu65C02`, `Cpu65C02Rockwell`
+
+#### Variant-Specific Interrupt Behavior
+
+The D-flag clearing on interrupts is now automatic based on CPU variant:
+- **NMOS 6502** (`Cpu6502`, `Cpu6502Simple`): D flag is **NOT** cleared on IRQ/NMI/BRK
+- **65C02** (`Cpu65C02`, `Cpu65C02Rockwell`): D flag **IS** cleared on IRQ/NMI/BRK
+
+No configuration property needed — the correct behavior is built into each CPU class.
+
+#### New CpuState Properties
+
+| Property | Description |
+|----------|-------------|
+| `CurrentOpcode` | The opcode byte currently being executed |
+| `OpcodeAddress` | The address from which the opcode was read |
+
+These properties are set during instruction fetch, eliminating guesswork about the PC's relationship to the current instruction.
+
+#### CpuState.Clone()
+
+```csharp
+CpuState Clone()
+```
+
+Creates a deep copy of CPU state. Useful for save states or when you need an independent copy. For hot-path updates, use `CopyFrom()` instead to avoid allocation.
+
+#### Swappable Buffers
+
+The `cpu.Buffer` property is now settable, allowing you to swap state buffers at runtime:
+
+```csharp
+var cpu = CpuFactory.Create(CpuVariant.Nmos6502, buffer1);
+cpu.Step(bus1);
+
+// Swap to different state (no need to create new CPU)
+cpu.Buffer = buffer2;
+cpu.Step(bus2);
+```
+
+### Improvements
+
+- **Test coverage**: 2,185 unit tests, 95.8% code coverage
+- **All Dormann tests pass**: Functional, Decimal, Interrupt (with WAI), and Extended Opcodes tests
+- **All Harte tests pass**: Cycle-accurate validation for all variants
+- **Cleaner code**: Interrupt handling logic is now in CPU classes where it belongs
+
+### Internal Changes
+
+- `CpuBase` abstract class contains shared execution logic
+- Each CPU class sets `_clearDecimalOnInterrupt` appropriately
+- Pipelines are cached per-variant in the CPU instance
+- Removed obsolete `ClearDecimalOnInterrupt` workaround property
+
+---
+
 ## v2.1.0
 
 **Release Date:** January 30, 2026
@@ -92,23 +194,6 @@ The Tom Harte tests validate not only final register state but also **cycle-by-c
 ### Requirements
 
 - .NET 8.0 or later
-
-### Installation
-
-#### NuGet Package Manager
-```
-Install-Package Pandowdy.Cpu -Version 2.0.0
-```
-
-#### .NET CLI
-```
-dotnet add package Pandowdy.Cpu --version 2.0.0
-```
-
-#### PackageReference
-```xml
-<PackageReference Include="Pandowdy.Cpu" Version="2.0.0" />
-```
 
 ### Quick Start
 

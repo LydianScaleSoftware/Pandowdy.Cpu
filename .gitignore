@@ -69,3 +69,7 @@ Desktop.ini
 
 # BenchmarkDotNet
 BenchmarkDotNet.Artifacts/
+
+#test data
+*.hex
+*.lst

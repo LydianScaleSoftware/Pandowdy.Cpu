@@ -49,7 +49,7 @@ public class CpuStateBuffer
     /// </summary>
     /// <remarks>
     /// <para>
-    /// After a <see cref="Cpu.Step"/> completes, this contains the CPU state as it was
+    /// After a <see cref="IPandowdyCpu.Step"/> completes, this contains the CPU state as it was
     /// before the instruction executed. Compare with <see cref="Current"/> to see what changed.
     /// </para>
     /// </remarks>
@@ -61,7 +61,7 @@ public class CpuStateBuffer
     /// <remarks>
     /// <para>
     /// This state is actively modified during instruction execution.
-    /// After a <see cref="Cpu.Step"/> completes, this contains the resulting CPU state.
+    /// After a <see cref="IPandowdyCpu.Step"/> completes, this contains the resulting CPU state.
     /// </para>
     /// </remarks>
     public CpuState Current { get; private set; }

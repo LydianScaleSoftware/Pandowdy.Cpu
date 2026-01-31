@@ -12,7 +12,7 @@ namespace Pandowdy.Cpu.Tests;
 /// </summary>
 public class CpuModuleTests : CpuTestBase
 {
-    protected override CpuVariant Variant => CpuVariant.WDC65C02;
+    protected override CpuVariant Variant => CpuVariant.Wdc65C02;
 
     #region Clock Tests
 
@@ -22,8 +22,8 @@ public class CpuModuleTests : CpuTestBase
         // NOP is a 2-cycle instruction
         LoadAndReset([0xEA]);
         
-        bool complete1 = Cpu.Clock(Variant, CpuBuffer, Bus);
-        bool complete2 = Cpu.Clock(Variant, CpuBuffer, Bus);
+        bool complete1 = Cpu.Clock(Bus);
+        bool complete2 = Cpu.Clock(Bus);
         
         Assert.False(complete1); // First cycle - not complete
         Assert.True(complete2);  // Second cycle - complete
@@ -36,9 +36,9 @@ public class CpuModuleTests : CpuTestBase
         LoadAndReset([0xAD, 0x34, 0x12]);
         SetMemory(0x1234, 0x42);
         
-        bool complete1 = Cpu.Clock(Variant, CpuBuffer, Bus);
-        bool complete2 = Cpu.Clock(Variant, CpuBuffer, Bus);
-        bool complete3 = Cpu.Clock(Variant, CpuBuffer, Bus);
+        bool complete1 = Cpu.Clock(Bus);
+        bool complete2 = Cpu.Clock(Bus);
+        bool complete3 = Cpu.Clock(Bus);
         
         Assert.False(complete1);
         Assert.False(complete2);
@@ -52,7 +52,7 @@ public class CpuModuleTests : CpuTestBase
         CpuBuffer.Current.Status = CpuStatus.Stopped;
         CpuBuffer.Prev.Status = CpuStatus.Stopped;
         
-        bool complete = Cpu.Clock(Variant, CpuBuffer, Bus);
+        bool complete = Cpu.Clock(Bus);
         
         Assert.True(complete);
     }
@@ -64,7 +64,7 @@ public class CpuModuleTests : CpuTestBase
         CpuBuffer.Current.Status = CpuStatus.Jammed;
         CpuBuffer.Prev.Status = CpuStatus.Jammed;
         
-        bool complete = Cpu.Clock(Variant, CpuBuffer, Bus);
+        bool complete = Cpu.Clock(Bus);
         
         Assert.True(complete);
     }
@@ -76,7 +76,7 @@ public class CpuModuleTests : CpuTestBase
         CpuBuffer.Current.Status = CpuStatus.Waiting;
         CpuBuffer.Prev.Status = CpuStatus.Waiting;
         
-        bool complete = Cpu.Clock(Variant, CpuBuffer, Bus);
+        bool complete = Cpu.Clock(Bus);
         
         Assert.True(complete);
     }
@@ -89,8 +89,8 @@ public class CpuModuleTests : CpuTestBase
         CpuBuffer.Current.Status = CpuStatus.Bypassed;
         CpuBuffer.Prev.Status = CpuStatus.Bypassed;
         
-        bool complete1 = Cpu.Clock(Variant, CpuBuffer, Bus);
-        bool complete2 = Cpu.Clock(Variant, CpuBuffer, Bus);
+        bool complete1 = Cpu.Clock(Bus);
+        bool complete2 = Cpu.Clock(Bus);
         
         Assert.False(complete1);
         Assert.True(complete2);
@@ -101,8 +101,8 @@ public class CpuModuleTests : CpuTestBase
     {
         LoadAndReset([0xEA]); // NOP
         
-        bool complete1 = Cpu.Clock(Variant, CpuBuffer, Bus);
-        bool complete2 = Cpu.Clock(Variant, CpuBuffer, Bus);
+        bool complete1 = Cpu.Clock(Bus);
+        bool complete2 = Cpu.Clock(Bus);
         
         Assert.False(complete1);
         Assert.True(complete2);
@@ -116,7 +116,7 @@ public class CpuModuleTests : CpuTestBase
         CpuBuffer.Prev.Status = CpuStatus.Stopped;
         ushort originalPC = CpuBuffer.Current.PC;
         
-        Cpu.Clock(Variant, CpuBuffer, Bus);
+        Cpu.Clock(Bus);
         
         Assert.Equal(originalPC, CpuBuffer.Current.PC);
     }
@@ -130,7 +130,7 @@ public class CpuModuleTests : CpuTestBase
     {
         LoadAndReset([0xA9, 0x42]); // LDA #$42
         
-        int cycles = Cpu.Step(Variant, CpuBuffer, Bus);
+        int cycles = Cpu.Step(Bus);
         
         Assert.Equal(2, cycles);
     }
@@ -141,7 +141,7 @@ public class CpuModuleTests : CpuTestBase
         LoadAndReset([0xA5, 0x10]); // LDA $10
         SetZeroPage(0x10, 0x42);
         
-        int cycles = Cpu.Step(Variant, CpuBuffer, Bus);
+        int cycles = Cpu.Step(Bus);
         
         Assert.Equal(3, cycles);
     }
@@ -152,7 +152,7 @@ public class CpuModuleTests : CpuTestBase
         LoadAndReset([0xAD, 0x34, 0x12]); // LDA $1234
         SetMemory(0x1234, 0x42);
         
-        int cycles = Cpu.Step(Variant, CpuBuffer, Bus);
+        int cycles = Cpu.Step(Bus);
         
         Assert.Equal(4, cycles);
     }
@@ -162,7 +162,7 @@ public class CpuModuleTests : CpuTestBase
     {
         LoadAndReset([0xA9, 0x42]); // LDA #$42
         
-        Cpu.Step(Variant, CpuBuffer, Bus);
+        Cpu.Step(Bus);
         
         Assert.Equal(0x42, CurrentState.A);
     }
@@ -174,7 +174,7 @@ public class CpuModuleTests : CpuTestBase
         CpuBuffer.Current.Status = CpuStatus.Stopped;
         CpuBuffer.Prev.Status = CpuStatus.Stopped;
         
-        int cycles = Cpu.Step(Variant, CpuBuffer, Bus);
+        int cycles = Cpu.Step(Bus);
         
         Assert.Equal(1, cycles);
     }
@@ -186,7 +186,7 @@ public class CpuModuleTests : CpuTestBase
         CpuBuffer.Current.Status = CpuStatus.Jammed;
         CpuBuffer.Prev.Status = CpuStatus.Jammed;
         
-        int cycles = Cpu.Step(Variant, CpuBuffer, Bus);
+        int cycles = Cpu.Step(Bus);
         
         Assert.Equal(1, cycles);
     }
@@ -198,7 +198,7 @@ public class CpuModuleTests : CpuTestBase
         CpuBuffer.Current.Status = CpuStatus.Waiting;
         CpuBuffer.Prev.Status = CpuStatus.Waiting;
         
-        int cycles = Cpu.Step(Variant, CpuBuffer, Bus);
+        int cycles = Cpu.Step(Bus);
         
         Assert.Equal(1, cycles);
     }
@@ -212,7 +212,7 @@ public class CpuModuleTests : CpuTestBase
     {
         LoadAndReset([0xEA, 0xEA, 0xEA, 0xEA, 0xEA]); // 5 NOPs
         
-        int cycles = Cpu.Run(Variant, CpuBuffer, Bus, 10);
+        int cycles = Cpu.Run(Bus, 10);
         
         Assert.Equal(10, cycles);
     }
@@ -222,7 +222,7 @@ public class CpuModuleTests : CpuTestBase
     {
         LoadAndReset([0xEA, 0xEA, 0xEA]); // NOPs
         
-        int cycles = Cpu.Run(Variant, CpuBuffer, Bus, 5);
+        int cycles = Cpu.Run(Bus, 5);
         
         Assert.Equal(5, cycles);
     }
@@ -233,7 +233,7 @@ public class CpuModuleTests : CpuTestBase
         // LDA #$42, LDX #$10
         LoadAndReset([0xA9, 0x42, 0xA2, 0x10]);
         
-        Cpu.Run(Variant, CpuBuffer, Bus, 4); // 2 cycles each
+        Cpu.Run(Bus, 4); // 2 cycles each
         
         Assert.Equal(0x42, CpuBuffer.Current.A);
         Assert.Equal(0x10, CpuBuffer.Current.X);
@@ -247,7 +247,7 @@ public class CpuModuleTests : CpuTestBase
         CpuBuffer.Current.Status = CpuStatus.Stopped;
         CpuBuffer.Prev.Status = CpuStatus.Stopped;
         
-        int cycles = Cpu.Run(Variant, CpuBuffer, Bus, 10);
+        int cycles = Cpu.Run(Bus, 10);
         
         Assert.Equal(10, cycles);
     }
@@ -262,7 +262,7 @@ public class CpuModuleTests : CpuTestBase
         SetupCpu();
         Bus.SetResetVector(0xC000);
         
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
         
         Assert.Equal(0xC000, CpuBuffer.Current.PC);
         Assert.Equal(0xC000, CpuBuffer.Prev.PC);
@@ -276,7 +276,7 @@ public class CpuModuleTests : CpuTestBase
         CpuBuffer.Current.X = 0xFF;
         CpuBuffer.Current.Y = 0xFF;
         
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
         
         Assert.Equal(0, CpuBuffer.Current.A);
         Assert.Equal(0, CpuBuffer.Current.X);
@@ -289,7 +289,7 @@ public class CpuModuleTests : CpuTestBase
         SetupCpu();
         CpuBuffer.Current.SP = 0x00;
         
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
         
         Assert.Equal(0xFD, CpuBuffer.Current.SP);
     }
@@ -300,7 +300,7 @@ public class CpuModuleTests : CpuTestBase
         SetupCpu();
         CpuBuffer.Current.Status = CpuStatus.Stopped;
         
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
         
         Assert.Equal(CpuStatus.Running, CpuBuffer.Current.Status);
     }
@@ -309,9 +309,9 @@ public class CpuModuleTests : CpuTestBase
     public void Reset_ClearsPendingInterrupts()
     {
         SetupCpu();
-        CpuBuffer.Current.SignalNmi();
+        Cpu.SignalNmi();
         
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
         
         Assert.Equal(PendingInterrupt.None, CpuBuffer.Current.PendingInterrupt);
     }
@@ -321,9 +321,9 @@ public class CpuModuleTests : CpuTestBase
     {
         SetupCpu();
         // Execute partial instruction to set up pipeline
-        Cpu.Clock(Variant, CpuBuffer, Bus);
+        Cpu.Clock(Bus);
         
-        Cpu.Reset(CpuBuffer, Bus);
+        Cpu.Reset(Bus);
         
         Assert.Empty(CpuBuffer.Current.Pipeline);
         Assert.Equal(0, CpuBuffer.Current.PipelineIndex);
@@ -337,10 +337,11 @@ public class CpuModuleTests : CpuTestBase
     public void CurrentOpcode_ReturnsOpcodeAtPC_WhenPipelineEmpty()
     {
         LoadAndReset([0xA9, 0x42]); // LDA #$42
-        
-        byte opcode = Cpu.CurrentOpcode(CpuBuffer, Bus);
-        
-        Assert.Equal(0xA9, opcode);
+
+        Cpu.Clock(Bus);
+
+        Assert.Equal(0xA9, CpuBuffer.Current.CurrentOpcode);
+        Assert.Equal(ProgramStart, CpuBuffer.Current.OpcodeAddress);
     }
 
     [Fact]
@@ -349,12 +350,11 @@ public class CpuModuleTests : CpuTestBase
         LoadAndReset([0xA9, 0x42, 0xA2, 0x10]); // LDA #$42, LDX #$10
         
         // Start executing first instruction (advances PC)
-        Cpu.Clock(Variant, CpuBuffer, Bus);
-        
-        byte opcode = Cpu.CurrentOpcode(CpuBuffer, Bus);
-        
+        Cpu.Clock(Bus);
+
         // Should return opcode of instruction being executed
-        Assert.Equal(0xA9, opcode);
+        Assert.Equal(0xA9, CpuBuffer.Current.CurrentOpcode);
+        Assert.Equal(ProgramStart, CpuBuffer.Current.OpcodeAddress);
     }
 
     [Fact]
@@ -363,11 +363,12 @@ public class CpuModuleTests : CpuTestBase
         LoadAndReset([0xEA, 0xA9, 0x42]); // NOP, LDA #$42
         
         // Complete first instruction
-        Cpu.Step(Variant, CpuBuffer, Bus);
-        
-        byte opcode = Cpu.CurrentOpcode(CpuBuffer, Bus);
-        
-        Assert.Equal(0xA9, opcode);
+        Cpu.Step(Bus);
+
+        Cpu.Clock(Bus);
+
+        Assert.Equal(0xA9, CpuBuffer.Current.CurrentOpcode);
+        Assert.Equal((ushort)(ProgramStart + 1), CpuBuffer.Current.OpcodeAddress);
     }
 
     #endregion
@@ -379,8 +380,8 @@ public class CpuModuleTests : CpuTestBase
     {
         LoadAndReset([0xEA]);
         
-        int remaining = Cpu.CyclesRemaining(CpuBuffer);
-        
+        int remaining = CpuBuffer.Current.CyclesRemaining;
+
         Assert.Equal(0, remaining);
     }
 
@@ -391,10 +392,10 @@ public class CpuModuleTests : CpuTestBase
         LoadAndReset([0xAD, 0x34, 0x12]);
         
         // Execute first cycle
-        Cpu.Clock(Variant, CpuBuffer, Bus);
-        
-        int remaining = Cpu.CyclesRemaining(CpuBuffer);
-        
+        Cpu.Clock(Bus);
+
+        int remaining = CpuBuffer.Current.CyclesRemaining;
+
         Assert.Equal(3, remaining); // 4 total - 1 executed = 3 remaining
     }
 
@@ -404,14 +405,14 @@ public class CpuModuleTests : CpuTestBase
         // LDA Absolute is 4 cycles
         LoadAndReset([0xAD, 0x34, 0x12]);
         
-        Cpu.Clock(Variant, CpuBuffer, Bus);
-        int after1 = Cpu.CyclesRemaining(CpuBuffer);
-        
-        Cpu.Clock(Variant, CpuBuffer, Bus);
-        int after2 = Cpu.CyclesRemaining(CpuBuffer);
-        
-        Cpu.Clock(Variant, CpuBuffer, Bus);
-        int after3 = Cpu.CyclesRemaining(CpuBuffer);
+        Cpu.Clock(Bus);
+        int after1 = CpuBuffer.Current.CyclesRemaining;
+
+        Cpu.Clock(Bus);
+        int after2 = CpuBuffer.Current.CyclesRemaining;
+
+        Cpu.Clock(Bus);
+        int after3 = CpuBuffer.Current.CyclesRemaining;
         
         Assert.Equal(3, after1);
         Assert.Equal(2, after2);
@@ -424,10 +425,10 @@ public class CpuModuleTests : CpuTestBase
         LoadAndReset([0xEA, 0xEA]); // Two NOPs
         
         // Complete first instruction
-        Cpu.Step(Variant, CpuBuffer, Bus);
-        
-        int remaining = Cpu.CyclesRemaining(CpuBuffer);
-        
+        Cpu.Step(Bus);
+
+        int remaining = CpuBuffer.Current.CyclesRemaining;
+
         Assert.Equal(0, remaining);
     }
 
@@ -437,10 +438,10 @@ public class CpuModuleTests : CpuTestBase
 
     public static IEnumerable<object[]> AllVariants =>
     [
-        [CpuVariant.NMOS6502],
-        [CpuVariant.NMOS6502_NO_ILLEGAL],
-        [CpuVariant.WDC65C02],
-        [CpuVariant.ROCKWELL65C02]
+        [CpuVariant.Nmos6502],
+        [CpuVariant.Nmos6502Simple],
+        [CpuVariant.Wdc65C02],
+        [CpuVariant.Rockwell65C02]
     ];
 
     [Theory]
@@ -449,10 +450,19 @@ public class CpuModuleTests : CpuTestBase
     {
         LoadAndReset([0xA9, 0x42]); // LDA #$42
 
-        int cycles = Cpu.Step(variant, CpuBuffer, Bus);
+        var bus = new TestRamBus();
+        bus.SetResetVector(ProgramStart);
+        bus.SetIrqVector(IrqHandler);
+        bus.SetNmiVector(NmiHandler);
+        var buffer = new CpuStateBuffer();
+        var cpu = CpuFactory.Create(variant, buffer);
+        bus.LoadProgram(ProgramStart, [0xA9, 0x42]);
+
+        cpu.Reset(bus);
+        int cycles = cpu.Step(bus);
 
         Assert.Equal(2, cycles);
-        Assert.Equal(0x42, CurrentState.A);
+        Assert.Equal(0x42, buffer.Current.A);
     }
 
     [Theory]
@@ -461,7 +471,16 @@ public class CpuModuleTests : CpuTestBase
     {
         LoadAndReset([0xEA, 0xEA]); // Two NOPs
 
-        int cycles = Cpu.Run(variant, CpuBuffer, Bus, 4);
+        var bus = new TestRamBus();
+        bus.SetResetVector(ProgramStart);
+        bus.SetIrqVector(IrqHandler);
+        bus.SetNmiVector(NmiHandler);
+        var buffer = new CpuStateBuffer();
+        var cpu = CpuFactory.Create(variant, buffer);
+        bus.LoadProgram(ProgramStart, [0xEA, 0xEA]);
+
+        cpu.Reset(bus);
+        int cycles = cpu.Run(bus, 4);
 
         Assert.Equal(4, cycles);
     }
