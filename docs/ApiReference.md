@@ -301,8 +301,6 @@ Convenience properties for accessing individual flags in the P register:
 | `Status` | `CpuStatus` | Current execution status (Running, Stopped, etc.) |
 | `PendingInterrupt` | `PendingInterrupt` | Interrupt awaiting service |
 | `InstructionComplete` | `bool` | True when current instruction has finished |
-| `Pipeline` | `Action[]` | Array of micro-ops for current instruction |
-| `PipelineIndex` | `int` | Index of next micro-op to execute |
 | `CyclesRemaining` | `int` | Computed: remaining cycles in current instruction |
 | `CurrentOpcode` | `byte` | The opcode byte currently being executed |
 | `OpcodeAddress` | `ushort` | The address from which the opcode was read |

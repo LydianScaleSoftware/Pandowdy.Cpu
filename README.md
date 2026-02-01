@@ -82,6 +82,7 @@ Pandowdy.Cpu.Harte-SST-Tests/ # Tom Harte SingleStepTests runner
 
 - [CPU Usage Guide](docs/CpuUsageGuide.md) — Detailed usage instructions and examples
 - [API Reference](docs/ApiReference.md) — Complete API documentation for IPandowdyCpu, CpuFactory, CpuState, and CpuStateBuffer
+- [Micro-Ops Architecture](docs/MicroOps-Architecture.md) — How the cycle-accurate micro-op pipeline works
 - [Building](BUILDING.md) — Build instructions, running tests, and project structure
 
 ## Quick Build
@@ -93,56 +94,11 @@ dotnet test
 
 For detailed build instructions, external test suites, and troubleshooting, see [BUILDING.md](BUILDING.md).
 
-## Migration from v2.x
-
-If you're upgrading from v2.x, see the [Migration Guide](#migration-from-v2x-to-v30) below.
-
 ## License
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
 
 ---
-
-## Migration from v2.x to v3.0
-
-v3.0 introduces a new instance-based API, replacing the static `Cpu` class.
-
-### Before (v2.x)
-
-```csharp
-var buffer = new CpuStateBuffer();
-Cpu.Reset(buffer, bus);
-Cpu.Step(CpuVariant.WDC65C02, buffer, bus);
-buffer.Current.SignalIrq();
-buffer.Current.HandlePendingInterrupt(bus);
-```
-
-### After (v3.0)
-
-```csharp
-var buffer = new CpuStateBuffer();
-var cpu = CpuFactory.Create(CpuVariant.Wdc65C02, buffer);
-cpu.Reset(bus);
-cpu.Step(bus);
-cpu.SignalIrq();
-cpu.HandlePendingInterrupt(bus);
-```
-
-### Breaking Changes
-
-| Change | Migration |
-|--------|-----------|
-| Static `Cpu` class removed | Use `CpuFactory.Create()` to create CPU instances |
-| `CpuVariant` enum renamed | `NMOS6502` → `Nmos6502`, `WDC65C02` → `Wdc65C02`, etc. |
-| Interrupt methods moved from `CpuState` to `IPandowdyCpu` | Use `cpu.SignalIrq()` instead of `buffer.Current.SignalIrq()` |
-| `ClearDecimalOnInterrupt` removed | D-flag behavior is automatic based on CPU variant |
-
-### New Features in v3.0
-
-- **`CpuState.CurrentOpcode`** — The opcode byte currently being executed
-- **`CpuState.OpcodeAddress`** — The address from which the opcode was read
-- **`CpuState.Clone()`** — Create a deep copy of CPU state for save states
-- **Swappable buffers** — `cpu.Buffer` is settable, allowing buffer swapping without creating a new CPU
 
 ## Author
 

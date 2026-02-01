@@ -88,48 +88,56 @@ See [Pandowdy.Cpu.Harte-SST-Tests/README.md](Pandowdy.Cpu.Harte-SST-Tests/README
 
 ```
 Pandowdy.Cpu/                  # Core library (C#)
-├── Cpu.cs                    # Clock, Step, Run, Reset functions
+├── IPandowdyCpu.cs           # Public CPU interface
+├── IPandowdyCpuBus.cs        # Bus interface
+├── CpuBase.cs                # Base class with Clock, Step, Run, Reset
+├── Cpu6502.cs                # NMOS 6502 implementation
+├── Cpu6502Simple.cs          # NMOS 6502 without illegal opcodes
+├── Cpu65C02.cs               # WDC 65C02 implementation
+├── Cpu65C02Rockwell.cs       # Rockwell 65C02 with BBR/BBS/RMB/SMB
+├── CpuFactory.cs             # Factory for creating CPU instances
 ├── CpuState.cs               # CPU state and registers
 ├── CpuStateBuffer.cs         # Double-buffered state
 ├── CpuVariant.cs             # CPU variant and status enums
-├── IPandowdyCpuBus.cs        # Bus interface
 │
 └── Internals/                # Internal implementation (not part of public API)
     ├── MicroOp.cs            # Micro-operation delegate
     ├── MicroOps.cs           # Micro-operation implementations
-    ├── Pipelines.cs          # Opcode pipeline definitions
-    └── Pipelines.*.cs        # Pipeline partial classes (Alu, Branch, etc.)
+    ├── Pipelines.cs          # Opcode pipeline definitions and LDA/LDX/LDY/STA/STX/STY
+    ├── Pipelines.Alu.cs      # ADC, SBC, AND, ORA, EOR, CMP, CPX, CPY, BIT
+    ├── Pipelines.Branch.cs   # Branch instructions (BCC, BCS, BEQ, etc.)
+    ├── Pipelines.Illegal.cs  # NMOS illegal/undocumented opcodes
+    ├── Pipelines.IncDec.cs   # INC, DEC, INX, INY, DEX, DEY
+    ├── Pipelines.Jump.cs     # JMP, JSR, RTS, RTI
+    ├── Pipelines.Logic.cs    # Transfer and flag instructions
+    ├── Pipelines.Shift.cs    # ASL, LSR, ROL, ROR
+    ├── Pipelines.Special.cs  # NOP, BRK, interrupts, 65C02 extensions
+    └── Pipelines.Stack.cs    # PHA, PLA, PHP, PLP, PHX, PHY, PLX, PLY
 
 Pandowdy.Cpu.Tests/            # Unit tests (xUnit)
-├── *OpcodeTests.cs           # Opcode-specific tests
+├── CpuTestBase.cs            # Test base class with helper methods
+├── TestRamBus.cs             # Simple RAM bus for testing
+├── CoreInstructionTests.cs   # Core instruction behavior tests
+├── CpuInstanceTests.cs       # CPU instance and factory tests
+├── CpuModuleTests.cs         # Module-level integration tests
+├── CpuStateTests.cs          # CPU state tests
+├── CpuStateBufferTests.cs    # Double-buffer tests
+├── DecimalModeTests.cs       # BCD arithmetic tests
 ├── InterruptTests.cs         # Interrupt handling tests
-└── CpuTestBase.cs            # Test base class
+├── InterruptEdgeCaseTests.cs # Edge cases for interrupts
+├── NMOS6502Tests.cs          # NMOS 6502 variant tests
+├── NMOS6502OpcodeTests.cs    # NMOS opcode behavior tests
+├── NMOS6502IllegalOpcodeTests.cs # Illegal opcode tests
+├── NMOS6502_NoIllegalTests.cs # Simple variant tests
+├── WDC65C02Tests.cs          # WDC 65C02 tests
+└── Rockwell65C02Tests.cs     # Rockwell extensions tests
 
 Pandowdy.Cpu.Dormann-Tests/    # Klaus Dormann test runner
 Pandowdy.Cpu.Harte-SST-Tests/  # Tom Harte SST test runner
 
 docs/                          # Documentation
+├── ApiReference.md           # Complete API reference
 ├── CpuUsageGuide.md          # Usage guide with examples
-└── ApiReference.md           # Complete API reference
+└── MicroOps-Architecture.md  # Micro-ops pipeline architecture
 ```
 
-## Troubleshooting
-
-### Build Errors: ENC0097
-
-If you see "Applying source changes while the application is running" errors:
-
-1. Stop any debugging sessions (Shift+F5)
-2. Check Task Manager for orphaned processes
-3. Close and reopen Visual Studio
-4. Run `dotnet clean && dotnet build`
-
-### Test Discovery Issues
-
-If tests aren't discovered:
-
-```bash
-dotnet clean
-dotnet build
-dotnet test --no-build
-```
