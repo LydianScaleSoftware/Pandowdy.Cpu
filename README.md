@@ -23,6 +23,7 @@ All CPU variants pass [Klaus Dormann's 6502/65C02 Functional Tests](https://gith
 | 6502 Interrupt Test | ✓ | ✓ | ✓ | ✓ |
 | 65C02 Extended Opcodes Test | — | — | ✓ | ✓ |
 
+
 ### Cycle-Accurate Validation
 
 All CPU variants are **cycle-accurate** and pass the [Tom Harte SingleStepTests](https://github.com/SingleStepTests/65x02), which validate not only final register state but also cycle-by-cycle bus activity for every opcode:
