@@ -62,7 +62,7 @@
 - External dependency complicates builds and testing
 
 **New Pandowdy.Cpu Project:**
-- Located at: `E:\develop\Pandowdy.Cpu` (separate repository)
+- Located at: `Pandowdy.Cpu` submodule (https://github.com/LydianScaleSoftware/Pandowdy.Cpu.git)
 - Provides: `Cpu6502.cs`, `Cpu65C02.cs`, `Cpu65C02Rockwell.cs` variants
 - Interface: `IPandowdyCpu` with `IPandowdyCpuBus` bus interface
 - Tested: Dormann tests, Harte SST tests for cycle-accuracy
@@ -70,8 +70,9 @@
 
 **Migration Strategy:**
 
-**Phase 1: Add Pandowdy.Cpu to Solution**
-- Add `Pandowdy.Cpu` project to the solution (project reference or NuGet)
+**Phase 1: Add Pandowdy.Cpu to Solution** ✅ DONE
+- ~~Add `Pandowdy.Cpu` project to the solution (project reference or NuGet)~~
+- Added as Git submodule at `Pandowdy.Cpu/`
 - Keep legacy Emulator project temporarily for comparison
 
 **Phase 2: Create Bus Adapter**
