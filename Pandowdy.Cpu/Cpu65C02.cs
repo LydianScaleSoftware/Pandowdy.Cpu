@@ -10,12 +10,15 @@ namespace Pandowdy.Cpu;
 public sealed class Cpu65C02 : CpuBase
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="Cpu65C02"/> class with a new state.
+    /// Initializes a new instance of the <see cref="Cpu65C02"/> class.
     /// </summary>
-    public Cpu65C02() : base() { }
+    /// <remarks>
+    /// Prefer using <see cref="CpuFactory.Create(CpuVariant, CpuState)"/> for state injection.
+    /// </remarks>
+        public Cpu65C02() : base() { }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Cpu65C02"/> class with an existing state.
+    /// Initializes a new instance of the <see cref="Cpu65C02"/> class with an injected state.
     /// </summary>
     /// <param name="state">The CPU state to use.</param>
     public Cpu65C02(CpuState state) : base(state) { }

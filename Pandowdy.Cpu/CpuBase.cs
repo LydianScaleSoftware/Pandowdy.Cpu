@@ -12,9 +12,13 @@ namespace Pandowdy.Cpu;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The CPU directly owns a single <see cref="CpuState"/> instance. For debugging scenarios
-/// that require tracking the previous instruction state, use <see cref="DebugCpu"/> which
-/// wraps a CPU and maintains state history.
+/// The CPU receives its <see cref="CpuState"/> via dependency injection through the constructor.
+/// The state is provided by the caller to <see cref="CpuFactory.Create(CpuVariant, CpuState)"/>,
+/// allowing external components to share or pre-configure the state before injection.
+/// </para>
+/// <para>
+/// For debugging scenarios that require tracking the previous instruction state, use
+/// <see cref="DebugCpu"/> which wraps a CPU and maintains its own state history snapshot.
 /// </para>
 /// </remarks>
 public abstract class CpuBase : IPandowdyCpu
@@ -29,7 +33,7 @@ public abstract class CpuBase : IPandowdyCpu
     protected const ushort IrqVector = 0xFFFE;
 
     /// <summary>
-    /// The CPU state owned by this instance.
+    /// The CPU state (injected via constructor).
     /// </summary>
     private CpuState _state;
 
@@ -46,20 +50,22 @@ public abstract class CpuBase : IPandowdyCpu
     /// <summary>
     /// Initializes a new instance of the <see cref="CpuBase"/> class with a new state.
     /// </summary>
-    protected CpuBase()
+    /// <remarks>
+    /// This constructor creates a new <see cref="CpuState"/> internally. Prefer using
+    /// <see cref="CpuFactory.Create(CpuVariant, CpuState)"/> for proper state injection.
+    /// </remarks>
+    protected CpuBase() : this(new CpuState())
     {
-        _state = new CpuState();
-        _pipelines = Pipelines.GetPipelines(Variant);
-        _clearDecimalOnInterrupt = ClearDecimalOnInterrupt;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CpuBase"/> class with an existing state.
+    /// Initializes a new instance of the <see cref="CpuBase"/> class with an injected state.
     /// </summary>
-    /// <param name="state">The CPU state to use.</param>
+    /// <param name="state">The CPU state to use. This state is not owned by the CPU
+    /// and may be shared with other components.</param>
     protected CpuBase(CpuState state)
     {
-        _state = state;
+        _state = state ?? throw new ArgumentNullException(nameof(state));
         _pipelines = Pipelines.GetPipelines(Variant);
         _clearDecimalOnInterrupt = ClearDecimalOnInterrupt;
     }

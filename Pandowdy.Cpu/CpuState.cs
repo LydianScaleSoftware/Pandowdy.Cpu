@@ -186,11 +186,11 @@ public enum PendingInterrupt
 /// and <see cref="PipelineIndex"/> tracks the current execution position.
 /// </para>
 /// <para>
-/// For debugging and time-travel debugging, use <see cref="CpuStateBuffer"/> which maintains
-/// both the previous and current state, allowing comparison of state changes per instruction.
+/// For debugging and state comparison, use <see cref="DebugCpu"/> which wraps any CPU
+/// and tracks the previous state, allowing comparison of state changes per instruction.
 /// </para>
 /// </remarks>
-/// <seealso cref="CpuStateBuffer"/>
+/// <seealso cref="DebugCpu"/>
 /// <seealso cref="CpuStatus"/>
 /// <seealso cref="PendingInterrupt"/>
 public class CpuState
