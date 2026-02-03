@@ -1,3 +1,7 @@
+// Copyright 2026 Mark D. Long
+// Licensed under the Apache License, Version 2.0
+// See LICENSE file for details
+
 namespace Pandowdy.EmuCore.Interfaces;
 
 /// <summary>
@@ -62,23 +66,9 @@ namespace Pandowdy.EmuCore.Interfaces;
 public interface IEmulatorCoreInterface : IKeyboardSetter
 {
     #region Command Queueing (Thread-Safe)
-    
-    /// <summary>
-    /// Queues a full system reset (power cycle).
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <strong>Thread Safety:</strong> Thread-safe. Can be called from any thread (typically UI thread).
-    /// The reset operation will be executed at the next instruction boundary on the emulator thread,
-    /// ensuring 6502 atomic instruction guarantees are maintained.
-    /// </para>
-    /// <para>
-    /// <strong>Effect:</strong> Performs a complete hardware reset equivalent to powering off and on
-    /// the Apple IIe. Resets CPU, memory mappings, soft switches, and cycle counters.
-    /// </para>
-    /// </remarks>
-    void Reset();
-    
+
+    // Note: Reset() method inherited from IKeyboardSetter
+
     /// <summary>
     /// Queues a warm reset (Ctrl+Reset) without clearing memory.
     /// </summary>

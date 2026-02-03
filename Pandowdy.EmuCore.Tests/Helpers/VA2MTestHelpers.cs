@@ -24,6 +24,7 @@ public static class VA2MTestHelpers
         private IKeyboardSetter? _keyboardSetter;
         private IGameControllerStatus? _gameController;
         private IDiskStatusProvider? _diskStatusProvider;
+        private CpuClockingCounters? _clockCounters;
 
         public VA2MBuilder()
         {
@@ -35,11 +36,12 @@ public static class VA2MTestHelpers
             _bus = new TestAppleIIBus();
             _keyboardSetter = new SingularKeyHandler(); // Default keyboard handler
             _diskStatusProvider = new DiskStatusProvider(); // Default disk status provider
+            _clockCounters = new CpuClockingCounters(); // Default clock counters
 
             // Create I/O handler
             var softSwitches = new SoftSwitches(_systemStatusProvider as SystemStatusProvider 
                 ?? new SystemStatusProvider(_gameController));
-            var vblank = new CpuClockingCounters();
+            var vblank = _clockCounters;
             var ioHandler = new SystemIoHandler(softSwitches, _keyboardSetter as IKeyboardReader 
                 ?? new SingularKeyHandler(), _gameController, vblank);
 
@@ -103,29 +105,36 @@ public static class VA2MTestHelpers
         {
             _diskStatusProvider = diskStatusProvider;
             return this;
-                }
+        }
 
-                public VA2M Build()
-                {
-                    // Create rendering service and snapshot pool for tests
-                    var snapshotPool = new VideoMemorySnapshotPool();
-                    var renderingService = new RenderingService(_frameGenerator!, snapshotPool);
+        public VA2MBuilder WithClockCounters(CpuClockingCounters clockCounters)
+        {
+            _clockCounters = clockCounters;
+            return this;
+        }
 
-                    return new VA2M(
-                        _emulatorState!,
-                        _frameProvider!,
-                        _systemStatusProvider!,
-                        _bus!,
-                        _memoryPool!,
-                        _frameGenerator!,
-                        renderingService,
-                        snapshotPool,
-                        _keyboardSetter!,
-                        _gameController!,
-                        _diskStatusProvider!
-                    );
-                }
-            }
+        public VA2M Build()
+        {
+            // Create rendering service and snapshot pool for tests
+            var snapshotPool = new VideoMemorySnapshotPool();
+            var renderingService = new RenderingService(_frameGenerator!, snapshotPool);
+
+            return new VA2M(
+                _emulatorState!,
+                _frameProvider!,
+                _systemStatusProvider!,
+                _bus!,
+                _memoryPool!,
+                _frameGenerator!,
+                renderingService,
+                snapshotPool,
+                _keyboardSetter!,
+                _gameController!,
+                _diskStatusProvider!,
+                _clockCounters!
+            );
+        }
+    }
 
     /// <summary>
     /// Factory method to create a VA2MBuilder with default test dependencies.

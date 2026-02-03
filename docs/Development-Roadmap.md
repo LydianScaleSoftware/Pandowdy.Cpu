@@ -23,8 +23,7 @@
    - [Task 10: SectorDiskImageProvider Debugging](#task-10-sectordiskimageprovider-debugging-high-priority)
    - [Task 13: Audio Emulation Implementation](#task-13-audio-emulation-implementation-medium-priority)
 2. [Backlog](#backlog)
-   - [Task 1: Migrate VA2M to CpuClockingCounters.VBlankOccurred](#task-1-migrate-va2m-to-cpuclockingcountersvblankoccurred-low-priority)
-   - [Task 2: Remove VA2MBus.VBlank Event](#task-2-remove-va2mbusvblank-event-low-priority)
+   - [Task 21: Side-Load Data from Disk Images](#task-21-side-load-data-from-disk-images-medium-high-priority)
    - [Task 4: HGR Flicker Investigation](#task-4-hgr-flicker-investigation-medium-priority)
    - [Task 6: Clear Pending Keystrokes on Reset](#task-6-clear-pending-keystrokes-on-reset-low-priority)
    - [Task 7: Handle BRK Loops in Interrupt Handler](#task-7-handle-brk-loops-in-interrupt-handler-low-priority)
@@ -38,9 +37,11 @@
    - [Task 17: Research Compute-Shader Toolkits for Bitplane Processing](#task-17-research-compute-shader-toolkits-for-bitplane-processing-medium-priority)
    - [Task 20: Advanced Debugger Features](#task-20-advanced-debugger-features-low-priority)
 3. [Completed Tasks](#completed-tasks)
+   - [Task 1: Migrate VA2M to CpuClockingCounters.VBlankOccurred](#task-1-migrate-va2m-to-cpuclockingcountersvblankoccurred)
+   - [Task 2: Remove VA2MBus.VBlank Event](#task-2-remove-va2mbusvblank-event)
    - [Task 3: Removed](#task-3-removed)
    - [Task 6: Clear Pending Keystrokes on Reset](#task-6-clear-pending-keystrokes-on-reset)
-   - [Task 18: Migrate to Pandowdy.Cpu](#task-18-migrate-to-pandowdycpu-critical-priority)
+   - [Task 18: Migrate to Pandowdy.Cpu](#task-18-migrate-to-pandowdycpu)
 4. [Code Style Guidelines](#code-style-guidelines)
 5. [Git Best Practices](#git-best-practices)
 6. [Testing Guidelines](#testing-guidelines)
@@ -423,7 +424,7 @@ public void StepOver()
 
 ## Backlog
 
-### Task 1: Migrate VA2M to CpuClockingCounters.VBlankOccurred (Low Priority)
+### Task 21: Side-Load Data from Disk Images (Medium-High Priority)
 
 **Current State:**
 - `VA2M` subscribes to `VA2MBus.VBlank` event (now marked `[Obsolete]`)
@@ -1402,6 +1403,71 @@ This task adds features beyond the essential debugging capabilities, providing a
 ---
 
 ## Completed Tasks
+
+### ✅ Task 1: Migrate VA2M to CpuClockingCounters.VBlankOccurred
+
+**Completed:** 2025-01-27 - All tests passing
+
+**Summary:**
+- Migrated VA2M from deprecated `VA2MBus.VBlank` event to `CpuClockingCounters.VBlankOccurred`
+- Added `CpuClockingCounters` as 12th constructor parameter to VA2M (Option C from roadmap)
+- Changed `OnVBlank` signature from `(object? sender, EventArgs e)` to `()` to match `Action` delegate
+- Updated VA2M test builder to inject `CpuClockingCounters`
+- All existing functionality preserved and tested
+
+**Key Changes:**
+- VA2M now subscribes directly to `_clockCounters.VBlankOccurred += OnVBlank;`
+- `OnVBlank()` method signature simplified (no parameters)
+- Test factory (`VA2MTestHelpers`) updated with `WithClockCounters()` builder method
+- Class-level documentation updated: 12 dependencies (was 11)
+
+**Files Modified:**
+- `Pandowdy.EmuCore\VA2M.cs` - Constructor, OnVBlank signature, field, documentation
+- `Pandowdy.EmuCore.Tests\Helpers\VA2MTestHelpers.cs` - Test builder updated
+- `Pandowdy\Program.cs` - DI container automatically injects CpuClockingCounters (no change needed)
+
+**Benefits:**
+- Cleaner architecture - single source of truth for VBlank timing
+- Simpler event signature (Action vs EventHandler)
+- Prepares for Task 2 (removing deprecated VBlank event)
+
+---
+
+### ✅ Task 2: Remove VA2MBus.VBlank Event
+
+**Completed:** 2025-01-27 - All tests passing
+
+**Summary:**
+- Removed deprecated `[Obsolete] VBlank` event from `VA2MBus`
+- Removed event invocation in `Clock()` method
+- Removed event cleanup in `Dispose()` method
+- Updated 4 unit tests in `VA2MBusTests.cs` to use `ClockCounters.VBlankOccurred`
+- Updated all XML documentation to remove VBlank references
+
+**Key Changes:**
+- Removed `public event EventHandler? VBlank;` declaration
+- Removed `VBlank?.Invoke(this, EventArgs.Empty);` from `Clock()`
+- Removed `VBlank = null;` from `Dispose()`
+- Tests now subscribe to `fixture.VBlank.VBlankOccurred` (via ClockCounters)
+- Simplified disposal - no event cleanup needed
+
+**Tests Updated:**
+1. `VBlank_Event_FiresAtCorrectInterval` - Changed subscription
+2. `VBlank_Event_FiresMultipleTimes` - Changed subscription
+3. `VBlank_Timing_ApproximatesSixtyHz` - Changed subscription
+4. `Scenario_CompleteFrame_ClocksAndVBlank` - Changed subscription
+
+**Files Modified:**
+- `Pandowdy.EmuCore\VA2MBus.cs` - Event removed, Clock() simplified, Dispose() simplified, docs updated
+- `Pandowdy.EmuCore.Tests\VA2MBusTests.cs` - 4 tests updated to use ClockCounters
+
+**Benefits:**
+- Eliminated deprecated event
+- Cleaner VA2MBus implementation
+- No more pragma warning suppressions
+- Single source of truth: `CpuClockingCounters.VBlankOccurred`
+
+---
 
 ### ✅ Task 18: Migrate to Pandowdy.Cpu
 

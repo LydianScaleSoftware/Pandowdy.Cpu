@@ -1,3 +1,7 @@
+// Copyright 2026 Mark D. Long
+// Licensed under the Apache License, Version 2.0
+// See LICENSE file for details
+
 using Pandowdy.Cpu;
 
 namespace Pandowdy.EmuCore.Interfaces;
@@ -134,6 +138,4 @@ public interface IAppleIIBus :  IPandowdyCpuBus
     /// </remarks>
     void Reset();
 }
-#pragma warning restore CS0108
-
 

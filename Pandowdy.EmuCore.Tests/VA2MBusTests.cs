@@ -873,7 +873,7 @@ public class VA2MBusTests
         // Arrange
         var fixture = new VA2MBusFixture();
         var eventCount = 0;
-        fixture.Bus.VBlank += (_, __) => eventCount++;
+        fixture.VBlank.VBlankOccurred += () => eventCount++;
 
         // Act - Clock through one VBlank period (17030 cycles - updated from 17063)
         for (int i = 0; i < 17030; i++)
@@ -891,7 +891,7 @@ public class VA2MBusTests
         // Arrange
         var fixture = new VA2MBusFixture();
         var eventCount = 0;
-        fixture.Bus.VBlank += (_, __) => eventCount++;
+        fixture.VBlank.VBlankOccurred += () => eventCount++;
 
         // Act - Clock through 3 VBlank periods
         for (int i = 0; i < 17030 * 3; i++)
@@ -984,7 +984,7 @@ public class VA2MBusTests
         // Arrange
         var fixture = new VA2MBusFixture();
         var eventCount = 0;
-        fixture.Bus.VBlank += (_, __) => eventCount++;
+        fixture.VBlank.VBlankOccurred += () => eventCount++;
 
         // Act - Simulate 1 second at 1.023 MHz
         for (int i = 0; i < 1_023_000; i++)
@@ -1307,7 +1307,7 @@ public class VA2MBusTests
         // Arrange
         var fixture = new VA2MBusFixture();
         var vblankFired = false;
-        fixture.Bus.VBlank += (_, __) => vblankFired = true;
+        fixture.VBlank.VBlankOccurred += () => vblankFired = true;
 
         // Act - Clock through one frame (17030 cycles)
         for (int i = 0; i < 17030; i++)

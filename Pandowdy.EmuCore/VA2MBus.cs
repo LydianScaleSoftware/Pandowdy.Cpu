@@ -1,3 +1,7 @@
+// Copyright 2026 Mark D. Long
+// Licensed under the Apache License, Version 2.0
+// See LICENSE file for details
+
 using Pandowdy.Cpu;
 using Pandowdy.EmuCore.DataTypes;
 using Pandowdy.EmuCore.Interfaces;
@@ -14,7 +18,6 @@ namespace Pandowdy.EmuCore;
 /// <item>CPU connection and cycle execution</item>
 /// <item>Memory read/write routing to AddressSpaceController</item>
 /// <item>CPU cycle counting and VBlank timing (via CpuClockingCounters)</item>
-/// <item>VBlank event generation (~60 Hz)</item>
 /// </list>
 /// </para>
 /// <para>
@@ -28,17 +31,17 @@ namespace Pandowdy.EmuCore;
 /// </para>
 /// <para>
 /// <strong>Threading Model:</strong> All public methods (CpuRead/Write, Clock, Reset)
-/// must be called ONLY from the emulator worker thread. The VBlank event is raised on the
-/// emulator thread; UI subscribers MUST marshal to UI thread via dispatcher.
+/// must be called ONLY from the emulator worker thread.
 /// </para>
 /// <para>
-/// <strong>VBlank Timing:</strong> Emits VBlank event every 17,030 cycles (~60.06 Hz at 1.023 MHz),
+/// <strong>VBlank Timing:</strong> CpuClockingCounters manages VBlank timing and emits
+/// <see cref="CpuClockingCounters.VBlankOccurred"/> event every 17,030 cycles (~60.06 Hz at 1.023 MHz),
 /// matching the Apple IIe NTSC vertical blanking interval. The VBlank blackout period lasts
-/// 4,550 cycles. All timing logic is managed by CpuClockingCounters.
+/// 4,550 cycles.
 /// </para>
 /// <para>
-/// <strong>Disposal:</strong> After disposal, no further events are raised and Clock() becomes
-/// a no-op. Proper disposal prevents event handler leaks and ensures clean shutdown.
+/// <strong>Disposal:</strong> After disposal, Clock() becomes a no-op.
+/// Proper disposal ensures clean shutdown.
 /// </para>
 /// </remarks>
 public sealed class VA2MBus : IAppleIIBus, IDisposable
@@ -50,7 +53,6 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// Handles all memory operations including RAM, ROM, memory banking, and I/O routing.
     /// </remarks>
     private readonly AddressSpaceController _addressSpace;
-
     /// <summary>
     /// CPU instance (65C02 emulator) connected to this bus.
     /// </summary>
@@ -80,8 +82,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// </para>
     /// <para>
     /// <strong>Single Source of Truth:</strong> CpuClockingCounters is the authoritative
-    /// source for all timing information. The <see cref="VBlank"/> event on this class
-    /// is deprecated in favor of <see cref="CpuClockingCounters.VBlankOccurred"/>.
+    /// source for all timing information including cycle counts and VBlank events.
     /// </para>
     /// </remarks>
     public CpuClockingCounters ClockCounters => _clockCounters;
@@ -106,30 +107,11 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// Gets the total number of CPU cycles executed since last reset.
     /// </summary>
     public ulong SystemClockCounter => _clockCounters.TotalCycles;
-    
+
     /// <summary>
     /// Flag indicating whether this bus has been disposed.
     /// </summary>
     private bool _disposed;
-    
-    /// <summary>
-    /// Event raised every ~60.06 Hz (17,030 cycles) to signal vertical blanking interval.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <strong>DEPRECATED:</strong> Subscribe to <see cref="ClockCounters"/>.<see cref="CpuClockingCounters.VBlankOccurred"/>
-    /// instead. CpuClockingCounters is the single source of truth for VBlank timing.
-    /// </para>
-    /// <para>
-    /// <strong>Timing:</strong> Fires at 1,023,000 Hz / 17,030 cycles â‰ˆ 60.06 Hz (NTSC).
-    /// </para>
-    /// <para>
-    /// <strong>Thread Context:</strong> Always raised on the emulator thread. UI subscribers
-    /// must marshal to UI thread via Dispatcher.BeginInvoke or similar.
-    /// </para>
-    /// </remarks>
-    [Obsolete("Use ClockCounters.VBlankOccurred instead. CpuClockingCounters is the single source of truth for VBlank timing.")]
-    public event EventHandler? VBlank;
 
     /// <summary>Start of system I/O space ($C000).</summary>
     public const ushort SYSTEM_IO_START = 0xC000;
@@ -238,15 +220,14 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// <item>VBlank event scheduling (every 17,030 cycles)</item>
     /// <item>Catch-up logic for fast emulation (unthrottled batches)</item>
     /// </list>
-    /// VA2MBus simply calls CheckAndAdvanceVBlank() and fires the event when signaled.
+    /// VA2MBus simply calls CheckAndAdvanceVBlank() which fires <see cref="CpuClockingCounters.VBlankOccurred"/>.
     /// </para>
     /// <para>
     /// <strong>Disposal Safety:</strong> If the bus has been disposed, Clock() returns immediately
     /// without executing CPU or firing events.
     /// </para>
     /// <para>
-    /// <strong>Thread Context:</strong> Must be called from emulator thread only. VBlank event
-    /// subscribers must marshal to UI thread if needed.
+    /// <strong>Thread Context:</strong> Must be called from emulator thread only.
     /// </para>
     /// </remarks>
     public void Clock()
@@ -262,17 +243,8 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         _clockCounters.DecrementVBlankCounter(1);
 
         // Check if VBlank should fire (handles catch-up automatically)
-        // CpuClockingCounters.VBlankOccurred is the authoritative event (invoked inside CheckAndAdvanceVBlank)
-        // The legacy VBlank event below is maintained for backward compatibility during migration
-        if (_clockCounters.CheckAndAdvanceVBlank())
-        {
-            if (!_disposed)
-            {
-#pragma warning disable CS0618 // VBlank is obsolete - maintained for backward compatibility
-                VBlank?.Invoke(this, EventArgs.Empty);
-#pragma warning restore CS0618
-            }
-        }
+        // CpuClockingCounters.VBlankOccurred is invoked inside CheckAndAdvanceVBlank
+        _clockCounters.CheckAndAdvanceVBlank();
     }
 
     /// <summary>
@@ -340,7 +312,6 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// <strong>Cleanup Operations:</strong>
     /// <list type="bullet">
     /// <item>Set _disposed flag to true</item>
-    /// <item>Clear VBlank event subscribers (prevent event handler leaks)</item>
     /// </list>
     /// </para>
     /// <para>
@@ -348,7 +319,6 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     /// <list type="bullet">
     /// <item>Clock() becomes a no-op (returns immediately)</item>
     /// <item>CpuRead/CpuWrite throw ObjectDisposedException</item>
-    /// <item>VBlank event is never fired again</item>
     /// </list>
     /// </para>
     /// <para>
@@ -367,9 +337,6 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         }
 
         _disposed = true;
-#pragma warning disable CS0618 // VBlank is obsolete - cleanup still needed
-        VBlank = null;
-#pragma warning restore CS0618
     }
 
     /// <summary>

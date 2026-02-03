@@ -1,3 +1,7 @@
+// Copyright 2026 Mark D. Long
+// Licensed under the Apache License, Version 2.0
+// See LICENSE file for details
+
 using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore;
@@ -9,7 +13,11 @@ namespace Pandowdy.EmuCore;
 /// Used to notify observers (debuggers, trace logs, etc.) when memory is read or written.
 /// The <see cref="Value"/> is null for read notifications, non-null for write notifications.
 /// </remarks>
-public sealed class MemoryAccessEventArgs : EventArgs
+public sealed class // Copyright 2026 Mark D. Long
+// Licensed under the Apache License, Version 2.0
+// See LICENSE file for details
+
+MemoryAccessEventArgs : EventArgs
 {
     /// <summary>
     /// Gets the 16-bit address that was accessed ($0000-$FFFF).

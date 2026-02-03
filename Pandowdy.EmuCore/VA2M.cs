@@ -1,3 +1,7 @@
+// Copyright 2026 Mark D. Long
+// Licensed under the Apache License, Version 2.0
+// See LICENSE file for details
+
 //------------------------------------------------------------------------------
 // VA2M.cs
 //
@@ -76,7 +80,7 @@ namespace Pandowdy.EmuCore;
 /// orchestrator that brings together all emulator subsystems.
 /// </para>
 /// <para>
-/// <strong>Dependencies (11):</strong>
+/// <strong>Dependencies (12):</strong>
 /// <list type="number">
 /// <item><strong>IEmulatorState:</strong> State snapshot sink for UI display</item>
 /// <item><strong>IFrameProvider:</strong> Frame sink for video rendering</item>
@@ -89,6 +93,7 @@ namespace Pandowdy.EmuCore;
 /// <item><strong>IKeyboardSetter:</strong> Keyboard input injection (SingularKeyHandler)</item>
 /// <item><strong>IGameControllerStatus:</strong> Game controller state (SimpleGameController)</item>
 /// <item><strong>IDiskStatusProvider:</strong> Disk drive status observable (singleton)</item>
+/// <item><strong>CpuClockingCounters:</strong> CPU cycle counting and VBlank timing</item>
 /// </list>
 /// </para>
 /// <para>
@@ -367,7 +372,16 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// the setter interface to enqueue keys from the UI thread via thread-safe command queue.
     /// </remarks>
     private readonly IKeyboardSetter _keyboardSetter;
-    
+
+    /// <summary>
+    /// CPU clocking counters for VBlank timing and cycle tracking.
+    /// </summary>
+    /// <remarks>
+    /// Provides access to VBlankOccurred event for frame rendering synchronization.
+    /// This is the single source of truth for VBlank timing in the emulator.
+    /// </remarks>
+    private readonly CpuClockingCounters _clockCounters;
+
     /// <summary>
     /// Frame counter for snapshot debugging and diagnostics.
     /// </summary>
@@ -436,14 +450,15 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// <param name="keyboardSetter">Keyboard setter for injecting key events from UI thread (shared with SystemIoHandler).</param>
     /// <param name="gameController">Game controller for pushbutton and paddle state (fires events to SystemStatusProvider).</param>
     /// <param name="diskStatusProvider">Disk status provider for monitoring disk drive states (singleton, shared with UI).</param>
+    /// <param name="clockCounters">CPU clocking counters for VBlank timing and cycle tracking.</param>
     /// <exception cref="ArgumentNullException">Thrown if any parameter is null.</exception>
     /// <remarks>
     /// <para>
     /// <strong>Initialization Sequence:</strong>
     /// <list type="number">
-    /// <item>Store dependency references (all 10 required)</item>
+    /// <item>Store dependency references (all 12 required)</item>
     /// <item>Load embedded Apple IIe ROM from resources</item>
-    /// <item>Subscribe to VBlank event from bus (if VA2MBus)</item>
+    /// <item>Subscribe to VBlank event via <paramref name="clockCounters"/>.<see cref="CpuClockingCounters.VBlankOccurred"/></item>
     /// <item>Start flash timer for cursor blinking (~2.1 Hz)</item>
     /// </list>
     /// </para>
@@ -466,8 +481,8 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// the Monitor, Applesoft BASIC, and peripheral firmware.
     /// </para>
     /// <para>
-    /// <strong>VBlank Event:</strong> If the bus is a VA2MBus, the OnVBlank handler
-    /// is registered to trigger frame rendering and flash state updates at ~60 Hz.
+    /// <strong>VBlank Event:</strong> Subscribes to <see cref="CpuClockingCounters.VBlankOccurred"/>
+    /// event directly to trigger frame rendering and flash state updates at ~60 Hz.
     /// </para>
     /// </remarks>
     public VA2M(
@@ -481,7 +496,8 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
             VideoMemorySnapshotPool snapshotPool,
             IKeyboardSetter keyboardSetter,
             IGameControllerStatus gameController,
-            Services.IDiskStatusProvider diskStatusProvider)
+            Services.IDiskStatusProvider diskStatusProvider,
+            CpuClockingCounters clockCounters)
         {
             ArgumentNullException.ThrowIfNull(stateSink);
             ArgumentNullException.ThrowIfNull(frameSink);
@@ -494,6 +510,7 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
             ArgumentNullException.ThrowIfNull(keyboardSetter);
             ArgumentNullException.ThrowIfNull(gameController);
             ArgumentNullException.ThrowIfNull(diskStatusProvider);
+            ArgumentNullException.ThrowIfNull(clockCounters);
 
 
             _stateSink = stateSink;
@@ -505,6 +522,7 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         _snapshotPool = snapshotPool;
         _keyboardSetter = keyboardSetter;
         _gameController = gameController;
+        _clockCounters = clockCounters;
         Bus = bus;
         MemoryPool = memoryPool;
 
@@ -513,14 +531,7 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         _lastVBlankTicks = _vblankSw.ElapsedTicks;
 
         // Subscribe to VBlank for frame rendering
-        // TODO: Refactor to subscribe to ClockCounters.VBlankOccurred directly
-        // when OnVBlank signature is updated to match Action delegate.
-        if (Bus is VA2MBus vb)
-        {
-#pragma warning disable CS0618 // VBlank is obsolete - planned refactor
-            vb.VBlank += OnVBlank;
-#pragma warning restore CS0618
-        }
+        _clockCounters.VBlankOccurred += OnVBlank;
         
         // Start flash timer
         _flashTimer = new Timer(_ =>
@@ -628,10 +639,8 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     }
 
     /// <summary>
-    /// Handles VBlank event from the bus, triggering frame rendering and flash toggle.
+    /// Handles VBlank event, triggering frame rendering and flash toggle.
     /// </summary>
-    /// <param name="sender">Event sender (typically VA2MBus).</param>
-    /// <param name="e">Event arguments (unused).</param>
     /// <remarks>
     /// <para>
     /// <strong>VBlank Timing:</strong> Fires every 17,030 cycles (~60 Hz at 1.023 MHz), matching the
@@ -660,11 +669,11 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// This prevents blocking the emulator thread and allows it to run at full speed.
     /// </para>
     /// <para>
-    /// <strong>Thread Context:</strong> Called on the emulator thread (VBlank is raised
-    /// during Bus.Clock() execution). Never blocks - snapshot capture is ~1-3 Î¼s.
+    /// <strong>Thread Context:</strong> Called on the emulator thread via 
+    /// <see cref="CpuClockingCounters.VBlankOccurred"/> event. Never blocks - snapshot capture is ~1-3 Î¼s.
     /// </para>
     /// </remarks>
-    private void OnVBlank(object? sender, EventArgs e)
+    private void OnVBlank()
     {
 
 
