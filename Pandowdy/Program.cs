@@ -178,6 +178,7 @@ namespace Pandowdy
 
         private static Task InitializeCoreAsync(IServiceProvider services)
         {
+#if DoDisks
             // Install Disk II controller in slot 6 (standard Apple II configuration)
             var slots = services.GetRequiredService<ISlots>();
             slots.InstallCard(10, SlotNumber.Slot6); // 10 = DiskIIControllerCard16Sector
@@ -210,7 +211,7 @@ namespace Pandowdy
                 // diskController5.Drives[1].InsertDisk(@"C:\path\to\data.dsk");
                 //diskController5.Drives[1].InsertDisk(@"E:\blank.nib");
             }
-
+#endif
             return Task.CompletedTask;
         }
     }

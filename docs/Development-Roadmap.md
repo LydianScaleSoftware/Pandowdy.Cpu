@@ -9,16 +9,15 @@
 | Status | Details |
 |--------|---------|
 | **Branch** | `tasks` |
-| **Tests** | 1206 tests passing ✅ |
-| **Last Milestone** | CPU Migration to Pandowdy.Cpu (Task 18) - Phases 1-5 ✅ |
-| **Next Focus** | Task 18 Phase 6 (Cleanup) → Task 19 (Basic Debugger) |
+| **Tests** | 3388 tests (Including Pandowdy.Cpu.Tests) passing ✅ |
+| **Last Milestone** | CPU Migration to Pandowdy.Cpu (Task 18) ✅ COMPLETE |
+| **Next Focus** | Task 19 (Basic Debugger Implementation) |
 
 ---
 
 ## Table of Contents
 
 1. [Active Tasks](#active-tasks)
-   - [Task 18: Migrate to Pandowdy.Cpu](#task-18-migrate-to-pandowdycpu-critical-priority)
    - [Task 19: Basic Debugger Implementation](#task-19-basic-debugger-implementation-high-priority)
    - [Task 5: GUI Disk Management Features](#task-5-gui-disk-management-features-high-priority)
    - [Task 10: SectorDiskImageProvider Debugging](#task-10-sectordiskimageprovider-debugging-high-priority)
@@ -41,6 +40,7 @@
 3. [Completed Tasks](#completed-tasks)
    - [Task 3: Removed](#task-3-removed)
    - [Task 6: Clear Pending Keystrokes on Reset](#task-6-clear-pending-keystrokes-on-reset)
+   - [Task 18: Migrate to Pandowdy.Cpu](#task-18-migrate-to-pandowdycpu-critical-priority)
 4. [Code Style Guidelines](#code-style-guidelines)
 5. [Git Best Practices](#git-best-practices)
 6. [Testing Guidelines](#testing-guidelines)
@@ -49,132 +49,20 @@
 
 ## Active Tasks
 
-### Task 18: Migrate to Pandowdy.Cpu (Critical Priority)
-
-**Goal:** Replace the legacy 6502.NET Emulator project with the new Pandowdy.Cpu library, eliminating the external dependency and improving CPU emulation architecture.
-
-**Status:** ⏳ IN PROGRESS (Phase 1 complete)
-
-**Current State:**
-- `CPUAdapter.cs` wraps the legacy `Emulator.CPU` class from `legacy/6502.NET/Emulator`
-- Legacy CPU uses Connect-Execute-Disconnect pattern (performance overhead)
-- `ICpu` interface depends on `Emulator.ProcessorStatus` type
-- External dependency complicates builds and testing
-
-**New Pandowdy.Cpu Project:**
-- Located at: `Pandowdy.Cpu` submodule (https://github.com/LydianScaleSoftware/Pandowdy.Cpu.git)
-- Provides: `Cpu6502.cs`, `Cpu65C02.cs`, `Cpu65C02Rockwell.cs` variants
-- Interface: `IPandowdyCpu` with `IPandowdyCpuBus` bus interface
-- Tested: Dormann tests, Harte SST tests for cycle-accuracy
-- Features: Direct bus access, no connection overhead, cycle-accurate
-
-**Migration Strategy:**
-
-**Phase 1: Add Pandowdy.Cpu to Solution** ✅ DONE
-- ~~Add `Pandowdy.Cpu` project to the solution (project reference or NuGet)~~
-- Added as Git submodule at `Pandowdy.Cpu/`
-- Added `Pandowdy.Cpu.csproj` to Pandowdy solution
-- Keep legacy Emulator project temporarily for comparison
-
-**Phase 2: Create Bus Adapter** ✅ DONE
-- ~~Create `AppleIIBusToCpuBusAdapter` implementing `IPandowdyCpuBus`~~
-- Better approach: `IAppleIIBus` now implements `IPandowdyCpuBus` directly
-- Added default interface implementations for `CpuRead()`, `Peek()`, and `Write()`
-- Added project reference from `Pandowdy.EmuCore` to `Pandowdy.Cpu`
-- No separate adapter class needed - cleaner architecture
-
-**Phase 3: Update ICpu Interface** ✅ DONE
-- ~~Remove dependency on `Emulator.ProcessorStatus`~~
-- ~~Define native `ProcessorStatus` struct/enum in `Pandowdy.EmuCore`~~
-- Better approach: Removed `ICpu` interface entirely, use `IPandowdyCpu` directly
-- `IAppleIIBus.Cpu` now returns `IPandowdyCpu` instead of `ICpu`
-- State access via `cpu.Buffer.Current` (CpuState class)
-
-**Phase 4: Replace CPUAdapter Implementation** ✅ DONE
-- ~~Create new `Cpu6502Adapter` (or replace `CPUAdapter`) using `Pandowdy.Cpu`~~
-- Removed `CPUAdapter` class entirely - no adapter needed
-- DI container creates `IPandowdyCpu` via `CpuFactory.Create()`
-- `CpuStateBuffer` owned by DI container, injected where needed
-- Direct method calls: `cpu.Clock(bus)` returns bool
-
-**Phase 5: Update DI Registration** ✅ DONE
-- Updated `Program.cs` to register:
-  - `CpuStateBuffer` as singleton (DI-owned)
-  - `IPandowdyCpu` via factory method using `CpuFactory.Create(CpuVariant.Wdc65C02, buffer)`
-- Removed legacy `Emulator.CPU` and `CPUAdapter` registrations
-
-**Phase 6: Cleanup** ⏳ IN PROGRESS
-- ~~Removed `ICpu.cs` interface~~
-- ~~Removed `CPUAdapter.cs` class~~
-- ~~Removed `CPUAdapterTests.cs` test file~~
-- ~~Removed `TestCpu` class from test helpers~~
-- TODO: Remove `legacy/6502.NET/Emulator` from solution (or keep for reference)
-- TODO: Update documentation
-- ✅ All 1206 tests passing
-
-**Files Created/Modified:**
-
-*Removed Files:*
-- `Pandowdy.EmuCore\Interfaces\ICpu.cs` - Interface no longer needed
-- `Pandowdy.EmuCore\CPUAdapter.cs` - Adapter no longer needed
-- `Pandowdy.EmuCore.Tests\CPUAdapterTests.cs` - Tests for removed class
-
-*Modified Files:*
-- `Pandowdy.EmuCore\Interfaces\IAppleIIBus.cs` - Now implements `IPandowdyCpuBus`, `Cpu` returns `IPandowdyCpu`
-- `Pandowdy.EmuCore\VA2MBus.cs` - Constructor takes `IPandowdyCpu`, field type updated
-- `Pandowdy.EmuCore\VA2M.cs` - Uses `Bus.Cpu.Buffer.Current` for state access
-- `Pandowdy.EmuCore\Pandowdy.EmuCore.csproj` - Added Pandowdy.Cpu project reference
-- `Pandowdy\Program.cs` - DI registration for `CpuStateBuffer` and `IPandowdyCpu`
-- `Pandowdy.EmuCore.Tests\Helpers\VA2MTestHelpers.cs` - Uses real CPU from factory
-- `Pandowdy.EmuCore.Tests\VA2MBusTests.cs` - Updated to use `IPandowdyCpu`
-
-**Technical Considerations:**
-- ~~`IPandowdyCpuBus` has different method signatures than `IAppleIIBus`~~ ✅ Resolved via default interface methods
-- ~~Need to verify cycle-timing compatibility with Apple IIe requirements~~ ✅ Using WDC 65C02 variant
-- ~~Consider 65C02 vs 6502~~ ✅ Apple IIe enhanced uses 65C02, configured in DI
-- ~~ProcessorStatus type change may affect debugging tools~~ ✅ Use `CpuState` properties instead
-
-**Testing Requirements:**
-- ✅ All existing CPU tests pass (1206 tests passing)
-- TODO: Run Dormann functional test suite through emulator
-- TODO: Verify timing-sensitive software (disk access, video sync)
-- TODO: Performance comparison: legacy vs new CPU
-
-**Benefits:
-- ✅ Eliminates external legacy dependency
-- ✅ Removes Connect-Execute-Disconnect overhead
-- ✅ Cycle-accurate, well-tested implementation
-- ✅ Native .NET 8 implementation
-- ✅ Supports 6502, 65C02, 65C02 Rockwell variants
-- ✅ Better integration with Pandowdy architecture
-- ✅ Follows DI guidelines (injected dependencies)
-- ✅ **Enables future debugger implementation** - Pandowdy.Cpu provides better state introspection, breakpoint hooks, and single-step capabilities needed for a proper debugger
-
-**Priority:** Critical (blocks clean architecture, adds unnecessary complexity)
-
-**Enables Future Work:**
-- **Debugger Implementation:** Task 19 implements a basic debugger using Pandowdy.Cpu's state introspection capabilities
-- **Dependency Chain:** The debugger (Task 19) will significantly aid completion of:
-  - **Task 5** (GUI Disk Management) - Debug disk load/format issues
-  - **Task 10** (SectorDiskImageProvider) - Step through GCR encoding and sector synthesis
-  - **Task 13** (Audio Emulation) - Debug cycle-timing and audio sync issues
-
----
-
 ### Task 19: Basic Debugger Implementation (High Priority)
 
 **Goal:** Implement a rudimentary debugger for Pandowdy using Pandowdy.Cpu's introspection capabilities, enabling breakpoints, watches, and stepping through code.
 
-**Status:** ⏳ NOT STARTED
+**Status:** ⏳ NOT STARTED (Ready to begin - Task 18 complete)
 
 **Prerequisites:**
-- Task 18 (Migrate to Pandowdy.Cpu) must be completed first
+- ✅ Task 18 (Migrate to Pandowdy.Cpu) - COMPLETED
 - Pandowdy.Cpu provides the state introspection, breakpoint hooks, and single-step capabilities needed
 
-**Current State (Post-Task 18):**
-- Pandowdy.Cpu integrated with cycle-accurate execution
-- CPU state accessible (registers, flags, PC, SP)
-- Need debugging infrastructure to expose these capabilities
+**Current State:**
+- Pandowdy.Cpu integrated with cycle-accurate execution ✅
+- CPU state accessible (registers, flags, PC, SP) ✅
+- Ready to implement debugging infrastructure
 
 **Scope: Basic Debugger (Not Full IDE)**
 This is a foundational debugger to aid development, not a full-featured IDE debugger. Focus on essential features.
@@ -1514,6 +1402,58 @@ This task adds features beyond the essential debugging capabilities, providing a
 ---
 
 ## Completed Tasks
+
+### ✅ Task 18: Migrate to Pandowdy.Cpu
+
+**Completed:** 2025-01-27 - All 1206 tests passing
+
+**Summary:**
+- Replaced legacy 6502.NET Emulator project with Pandowdy.Cpu
+- Removed `ICpu` interface, now using `IPandowdyCpu` directly
+- Removed `CPUAdapter` class - direct CPU integration via DI
+- Updated `IAppleIIBus` to implement `IPandowdyCpuBus` directly
+- Removed `legacy/6502.NET` Git submodule
+- All existing functionality preserved and tested
+
+**Key Architecture Changes:**
+- CPU created via `CpuFactory.Create(CpuVariant.Wdc65C02, stateBuffer)`
+- `CpuStateBuffer` managed by DI container
+- Bus implements `IPandowdyCpuBus` with default interface methods
+- Direct `cpu.Clock(bus)` calls instead of Connect-Execute-Disconnect
+- State access via `cpu.Buffer.Current` (CpuState class)
+
+**Migration Phases Completed:**
+1. ✅ Added Pandowdy.Cpu submodule to solution
+2. ✅ Created bus adapter (via `IAppleIIBus : IPandowdyCpuBus`)
+3. ✅ Updated ICpu interface (removed, use `IPandowdyCpu` directly)
+4. ✅ Replaced CPUAdapter with direct CPU integration
+5. ✅ Updated DI registration in `Program.cs`
+6. ✅ Cleanup: Removed legacy code, submodule, unused references
+
+**Benefits Achieved:**
+- Eliminated external legacy dependency
+- Removed adapter overhead for better performance
+- Cycle-accurate 65C02 emulation
+- Native .NET 8 implementation
+- Better state introspection for future debugger (Task 19)
+- Cleaner architecture following DI guidelines
+
+**Files Removed:**
+- `Pandowdy.EmuCore\Interfaces\ICpu.cs`
+- `Pandowdy.EmuCore\CPUAdapter.cs`
+- `Pandowdy.EmuCore.Tests\CPUAdapterTests.cs`
+- `legacy/6502.NET` submodule
+
+**Files Modified:**
+- `IAppleIIBus.cs`, `VA2MBus.cs`, `VA2M.cs`, `Program.cs`
+- Test helpers and integration tests
+- Project files to reference Pandowdy.Cpu
+
+---
+
+### ✅ Task 3: Removed
+
+---
 
 ### ✅ Task 6: Clear Pending Keystrokes on Reset
 
