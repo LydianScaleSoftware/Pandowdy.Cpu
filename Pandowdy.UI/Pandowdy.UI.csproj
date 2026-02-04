@@ -73,4 +73,9 @@
       <Link>assets\ico\pandowdy.ico</Link>
     </AvaloniaResource>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Controls\StatusBar.axaml.cs">
+      <DependentUpon>StatusBar.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

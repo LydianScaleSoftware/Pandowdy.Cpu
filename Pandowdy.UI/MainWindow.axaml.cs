@@ -518,6 +518,13 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                         UpdateSoftSwitchStatusVisibility(v);
                     });
                 disposables.Add(s7);
+                var s8 = vm.WhenAnyValue(x => x.ShowDiskStatus)
+                    .ObserveOn(RxApp.MainThreadScheduler)
+                    .Subscribe(v =>
+                    {
+                        UpdateDiskStatusVisibility(v);
+                    });
+                disposables.Add(s8);
 
                 // Bridge emulator commands to actions
                 var c1 = vm.StartEmu.Subscribe(_ => OnEmuStartClicked(this, new RoutedEventArgs()));
@@ -560,6 +567,23 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         if (statusPanel != null)
         {
             statusPanel.IsVisible = isVisible;
+        }
+    }
+
+    /// <summary>
+    /// Updates the visibility of the disk status panel based on current setting.
+    /// </summary>
+    /// <param name="isVisible">Whether the panel should be visible.</param>
+    /// <remarks>
+    /// Finds the DiskStatusPanel control via x:Name or FindControl fallback and
+    /// sets its IsVisible property to match the provided value.
+    /// </remarks>
+    private void UpdateDiskStatusVisibility(bool isVisible)
+    {
+        var diskPanel = DiskStatusPanel ?? this.FindControl<Controls.DiskStatusPanel>("DiskStatusPanel");
+        if (diskPanel != null)
+        {
+            diskPanel.IsVisible = isVisible;
         }
     }
     
@@ -1084,6 +1108,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// <item>DecreaseContrast (contrast reduction)</item>
     /// <item>ThrottleEnabled (CPU speed control, defaults to true)</item>
     /// <item>ShowSoftSwitchStatus (panel visibility, defaults to true)</item>
+    /// <item>ShowDiskStatus (disk panel visibility, defaults to true)</item>
     /// </list>
     /// </para>
     /// <para>
@@ -1122,6 +1147,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                 if (data.DecreaseContrast.HasValue) { ViewModel.DecreaseContrast = data.DecreaseContrast.Value; }
                 if (data.ThrottleEnabled.HasValue) { ViewModel.ThrottleEnabled = data.ThrottleEnabled.Value; } else { ViewModel.ThrottleEnabled = true; }
                 if (data.ShowSoftSwitchStatus.HasValue) { ViewModel.ShowSoftSwitchStatus = data.ShowSoftSwitchStatus.Value; } else { ViewModel.ShowSoftSwitchStatus = true; }
+                if (data.ShowDiskStatus.HasValue) { ViewModel.ShowDiskStatus = data.ShowDiskStatus.Value; } else { ViewModel.ShowDiskStatus = true; }
             }
         }
         catch { }
@@ -1137,6 +1163,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// <item>ShowScanLines, MonoMixed, ForceMonochrome, DecreaseContrast</item>
     /// <item>ThrottleEnabled</item>
     /// <item>ShowSoftSwitchStatus</item>
+    /// <item>ShowDiskStatus</item>
     /// </list>
     /// </para>
     /// <para>
@@ -1168,6 +1195,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                 ForceMonochrome = ViewModel?.ForceMonochrome,
                 ThrottleEnabled = ViewModel?.ThrottleEnabled,
                 ShowSoftSwitchStatus = ViewModel?.ShowSoftSwitchStatus,
+                ShowDiskStatus = ViewModel?.ShowDiskStatus,
             };
 #pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
             var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
@@ -1219,6 +1247,8 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         public bool? ThrottleEnabled { get; set; }
         /// <summary>Gets or sets whether the soft switch status panel is visible.</summary>
         public bool? ShowSoftSwitchStatus { get; set; }
+        /// <summary>Gets or sets whether the disk status panel is visible.</summary>
+        public bool? ShowDiskStatus { get; set; }
     }
 
     #endregion

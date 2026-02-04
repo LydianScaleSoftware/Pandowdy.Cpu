@@ -315,7 +315,7 @@ public sealed class MainWindowViewModel : ReactiveObject
     /// Backing field for ShowSoftSwitchStatus property.
     /// </summary>
     private bool _showSoftSwitchStatus = true;
-    
+
     /// <summary>
     /// Gets or sets whether the soft switch status panel is visible.
     /// </summary>
@@ -334,6 +334,31 @@ public sealed class MainWindowViewModel : ReactiveObject
     {
         get => _showSoftSwitchStatus;
         set => this.RaiseAndSetIfChanged(ref _showSoftSwitchStatus, value);
+    }
+
+    /// <summary>
+    /// Backing field for ShowDiskStatus property.
+    /// </summary>
+    private bool _showDiskStatus = true;
+
+    /// <summary>
+    /// Gets or sets whether the disk status panel is visible.
+    /// </summary>
+    /// <value>True to show the disk status panel, false to hide it.</value>
+    /// <remarks>
+    /// <para>
+    /// Controls the visibility of the disk status panel displaying Disk II drive states
+    /// (motor on/off, track position, disk images).
+    /// </para>
+    /// <para>
+    /// Users can toggle this to maximize screen space for the display or show disk
+    /// status for monitoring and debugging.
+    /// </para>
+    /// </remarks>
+    public bool ShowDiskStatus
+    {
+        get => _showDiskStatus;
+        set => this.RaiseAndSetIfChanged(ref _showDiskStatus, value);
     }
 
     #endregion
@@ -410,6 +435,16 @@ public sealed class MainWindowViewModel : ReactiveObject
     /// </remarks>
     public ReactiveCommand<Unit, Unit> ToggleSoftSwitchStatus { get; }
 
+    /// <summary>
+    /// Gets the command to toggle disk status panel visibility on/off.
+    /// </summary>
+    /// <value>Command that inverts the ShowDiskStatus property.</value>
+    /// <remarks>
+    /// Bound to menu item or keyboard shortcut. Updates <see cref="ShowDiskStatus"/>
+    /// which the view observes to control disk status panel visibility.
+    /// </remarks>
+    public ReactiveCommand<Unit, Unit> ToggleDiskStatus { get; }
+
     #endregion
 
     #region Private Fields
@@ -481,6 +516,7 @@ public sealed class MainWindowViewModel : ReactiveObject
         ToggleDecreaseContrast = ReactiveCommand.Create(() => { DecreaseContrast = !DecreaseContrast; });
         ToggleMonoMixed = ReactiveCommand.Create(() => { MonoMixed = !MonoMixed; });
         ToggleSoftSwitchStatus = ReactiveCommand.Create(() => { ShowSoftSwitchStatus = !ShowSoftSwitchStatus; });
+        ToggleDiskStatus = ReactiveCommand.Create(() => { ShowDiskStatus = !ShowDiskStatus; });
 
         // Initialize placeholder emulator commands (view handles actual logic)
         StartEmu = ReactiveCommand.Create(() => { });

@@ -35,6 +35,7 @@
    - [Task 16: Research Cross-Platform Shader Rendering for Avalonia](#task-16-research-cross-platform-shader-rendering-for-avalonia-low-priority)
    - [Task 17: Research Compute-Shader Toolkits for Bitplane Processing](#task-17-research-compute-shader-toolkits-for-bitplane-processing-medium-priority)
    - [Task 20: Advanced Debugger Features](#task-20-advanced-debugger-features-low-priority)
+   - [Task 21: Peripheral Discovery and Enumeration API](#task-21-peripheral-discovery-and-enumeration-api-medium-priority)
 4. [Completed Tasks](#completed-tasks)
    - [Task 1: Migrate VA2M to CpuClockingCounters.VBlankOccurred](#task-1-migrate-va2m-to-cpuclockingcountersvblankoccurred)
    - [Task 2: Remove VA2MBus.VBlank Event](#task-2-remove-va2mbusvblank-event)
@@ -1367,6 +1368,176 @@ This task adds features beyond the essential debugging capabilities, providing a
 **Dependencies:**
 - **Requires:** Task 19 (Basic Debugger Implementation)
 - **Related:** Task 12 (Flexible Window Docking System)
+
+---
+
+### Task 21: Peripheral Discovery and Enumeration API (Medium Priority)
+
+**Goal:** Add a method to `IEmulatorCoreInterface` that allows the GUI to query what peripherals (disk drives, printers, serial cards, etc.) are present in the emulated system, enabling dynamic UI configuration.
+
+**Status:** ⏳ NOT STARTED
+
+**Current State:**
+- GUI is currently hardcoded to display specific panels (Disk Status, Soft Switch Status, CPU Status)
+- No way for GUI to discover what peripherals are actually installed in emulator
+- Adding new peripheral cards requires manual UI code changes
+- UI cannot adapt to different machine configurations
+
+**Problem:**
+- When peripherals are added/removed from emulator configuration, UI must be manually updated
+- No discoverability mechanism for what hardware is present
+- GUI cannot dynamically create appropriate panels/controls for installed peripherals
+- Difficult to support user-configurable hardware configurations
+- Future peripheral additions (printer, serial card, modem, etc.) require UI refactoring
+
+**Proposed Solution:**
+
+Add peripheral discovery API to `IEmulatorCoreInterface` that returns a structured description of installed hardware:
+
+```csharp
+public interface IEmulatorCoreInterface
+{
+    // ... existing members ...
+
+    /// <summary>
+    /// Gets the collection of peripherals installed in the emulated system.
+    /// </summary>
+    /// <returns>Read-only collection of peripheral descriptors.</returns>
+    IReadOnlyList<IPeripheralDescriptor> GetInstalledPeripherals();
+}
+
+/// <summary>
+/// Describes a peripheral device installed in the emulated system.
+/// </summary>
+public interface IPeripheralDescriptor
+{
+    /// <summary>Gets the peripheral type (DiskDrive, Printer, SerialCard, etc.).</summary>
+    PeripheralType Type { get; }
+
+    /// <summary>Gets the slot number (1-7) or 0 for motherboard peripherals.</summary>
+    int Slot { get; }
+
+    /// <summary>Gets a human-readable name for UI display.</summary>
+    string DisplayName { get; }
+
+    /// <summary>Gets the unique identifier for this peripheral instance.</summary>
+    string Id { get; }
+
+    /// <summary>Gets peripheral-specific metadata (drive count, baud rate, etc.).</summary>
+    IReadOnlyDictionary<string, object> Metadata { get; }
+}
+
+public enum PeripheralType
+{
+    DiskController,     // Disk II controller (2 drives)
+    Printer,            // Parallel printer interface
+    SerialCard,         // Serial/modem card
+    MockingboardCard,   // Mockingboard audio card
+    MouseCard,          // Mouse interface
+    ClockCard,          // Real-time clock
+    RamCard,            // Expansion RAM card
+    // Future expansion...
+}
+```
+
+**Implementation Approach:**
+
+**1. Core Infrastructure:**
+- Create `IPeripheralDescriptor` interface and implementation
+- Create `PeripheralType` enum with common peripheral types
+- Add `GetInstalledPeripherals()` to `IEmulatorCoreInterface`
+
+**2. Card Enumeration:**
+- Iterate through all 7 expansion slots
+- Query each slot via `ICard` interface
+- Build descriptor from card metadata
+- Include motherboard peripherals (built-in keyboard, display, speaker)
+
+**3. Metadata Examples:**
+```csharp
+// Disk II Controller
+{
+    Type = PeripheralType.DiskController,
+    Slot = 6,
+    DisplayName = "Disk II Controller",
+    Id = "diskii-slot6",
+    Metadata = {
+        ["DriveCount"] = 2,
+        ["Drive1ImagePath"] = "C:\\disks\\dos33.dsk",
+        ["Drive2ImagePath"] = null,
+        ["SupportedFormats"] = new[] { "dsk", "do", "po", "nib", "woz" }
+    }
+}
+
+// Future: Printer Card
+{
+    Type = PeripheralType.Printer,
+    Slot = 1,
+    DisplayName = "Parallel Printer Interface",
+    Id = "printer-slot1",
+    Metadata = {
+        ["OutputPath"] = "C:\\output\\printout.txt",
+        ["Emulation"] = "TextFile"
+    }
+}
+```
+
+**4. GUI Adaptation:**
+- MainWindow queries `GetInstalledPeripherals()` on startup
+- Dynamically creates appropriate status panels based on installed hardware
+- Disk Status Panel only shown if DiskController present
+- Future panels (Printer Status, Serial Status) created dynamically
+- Panel visibility saved per peripheral type
+
+**Use Cases:**
+
+**Current:**
+- Discover Disk II controller in slot 6 → show Disk Status Panel
+- Discover no printer → don't show Printer Status Panel
+
+**Future:**
+- User configures different slot assignments → UI adapts automatically
+- User adds Mockingboard card → Audio Status Panel appears
+- User adds printer card → Printer Status Panel appears with control buttons
+- Support for multiple disk controllers (rare but possible)
+
+**Benefits:**
+- ✅ GUI automatically adapts to emulator configuration
+- ✅ No manual UI updates needed when adding peripherals
+- ✅ Supports user-configurable hardware setups
+- ✅ Foundation for future peripheral additions
+- ✅ Clean separation between core and UI concerns
+- ✅ Makes future Task 5 (GUI Disk Management) more flexible
+
+**Files to Create:**
+- `Pandowdy.EmuCore\Interfaces\IPeripheralDescriptor.cs` - Peripheral descriptor interface
+- `Pandowdy.EmuCore\DataTypes\PeripheralDescriptor.cs` - Descriptor implementation
+- `Pandowdy.EmuCore\DataTypes\PeripheralType.cs` - Peripheral type enum
+
+**Files to Modify:**
+- `Pandowdy.EmuCore\Interfaces\IEmulatorCoreInterface.cs` - Add GetInstalledPeripherals()
+- `Pandowdy.EmuCore\VA2M.cs` - Implement peripheral enumeration
+- `Pandowdy.EmuCore\Interfaces\ICard.cs` - Add metadata properties (optional)
+- `Pandowdy.UI\MainWindow.axaml.cs` - Query peripherals and create panels dynamically
+- `Pandowdy.UI\ViewModels\MainWindowViewModel.cs` - Dynamic panel view model creation
+
+**Technical Considerations:**
+- Thread safety: Query should be safe from UI thread
+- Performance: Cache peripheral list, invalidate only on configuration change
+- Extensibility: Metadata dictionary allows arbitrary peripheral-specific data
+- Backward compatibility: Existing cards work without metadata (return defaults)
+- Observable pattern: Optional `IObservable<IPeripheralDescriptor>` for hot-plug support (future)
+
+**Priority:** Medium
+
+**Dependencies:**
+- None (pure addition to existing interface)
+
+**Related:**
+- **Enables:** Dynamic panel creation for future peripherals
+- **Complements:** Task 5 (GUI Disk Management Features)
+- **Complements:** Task 12 (Flexible Window Docking System)
+- **Foundation for:** Future printer, serial, audio peripheral support
 
 ---
 

@@ -1,0 +1,29 @@
+<!--
+  Copyright 2026 Mark D. Long
+  Licensed under the Apache License, Version 2.0
+  See LICENSE file for details
+-->
+
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:Pandowdy.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="32"
+             x:Class="Pandowdy.UI.Controls.StatusBar">
+
+  <!-- Status bar container with subtle border and background -->
+  <Border BorderBrush="#303030" BorderThickness="0,1,0,0" Background="#1A1A1A">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <!-- CPU Status takes available space -->
+        <ColumnDefinition Width="*" />
+        <!-- Future status items can be added here as additional columns -->
+      </Grid.ColumnDefinitions>
+
+      <!-- CPU Status Panel -->
+      <controls:CpuStatusPanel x:Name="CpuStatusPanel" 
+                               Grid.Column="0" />
+    </Grid>
+  </Border>
+</UserControl>
