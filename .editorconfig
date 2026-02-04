@@ -3,6 +3,7 @@ root = true
 # All files
 [*]
 charset = utf-8
+end_of_line = crlf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
@@ -24,9 +25,13 @@ dotnet_style_prefer_expression_bodied_methods = false:suggestion
 charset = utf-8
 trim_trailing_whitespace = false
 insert_final_newline = true
+end_of_line = crlf
+
 
 # XAML and Avalonia XAML files
 [*.{xaml,axaml}]
 charset = utf-8
 indent_size = 2
 insert_final_newline = true
+end_of_line = crlf
+
