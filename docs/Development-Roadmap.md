@@ -9,7 +9,7 @@
 | Status | Details |
 |--------|---------|
 | **Branch** | `tasks` |
-| **Tests** | 1195 tests passing ✅ |
+| **Tests** | 3388 tests (Including Pandowdy.Cpu.Tests) passing ✅ |
 | **Last Milestone** | CPU Migration to Pandowdy.Cpu (Task 18) ✅ COMPLETE |
 | **Next Focus** | Task 19 (Basic Debugger Implementation) |
 
@@ -23,9 +23,7 @@
    - [Task 10: SectorDiskImageProvider Debugging](#task-10-sectordiskimageprovider-debugging-high-priority)
    - [Task 13: Audio Emulation Implementation](#task-13-audio-emulation-implementation-medium-priority)
 2. [Backlog](#backlog)
-   - [Task 21: Side-Load Data from Disk Images](#task-21-side-load-data-from-disk-images-medium-high-priority)
    - [Task 4: HGR Flicker Investigation](#task-4-hgr-flicker-investigation-medium-priority)
-   - [Task 6: Clear Pending Keystrokes on Reset](#task-6-clear-pending-keystrokes-on-reset-low-priority)
    - [Task 7: Handle BRK Loops in Interrupt Handler](#task-7-handle-brk-loops-in-interrupt-handler-low-priority)
    - [Task 8: Check for Race Conditions at High Speeds](#task-8-check-for-race-conditions-at-high-speeds-medium-priority)
    - [Task 9: Multi-Drive Operation Deep Dive](#task-9-multi-drive-operation-deep-dive-medium-priority)
@@ -39,10 +37,9 @@
 3. [Completed Tasks](#completed-tasks)
    - [Task 1: Migrate VA2M to CpuClockingCounters.VBlankOccurred](#task-1-migrate-va2m-to-cpuclockingcountersvblankoccurred)
    - [Task 2: Remove VA2MBus.VBlank Event](#task-2-remove-va2mbusvblank-event)
-   - [Task 22: License Compliance and Header Updates](#task-22-license-compliance-and-header-updates)
    - [Task 3: Removed](#task-3-removed)
    - [Task 6: Clear Pending Keystrokes on Reset](#task-6-clear-pending-keystrokes-on-reset)
-   - [Task 18: Migrate to Pandowdy.Cpu](#task-18-migrate-to-pandowdycpu)
+   - [Task 18: Migrate to Pandowdy.Cpu](#task-18-migrate-to-pandowdycpu-critical-priority)
 4. [Code Style Guidelines](#code-style-guidelines)
 5. [Git Best Practices](#git-best-practices)
 6. [Testing Guidelines](#testing-guidelines)
@@ -425,75 +422,6 @@ public void StepOver()
 
 ## Backlog
 
-### Task 21: Side-Load Data from Disk Images (Medium-High Priority)
-
-**Current State:**
-- `VA2M` subscribes to `VA2MBus.VBlank` event (now marked `[Obsolete]`)
-- `VA2MBus.VBlank` uses `EventHandler` signature `(object? sender, EventArgs e)`
-- `CpuClockingCounters.VBlankOccurred` uses simpler `Action` signature
-
-**Problem:**
-- Two VBlank events fire on every frame (redundant)
-- `VA2MBus.VBlank` is deprecated but still in use
-- Inconsistent event patterns
-
-**Proposed Solution:**
-
-**Option A: Change OnVBlank signature** (Breaking change for tests)
-```csharp
-// Change from:
-private void OnVBlank(object? sender, EventArgs e)
-
-// To:
-private void OnVBlank()
-```
-Then subscribe via: `vb.ClockCounters.VBlankOccurred += OnVBlank;`
-
-**Option B: Use lambda adapter** (Non-breaking)
-```csharp
-if (Bus is VA2MBus vb)
-{
-    vb.ClockCounters.VBlankOccurred += () => OnVBlank(null, EventArgs.Empty);
-}
-```
-
-**Option C: Inject CpuClockingCounters directly into VA2M** (Cleanest long-term)
-- Add `CpuClockingCounters` as a constructor parameter
-- Subscribe directly: `clockCounters.VBlankOccurred += OnVBlank;`
-- Remove `VA2MBus.VBlank` entirely
-
-**Recommended:** Option C for cleanest architecture, but requires updating VA2M's 11 constructor parameters to 12.
-
-**Files to Modify:**
-- `Pandowdy.EmuCore\VA2M.cs` - Update constructor and subscription
-- `Pandowdy.EmuCore\VA2MBus.cs` - Remove `VBlank` event entirely (after Task 2)
-- `Pandowdy.EmuCore.Tests\Helpers\VA2MTestHelpers.cs` - Update test factory
-- Any tests that mock/verify VBlank behavior
-
-**Priority:** Low - Current pragma suppressions work fine. Address after Disk II integration is stable.
-
----
-
-### Task 2: Remove VA2MBus.VBlank Event (Low Priority)
-
-**Prerequisite:** Task 1 must be completed first.
-
-**Goal:** Clean up deprecated VBlank event from `VA2MBus`.
-
-**Steps:**
-1. Remove `[Obsolete]` attribute and event declaration from `VA2MBus.cs`
-2. Remove event invocation in `Clock()` method
-3. Remove null assignment in `Dispose()` method
-4. Update documentation to remove VBlank references
-5. Run full test suite to verify no regressions
-
-**Files to Modify:**
-- `Pandowdy.EmuCore\VA2MBus.cs`
-
-**Priority:** Low
-
----
-
 ### Task 3: Removed
 
 ---
@@ -526,31 +454,6 @@ if (Bus is VA2MBus vb)
 **Priority:** Medium
 
 **Related:** See Task 8 (Race Conditions at High Speeds)
-
----
-
-### Task 6: Clear Pending Keystrokes on Reset (Low Priority)
-
-**Status:** ✅ COMPLETED (2025-01-25)
-
-**Problem:** When `Reset()` is called, any pending keystrokes in the `QueuedKeyHandler` buffer should be cleared.
-
-**Solution Implemented:**
-- Added `Reset()` method to `IKeyboardSetter` interface
-- Implemented in `SingularKeyHandler`: Clears strobe bit while preserving key value
-- Implemented in `QueuedKeyHandler`: Cancels timer, clears queue, clears strobe bit
-- Called in `VA2M.Reset()` before `Bus.Reset()`
-- Added 11 unit tests (5 for SingularKeyHandler, 6 for QueuedKeyHandler)
-
-**Files Modified:**
-- `Pandowdy.EmuCore\Interfaces\IKeyboardSetter.cs` - Added Reset() method
-- `Pandowdy.EmuCore\Services\SingularKeyHandler.cs` - Implemented Reset()
-- `Pandowdy.EmuCore\Services\QueuedKeyHandler.cs` - Implemented Reset() with queue clearing
-- `Pandowdy.EmuCore\VA2M.cs` - Calls keyboard Reset() on system reset
-- `Pandowdy.EmuCore.Tests\SingularKeyHandlerTests.cs` - Added 5 Reset() tests
-- `Pandowdy.EmuCore.Tests\QueuedKeyHandlerTests.cs` - Added 6 Reset() tests
-
-**Test Results:** All 1235 tests passing ✅
 
 ---
 
@@ -1407,66 +1310,24 @@ This task adds features beyond the essential debugging capabilities, providing a
 
 ### ✅ Task 1: Migrate VA2M to CpuClockingCounters.VBlankOccurred
 
-**Completed:** 2025-01-27 - All tests passing
-
 **Summary:**
-- Migrated VA2M from deprecated `VA2MBus.VBlank` event to `CpuClockingCounters.VBlankOccurred`
-- Added `CpuClockingCounters` as 12th constructor parameter to VA2M (Option C from roadmap)
-- Changed `OnVBlank` signature from `(object? sender, EventArgs e)` to `()` to match `Action` delegate
-- Updated VA2M test builder to inject `CpuClockingCounters`
-- All existing functionality preserved and tested
-
-**Key Changes:**
-- VA2M now subscribes directly to `_clockCounters.VBlankOccurred += OnVBlank;`
-- `OnVBlank()` method signature simplified (no parameters)
-- Test factory (`VA2MTestHelpers`) updated with `WithClockCounters()` builder method
-- Class-level documentation updated: 12 dependencies (was 11)
+- `VA2M` subscribes directly to `CpuClockingCounters.VBlankOccurred`.
+- VBlank timing is sourced from `CpuClockingCounters` only.
 
 **Files Modified:**
-- `Pandowdy.EmuCore\VA2M.cs` - Constructor, OnVBlank signature, field, documentation
-- `Pandowdy.EmuCore.Tests\Helpers\VA2MTestHelpers.cs` - Test builder updated
-- `Pandowdy\Program.cs` - DI container automatically injects CpuClockingCounters (no change needed)
-
-**Benefits:**
-- Cleaner architecture - single source of truth for VBlank timing
-- Simpler event signature (Action vs EventHandler)
-- Prepares for Task 2 (removing deprecated VBlank event)
+- `Pandowdy.EmuCore\VA2M.cs`
+- `Pandowdy.EmuCore.Tests\Helpers\VA2MTestHelpers.cs`
 
 ---
 
 ### ✅ Task 2: Remove VA2MBus.VBlank Event
 
-**Completed:** 2025-01-27 - All tests passing
-
 **Summary:**
-- Removed deprecated `[Obsolete] VBlank` event from `VA2MBus`
-- Removed event invocation in `Clock()` method
-- Removed event cleanup in `Dispose()` method
-- Updated 4 unit tests in `VA2MBusTests.cs` to use `ClockCounters.VBlankOccurred`
-- Updated all XML documentation to remove VBlank references
-
-**Key Changes:**
-- Removed `public event EventHandler? VBlank;` declaration
-- Removed `VBlank?.Invoke(this, EventArgs.Empty);` from `Clock()`
-- Removed `VBlank = null;` from `Dispose()`
-- Tests now subscribe to `fixture.VBlank.VBlankOccurred` (via ClockCounters)
-- Simplified disposal - no event cleanup needed
-
-**Tests Updated:**
-1. `VBlank_Event_FiresAtCorrectInterval` - Changed subscription
-2. `VBlank_Event_FiresMultipleTimes` - Changed subscription
-3. `VBlank_Timing_ApproximatesSixtyHz` - Changed subscription
-4. `Scenario_CompleteFrame_ClocksAndVBlank` - Changed subscription
+- Deprecated `VA2MBus.VBlank` event removed.
+- VBlank handling now uses `CpuClockingCounters.VBlankOccurred` only.
 
 **Files Modified:**
-- `Pandowdy.EmuCore\VA2MBus.cs` - Event removed, Clock() simplified, Dispose() simplified, docs updated
-- `Pandowdy.EmuCore.Tests\VA2MBusTests.cs` - 4 tests updated to use ClockCounters
-
-**Benefits:**
-- Eliminated deprecated event
-- Cleaner VA2MBus implementation
-- No more pragma warning suppressions
-- Single source of truth: `CpuClockingCounters.VBlankOccurred`
+- `Pandowdy.EmuCore\VA2MBus.cs`
 
 ---
 
@@ -1515,62 +1376,6 @@ This task adds features beyond the essential debugging capabilities, providing a
 - `IAppleIIBus.cs`, `VA2MBus.cs`, `VA2M.cs`, `Program.cs`
 - Test helpers and integration tests
 - Project files to reference Pandowdy.Cpu
-
----
-
-### ✅ Task 22: License Compliance and Header Updates
-
-**Completed:** 2025-01-28 - License compliance established
-
-**Summary:**
-- Updated all licensing files for project compliance
-- Added license headers to all C# source files
-- Added license headers to all AXAML files in Pandowdy.UI
-- Ensured proper copyright and license attribution throughout codebase
-- Established licensing standards for the project
-
-**Key Changes:**
-- License headers added to all `.cs` files in:
-  - `Pandowdy.EmuCore` project
-  - `Pandowdy.UI` project
-  - `Pandowdy` (main) project
-  - `Pandowdy.EmuCore.Tests` project
-  - `Pandowdy.UI.Tests` project
-- License headers added to all `.axaml` files in:
-  - `Pandowdy.UI` project (4 files)
-- Updated project-level licensing documentation
-- Standardized header format across all C# files (C# comment style)
-- Standardized header format across all AXAML files (XML comment style)
-
-**Files Modified:**
-- All C# source files across the solution (license headers added)
-- All AXAML UI definition files in Pandowdy.UI (license headers added)
-- Project licensing documentation files
-
-**Header Formats:**
-
-C# files:
-```csharp
-// Copyright 2026 Mark D. Long
-// Licensed under the Apache License, Version 2.0
-// See LICENSE file for details
-```
-
-AXAML files:
-```xml
-<!--
-  Copyright 2026 Mark D. Long
-  Licensed under the Apache License, Version 2.0
-  See LICENSE file for details
--->
-```
-
-**Benefits:**
-- Clear legal attribution and licensing
-- Professional project standards
-- Compliance with open-source licensing requirements
-- Consistent header format across codebase
-- All source files now properly attributed
 
 ---
 
