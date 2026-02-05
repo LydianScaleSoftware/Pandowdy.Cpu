@@ -127,6 +127,7 @@ public class VA2MTests
 
         // Act
         va2m.ThrottleEnabled = false;
+        va2m.Clock(); // Process pending queue to execute SetThrottleEnabledInternal()
 
         // Assert
         Assert.False(va2m.ThrottleEnabled);
@@ -196,21 +197,22 @@ public class VA2MTests
     }
 
     [Fact]
-    public void Clock_PublishesStateToEmulatorState()
+    public void Clock_StateIsAccessibleAfterExecution()
     {
-        // Arrange
-        var testState = new TestEmulatorState();
+        // Arrange - Post-Task 8 architecture: state is pulled, not pushed
+        var testBus = new TestAppleIIBus();
         var va2m = VA2MTestHelpers.CreateBuilder()
-            .WithEmulatorState(testState)
+            .WithBus(testBus)
             .Build();
 
-        var initialCount = testState.UpdateCount;
+        var initialClock = va2m.SystemClock;
 
         // Act
         va2m.Clock();
 
-        // Assert
-        Assert.True(testState.UpdateCount > initialCount, "State should be updated after Clock()");
+        // Assert - Verify state is accessible via pull pattern
+        Assert.Equal(initialClock + 1, va2m.SystemClock);
+        Assert.NotNull(va2m.Bus.Cpu); // CPU state is accessible
     }
 
     [Fact]
@@ -515,10 +517,10 @@ public class VA2MTests
     [Fact]
     public void Scenario_BootSequence_InitializesCorrectly()
     {
-        // Arrange
-        var testState = new TestEmulatorState();
+        // Arrange - Post-Task 8: Verify state via pull pattern, not push
+        var testBus = new TestAppleIIBus();
         var va2m = VA2MTestHelpers.CreateBuilder()
-            .WithEmulatorState(testState)
+            .WithBus(testBus)
             .Build();
 
         // Act - Simulate basic boot
@@ -528,9 +530,10 @@ public class VA2MTests
             va2m.Clock(); // First Clock() processes the Reset, subsequent ones execute normally
         }
 
-        // Assert
+        // Assert - State is accessible via pull pattern (IEmulatorCoreInterface)
         Assert.Equal(100UL, va2m.SystemClock);
-        Assert.True(testState.UpdateCount > 0, "State should be updated during execution");
+        Assert.Equal(1, testBus.ResetCount); // Verify reset was processed
+        Assert.NotNull(va2m.Bus.Cpu); // CPU state is accessible for pulling
     }
 
     [Fact]

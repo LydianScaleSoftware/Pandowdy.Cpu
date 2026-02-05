@@ -363,7 +363,8 @@ public class Apple2Display : Control
     /// </para>
     /// <para>
     /// <strong>Performance Note:</strong> Does not call InvalidateVisual() here to avoid
-    /// excessive redraws. The UI refresh timer (60 Hz) controls the actual render frequency.
+    /// excessive redraws. The UI refresh timer (see <see cref="Constants.RefreshRates.BaseTickerHz"/>)
+    /// controls the actual render frequency.
     /// </para>
     /// </remarks>
     private void OnFrameAvailable(object? sender, EventArgs e)
@@ -534,7 +535,7 @@ public class Apple2Display : Control
     /// <remarks>
     /// <para>
     /// Triggers InvalidateVisual() if a frame provider and frame data are available.
-    /// Typically called by the UI refresh timer (60 Hz).
+    /// Typically called by the UI refresh timer (see <see cref="Constants.RefreshRates.BaseTickerHz"/>).
     /// </para>
     /// </remarks>
     public void RequestRefresh()

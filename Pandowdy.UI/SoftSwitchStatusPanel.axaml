@@ -37,10 +37,11 @@
                 <BrushTransition Property="Foreground" Duration="0:0:0.125"/>
             </Transitions>
         </Setter>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
     </Style>
 </UserControl.Styles>
     
-<Border Padding="8" Margin="8" Background="#222" CornerRadius="4">
+<Border Padding="8" Margin="0" Background="#333" CornerRadius="0">
         <StackPanel Spacing="2">
             <!-- 80STORE Flag -->
             <Border Classes="flag-indicator" Background="{Binding State80Store, Converter={StaticResource FlagBg}}" 
@@ -84,26 +85,52 @@
                            Foreground="{Binding StateSlotC3Rom, Converter={StaticResource FlagFg}}" />
             </Border>
 
-            <!-- PB0 Flag -->
-            <Border Classes="flag-indicator" Background="{Binding StatePb0, Converter={StaticResource FlagBg}}" 
-                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Paddle Button 0">
-                <TextBlock Text="PB0" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
-                           Foreground="{Binding StatePb0, Converter={StaticResource FlagFg}}" />
+          <!-- Show 80 Col Flag -->
+            <Border Classes="flag-indicator" Background="{Binding StateShow80Col, Converter={StaticResource FlagBg}}" 
+                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Show 80 Column Mode">
+                <TextBlock Text="80 COL" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
+                           Foreground="{Binding StateShow80Col, Converter={StaticResource FlagFg}}" />
             </Border>
 
-            <!-- PB1 Flag -->
-            <Border Classes="flag-indicator" Background="{Binding StatePb1, Converter={StaticResource FlagBg}}" 
-                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Paddle Button 1">
-                <TextBlock Text="PB1" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
-                           Foreground="{Binding StatePb1, Converter={StaticResource FlagFg}}" />
+            <!-- ALTCHAR Flag -->
+            <Border Classes="flag-indicator" Background="{Binding StateAltCharSet, Converter={StaticResource FlagBg}}" 
+                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Alternate Character Set">
+                <TextBlock Text="ALTCHAR" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
+                           Foreground="{Binding StateAltCharSet, Converter={StaticResource FlagFg}}" />
             </Border>
 
-            <!-- PB2 Flag -->
-            <Border Classes="flag-indicator" Background="{Binding StatePb2, Converter={StaticResource FlagBg}}" 
-                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Paddle Button 2">
-                <TextBlock Text="PB2" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
-                           Foreground="{Binding StatePb2, Converter={StaticResource FlagFg}}" />
+
+            <!-- TEXT Flag -->
+            <Border Classes="flag-indicator" Background="{Binding StateTextMode, Converter={StaticResource FlagBg}}" 
+                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Text Mode">
+                <TextBlock Text="TEXT" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
+                           Foreground="{Binding StateTextMode, Converter={StaticResource FlagFg}}" />
             </Border>
+                  
+            <!-- MIXED Flag -->
+            <Border Classes="flag-indicator" Background="{Binding StateMixed, Converter={StaticResource FlagBg}}" 
+                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Mixed Graphics/Text Mode">
+                <TextBlock Text="MIXED" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
+                           Foreground="{Binding StateMixed, Converter={StaticResource FlagFg}}" />
+            </Border>
+
+            <!-- PAGE2 Flag -->
+            <Border Classes="flag-indicator" Background="{Binding StatePage2, Converter={StaticResource FlagBg}}" 
+                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Page 2 Video Memory">
+                <TextBlock Text="PAGE2" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
+                           Foreground="{Binding StatePage2, Converter={StaticResource FlagFg}}" />
+            </Border>
+
+            <!-- HIRES Flag -->
+            <Border Classes="flag-indicator" Background="{Binding StateHiRes, Converter={StaticResource FlagBg}}" 
+                    CornerRadius="2" Padding="4,1" ToolTip.Tip="High Resolution Graphics">
+                <TextBlock Text="HIRES" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
+                           Foreground="{Binding StateHiRes, Converter={StaticResource FlagFg}}" />
+            </Border>
+
+
+
+
 
             <!-- ANN0 Flag -->
             <Border Classes="flag-indicator" Background="{Binding StateAnn0, Converter={StaticResource FlagBg}}" 
@@ -133,47 +160,8 @@
                            Foreground="{Binding StateAnn3, Converter={StaticResource FlagFg}}" />
             </Border>
 
-            <!-- PAGE2 Flag -->
-            <Border Classes="flag-indicator" Background="{Binding StatePage2, Converter={StaticResource FlagBg}}" 
-                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Page 2 Video Memory">
-                <TextBlock Text="PAGE2" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
-                           Foreground="{Binding StatePage2, Converter={StaticResource FlagFg}}" />
-            </Border>
 
-            <!-- HIRES Flag -->
-            <Border Classes="flag-indicator" Background="{Binding StateHiRes, Converter={StaticResource FlagBg}}" 
-                    CornerRadius="2" Padding="4,1" ToolTip.Tip="High Resolution Graphics">
-                <TextBlock Text="HIRES" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
-                           Foreground="{Binding StateHiRes, Converter={StaticResource FlagFg}}" />
-            </Border>
-
-            <!-- MIXED Flag -->
-            <Border Classes="flag-indicator" Background="{Binding StateMixed, Converter={StaticResource FlagBg}}" 
-                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Mixed Graphics/Text Mode">
-                <TextBlock Text="MIXED" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
-                           Foreground="{Binding StateMixed, Converter={StaticResource FlagFg}}" />
-            </Border>
-
-            <!-- TEXT Flag -->
-            <Border Classes="flag-indicator" Background="{Binding StateTextMode, Converter={StaticResource FlagBg}}" 
-                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Text Mode">
-                <TextBlock Text="TEXT" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
-                           Foreground="{Binding StateTextMode, Converter={StaticResource FlagFg}}" />
-            </Border>
-
-            <!-- ALTCHAR Flag -->
-            <Border Classes="flag-indicator" Background="{Binding StateAltCharSet, Converter={StaticResource FlagBg}}" 
-                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Alternate Character Set">
-                <TextBlock Text="ALTCHAR" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
-                           Foreground="{Binding StateAltCharSet, Converter={StaticResource FlagFg}}" />
-            </Border>
-
-            <!-- Show 80 Col Flag -->
-            <Border Classes="flag-indicator" Background="{Binding StateShow80Col, Converter={StaticResource FlagBg}}" 
-                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Show 80 Column Mode">
-                <TextBlock Text="80 COL" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
-                           Foreground="{Binding StateShow80Col, Converter={StaticResource FlagFg}}" />
-            </Border>
+    
 
             <!-- Bank 1 Flag -->
             <Border Classes="flag-indicator" Background="{Binding StateBank1, Converter={StaticResource FlagBg}}" 
@@ -201,6 +189,30 @@
                     CornerRadius="2" Padding="4,1" ToolTip.Tip="Language Card Pre-write State">
                 <TextBlock Text="PREWRITE" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
                            Foreground="{Binding StatePrewrite, Converter={StaticResource FlagFg}}" />
+            </Border>
+
+
+
+          
+            <!-- PB0 Flag -->
+            <Border Classes="flag-indicator" Background="{Binding StatePb0, Converter={StaticResource FlagBg}}" 
+                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Paddle Button 0">
+                <TextBlock Text="PB0" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
+                           Foreground="{Binding StatePb0, Converter={StaticResource FlagFg}}" />
+            </Border>
+
+            <!-- PB1 Flag -->
+            <Border Classes="flag-indicator" Background="{Binding StatePb1, Converter={StaticResource FlagBg}}" 
+                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Paddle Button 1">
+                <TextBlock Text="PB1" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
+                           Foreground="{Binding StatePb1, Converter={StaticResource FlagFg}}" />
+            </Border>
+
+            <!-- PB2 Flag -->
+            <Border Classes="flag-indicator" Background="{Binding StatePb2, Converter={StaticResource FlagBg}}" 
+                    CornerRadius="2" Padding="4,1" ToolTip.Tip="Paddle Button 2">
+                <TextBlock Text="PB2" FontFamily="Consolas" FontSize="11" FontWeight="Bold"
+                           Foreground="{Binding StatePb2, Converter={StaticResource FlagFg}}" />
             </Border>
 
             <!-- FLASH ON Flag

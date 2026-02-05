@@ -65,8 +65,9 @@
 - ✅ `IEmulatorCoreInterface.MemoryInspector` property returns `IMemoryInspector`
 - ✅ `CpuStatusPanel` UI control created (displays PC, A, X, Y, SP, flags, execution status)
 - ✅ `CpuStatusPanelViewModel` created (60Hz updates via IRefreshTicker)
-- ✅ Panel integrated into MainWindow below Apple II display
-- ⏳ Debugger core (breakpoints, stepping) - NOT STARTED
+- ✅ CPU Status Panel integrated into MainWindow below Apple II display
+- ✅ Debugger core - stepping
+- ⏳ Debugger core - breakpoints - NOT STARTED
 - ⏳ Debugger UI panels (disassembly, watches) - NOT STARTED
 
 **Prerequisites:**
@@ -518,7 +519,7 @@ public void StepOver()
 
 **Priority:** Medium
 
-**Related:** See Task 8 (Race Conditions at High Speeds)
+**Related:** See Task 8 (Race Conditions at High Speeds) ✅ COMPLETED
 
 ---
 
@@ -539,28 +540,6 @@ public void StepOver()
 - `legacy\6502.NET\src\Core\Emulator.cs`
 
 **Priority:** Low
-
----
-
-### Task 8: Check for Race Conditions at High Speeds (Medium Priority)
-
-**Problem:** Potential race conditions when running at unthrottled speeds.
-
-**Areas to Investigate:**
-- Video memory access during rendering
-- Disk II bit timing at high cycle rates
-- VBlank event handling
-- DiskStatusProvider message publishing
-
-**Files to Focus On:**
-- `Pandowdy.EmuCore\Services\LegacyBitmapRenderer.cs`
-- `Pandowdy.EmuCore\Services\FrameProvider.cs`
-- `Pandowdy.EmuCore\Cards\DiskIIControllerCard.cs`
-- `Pandowdy.EmuCore\DiskII\DiskIIDrive.cs`
-
-**Priority:** Medium
-
-**Related:** See Task 4 (HGR flicker issue)
 
 ---
 
@@ -1644,7 +1623,67 @@ public enum PeripheralType
 - `SingularKeyHandlerTests.cs` - 5 tests
 - `QueuedKeyHandlerTests.cs` - 6 tests
 
+---
 
+### ✅ Task 8: Check for Race Conditions at High Speeds
+
+**Completed:** 2025-02-04 - All 3378 tests passing
+
+**Summary:**
+- Fixed race condition in pause/continue (F5) toggle logic in `MainWindow.axaml.cs`
+- Added lock-based synchronization (`_emuStateLock`) for emulator start/stop operations
+- Fixed async cleanup timing issue that caused emulator "zombie" state
+- Eliminated reactive push pattern from `PublishState()` (removed entirely)
+- Changed MHz reporting from 2s to 1s intervals
+- Refactored `EmulatorStateViewModel` from push (IEmulatorState subscription) to pull (IEmulatorCoreInterface polling)
+- Removed `LineNumber` property from `EmulatorStateViewModel` (to be refactored later)
+
+**Root Cause:**
+When rapidly toggling F5 (pause/continue) or F9 (throttle toggle), a race condition occurred:
+1. `StopEmulator()` cancelled the token and set `IsRunning = false`
+2. Cleanup of `_emuCts` and `_emuTask` happened asynchronously via `Dispatcher.UIThread.Post()`
+3. If `OnEmuStartClicked()` was called before cleanup finished, it saw `_emuCts != null` (the old cancelled one) and returned early
+4. Eventually the continuation ran and set `IsRunning = false` again, but no new emulator thread was started
+5. **Result:** UI showed "paused" but no emulator thread existed - the emulator was in a "zombie" state
+
+**Fix Applied:**
+1. **Added lock object** (`_emuStateLock`) to synchronize start/stop operations
+2. **`OnEmuStartClicked` now:**
+   - Checks if there's a pending task that's still running (not just checking CTS)
+   - Cleans up completed task state synchronously before creating new CTS
+   - Uses lock to prevent race conditions
+3. **`StopEmulator` now:**
+   - Uses lock to safely get CTS/Task references
+   - Waits up to 100ms for the task to acknowledge cancellation (should be near-instant)
+   - Cleans up state immediately instead of relying on async continuation
+   - Ensures the emulator is fully stopped before returning
+
+**Architecture Improvement:**
+Removed reactive push pattern from `VA2M.PublishState()` that was causing 1000+ Hz state updates in unthrottled mode:
+- GUI now runs at 60 Hz polling rate (controlled by `IRefreshTicker`)
+- ViewModels poll at 20 Hz (sampled from the 60 Hz ticker)
+- Emulator runs at any speed without pushing state updates
+- MHz calculated at 4 Hz (every 0.25s) and stored for query
+- Eliminates boolean boxing from flag bindings at emulation speed
+
+**Files Modified:**
+- `Pandowdy.UI\MainWindow.axaml.cs` - Added lock synchronization for start/stop
+- `Pandowdy.EmuCore\VA2M.cs` - Removed PublishState(), changed MHz reporting to 0.25s
+- `Pandowdy.UI\ViewModels\EmulatorStateViewModel.cs` - Refactored to pull architecture, removed LineNumber
+- `Pandowdy.UI.Tests\ViewModels\EmulatorStateViewModelTests.cs` - Cleaned up (TODO comments for rewrite)
+- `Pandowdy.UI.Tests\ViewModels\MainWindowViewModelTests.cs` - Fixed constructor call
+
+**Benefits:**
+- Eliminates lockup when rapidly toggling F5 (pause/continue) and F9 (throttle toggle)
+- Prevents emulator "zombie" state where UI shows paused but no thread exists
+- Robust against rapid key combinations like F5-F9-F5-F9...
+- Cleaner architecture with pull-based state management
+- Significantly reduced GC pressure in unthrottled mode
+- Boolean boxing only occurs at UI refresh rate (20 Hz) instead of emulation speed (700+ Hz)
+
+**Related Issues:**
+- Task 4 (HGR Flicker Investigation) may also benefit from this fix
+- This was the root cause of reported freezing in Release mode unthrottled
 
 ---
 

@@ -43,14 +43,13 @@
 			<MenuItem Header="_Emulator">
 				<MenuItem Header="_Reset" Command="{Binding ResetEmu}" InputGesture="Ctrl+F12" />
 				<Separator/>
-				<MenuItem x:Name="ThrottleMenuItem" Header="_Throttle" ToggleType="CheckBox" IsChecked="{Binding ThrottleEnabled}" Command="{Binding ToggleThrottle}" InputGesture="F7" />
-				<MenuItem x:Name="CapsLockMenuItem" Header="Caps _Lock" ToggleType="CheckBox" IsChecked="{Binding CapsLockEnabled}" Command="{Binding ToggleCapsLock}" InputGesture="F6" />
+				<MenuItem x:Name="ThrottleMenuItem" Header="_Throttle" ToggleType="CheckBox" IsChecked="{Binding ThrottleEnabled}" Command="{Binding ToggleThrottle}" InputGesture="F9" />
+				<MenuItem x:Name="CapsLockMenuItem" Header="Caps _Lock" ToggleType="CheckBox" IsChecked="{Binding CapsLockEnabled}" Command="{Binding ToggleCapsLock}" InputGesture="F10" />
 			</MenuItem>
 			<MenuItem Header="_Debug">
-				<MenuItem Header="_Start" Command="{Binding StartEmu}" InputGesture="F5" />
-				<MenuItem Header="S_top" Command="{Binding StopEmu}" InputGesture="Shift+F5" />
+				<MenuItem Header="{Binding PauseOrContinueText}" Command="{Binding TogglePauseOrContinue}" InputGesture="F5" />
 				<Separator/>
-				<MenuItem Header="Ste_p Once" Command="{Binding StepOnce}" InputGesture="F10" />
+				<MenuItem Header="_Step" Command="{Binding StepOnce}" InputGesture="F6" IsEnabled="{Binding CanStep}" />
 			</MenuItem>
 		</Menu>
 

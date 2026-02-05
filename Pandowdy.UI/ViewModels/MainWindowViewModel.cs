@@ -170,6 +170,99 @@ public sealed class MainWindowViewModel : ReactiveObject
     /// </remarks>
     public ReactiveCommand<Unit, Unit> StepOnce { get; }
 
+    /// <summary>
+    /// Gets the command to toggle between pause and continue states.
+    /// </summary>
+    /// <value>Command that pauses if running, or continues if paused.</value>
+    /// <remarks>
+    /// <para>
+    /// This is a Mac-style toggle command for the Debug menu. Instead of separate
+    /// Pause and Continue menu items, a single item changes its text based on state
+    /// and performs the appropriate action when invoked.
+    /// </para>
+    /// <para>
+    /// Keyboard shortcut: F5
+    /// </para>
+    /// </remarks>
+    public ReactiveCommand<Unit, Unit> TogglePauseOrContinue { get; }
+
+    #endregion
+
+    #region Emulator State Properties
+
+    /// <summary>
+    /// Backing field for IsRunning property.
+    /// </summary>
+    private bool _isRunning;
+
+    /// <summary>
+    /// Gets or sets whether the emulator is currently running.
+    /// </summary>
+    /// <value>True if emulator is executing continuously, false if paused/stopped.</value>
+    /// <remarks>
+    /// This property controls the availability of debug menu commands and the
+    /// text shown on the Pause/Continue toggle menu item.
+    /// </remarks>
+    public bool IsRunning
+    {
+        get => _isRunning;
+        set
+        {
+            if (_isRunning != value)
+            {
+                this.RaiseAndSetIfChanged(ref _isRunning, value);
+                // Notify dependent properties
+                this.RaisePropertyChanged(nameof(CanPause));
+                this.RaisePropertyChanged(nameof(CanContinue));
+                this.RaisePropertyChanged(nameof(CanStep));
+                this.RaisePropertyChanged(nameof(PauseOrContinueText));
+                this.RaisePropertyChanged(nameof(CanToggleThrottle));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the text for the Pause/Continue toggle menu item.
+    /// </summary>
+    /// <value>"_Pause" when running, "_Continue" when paused (includes mnemonic).</value>
+    /// <remarks>
+    /// Mac-style dynamic menu text that shows the available action based on current state.
+    /// Uses underscore prefix for keyboard mnemonic (P or C).
+    /// </remarks>
+    public string PauseOrContinueText => IsRunning ? "_Pause" : "_Continue";
+
+    /// <summary>
+    /// Gets whether the Pause command can be executed.
+    /// </summary>
+    /// <value>True when emulator is running, false when paused.</value>
+    public bool CanPause => IsRunning;
+
+    /// <summary>
+    /// Gets whether the Continue command can be executed.
+    /// </summary>
+    /// <value>True when emulator is paused, false when running.</value>
+    public bool CanContinue => !IsRunning;
+
+    /// <summary>
+    /// Gets whether the Step command can be executed.
+    /// </summary>
+    /// <value>True when emulator is paused, false when running.</value>
+    public bool CanStep => !IsRunning;
+
+    /// <summary>
+    /// Gets whether the throttle toggle command can be executed.
+    /// </summary>
+    /// <value>True when emulator is running, false when paused/stopped.</value>
+    /// <remarks>
+    /// Throttle toggling is disabled when the emulator is not running because:
+    /// <list type="bullet">
+    /// <item>Changing throttle while stopped has no effect</item>
+    /// <item>Prevents race conditions in throttle state during start/stop transitions</item>
+    /// <item>Single-step debug mode should always run unthrottled (instantaneous)</item>
+    /// </list>
+    /// </remarks>
+    public bool CanToggleThrottle => IsRunning;
+
     #endregion
 
     #region Display Options Properties
@@ -345,7 +438,7 @@ public sealed class MainWindowViewModel : ReactiveObject
     /// <summary>
     /// Backing field for ShowDiskStatus property.
     /// </summary>
-    private bool _showDiskStatus = true;
+    private bool _showDiskStatus = false;
 
     /// <summary>
     /// Gets or sets whether the disk status panel is visible.
@@ -376,8 +469,15 @@ public sealed class MainWindowViewModel : ReactiveObject
     /// </summary>
     /// <value>Command that inverts the ThrottleEnabled property.</value>
     /// <remarks>
+    /// <para>
     /// Bound to menu item or keyboard shortcut. Updates <see cref="ThrottleEnabled"/>
     /// which the view observes to update VA2M.ThrottleEnabled.
+    /// </para>
+    /// <para>
+    /// <strong>Execution Guard:</strong> This command can only execute when the emulator
+    /// is running (<see cref="CanToggleThrottle"/>). This prevents changing throttle state
+    /// during pause/stop when it would have no effect or could cause race conditions.
+    /// </para>
     /// </remarks>
     public ReactiveCommand<Unit, Unit> ToggleThrottle { get; }
     
@@ -472,6 +572,7 @@ public sealed class MainWindowViewModel : ReactiveObject
     /// <param name="systemStatus">View model for displaying system status.</param>
     /// <param name="diskStatus">View model for displaying disk drive status.</param>
     /// <param name="cpuStatus">View model for displaying CPU register and flag status.</param>
+    /// <param name="statusBar">View model for displaying status bar content (aggregates CPU status and system status).</param>
     /// <remarks>
     /// <para>
     /// <strong>Dependency Injection:</strong> All dependencies are injected via constructor,
@@ -517,7 +618,9 @@ public sealed class MainWindowViewModel : ReactiveObject
         StepCommand = ReactiveCommand.Create(() => _emuState.RequestStep());
 
         // Initialize display option toggle commands
-        ToggleThrottle = ReactiveCommand.Create(() => { ThrottleEnabled = !ThrottleEnabled; });
+        // ToggleThrottle is guarded by CanToggleThrottle (only when running)
+        var canToggleThrottle = this.WhenAnyValue(x => x.IsRunning);
+        ToggleThrottle = ReactiveCommand.Create(() => { ThrottleEnabled = !ThrottleEnabled; }, canToggleThrottle);
         ToggleCapsLock = ReactiveCommand.Create(() => { CapsLockEnabled = !CapsLockEnabled; });
         ToggleScanLines = ReactiveCommand.Create(() => { ShowScanLines = !ShowScanLines; });
         ToggleMonochrome = ReactiveCommand.Create(() => { ForceMonochrome = !ForceMonochrome; });
@@ -531,6 +634,7 @@ public sealed class MainWindowViewModel : ReactiveObject
         StopEmu = ReactiveCommand.Create(() => { });
         ResetEmu = ReactiveCommand.Create(() => { });
         StepOnce = ReactiveCommand.Create(() => { });
+        TogglePauseOrContinue = ReactiveCommand.Create(() => { });
     }
 
     #endregion

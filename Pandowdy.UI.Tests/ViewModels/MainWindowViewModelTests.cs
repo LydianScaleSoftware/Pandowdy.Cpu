@@ -112,7 +112,7 @@ public class MainWindowViewModelTests
             var emulatorCoreInterface = new TestEmulatorCoreInterface();
             var refreshTicker = new TestRefreshTicker();
 
-            EmulatorStateViewModel = new EmulatorStateViewModel(EmulatorState);
+            EmulatorStateViewModel = new EmulatorStateViewModel(emulatorCoreInterface, refreshTicker);
             SystemStatusViewModel = new SystemStatusViewModel(statusProvider);
             DiskStatusViewModel = new DiskStatusPanelViewModel(diskStatusProvider);
             CpuStatusViewModel = new CpuStatusPanelViewModel(emulatorCoreInterface, refreshTicker);

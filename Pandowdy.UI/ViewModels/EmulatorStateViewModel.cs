@@ -6,27 +6,29 @@ using System;
 using ReactiveUI;
 using Pandowdy.EmuCore.Interfaces;
 using System.Reactive.Linq;
+using Pandowdy.UI.Interfaces;
 
 namespace Pandowdy.UI.ViewModels;
 
 /// <summary>
-/// View model for displaying real-time Apple IIe emulator state (PC, cycles, BASIC line number).
+/// View model for displaying real-time Apple IIe emulator state (PC, cycles).
 /// </summary>
 /// <remarks>
 /// <para>
 /// <strong>Purpose:</strong> Provides reactive properties bound to UI elements that display
-/// the current execution state of the emulator. Updates are automatically pushed from the
-/// emulator core via the IEmulatorState stream.
+/// the current execution state of the emulator. Uses a pull-based architecture where the
+/// view model polls the emulator via IRefreshTicker.
 /// </para>
 /// <para>
-/// <strong>Reactive Pattern:</strong> Implements ReactiveUI's IActivatableViewModel pattern
-/// for lifecycle-aware subscriptions. The view model only subscribes to the state stream
-/// when activated (view is visible), preventing unnecessary updates and resource usage.
+/// <strong>Architecture:</strong> Implements ReactiveUI's IActivatableViewModel pattern
+/// for lifecycle-aware subscriptions. The view model subscribes to the refresh ticker
+/// when activated (view is visible) and polls emulator state on-demand.
 /// </para>
 /// <para>
-/// <strong>Update Frequency:</strong> Samples the emulator state stream at 50ms intervals
-/// (20 Hz) to balance UI responsiveness with performance. This prevents excessive UI updates
-/// while still providing smooth feedback during emulation.
+/// <strong>Update Frequency:</strong> Samples the refresh ticker at the high-frequency interval
+/// defined in <see cref="Constants.RefreshRates.Polling.HighFrequencyMs"/> to match the
+/// display refresh rate. This provides smooth visual feedback synchronized with the display
+/// without unnecessary overhead.
 /// </para>
 /// <para>
 /// <strong>Thread Safety:</strong> All property updates are marshaled to the UI thread via
@@ -37,17 +39,21 @@ namespace Pandowdy.UI.ViewModels;
 /// <code>
 /// &lt;TextBlock Text="{Binding PC, StringFormat='PC: ${0:X4}'}" /&gt;
 /// &lt;TextBlock Text="{Binding Cycles, StringFormat='Cycles: {0:N0}'}" /&gt;
-/// &lt;TextBlock Text="{Binding LineNumber, StringFormat='Line: {0}'}" /&gt;
 /// </code>
 /// </para>
 /// </remarks>
 public sealed class EmulatorStateViewModel : ReactiveObject, IActivatableViewModel
 {
     /// <summary>
-    /// Emulator state provider that supplies the reactive stream of state updates.
+    /// Emulator core interface for polling CPU state.
     /// </summary>
-    private readonly IEmulatorState _state;
-    
+    private readonly IEmulatorCoreInterface _emulator;
+
+    /// <summary>
+    /// 60 Hz refresh ticker for determining when to poll emulator state.
+    /// </summary>
+    private readonly IRefreshTicker _refreshTicker;
+
     /// <summary>
     /// Gets the view model activator for managing subscription lifecycle.
     /// </summary>
@@ -62,7 +68,7 @@ public sealed class EmulatorStateViewModel : ReactiveObject, IActivatableViewMod
     /// Backing field for the PC property.
     /// </summary>
     private ushort _pc;
-    
+
     /// <summary>
     /// Gets the current 6502 Program Counter (PC) register value.
     /// </summary>
@@ -78,7 +84,8 @@ public sealed class EmulatorStateViewModel : ReactiveObject, IActivatableViewMod
     /// </list>
     /// </para>
     /// <para>
-    /// Updates approximately 20 times per second (50ms sample interval) when the view model is active.
+    /// Updates at the high-frequency polling rate (see <see cref="Constants.RefreshRates.Polling.HighFrequencyMs"/>)
+    /// when the view model is active, synchronized with the display refresh rate.
     /// </para>
     /// </remarks>
     public ushort PC
@@ -88,49 +95,10 @@ public sealed class EmulatorStateViewModel : ReactiveObject, IActivatableViewMod
     }
 
     /// <summary>
-    /// Backing field for the LineNumber property.
-    /// </summary>
-    private int? _lineNumber;
-    
-    /// <summary>
-    /// Gets the current Applesoft BASIC line number being executed, or null if not in BASIC.
-    /// </summary>
-    /// <value>
-    /// Line number (0-63999) if executing BASIC code, null if in Monitor or machine code.
-    /// </value>
-    /// <remarks>
-    /// <para>
-    /// <strong>Detection Method:</strong> The emulator reads zero page locations $75-$76
-    /// which contain the BASIC line pointer. If the value is less than $FA00, it's interpreted
-    /// as a valid BASIC line number.
-    /// </para>
-    /// <para>
-    /// <strong>Use Cases:</strong>
-    /// <list type="bullet">
-    /// <item>Display current line during BASIC program execution</item>
-    /// <item>Help users debug BASIC programs by showing execution progress</item>
-    /// <item>Null when in Monitor, running machine code, or in immediate mode</item>
-    /// </list>
-    /// </para>
-    /// <para>
-    /// <strong>Binding Example:</strong>
-    /// <code>
-    /// &lt;TextBlock Text="{Binding LineNumber, StringFormat='Line: {0}', 
-    ///                          TargetNullValue='(not in BASIC)'}" /&gt;
-    /// </code>
-    /// </para>
-    /// </remarks>
-    public int? LineNumber
-    {
-        get => _lineNumber;
-        private set => this.RaiseAndSetIfChanged(ref _lineNumber, value);
-    }
-
-    /// <summary>
     /// Backing field for the Cycles property.
     /// </summary>
     private ulong _cycles;
-    
+
     /// <summary>
     /// Gets the total number of CPU cycles executed since the last reset.
     /// </summary>
@@ -150,9 +118,9 @@ public sealed class EmulatorStateViewModel : ReactiveObject, IActivatableViewMod
     /// <para>
     /// <strong>Example Values:</strong>
     /// <list type="bullet">
-    /// <item>1,023,000 cycles â‰ˆ 1 second of emulation</item>
-    /// <item>17,063 cycles â‰ˆ 1 video frame (~60 Hz)</item>
-    /// <item>61,380,000 cycles â‰ˆ 1 minute of emulation</item>
+    /// <item>1,023,000 cycles ≈ 1 second of emulation</item>
+    /// <item>17,063 cycles ≈ 1 video frame (~60 Hz)</item>
+    /// <item>61,380,000 cycles ≈ 1 minute of emulation</item>
     /// </list>
     /// </para>
     /// <para>
@@ -169,27 +137,31 @@ public sealed class EmulatorStateViewModel : ReactiveObject, IActivatableViewMod
     /// <summary>
     /// Initializes a new instance of the <see cref="EmulatorStateViewModel"/> class.
     /// </summary>
-    /// <param name="state">Emulator state provider supplying reactive state updates.</param>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="state"/> is null.</exception>
+    /// <param name="emulator">Emulator core interface for polling CPU state.</param>
+    /// <param name="refreshTicker">Refresh ticker for polling timing (see <see cref="Constants.RefreshRates.BaseTickerHz"/>).</param>
+    /// <exception cref="ArgumentNullException">Thrown if any parameter is null.</exception>
     /// <remarks>
     /// <para>
     /// <strong>Initialization:</strong> The constructor sets up a reactive subscription using
-    /// ReactiveUI's WhenActivated pattern. The actual subscription to the state stream is
+    /// ReactiveUI's WhenActivated pattern. The actual subscription to the refresh ticker is
     /// deferred until the view model is activated (typically when the view becomes visible).
     /// </para>
     /// <para>
     /// <strong>Subscription Lifecycle:</strong>
     /// <list type="number">
     /// <item><strong>Activation:</strong> When view becomes visible, WhenActivated callback fires</item>
-    /// <item><strong>Subscription:</strong> Subscribe to state stream with 50ms sampling</item>
-    /// <item><strong>Update Properties:</strong> PC, LineNumber, Cycles updated on UI thread</item>
+    /// <item><strong>Subscription:</strong> Subscribe to refresh ticker with high-frequency sampling
+    /// (see <see cref="Constants.RefreshRates.Polling.HighFrequencyMs"/>)</item>
+    /// <item><strong>Poll State:</strong> On each tick, read PC and Cycles from emulator</item>
+    /// <item><strong>Update Properties:</strong> PC, Cycles updated on UI thread</item>
     /// <item><strong>Deactivation:</strong> When view is hidden/disposed, subscription is automatically disposed</item>
     /// </list>
     /// </para>
     /// <para>
-    /// <strong>Sampling Strategy:</strong> Uses Observable.Sample(50ms) to throttle updates
-    /// to 20 Hz. This prevents excessive UI updates (emulator can generate updates at much
-    /// higher frequency) while maintaining smooth visual feedback.
+    /// <strong>Pull Architecture:</strong> Uses Observable.Sample() to match the display refresh rate.
+    /// This prevents polling faster than the display can update while maintaining smooth visual feedback.
+    /// The emulator is polled on-demand, not pushed via reactive streams. The polling interval is
+    /// configured via <see cref="Constants.RefreshRates.Polling.HighFrequencyMs"/>.
     /// </para>
     /// <para>
     /// <strong>Thread Marshaling:</strong> ObserveOn(RxApp.MainThreadScheduler) ensures all
@@ -200,15 +172,29 @@ public sealed class EmulatorStateViewModel : ReactiveObject, IActivatableViewMod
     /// subscription disposal, preventing memory leaks when the view model is no longer active.
     /// </para>
     /// </remarks>
-    public EmulatorStateViewModel(IEmulatorState state)
+    public EmulatorStateViewModel(IEmulatorCoreInterface emulator, IRefreshTicker refreshTicker)
     {
-        _state = state;
+        _emulator = emulator ?? throw new ArgumentNullException(nameof(emulator));
+        _refreshTicker = refreshTicker ?? throw new ArgumentNullException(nameof(refreshTicker));
+
         this.WhenActivated(disposables =>
         {
-            var sub = _state.Stream.Sample(TimeSpan.FromMilliseconds(50))
+            // Poll emulator state at high frequency (matches display refresh rate)
+            var sub = _refreshTicker.Stream
+                .Sample(TimeSpan.FromMilliseconds(Constants.RefreshRates.Polling.HighFrequencyMs))
                 .ObserveOn(RxApp.MainThreadScheduler)
-                .Subscribe(s => { PC = s.PC; LineNumber = s.LineNumber; Cycles = s.Cycles; });
+                .Subscribe(_ => UpdateFromEmulator());
             disposables.Add(sub);
         });
+    }
+
+    /// <summary>
+    /// Polls the emulator and updates all properties from the current state.
+    /// </summary>
+    private void UpdateFromEmulator()
+    {
+        var cpu = _emulator.CpuState;
+        PC = cpu.PC;
+        Cycles = _emulator.TotalCycles;
     }
 }

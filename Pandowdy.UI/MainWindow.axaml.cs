@@ -115,11 +115,21 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// Cancellation token source for controlling emulator thread lifetime.
     /// </summary>
     private CancellationTokenSource? _emuCts;
-    
+
     /// <summary>
     /// Task representing the running emulator thread.
     /// </summary>
     private Task? _emuTask;
+
+    /// <summary>
+    /// Lock object for synchronizing emulator start/stop operations.
+    /// </summary>
+    /// <remarks>
+    /// Prevents race conditions when rapidly toggling pause/continue (F5) which could
+    /// leave the emulator in an inconsistent state where _emuCts is not null but the
+    /// emulator thread has already exited.
+    /// </remarks>
+    private readonly object _emuStateLock = new();
 
     /// <summary>
     /// 60 Hz refresh ticker for driving display updates (injected via Initialize).
@@ -535,6 +545,8 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                 disposables.Add(c3);
                 var c4 = vm.StepOnce.Subscribe(_ => OnEmuStepOnceClicked(this, new RoutedEventArgs()));
                 disposables.Add(c4);
+                var c5 = vm.TogglePauseOrContinue.Subscribe(_ => OnTogglePauseOrContinue());
+                disposables.Add(c5);
             }
         });
 
@@ -670,7 +682,8 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                     screenDisplay.RequestRefresh();
                 });
         }
-        Dispatcher.UIThread.Post(() => OnEmuStartClicked(this, new RoutedEventArgs()));
+        // Initial startup: Reset + Start
+        Dispatcher.UIThread.Post(() => InitialStartup());
     }
 
     /// <summary>
@@ -943,17 +956,52 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     #region Emulator Control Methods
 
     /// <summary>
-    /// Handles the emulator start command.
+    /// Performs initial emulator startup (called once when window opens).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>Purpose:</strong> Separates initial startup from Debug→Start menu functionality.
+    /// Initial startup requires a reset to establish known state, while Start menu should
+    /// resume execution without resetting.
+    /// </para>
+    /// <para>
+    /// <strong>Startup Sequence:</strong>
+    /// <list type="number">
+    /// <item>Reset machine to initial state (_machine.Reset())</item>
+    /// <item>Start emulator thread (OnEmuStartClicked)</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Called From:</strong> OnOpened event handler after window initialization completes.
+    /// </para>
+    /// </remarks>
+    private void InitialStartup()
+    {
+        if (!_depsInjected || _machine is null) { return; }
+
+        // Reset to establish known initial state
+        _machine.Reset();
+
+        // Start emulator thread
+        OnEmuStartClicked(this, new RoutedEventArgs());
+    }
+
+    /// <summary>
+    /// Starts or resumes the emulator (Debug→Start menu command).
     /// </summary>
     /// <param name="sender">Event sender (menu item or command).</param>
     /// <param name="e">Routed event arguments.</param>
     /// <remarks>
     /// <para>
+    /// <strong>Behavior:</strong> Starts the emulator thread if not already running.
+    /// Does NOT reset the machine - preserves current CPU/memory state for debugging.
+    /// Use Reset menu command (Ctrl+F12) to explicitly reset.
+    /// </para>
+    /// <para>
     /// <strong>Startup Sequence:</strong>
     /// <list type="number">
     /// <item>Validate dependencies are injected</item>
     /// <item>Check if emulator is already running (if so, return)</item>
-    /// <item>Reset machine to initial state</item>
     /// <item>Create cancellation token source</item>
     /// <item>Start Task.Run with machine.RunAsync(token, 60)</item>
     /// <item>Set up continuation to clean up on completion</item>
@@ -974,14 +1022,41 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// </remarks>
     private async void OnEmuStartClicked(object? sender, RoutedEventArgs e)
     {
-        if (!_depsInjected || _machine is null) { return; }
-        if (_emuCts != null)
+        if (!_depsInjected || _machine is null)
         {
             return;
         }
-        _machine.Reset();
-        _emuCts = new CancellationTokenSource();
+
+        // Use lock to prevent race conditions with rapid F5 toggling
+        lock (_emuStateLock)
+        {
+            // If there's a pending task that hasn't been cleaned up, wait for it
+            if (_emuTask != null && !_emuTask.IsCompleted)
+            {
+                // Already running - don't start another
+                return;
+            }
+
+            // Clean up any completed task state (handles case where continuation hasn't run yet)
+            if (_emuCts != null)
+            {
+                _emuCts.Dispose();
+                _emuCts = null;
+            }
+            _emuTask = null;
+
+            // Create new cancellation token source
+            _emuCts = new CancellationTokenSource();
+        }
+
         var token = _emuCts.Token;
+
+        // Update running state before starting
+        if (ViewModel != null)
+        {
+            ViewModel.IsRunning = true;
+        }
+
         _emuTask = Task.Run(async () =>
         {
             try
@@ -990,18 +1065,36 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             }
             catch (OperationCanceledException)
             {
+                // Normal cancellation - expected during pause
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] Emulator exception: {ex.Message}");
             }
         });
+
+        // Continuation to update UI state when task completes
         _ = _emuTask.ContinueWith(t =>
         {
             Dispatcher.UIThread.Post(() =>
             {
-                _emuCts?.Dispose();
-                _emuCts = null;
-                _emuTask = null;
+                lock (_emuStateLock)
+                {
+                    // Only clean up if this is still our active task
+                    if (_emuTask == t)
+                    {
+                        _emuCts?.Dispose();
+                        _emuCts = null;
+                        _emuTask = null;
+                    }
+                }
+
+                // Update running state after stopping (only if we're the one who stopped)
+                if (ViewModel != null && ViewModel.IsRunning)
+                {
+                    // IsRunning might already be false from StopEmulator - only update if needed
+                    ViewModel.IsRunning = false;
+                }
             });
         });
     }
@@ -1015,22 +1108,51 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// Delegates to StopEmulator() to cancel the emulator thread.
     /// </remarks>
     private void OnEmuStopClicked(object? sender, RoutedEventArgs e) => StopEmulator();
-    
+
     /// <summary>
-    /// Handles the emulator reset command (warm reset / Ctrl+Reset).
+    /// Toggles between pause and continue states (Mac-style toggle menu item).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// If the emulator is running, pauses it. If paused, continues execution.
+    /// This provides a single F5 shortcut that does the right thing based on current state.
+    /// </para>
+    /// <para>
+    /// The menu item text automatically updates via <see cref="MainWindowViewModel.PauseOrContinueText"/>
+    /// to show "Pause" when running or "Continue" when paused.
+    /// </para>
+    /// </remarks>
+    private void OnTogglePauseOrContinue()
+    {
+        if (ViewModel == null) { return; }
+
+        if (ViewModel.IsRunning)
+        {
+            // Currently running - pause it
+            OnEmuStopClicked(this, new RoutedEventArgs());
+        }
+        else
+        {
+            // Currently paused - continue it
+            OnEmuStartClicked(this, new RoutedEventArgs());
+        }
+    }
+
+    /// <summary>
+    /// Handles the emulator reset command (full system reset / power cycle).
     /// </summary>
     /// <param name="sender">Event sender (menu item or command).</param>
     /// <param name="e">Routed event arguments.</param>
     /// <remarks>
     /// <para>
-    /// <strong>Thread Safety:</strong> Calls machine.UserReset() which enqueues the reset
+    /// <strong>Thread Safety:</strong> Calls machine.Reset() which enqueues the reset
     /// operation for execution on the emulator thread at the next instruction boundary.
     /// This is safe to call from the UI thread.
     /// </para>
     /// <para>
-    /// <strong>Warm Reset:</strong> Performs a warm reset of the Apple IIe (similar to
-    /// pressing Ctrl+Reset on real hardware). Preserves memory contents and continues timing.
-    /// Does not stop/restart the emulator thread.
+    /// <strong>Full System Reset:</strong> Performs a complete hardware reset equivalent to
+    /// powering off and on the Apple IIe. Clears keyboard latch, resets CPU, soft switches,
+    /// memory bank mappings, and cycle counters. This is equivalent to a cold boot.
     /// </para>
     /// <para>
     /// <strong>Instruction Atomicity:</strong> The reset will be deferred until the current
@@ -1041,7 +1163,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     { 
         if (_depsInjected) 
         { 
-            _machine?.UserReset(); 
+            _machine?.Reset(); 
         } 
     }
 
@@ -1075,20 +1197,77 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// <remarks>
     /// <para>
     /// Calls _emuCts.Cancel() if the cancellation token source exists. The emulator
-    /// thread catches OperationCanceledException and exits cleanly. The continuation
-    /// set up in OnEmuStartClicked handles cleanup.
+    /// thread catches OperationCanceledException and exits cleanly.
     /// </para>
     /// <para>
     /// If the emulator is not running (_emuCts is null), this method does nothing.
     /// </para>
+    /// <para>
+    /// <strong>Race Condition Prevention:</strong> Uses lock to synchronize with
+    /// OnEmuStartClicked, preventing issues when rapidly toggling F5 (pause/continue).
+    /// </para>
+    /// <para>
+    /// <strong>UI State Update:</strong> Immediately updates IsRunning to false for
+    /// responsive menu state changes, before waiting for the background thread to exit.
+    /// </para>
     /// </remarks>
     private void StopEmulator()
     {
-        if (_emuCts == null)
+        CancellationTokenSource? cts;
+        Task? task;
+
+        lock (_emuStateLock)
         {
-            return;
+            cts = _emuCts;
+            task = _emuTask;
+
+            if (cts == null)
+            {
+                return;
+            }
         }
-        _emuCts.Cancel();
+
+        // Update UI state immediately for responsive feedback
+        if (ViewModel != null)
+        {
+            ViewModel.IsRunning = false;
+        }
+
+        // Cancel the token (this signals RunAsync to exit)
+        cts.Cancel();
+
+        // Wait briefly for the task to acknowledge cancellation
+        // This prevents the race condition where Start is called before the old task exits
+        if (task != null)
+        {
+            try
+            {
+                // Wait up to 100ms for clean shutdown - should be near-instant
+                task.Wait(100);
+            }
+            catch (AggregateException)
+            {
+                // Task may throw OperationCanceledException wrapped in AggregateException
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[MainWindow] StopEmulator wait exception: {ex.Message}");
+            }
+        }
+
+        // Clean up state immediately (don't wait for continuation)
+        lock (_emuStateLock)
+        {
+            if (_emuCts == cts)
+            {
+                _emuCts?.Dispose();
+                _emuCts = null;
+            }
+            if (_emuTask == task)
+            {
+                _emuTask = null;
+            }
+        }
     }
 
     #endregion
@@ -1426,11 +1605,10 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// <list type="bullet">
     /// <item>F1: Pushbutton 0 press</item>
     /// <item>F2: Pushbutton 1 press</item>
-    /// <item>F5: Start emulator</item>
-    /// <item>F6: Toggle caps lock</item>
-    /// <item>F7: Toggle throttle</item>
-    /// <item>F10: Single step</item>
-    /// <item>Shift+F5: Stop emulator</item>
+    /// <item>F5: Toggle pause/continue</item>
+    /// <item>F6: Single step</item>
+    /// <item>F9: Toggle throttle</item>
+    /// <item>F10: Toggle caps lock</item>
     /// <item>Ctrl+F12: Reset emulator</item>
     /// </list>
     /// </para>
@@ -1476,22 +1654,17 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                 _machine?.SetPushButton(1, true); // pushbutton 2 pressed
                 return true;
             case Key.F5:
-                ViewModel?.StartEmu.Execute().Subscribe();
+                ViewModel?.TogglePauseOrContinue.Execute().Subscribe();
                 return true;
             case Key.F6:
-                ViewModel?.ToggleCapsLock.Execute().Subscribe();
+                ViewModel?.StepOnce.Execute().Subscribe();
                 return true;
-            case Key.F7:
+            case Key.F9:
                 ViewModel?.ToggleThrottle.Execute().Subscribe();
                 return true;
             case Key.F10:
-                ViewModel?.StepOnce.Execute().Subscribe();
+                ViewModel?.ToggleCapsLock.Execute().Subscribe();
                 return true;
-        }
-        if (e.Key == Key.F5 && (e.KeyModifiers & KeyModifiers.Shift) != 0)
-        {
-            ViewModel?.StopEmu.Execute().Subscribe();
-            return true;
         }
         if ((e.KeyModifiers & KeyModifiers.Control) != 0 && (e.KeyModifiers & KeyModifiers.Shift) != 0 && e.Key == Key.D2)
         {

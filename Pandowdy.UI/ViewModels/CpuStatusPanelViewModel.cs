@@ -18,11 +18,13 @@ namespace Pandowdy.UI.ViewModels;
 /// <para>
 /// <strong>Purpose:</strong> Provides reactive properties for displaying the current CPU state
 /// including registers (PC, SP), status flags (N, V, B, D, I, Z, C), and execution status.
-/// Updates at 60Hz synchronized with the display refresh.
+/// Updates at the base ticker frequency (see <see cref="Constants.RefreshRates.BaseTickerHz"/>)
+/// synchronized with the display refresh.
 /// </para>
 /// <para>
-/// <strong>Update Pattern:</strong> Subscribes to the <see cref="IRefreshTicker"/> to poll
-/// the CPU state at 60Hz. Uses IActivatableViewModel to manage subscription lifecycle.
+/// <strong>Update Pattern:</strong> Subscribes directly to the <see cref="IRefreshTicker"/> to poll
+/// the CPU state at full refresh rate with no sampling overhead. Uses IActivatableViewModel to
+/// manage subscription lifecycle.
 /// </para>
 /// <para>
 /// <strong>Thread Safety:</strong> All property updates are marshaled to the UI thread via
@@ -193,7 +195,7 @@ public sealed class CpuStatusPanelViewModel : ReactiveObject, IActivatableViewMo
         private set => this.RaiseAndSetIfChanged(ref _status, value);
     }
 
-    private string _statusText = "Running";
+    private string _statusText = "Normal";
     /// <summary>
     /// Gets the execution status as display text.
     /// </summary>
@@ -209,7 +211,8 @@ public sealed class CpuStatusPanelViewModel : ReactiveObject, IActivatableViewMo
     /// Initializes a new instance of the <see cref="CpuStatusPanelViewModel"/> class.
     /// </summary>
     /// <param name="emulator">The emulator core interface for accessing CPU state.</param>
-    /// <param name="refreshTicker">The 60Hz refresh ticker for polling updates.</param>
+    /// <param name="refreshTicker">The refresh ticker for polling updates
+    /// (see <see cref="Constants.RefreshRates.BaseTickerHz"/>).</param>
     public CpuStatusPanelViewModel(IEmulatorCoreInterface emulator, IRefreshTicker refreshTicker)
     {
         _emulator = emulator ?? throw new ArgumentNullException(nameof(emulator));
@@ -254,7 +257,7 @@ public sealed class CpuStatusPanelViewModel : ReactiveObject, IActivatableViewMo
         Status = cpu.Status;
         StatusText = cpu.Status switch
         {
-            CpuExecutionStatus.Running => "Running",
+            CpuExecutionStatus.Running => "Normal",
             CpuExecutionStatus.Stopped => "Stopped",
             CpuExecutionStatus.Jammed => "Jammed",
             CpuExecutionStatus.Waiting => "Waiting",

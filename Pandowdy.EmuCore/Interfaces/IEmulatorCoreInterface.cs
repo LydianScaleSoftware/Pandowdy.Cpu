@@ -28,7 +28,7 @@ namespace Pandowdy.EmuCore.Interfaces;
 /// <para>
 /// <strong>Thread Safety Contract:</strong>
 /// <list type="bullet">
-/// <item><strong>Reset/UserReset/EnqueueKey/SetPushButton:</strong> Thread-safe command queueing.
+/// <item><strong>Reset/EnqueueKey/SetPushButton:</strong> Thread-safe command queueing.
 /// Commands are enqueued and executed at instruction boundaries on the emulator thread, respecting
 /// 6502 atomic instruction guarantees.</item>
 /// <item><strong>RunAsync:</strong> Thread-safe. Starts async execution loop on a background thread
@@ -67,23 +67,23 @@ public interface IEmulatorCoreInterface : IKeyboardSetter
 {
     #region Command Queueing (Thread-Safe)
 
-    // Note: Reset() method inherited from IKeyboardSetter
-
     /// <summary>
-    /// Queues a warm reset (Ctrl+Reset) without clearing memory.
+    /// Queues a full system reset (power cycle).
     /// </summary>
     /// <remarks>
     /// <para>
     /// <strong>Thread Safety:</strong> Thread-safe. Can be called from any thread (typically UI thread).
-    /// Simulates pressing Ctrl+Reset on the Apple IIe, which resets the CPU but preserves RAM contents.
+    /// Performs a complete hardware reset equivalent to powering off and on the Apple IIe.
     /// Executed at instruction boundary.
     /// </para>
     /// <para>
-    /// <strong>Use Cases:</strong> Break out of infinite loop, return to Monitor/BASIC prompt,
-    /// recover from program hang while preserving state.
+    /// <strong>Operations Performed:</strong> Clears keyboard latch and pending keystrokes,
+    /// resets CPU registers (PC loaded from $FFFC/$FFFD, SP = $FF), resets all soft switches
+    /// to power-on state, resets memory bank mappings, resets cycle counter to zero, restarts
+    /// throttle stopwatch, and resets performance measurement counters.
     /// </para>
     /// </remarks>
-    void UserReset();
+    void Reset();
     
    
     /// <summary>

@@ -202,43 +202,64 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// Gets or sets whether throttling is enabled to maintain Apple IIe speed.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// When true, the emulator runs at ~1.023 MHz (Apple IIe speed).
     /// When false, runs as fast as possible (useful for loading programs, debugging).
+    /// </para>
+    /// <para>
+    /// <strong>Thread Safety:</strong> The setter enqueues the state change to execute on
+    /// the emulator thread via the command queue. This prevents race conditions where the
+    /// UI thread modifying throttle state could cause infinite loops in the SpinWait-based
+    /// throttling logic (e.g., resetting _throttleSw while emulator is in a SpinWait loop
+    /// waiting for a target time based on old stopwatch values).
+    /// </para>
     /// </remarks>
     public bool ThrottleEnabled
     {
-        get => _throttleEnabled;
+        get => Volatile.Read(ref _throttleEnabled);
         set
         {
-            if (_throttleEnabled != value)
+            // Enqueue the state change to execute on the emulator thread.
+            // This prevents race conditions where resetting _throttleSw from the UI thread
+            // could cause infinite SpinWait loops in ThrottleOneCycle().
+            Enqueue(() => SetThrottleEnabledInternal(value));
+        }
+    }
+
+    /// <summary>
+    /// Internal method to set throttle state. Must be called on emulator thread only.
+    /// </summary>
+    /// <param name="value">New throttle enabled state.</param>
+    private void SetThrottleEnabledInternal(bool value)
+    {
+        if (_throttleEnabled != value)
+        {
+            _throttleEnabled = value;
+
+            // Reset throttling state when switching modes to prevent
+            // infinite loop from trying to "catch up" to accumulated cycles
+            if (value) // Switching TO throttled mode
             {
-                _throttleEnabled = value;
-                
-                // Reset throttling state when switching modes to prevent
-                // infinite loop from trying to "catch up" to accumulated cycles
-                if (value) // Switching TO throttled mode
-                {
-                    _throttleCycles = 0;
-                    _throttleSw.Restart();
-                    _throttleErrorAccumulator = 0;
-                    _throttleLastError = 0;
-                    _adaptiveSpinWaitIterations = 100;
-                    
-                    // Reset performance tracking to prevent garbage values in next report
-                    _perfLastCycles = 0;
-                    _perfLastReportTicks = _perfSw.ElapsedTicks;
-                    
-                    Debug.WriteLine("[VA2M] Throttling ENABLED - Reset timing and performance tracking state");
-                }
-                else // Switching FROM throttled mode
-                {
-                    // Also reset performance tracking when disabling throttle
-                    // so the first unthrottled report shows accurate "turbo" speed
-                    _perfLastCycles = _throttleCycles;
-                    _perfLastReportTicks = _perfSw.ElapsedTicks;
-                    
-                    Debug.WriteLine("[VA2M] Throttling DISABLED - Reset performance baseline");
-                }
+                _throttleCycles = 0;
+                _throttleSw.Restart();
+                _throttleErrorAccumulator = 0;
+                _throttleLastError = 0;
+                _adaptiveSpinWaitIterations = 100;
+
+                // Reset performance tracking to prevent garbage values in next report
+                _perfLastCycles = 0;
+                _perfLastReportTicks = _perfSw.ElapsedTicks;
+
+                Debug.WriteLine("[VA2M] Throttling ENABLED - Reset timing and performance tracking state");
+            }
+            else // Switching FROM throttled mode
+            {
+                // Also reset performance tracking when disabling throttle
+                // so the first unthrottled report shows accurate "turbo" speed
+                _perfLastCycles = _throttleCycles;
+                _perfLastReportTicks = _perfSw.ElapsedTicks;
+
+                Debug.WriteLine("[VA2M] Throttling DISABLED - Reset performance baseline");
             }
         }
     }
@@ -844,7 +865,7 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         {
             ThrottleOneCycle();
         }
-        PublishState();
+        ReportPerformanceMetricsAsNeeded();
     }
 
 
@@ -992,13 +1013,9 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// </list>
     /// </para>
     /// <para>
-    /// <strong>Difference from UserReset:</strong> Reset() is a cold boot that initializes
-    /// everything. <see cref="UserReset"/> is a warm reset that preserves memory contents
-    /// and only resets the CPU (Ctrl+Reset behavior).
-    /// </para>
-    /// <para>
-    /// <strong>Thread Safety:</strong> Should be called from the emulator thread.
-    /// For cross-thread reset, enqueue via command queue.
+    /// <strong>Thread Safety:</strong> Thread-safe. Can be called from any thread.
+    /// Enqueues the reset operation for execution on the emulator thread at the next
+    /// instruction boundary, respecting 6502 atomic instruction guarantees.
     /// </para>
     /// </remarks>
     public void Reset()
@@ -1021,57 +1038,6 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
             _throttleLastError = 0;
             _adaptiveSpinWaitIterations = 100;
         });
-    }
-
-    /// <summary>
-    /// Performs a warm reset (Ctrl+Reset) without clearing memory or resetting cycle counters.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <strong>Warm Reset Behavior:</strong> Simulates pressing Ctrl+Reset on the Apple IIe,
-    /// which resets the CPU but preserves RAM contents and continues timing.
-    /// </para>
-    /// <para>
-    /// <strong>Operations Performed:</strong>
-    /// <list type="bullet">
-    /// <item>Reset CPU registers (PC loaded from $FFFC/$FFFD, SP reset)</item>
-    /// <item>Memory contents preserved (RAM, soft switches mostly unchanged)</item>
-    /// <item>Cycle counter continues (not reset)</item>
-    /// <item>Throttle timing continues (not restarted)</item>
-    /// </list>
-    /// </para>
-    /// <para>
-    /// <strong>Use Cases:</strong>
-    /// <list type="bullet">
-    /// <item>Break out of infinite loop without losing program in memory</item>
-    /// <item>Return to Monitor/BASIC prompt from running program</item>
-    /// <item>Recover from program hang while preserving state</item>
-    /// </list>
-    /// </para>
-    /// <para>
-    /// <strong>Difference from Reset:</strong> <see cref="Reset"/> is a cold boot (power cycle).
-    /// UserReset() is a warm reset that preserves memory and timing state.
-    /// </para>
-    /// <para>
-    /// <strong>Thread Safety:</strong> This method is thread-safe. It enqueues the reset
-    /// operation which will be processed on the emulator thread at the next instruction boundary
-    /// (via ProcessPending). This ensures the reset doesn't interrupt a CPU instruction in progress,
-    /// maintaining 6502 atomic instruction guarantees.
-    /// </para>
-    /// <para>
-    /// <strong>Implementation Note:</strong> The reset command is enqueued and will be processed
-    /// at the next safe point (instruction boundary) on the emulator thread. This prevents
-    /// race conditions and undefined behavior from resetting the CPU mid-instruction.
-    /// </para>
-    /// </remarks>
-    public void UserReset()
-    {
-        Reset();
-        //Enqueue(() =>
-        //{
-        //    Debug.WriteLine("Calling UserReset() in VA2M");
-        //    (Bus as VA2MBus)!.UserReset();
-        //});
     }
 
     /// <summary>
@@ -1173,8 +1139,8 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
                 // Apply adaptive throttling AFTER executing the batch
                 // This allows the PID controller to adjust delays based on actual execution time
                 ThrottleOneCycle();
-                
-                PublishState();
+
+                ReportPerformanceMetricsAsNeeded();
             }
             else
             {
@@ -1199,9 +1165,9 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
                 
                 // Final pending check
                 ProcessAnyPendingActions();
-                
-                PublishState();
-                
+
+                ReportPerformanceMetricsAsNeeded();
+
                 try
                 {
                     await Task.Delay(0, ct);
@@ -1209,48 +1175,6 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
                 catch (OperationCanceledException) { break; }
             }
         }
-    }
-
-    /// <summary>
-    /// Publishes current emulator state snapshot to the registered state sink.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <strong>Snapshot Contents:</strong>
-    /// <list type="bullet">
-    /// <item><strong>PC:</strong> Program Counter (current instruction address)</item>
-    /// <item><strong>SP:</strong> Stack Pointer (current stack position)</item>
-    /// <item><strong>SystemClock:</strong> Total CPU cycles executed since reset</item>
-    /// <item><strong>BASIC Line:</strong> Current Applesoft BASIC line number (if in BASIC)</item>
-    /// <item><strong>Running:</strong> Always true during execution</item>
-    /// <item><strong>Paused:</strong> Always false during execution</item>
-    /// </list>
-    /// </para>
-    /// <para>
-    /// <strong>BASIC Line Number Detection:</strong> Reads zero page locations $75-$76
-    /// which contain the current BASIC line pointer. Valid line numbers are &lt; $FA00.
-    /// Returns null if not in BASIC or if pointer is invalid.
-    /// </para>
-    /// <para>
-    /// <strong>Call Frequency:</strong> Called after every Clock() and after each batch
-    /// in RunAsync(). This provides real-time updates for UI display but has minimal overhead
-    /// since the snapshot is just a small value type.
-    /// </para>
-    /// <para>
-    /// <strong>Thread Safety:</strong> The state sink (IEmulatorState) is responsible for
-    /// thread-safe distribution of the snapshot to observers (typically using reactive patterns).
-    /// </para>
-    /// </remarks>
-    private void PublishState()
-    {
-        int lineNum = (int)(Bus.CpuRead(0x75) + (Bus.CpuRead(0x76) << 8));
-        int? basicLine = lineNum < 0xFA00 ? lineNum : null;
-        var state = Bus.Cpu.State;
-        var snapshot = new StateSnapshot(state.PC, state.SP, Bus.SystemClockCounter, basicLine, true, false);
-        _stateSink.Update(snapshot);
-
-
-        ReportPerformanceMetricsAsNeeded();
     }
 
     /// <summary>
@@ -1283,9 +1207,9 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     {
         long currentTicks = _perfSw.ElapsedTicks;
         long ticksSinceLastReport = currentTicks - _perfLastReportTicks;
-        
-        // Check if 2 seconds have elapsed
-        if (ticksSinceLastReport < Stopwatch.Frequency * 2)
+
+        // Check if 1 second have elapsed (1000ms, 1 Hz update rate)
+        if (ticksSinceLastReport < Stopwatch.Frequency)
         {
             return;
         }

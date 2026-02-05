@@ -49,8 +49,8 @@ public class MhzDisplayConverter : IValueConverter
             }
             // Use 2 decimal places for values >= 10, otherwise 3 decimal places
             return mhz >= 10.0 
-                ? mhz.ToString("F1", culture) 
-                : mhz.ToString("F2", culture);
+                ? mhz.ToString("F2", culture) 
+                : mhz.ToString("F3", culture);
         }
         
         return value?.ToString() ?? "-.--";

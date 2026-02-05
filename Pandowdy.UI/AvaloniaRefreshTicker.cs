@@ -10,16 +10,17 @@ using Pandowdy.UI.Interfaces;
 namespace Pandowdy.UI;
 
 /// <summary>
-/// Avalonia-based implementation of <see cref="IRefreshTicker"/> providing 60 Hz UI refresh timing.
+/// Avalonia-based implementation of <see cref="IRefreshTicker"/> providing UI refresh timing.
 /// </summary>
 /// <remarks>
 /// <para>
-/// <strong>Purpose:</strong> Provides a 60 Hz timing signal for driving UI-based frame rendering
-/// and updates. Uses Avalonia's DispatcherTimer to ensure all timing events occur on the UI thread.
+/// <strong>Purpose:</strong> Provides a timing signal for driving UI-based frame rendering
+/// and updates at the frequency defined in <see cref="Constants.RefreshRates.BaseTickerHz"/>.
+/// Uses Avalonia's DispatcherTimer to ensure all timing events occur on the UI thread.
 /// </para>
 /// <para>
 /// <strong>Implementation:</strong> Uses Rx.NET's Subject pattern to create an observable stream
-/// of timestamps. The DispatcherTimer publishes to this stream at approximately 60 Hz (every ~16.67ms).
+/// of timestamps. The DispatcherTimer publishes to this stream at the configured refresh rate.
 /// </para>
 /// <para>
 /// <strong>Thread Safety:</strong> All timer callbacks execute on the Avalonia UI thread via
@@ -35,14 +36,15 @@ namespace Pandowdy.UI;
 /// <code>
 /// var ticker = new AvaloniaRefreshTicker();
 /// ticker.Stream.Subscribe(timestamp => RefreshDisplay());
-/// ticker.Start(); // Begin emitting 60 Hz updates
+/// ticker.Start(); // Begin emitting updates at configured refresh rate
 /// </code>
 /// </para>
 /// </remarks>
 public sealed class AvaloniaRefreshTicker : IRefreshTicker
 {
     /// <summary>
-    /// Observable stream that emits timestamps at approximately 60 Hz.
+    /// Observable stream that emits timestamps at the configured refresh rate
+    /// (see <see cref="Constants.RefreshRates.BaseTickerHz"/>).
     /// </summary>
     private readonly IObservable<DateTime> _stream;
     
@@ -80,14 +82,14 @@ public sealed class AvaloniaRefreshTicker : IRefreshTicker
     }
 
     /// <summary>
-    /// Gets the observable stream that emits timestamps at approximately 60 Hz.
+    /// Gets the observable stream that emits timestamps at the configured refresh rate.
     /// </summary>
     /// <value>
     /// An <see cref="IObservable{DateTime}"/> that emits UTC timestamps each time the ticker fires.
     /// </value>
     /// <remarks>
     /// <para>
-    /// <strong>Frequency:</strong> Emits approximately 60 times per second (every ~16.67 milliseconds)
+    /// <strong>Frequency:</strong> Emits at the rate defined in <see cref="Constants.RefreshRates.BaseTickerHz"/>
     /// when the ticker is running.
     /// </para>
     /// <para>
@@ -104,7 +106,7 @@ public sealed class AvaloniaRefreshTicker : IRefreshTicker
     /// ticker.Stream
     ///     .Subscribe(timestamp => 
     ///     {
-    ///         // This executes on UI thread at ~60 Hz
+    ///         // This executes on UI thread at the configured refresh rate
     ///         UpdateDisplay();
     ///     });
     /// </code>
@@ -113,12 +115,13 @@ public sealed class AvaloniaRefreshTicker : IRefreshTicker
     public IObservable<DateTime> Stream => _stream;
 
     /// <summary>
-    /// Starts the refresh ticker, causing it to begin emitting periodic timing signals at 60 Hz.
+    /// Starts the refresh ticker, causing it to begin emitting periodic timing signals.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <strong>Timer Setup:</strong> Uses Avalonia's DispatcherTimer.Run() with a 16.67ms interval
-    /// (1/60 second) to achieve approximately 60 Hz refresh rate.
+    /// <strong>Timer Setup:</strong> Uses Avalonia's DispatcherTimer.Run() with the interval
+    /// defined in <see cref="Constants.RefreshRates.BaseTickerMs"/>
+    /// to achieve the configured refresh rate.
     /// </para>
     /// <para>
     /// <strong>Callback Behavior:</strong> The timer callback returns true to indicate it should
@@ -136,7 +139,8 @@ public sealed class AvaloniaRefreshTicker : IRefreshTicker
     /// </para>
     /// <para>
     /// <strong>Timing Accuracy:</strong> The actual interval may vary slightly based on UI thread
-    /// load and system scheduling, but should maintain an average close to 60 Hz for smooth animation.
+    /// load and system scheduling, but should maintain an average close to the configured rate
+    /// for smooth animation.
     /// </para>
     /// </remarks>
     public void Start()
@@ -145,7 +149,7 @@ public sealed class AvaloniaRefreshTicker : IRefreshTicker
         {
             _subject.OnNext(DateTime.UtcNow);
             return true;
-        }, TimeSpan.FromSeconds(1.0/60.0));
+        }, TimeSpan.FromMilliseconds(Constants.RefreshRates.BaseTickerMs));
     }
 
     /// <summary>
