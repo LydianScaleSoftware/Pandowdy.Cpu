@@ -1060,7 +1060,7 @@ public class VA2MTests
     }
 
     [Fact]
-    public void CommandQueue_ThreadSafety_NoRaceConditions()
+    public async Task CommandQueue_ThreadSafety_NoRaceConditions()
     {
         // Arrange
         var keyboard = new SingularKeyHandler();
@@ -1076,7 +1076,7 @@ public class VA2MTests
             tasks.Add(Task.Run(() => va2m.EnqueueKey(key)));
         }
 
-        Task.WaitAll(tasks.ToArray());
+        await Task.WhenAll(tasks);
 
         // Process all pending commands
         va2m.Clock();

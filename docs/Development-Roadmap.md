@@ -45,6 +45,7 @@
    - [Task 8: Check for Race Conditions at High Speeds](#task-8-check-for-race-conditions-at-high-speeds)
    - [Task 18: Migrate to Pandowdy.Cpu](#task-18-migrate-to-pandowdycpu-critical-priority)
    - [Task 19: Basic Debugger Foundation](#task-19-basic-debugger-foundation)
+   - [Task 24: Fix DiskII Motor-Off Behavior on Drive Switching](#task-24-fix-diskii-motor-off-behavior-on-drive-switching)
 5. [Code Style Guidelines](#code-style-guidelines)
 6. [Git Best Practices](#git-best-practices)
 7. [Testing Guidelines](#testing-guidelines)
@@ -1806,72 +1807,9 @@ public interface IKeyboardResetter
 
 ### ✅ Task 1: Migrate VA2M to CpuClockingCounters.VBlankOccurred
 
-**Summary:**
-- `VA2M` subscribes directly to `CpuClockingCounters.VBlankOccurred`.
-- VBlank timing is sourced from `CpuClockingCounters` only.
-
-**Files Modified:**
-- `Pandowdy.EmuCore\VA2M.cs`
-- `Pandowdy.EmuCore.Tests\Helpers\VA2MTestHelpers.cs`
-
 ---
 
 ### ✅ Task 2: Remove VA2MBus.VBlank Event
-
-**Summary:**
-- Deprecated `VA2MBus.VBlank` event removed.
-- VBlank handling now uses `CpuClockingCounters.VBlankOccurred` only.
-
-**Files Modified:**
-- `Pandowdy.EmuCore\VA2MBus.cs`
-
----
-
-### ✅ Task 18: Migrate to Pandowdy.Cpu
-
-**Completed:** 2025-01-27 - All 1206 tests passing
-
-**Summary:**
-- Replaced legacy 6502.NET Emulator project with Pandowdy.Cpu
-- Removed `ICpu` interface, now using `IPandowdyCpu` directly
-- Removed `CPUAdapter` class - direct CPU integration via DI
-- Updated `IAppleIIBus` to implement `IPandowdyCpuBus` directly
-- Removed `legacy/6502.NET` Git submodule
-- All existing functionality preserved and tested
-
-**Key Architecture Changes:**
-- CPU created via `CpuFactory.Create(CpuVariant.Wdc65C02, stateBuffer)`
-- `CpuStateBuffer` managed by DI container
-- Bus implements `IPandowdyCpuBus` with default interface methods
-- Direct `cpu.Clock(bus)` calls instead of Connect-Execute-Disconnect
-- State access via `cpu.Buffer.Current` (CpuState class)
-
-**Migration Phases Completed:**
-1. ✅ Added Pandowdy.Cpu submodule to solution
-2. ✅ Created bus adapter (via `IAppleIIBus : IPandowdyCpuBus`)
-3. ✅ Updated ICpu interface (removed, use `IPandowdyCpu` directly)
-4. ✅ Replaced CPUAdapter with direct CPU integration
-5. ✅ Updated DI registration in `Program.cs`
-6. ✅ Cleanup: Removed legacy code, submodule, unused references
-
-**Benefits Achieved:**
-- Eliminated external legacy dependency
-- Removed adapter overhead for better performance
-- Cycle-accurate 65C02 emulation
-- Native .NET 8 implementation
-- Better state introspection for future debugger (Task 19)
-- Cleaner architecture following DI guidelines
-
-**Files Removed:**
-- `Pandowdy.EmuCore\Interfaces\ICpu.cs`
-- `Pandowdy.EmuCore\CPUAdapter.cs`
-- `Pandowdy.EmuCore.Tests\CPUAdapterTests.cs`
-- `legacy/6502.NET` submodule
-
-**Files Modified:**
-- `IAppleIIBus.cs`, `VA2MBus.cs`, `VA2M.cs`, `Program.cs`
-- Test helpers and integration tests
-- Project files to reference Pandowdy.Cpu
 
 ---
 
@@ -1879,65 +1817,9 @@ public interface IKeyboardResetter
 
 ---
 
-### ✅ Task 24: Fix DiskII Motor-Off Behavior on Drive Switching
-
-**Completed:** 2025-01-28 - All 53 DiskII tests passing
-
-**Summary:**
-- Fixed DiskII controller to turn off old drive's motor **immediately** when switching drives
-- This matches physical Apple II hardware constraint: only one motor can be powered at a time
-- Updated `DiskIIControllerCard.HandleDriveSelection()` to implement immediate motor-off
-- Clarified that 1-second delay only applies to `$C088` motor-off I/O, not drive switching
-- Updated test expectations to reflect correct hardware behavior
-
-**Key Changes:**
-- When switching drives, old drive motor now turns off immediately (no delay)
-- Cancels any pending scheduled motor-off when switching
-- Updated XML documentation to explain hardware current limitation
-- Test renamed: `DriveSelect_Switching_ShouldImmediatelyTurnOffOldDrive`
-
-**Initial Misunderstanding:**
-- Original test expected **scheduled** motor-off with 1-second delay
-- Research revealed this was incorrect - hardware limitation requires immediate motor-off
-- Test was updated to reflect correct specification
-
-**Files Modified:**
-- `Pandowdy.EmuCore\Cards\DiskIIControllerCard.cs` - Immediate motor-off implementation
-- `Pandowdy.EmuCore.Tests\DiskII\DiskIISpecificationTests.cs` - Updated test expectations
-
-**Benefits:**
-- ✅ Accurate Apple II hardware emulation
-- ✅ All 53 DiskII specification tests passing
-- ✅ Prevents incorrect multi-drive motor states
-- ✅ Matches authentic hardware behavior
-
----
-
 ### ✅ Task 6: Clear Pending Keystrokes on Reset
 
 **Completed:** 2025-01-25 - All 1235 tests passing
-
-**Summary:**
-- Added Reset() method to IKeyboardSetter interface
-- Implemented in SingularKeyHandler (clears strobe, preserves key)
-- Implemented in QueuedKeyHandler (cancels timer, clears queue, clears strobe)
-- Integrated into VA2M.Reset() for system-wide keyboard reset
-- Added 11 unit tests verifying Reset() behavior
-
-**Key Behavior:**
-- On reset, strobe bit is cleared (bit 7 → 0)
-- Key value's low 7 bits are preserved (matches Apple IIe hardware)
-- QueuedKeyHandler clears all pending keys from buffer
-- QueuedKeyHandler cancels any active timer callbacks
-- Prevents stale keystrokes from appearing after system reset
-
-**Files Modified:**
-- `IKeyboardSetter.cs` - Interface
-- `SingularKeyHandler.cs` - Implementation
-- `QueuedKeyHandler.cs` - Implementation with queue clearing
-- `VA2M.cs` - Integration
-- `SingularKeyHandlerTests.cs` - 5 tests
-- `QueuedKeyHandlerTests.cs` - 6 tests
 
 ---
 
@@ -1945,61 +1827,11 @@ public interface IKeyboardResetter
 
 **Completed:** 2025-02-04 - All 3378 tests passing
 
-**Summary:**
-- Fixed race condition in pause/continue (F5) toggle logic in `MainWindow.axaml.cs`
-- Added lock-based synchronization (`_emuStateLock`) for emulator start/stop operations
-- Fixed async cleanup timing issue that caused emulator "zombie" state
-- Eliminated reactive push pattern from `PublishState()` (removed entirely)
-- Changed MHz reporting from 2s to 1s intervals
-- Refactored `EmulatorStateViewModel` from push (IEmulatorState subscription) to pull (IEmulatorCoreInterface polling)
-- Removed `LineNumber` property from `EmulatorStateViewModel` (to be refactored later)
+---
 
-**Root Cause:**
-When rapidly toggling F5 (pause/continue) or F9 (throttle toggle), a race condition occurred:
-1. `StopEmulator()` cancelled the token and set `IsRunning = false`
-2. Cleanup of `_emuCts` and `_emuTask` happened asynchronously via `Dispatcher.UIThread.Post()`
-3. If `OnEmuStartClicked()` was called before cleanup finished, it saw `_emuCts != null` (the old cancelled one) and returned early
-4. Eventually the continuation ran and set `IsRunning = false` again, but no new emulator thread was started
-5. **Result:** UI showed "paused" but no emulator thread existed - the emulator was in a "zombie" state
+### ✅ Task 18: Migrate to Pandowdy.Cpu
 
-**Fix Applied:**
-1. **Added lock object** (`_emuStateLock`) to synchronize start/stop operations
-2. **`OnEmuStartClicked` now:**
-   - Checks if there's a pending task that's still running (not just checking CTS)
-   - Cleans up completed task state synchronously before creating new CTS
-   - Uses lock to prevent race conditions
-3. **`StopEmulator` now:**
-   - Uses lock to safely get CTS/Task references
-   - Waits up to 100ms for the task to acknowledge cancellation (should be near-instant)
-   - Cleans up state immediately instead of relying on async continuation
-   - Ensures the emulator is fully stopped before returning
-
-**Architecture Improvement:**
-Removed reactive push pattern from `VA2M.PublishState()` that was causing 1000+ Hz state updates in unthrottled mode:
-- GUI now runs at 60 Hz polling rate (controlled by `IRefreshTicker`)
-- ViewModels poll at 20 Hz (sampled from the 60 Hz ticker)
-- Emulator runs at any speed without pushing state updates
-- MHz calculated at 4 Hz (every 0.25s) and stored for query
-- Eliminates boolean boxing from flag bindings at emulation speed
-
-**Files Modified:**
-- `Pandowdy.UI\MainWindow.axaml.cs` - Added lock synchronization for start/stop
-- `Pandowdy.EmuCore\VA2M.cs` - Removed PublishState(), changed MHz reporting to 0.25s
-- `Pandowdy.UI\ViewModels\EmulatorStateViewModel.cs` - Refactored to pull architecture, removed LineNumber
-- `Pandowdy.UI.Tests\ViewModels\EmulatorStateViewModelTests.cs` - Cleaned up (TODO comments for rewrite)
-- `Pandowdy.UI.Tests\ViewModels\MainWindowViewModelTests.cs` - Fixed constructor call
-
-**Benefits:**
-- Eliminates lockup when rapidly toggling F5 (pause/continue) and F9 (throttle toggle)
-- Prevents emulator "zombie" state where UI shows paused but no thread exists
-- Robust against rapid key combinations like F5-F9-F5-F9...
-- Cleaner architecture with pull-based state management
-- Significantly reduced GC pressure in unthrottled mode
-- Boolean boxing only occurs at UI refresh rate (20 Hz) instead of emulation speed (700+ Hz)
-
-**Related Issues:**
-- Task 4 (HGR Flicker Investigation) may also benefit from this fix
-- This was the root cause of reported freezing in Release mode unthrottled
+**Completed:** 2025-01-27 - All 1206 tests passing
 
 ---
 
@@ -2007,89 +1839,11 @@ Removed reactive push pattern from `VA2M.PublishState()` that was causing 1000+ 
 
 **Completed:** 2025-02-04 - All 3378 tests passing
 
-**Summary:**
-Implemented foundational debugger infrastructure enabling read-only CPU state inspection, memory inspection, and real-time CPU status display. This provides the core capabilities needed for Task 22 (Intermediate Debugger Implementation).
+---
 
-**What Was Completed:**
+### ✅ Task 24: Fix DiskII Motor-Off Behavior on Drive Switching
 
-**1. CPU State Snapshot Infrastructure**
-- ✅ `CpuStateSnapshot` wrapper struct (encapsulates CPU state without exposing Pandowdy.Cpu types)
-- ✅ `CpuExecutionStatus` enum (Running, Stopped, Jammed, Waiting, Bypassed)
-- ✅ `IEmulatorCoreInterface.CpuState` property returns `CpuStateSnapshot`
-- ✅ Thread-safe, readonly struct for safe cross-thread access
-- ✅ Individual flag properties (FlagN, FlagV, FlagC, etc.)
-- ✅ `AtInstructionBoundary` property for safe inspection timing
-
-**2. Memory Inspection Infrastructure**
-- ✅ `IMemoryInspector` interface (extends IDirectMemoryPoolReader with ROM access)
-- ✅ `MemoryInspector` implementation (side-effect-free reads from RAM, ROM, slot cards)
-- ✅ `IEmulatorCoreInterface.MemoryInspector` property returns `IMemoryInspector`
-- ✅ Methods: ReadRawMain, ReadRawAux, ReadSystemRom, ReadActiveHighMemory, ReadSlotRom, bulk reads
-- ✅ Thread-safe read-only access to all memory regions
-
-**3. CPU Status Panel UI**
-- ✅ `CpuStatusPanel` UI control created (displays PC, A, X, Y, SP, flags, execution status)
-- ✅ `CpuStatusPanelViewModel` created (60Hz updates via IRefreshTicker)
-- ✅ CPU Status Panel integrated into MainWindow below Apple II display
-- ✅ Real-time flag indicators with color coding
-- ✅ Execution status display (Running/Stopped/Jammed)
-
-**4. Stepping Infrastructure**
-- ✅ `IEmulatorCoreInterface.Step()` method for single instruction stepping
-- ✅ F11 keyboard shortcut for stepping
-- ✅ Step command in UI (pause/step/continue workflow)
-
-**Architecture Established:**
-```csharp
-// CPU state snapshot (thread-safe, readonly struct)
-var cpu = emulator.CpuState;
-Console.WriteLine($"PC=${cpu.PC:X4} A=${cpu.A:X2} X=${cpu.X:X2} Y=${cpu.Y:X2}");
-Console.WriteLine($"Flags: {cpu.FlagsString}"); // e.g., "Nv-bdiZc"
-Console.WriteLine($"Status: {cpu.Status}"); // Running, Stopped, Jammed, Waiting
-
-// Memory inspection (thread-safe reads)
-var mem = emulator.MemoryInspector;
-byte mainValue = mem.ReadRawMain(0x0400);      // TEXT page 1 (main)
-byte auxValue = mem.ReadRawAux(0x0400);        // TEXT page 1 (aux)
-byte romValue = mem.ReadSystemRom(0xFFFE);     // Reset vector
-byte[] block = mem.ReadMainBlock(0x2000, 0x2000); // Bulk read HGR page 1
-
-// Timing info
-ulong totalCycles = emulator.TotalCycles;
-```
-
-**Files Created:**
-- `Pandowdy.EmuCore\DataTypes\CpuStateSnapshot.cs` - CPU state wrapper
-- `Pandowdy.EmuCore\DataTypes\CpuExecutionStatus.cs` - Execution status enum
-- `Pandowdy.EmuCore\Interfaces\IMemoryInspector.cs` - Memory inspection interface
-- `Pandowdy.EmuCore\Services\MemoryInspector.cs` - Memory inspector implementation
-- `Pandowdy.UI\Controls\CpuStatusPanel.axaml` - CPU status UI control
-- `Pandowdy.UI\ViewModels\CpuStatusPanelViewModel.cs` - CPU status view model
-
-**Files Modified:**
-- `Pandowdy.EmuCore\Interfaces\IEmulatorCoreInterface.cs` - Added CpuState, MemoryInspector, Step()
-- `Pandowdy.EmuCore\VA2M.cs` - Implemented inspection properties and stepping
-- `Pandowdy.UI\MainWindow.axaml` - Integrated CPU Status Panel
-- `Pandowdy.UI\ViewModels\MainWindowViewModel.cs` - Added step command
-- `Pandowdy\Program.cs` - Registered MemoryInspector in DI
-
-**Benefits Achieved:**
-- ✅ Foundation for Task 22 (Intermediate Debugger Implementation)
-- ✅ Real-time CPU state visibility for development
-- ✅ Thread-safe inspection infrastructure
-- ✅ No performance impact on emulator core
-- ✅ Clean separation between emulation and debugging concerns
-- ✅ Single instruction stepping capability
-
-**What's NOT Included (Deferred to Task 22):**
-- ⏸️ Breakpoints (address, conditional, enable/disable, management)
-- ⏸️ Watches (memory watches, register watches)
-- ⏸️ Debugger UI panels (breakpoint list, watch panel, disassembly view)
-- ⏸️ Enhanced execution control (run to cursor, step over/out)
-
-**Priority:** High (foundation complete, ready for Task 22)
-
-**Enables:** Task 22 (Intermediate Debugger Implementation)
+**Completed:** 2025-01-28 - All 53 DiskII tests passing
 
 ---
 

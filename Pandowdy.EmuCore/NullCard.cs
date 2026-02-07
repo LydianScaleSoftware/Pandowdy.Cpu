@@ -231,7 +231,7 @@ public class NullCard : ICard
     /// configuration, and any metadata provided is silently ignored.
     /// </para>
     /// </remarks>
-    public bool ApplyMetadata(string metadata) => true;
+    public bool ApplyMetadata(string? metadata) => true;
 
 
     public void OnInstalled(SlotNumber slot) { _slotNumber = slot; }

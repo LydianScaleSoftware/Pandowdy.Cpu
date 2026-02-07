@@ -67,13 +67,14 @@ public class OpcodeInfoTests
         var info = new OpcodeInfo(0xA9, "LDA", 1, "#%1");
 
         // Assert - Verify all fields are readonly by attempting to read them
-        byte opcode = info.Opcode;
+        _ = info.Opcode;
         string mnemonic = info.Mnemonic;
-        byte paramBytes = info.ParamBytes;
+        _ = info.ParamBytes;
         string template = info.Template;
 
         Assert.NotNull(mnemonic);
         Assert.NotNull(template);
+
     }
 
     #endregion
@@ -153,21 +154,21 @@ public class OpcodeInfoTests
     #region Template Variation Tests
 
     [Theory]
-    [InlineData("#%1", "Immediate addressing")]
-    [InlineData("%1", "Zero page addressing")]
-    [InlineData("%1,X", "Zero page,X addressing")]
-    [InlineData("%1,Y", "Zero page,Y addressing")]
-    [InlineData("%2", "Absolute addressing")]
-    [InlineData("%2,X", "Absolute,X addressing")]
-    [InlineData("%2,Y", "Absolute,Y addressing")]
-    [InlineData("(%1,X)", "Indexed indirect addressing")]
-    [InlineData("(%1),Y", "Indirect indexed addressing")]
-    [InlineData("(%1)", "Indirect addressing")]
-    [InlineData("(%2)", "Indirect JMP")]
-    [InlineData("%branch", "Branch instruction")]
-    [InlineData("%undef", "Undefined opcode")]
-    [InlineData("", "Implied/Accumulator addressing")]
-    public void Constructor_WithVariousTemplates_StoresCorrectly(string template, string description)
+    [InlineData("#%1")]
+    [InlineData("%1")]
+    [InlineData("%1,X")]
+    [InlineData("%1,Y")]
+    [InlineData("%2")]
+    [InlineData("%2,X")]
+    [InlineData("%2,Y")]
+    [InlineData("(%1,X)")]
+    [InlineData("(%1),Y")]
+    [InlineData("(%1)")]
+    [InlineData("(%2)")]
+    [InlineData("%branch")]
+    [InlineData("%undef")]
+    [InlineData("")]
+    public void Constructor_WithVariousTemplates_StoresCorrectly(string template)
     {
         // Arrange & Act
         var info = new OpcodeInfo(0x00, "TEST", 0, template);

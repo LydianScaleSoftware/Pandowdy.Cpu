@@ -268,10 +268,48 @@ public class LegacyBitmapRendererTests
         public byte Pdl3 { get; set; }
 
         // Event properties (not used in rendering tests but required by interface)
-        public SystemStatusSnapshot? Current => null;
+        public SystemStatusSnapshot Current => new(
+            State80Store: false,
+            StateRamRd: false,
+            StateRamWrt: false,
+            StateIntCxRom: false,
+            StateIntC8Rom: false,
+            StateAltZp: false,
+            StateSlotC3Rom: false,
+            StatePb0: false,
+            StatePb1: false,
+            StatePb2: false,
+            StateAnn0: false,
+            StateAnn1: false,
+            StateAnn2: false,
+            StateAnn3_DGR: false,
+            StatePage2: false,
+            StateHiRes: false,
+            StateMixed: false,
+            StateTextMode: false,
+            StateShow80Col: false,
+            StateAltCharSet: false,
+            StateFlashOn: false,
+            StatePrewrite: false,
+            StateUseBank1: false,
+            StateHighRead: false,
+            StateHighWrite: false,
+            StateVBlank: false,
+            StatePdl0: 0,
+            StatePdl1: 0,
+            StatePdl2: 0,
+            StatePdl3: 0,
+            StateIntC8RomSlot: 0,
+            StateCurrentMhz: 1.023
+        );
+
+#pragma warning disable CS0067 // Event is never used (required by interface for mock)
         public event EventHandler<SystemStatusSnapshot>? Changed;
         public event EventHandler<SystemStatusSnapshot>? MemoryMappingChanged;
-        public IObservable<SystemStatusSnapshot>? Stream => null;
+#pragma warning restore CS0067
+
+        private readonly System.Reactive.Subjects.Subject<SystemStatusSnapshot> _streamSubject = new();
+        public IObservable<SystemStatusSnapshot> Stream => _streamSubject;
     }
 
     /// <summary>
@@ -526,7 +564,7 @@ public class LegacyBitmapRendererTests
         Assert.NotNull(mi);
 
         // Test with color value 0x0F (all bits set in lower nibble)
-        object? result = mi!.Invoke(null, new object[] { (byte)0x0F });
+        object? result = mi!.Invoke(null, [(byte)0x0F]);
         Assert.NotNull(result);
 
         var tuple = ((byte, byte, byte, byte))result!;

@@ -259,8 +259,8 @@ public class NullCardTests
     [InlineData("")]
     [InlineData("valid metadata")]
     [InlineData("{ \"config\": \"value\" }")]
-    [InlineData(null!)]
-    public void ApplyMetadata_WithVariousInputs_AlwaysReturnsTrue(string metadata)
+    [InlineData(null)]
+    public void ApplyMetadata_WithVariousInputs_AlwaysReturnsTrue(string? metadata)
     {
         // Arrange
         var card = new NullCard();

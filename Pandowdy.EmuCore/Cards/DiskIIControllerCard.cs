@@ -98,8 +98,6 @@ public abstract class DiskIIControllerCard : ICard
         [  1,  2,  3,  0, -3, -2, -1,  0 ], // 7 NW
     ];
 
-    // Diagnostic counters for troubleshooting
-    private static ulong _totalReads = 0;
     /// <summary>
     /// Tracks last 3 bytes for prologue pattern detection (D5 AA 96 or D5 AA AD).
     /// </summary>
@@ -140,7 +138,6 @@ public abstract class DiskIIControllerCard : ICard
     private DataFieldState _dataFieldState = DataFieldState.Idle;
     private readonly byte[] _dataFieldBytes = new byte[343]; // 343 bytes: 256 (6-bit) + 86 (2-bit) + 1 (checksum)
     private int _dataFieldIndex = 0;
-    private byte _dataChecksum = 0;
 
     // Bit timing for shift register
     private double _lastBitShiftCycle = 0;

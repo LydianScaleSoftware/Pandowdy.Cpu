@@ -105,23 +105,23 @@ public class DiskIISpecificationTests
     // $C0nE = Q7L (Q7=0)     $C0nF = Q7H (Q7=1)
 
     [Theory]
-    [InlineData(0x00, "Phase 0 Off")]
-    [InlineData(0x01, "Phase 0 On")]
-    [InlineData(0x02, "Phase 1 Off")]
-    [InlineData(0x03, "Phase 1 On")]
-    [InlineData(0x04, "Phase 2 Off")]
-    [InlineData(0x05, "Phase 2 On")]
-    [InlineData(0x06, "Phase 3 Off")]
-    [InlineData(0x07, "Phase 3 On")]
-    [InlineData(0x08, "Motor Off")]
-    [InlineData(0x09, "Motor On")]
-    [InlineData(0x0A, "Select Drive 1")]
-    [InlineData(0x0B, "Select Drive 2")]
-    [InlineData(0x0C, "Q6L")]
-    [InlineData(0x0D, "Q6H")]
-    [InlineData(0x0E, "Q7L")]
-    [InlineData(0x0F, "Q7H")]
-    public void IoAddress_ShouldBeAccessible(byte address, string description)
+    [InlineData(0x00)]
+    [InlineData(0x01)]
+    [InlineData(0x02)]
+    [InlineData(0x03)]
+    [InlineData(0x04)]
+    [InlineData(0x05)]
+    [InlineData(0x06)]
+    [InlineData(0x07)]
+    [InlineData(0x08)]
+    [InlineData(0x09)]
+    [InlineData(0x0A)]
+    [InlineData(0x0B)]
+    [InlineData(0x0C)]
+    [InlineData(0x0D)]
+    [InlineData(0x0E)]
+    [InlineData(0x0F)]
+    public void IoAddress_ShouldBeAccessible(byte address)
     {
         // Specification: All 16 I/O addresses should be accessible without throwing
         var card = CreateCard();
@@ -162,7 +162,7 @@ public class DiskIISpecificationTests
 
         // In read mode, reading $C0nC should return shift register data
         // (Implementation detail: may return null for floating bus if motor off)
-        var result = card.ReadIO(0x0C);
+        _ = card.ReadIO(0x0C);
         // Result depends on motor state and disk data - just verify no exception
     }
 
@@ -183,7 +183,7 @@ public class DiskIISpecificationTests
         card.ReadIO(0x0E); // Q7L - set Q7=0
 
         // Read write protect status
-        var status = card.ReadIO(0x0D);
+        _ = card.ReadIO(0x0D);
 
         // Note: Actual value depends on disk state
         // Bit 7 = 1 means write protected (or no disk)
@@ -590,7 +590,7 @@ public class DiskIISpecificationTests
         AdvanceCycles(100);
 
         // Read shift register
-        var data = card.ReadIO(0x0C);
+        card.ReadIO(0x0C);
 
         // With no disk, result is implementation-defined
         // Just verify the operation completes
@@ -617,7 +617,7 @@ public class DiskIISpecificationTests
         AdvanceCycles(cycles);
 
         // Should not throw
-        var data = card.ReadIO(0x0C);
+        card.ReadIO(0x0C);
     }
 
     #endregion
@@ -785,8 +785,8 @@ public class DiskIISpecificationTests
         byte encodedLow = (byte)(0xAA | lowNibble);
 
         // Both must have bits 7 and 5 set (0xAA mask)
-        Assert.True((encodedHigh & 0xAA) == 0xAA);
-        Assert.True((encodedLow & 0xAA) == 0xAA);
+        Assert.Equal(0xAA, encodedHigh & 0xAA);
+        Assert.Equal(0xAA, encodedLow & 0xAA);
     }
 
     [Fact]
@@ -829,7 +829,7 @@ public class DiskIISpecificationTests
         card.ReadIO(0x0E); // Q7L (Q7=0)
 
         // Read should return write protect status
-        var status = card.ReadIO(0x0D);
+        _ = card.ReadIO(0x0D);
 
         // With mock drive (no real disk), expect write protected
         // Bit 7 should be set
