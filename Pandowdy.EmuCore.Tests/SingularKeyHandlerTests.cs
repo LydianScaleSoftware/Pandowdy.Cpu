@@ -494,7 +494,7 @@ public class SingularKeyHandlerTests
             handler.EnqueueKey(0x41); // 'A' with strobe set (0xC1)
 
             // Act
-            handler.Reset();
+            handler.ResetKeyboard();
 
             // Assert
             Assert.False(handler.StrobePending()); // Strobe cleared
@@ -509,7 +509,7 @@ public class SingularKeyHandlerTests
             var handler = new SingularKeyHandler();
 
             // Act & Assert - Should not throw
-            handler.Reset();
+            handler.ResetKeyboard();
             Assert.False(handler.StrobePending());
             Assert.Equal(0, handler.PeekCurrentKeyValue());
         }
@@ -523,7 +523,7 @@ public class SingularKeyHandlerTests
             handler.ClearStrobe(); // Already cleared
 
             // Act
-            handler.Reset();
+            handler.ResetKeyboard();
 
             // Assert - Key still there, strobe still clear
             Assert.False(handler.StrobePending());
@@ -538,9 +538,9 @@ public class SingularKeyHandlerTests
             handler.EnqueueKey(0x43); // 'C'
 
             // Act - Reset multiple times
-            handler.Reset();
-            handler.Reset();
-            handler.Reset();
+            handler.ResetKeyboard();
+            handler.ResetKeyboard();
+            handler.ResetKeyboard();
 
             // Assert - Same result as single reset
             Assert.False(handler.StrobePending());
@@ -553,7 +553,7 @@ public class SingularKeyHandlerTests
             // Arrange
             var handler = new SingularKeyHandler();
             handler.EnqueueKey(0x41); // 'A'
-            handler.Reset();
+            handler.ResetKeyboard();
 
             // Act - Enqueue new key after reset
             handler.EnqueueKey(0x42); // 'B'

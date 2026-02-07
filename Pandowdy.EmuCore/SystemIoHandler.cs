@@ -32,11 +32,6 @@ namespace Pandowdy.EmuCore;
 public class SystemIoHandler : ISystemIoHandler
 {
     /// <summary>
-    /// Gets or sets a byte using indexer syntax (delegates to Read/Write).
-    /// </summary>
-    public byte this[ushort offset] { get => Read(offset); set => Write(offset,value); }
-
-    /// <summary>
     /// Gets the size of managed I/O space (0x90 bytes for $C000-$C08F).
     /// </summary>
     public int Size => 0x90; // Handles C000-C08F (0x90 bytes)
@@ -172,6 +167,9 @@ public class SystemIoHandler : ISystemIoHandler
         ushort address = (ushort) (0xC000 + offset);
         return ReadFromIOSpace(address);
     }
+
+    /// Placeholder for now until we can create a Read method that does not affect IO states.
+    public byte Peek(ushort _) { return 0; }
 
     /// <summary>
     /// Writes to I/O space using zero-based offset (0x00-0x8F for $C000-$C08F).

@@ -123,6 +123,9 @@ public class NoSlotClockIoHandler : ISystemIoHandler
     /// <inheritdoc />
     public int Size => _downstream.Size;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public byte Peek(ushort address) => Read(address);
+
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public byte Read(ushort offset)
@@ -299,12 +302,5 @@ public class NoSlotClockIoHandler : ISystemIoHandler
     private static int BcdToDecimal(byte bcd)
     {
         return ((bcd >> 4) * 10) + (bcd & 0x0F);
-    }
-
-    /// <inheritdoc />
-    public byte this[ushort offset]
-    {
-        get => Read(offset);
-        set => Write(offset, value);
     }
 }

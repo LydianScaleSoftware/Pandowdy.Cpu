@@ -8,6 +8,7 @@ using ReactiveUI;
 using Pandowdy.EmuCore.DataTypes;
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.UI.Interfaces;
+using Pandowdy.Disassembler;
 
 namespace Pandowdy.UI.ViewModels;
 
@@ -205,6 +206,16 @@ public sealed class CpuStatusPanelViewModel : ReactiveObject, IActivatableViewMo
         private set => this.RaiseAndSetIfChanged(ref _statusText, value);
     }
 
+    private string _disassemblyText = "";
+    /// <summary>
+    /// Gets the disassembled current instruction at PC.
+    /// </summary>
+    public string DisassemblyText
+    {
+        get => _disassemblyText;
+        private set => this.RaiseAndSetIfChanged(ref _disassemblyText, value);
+    }
+
     #endregion
 
     /// <summary>
@@ -264,5 +275,65 @@ public sealed class CpuStatusPanelViewModel : ReactiveObject, IActivatableViewMo
             CpuExecutionStatus.Bypassed => "Bypassed",
             _ => "Unknown"
         };
+
+        // Disassembly - use captured opcode values instead of reading from PC
+        DisassemblyText = GenerateDisassembly(cpu);
+    }
+
+    /// <summary>
+    /// Generates a disassembled instruction string from the captured CPU state.
+    /// </summary>
+    /// <remarks>
+    /// Uses <see cref="CpuStateSnapshot.CurrentOpcode"/> and <see cref="CpuStateSnapshot.OpcodeAddress"/>
+    /// which are captured during instruction fetch. This is correct because PC has already advanced
+    /// past the instruction that just executed by the time we can read it.
+    /// </remarks>
+    private string GenerateDisassembly(CpuStateSnapshot cpu)
+    {
+        try
+        {
+            var mem = _emulator.MemoryInspector;
+
+            // Use the captured opcode and address from the CPU state snapshot
+            // (PC has already advanced, so reading at PC would give the wrong instruction)
+            byte opcode = cpu.CurrentOpcode;
+            ushort opcodeAddr = cpu.OpcodeAddress;
+
+            // Read parameter bytes from memory (opcode was already captured during fetch)
+            byte p1 = ReadCpuByte(mem, (ushort)(opcodeAddr + 1));
+            byte p2 = ReadCpuByte(mem, (ushort)(opcodeAddr + 2));
+
+            // Get opcode info from the disassembler table
+            var opcodeInfo = OpcodeTable.Table[opcode];
+
+            // Format the disassembly line using the opcode address (not PC)
+            return Disassembler.Disassembler.FormatLine(opcodeInfo, opcodeAddr, p1, p2);
+        }
+        catch
+        {
+            return "ERR";
+        }
+    }
+
+    /// <summary>
+    /// Reads a byte from the address space as the CPU would see it.
+    /// </summary>
+    private byte ReadCpuByte(IMemoryInspector mem, ushort address)
+    {
+        // For high memory ($C100-$FFFF), use ReadActiveHighMemory to respect ROM/LC RAM mapping
+        if (address >= 0xC100)
+        {
+            return mem.ReadActiveHighMemory(address);
+        }
+
+        // For $C000-$C0FF (I/O space), read from main RAM
+        // (disassembling I/O space is tricky but we'll try)
+        if (address >= 0xC000)
+        {
+            return mem.ReadRawMain(address);
+        }
+
+        // For everything else ($0000-$BFFF), read from main RAM
+        return mem.ReadRawMain(address);
     }
 }

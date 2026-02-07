@@ -2,11 +2,8 @@
 // Licensed under the Apache License, Version 2.0
 // See LICENSE file for details
 
-using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.EmuCore.Services;
 using Pandowdy.UI.ViewModels;
-using ReactiveUI;
-using Xunit;
 
 namespace Pandowdy.UI.Tests.ViewModels;
 

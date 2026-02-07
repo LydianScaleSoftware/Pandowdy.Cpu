@@ -219,6 +219,7 @@ public class TestAppleIIBus : IAppleIIBus
     private byte _keyValue = 0;
     private readonly bool[] _pushButtons = new bool[3];
     private int _resetCount = 0;
+    private int _userResetCount = 0;
     private readonly List<byte> _enqueuedKeyHistory = [];
 
     public TestAppleIIBus()
@@ -249,6 +250,8 @@ public class TestAppleIIBus : IAppleIIBus
     public IPandowdyCpu Cpu => _cpu;
     public ulong SystemClockCounter => _clockCounter;
 
+    // VBlank event for testing
+    public event Action? VBlankOccurred;
 
     public void EnqueueKey(byte key)
     {
@@ -277,11 +280,23 @@ public class TestAppleIIBus : IAppleIIBus
     public void Clock()
     {
         _clockCounter++;
+
+        // Trigger VBlank event every ~12,480 cycles (60 Hz at 1.023 MHz)
+        if (_clockCounter % 12_480 == 0)
+        {
+            VBlankOccurred?.Invoke();
+        }
     }
 
     public void Reset()
     {
         _resetCount++;
+        _clockCounter = 0;
+    }
+
+    public void UserReset()
+    {
+        _userResetCount++;
         _clockCounter = 0;
     }
 
@@ -291,6 +306,7 @@ public class TestAppleIIBus : IAppleIIBus
     public List<byte> GetEnqueuedKeyHistory() => [.. _enqueuedKeyHistory];
     public bool GetPushButton(int num) => num >= 0 && num < 3 && _pushButtons[num];
     public int ResetCount => _resetCount;
+    public int UserResetCount => _userResetCount;
 }
 
 /// <summary>

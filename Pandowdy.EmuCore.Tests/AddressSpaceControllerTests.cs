@@ -48,6 +48,12 @@ public class AddressSpaceControllerTests
             return 0xFF;
         }
 
+        public byte Peek(ushort address)
+        {
+            // Same as Read for mock - no side effects
+            return Read(address);
+        }
+
         public void Write(ushort address, byte value)
         {
             int offset = address - 0xD000;
@@ -55,12 +61,6 @@ public class AddressSpaceControllerTests
             {
                 _memory[offset] = value;
             }
-        }
-
-        public byte this[ushort address]
-        {
-            get => Read(address);
-            set => Write(address, value);
         }
     }
 
@@ -83,16 +83,16 @@ public class AddressSpaceControllerTests
             return ReadReturnValue;
         }
 
+        public byte Peek(ushort address)
+        {
+            // Peek doesn't track address
+            return ReadReturnValue;
+        }
+
         public void Write(ushort address, byte val)
         {
             LastWriteAddress = address;
             LastWriteValue = val;
-        }
-
-        public byte this[ushort address]
-        {
-            get => Read(address);
-            set => Write(address, value);
         }
 
             public void InstallCard(int id, SlotNumber slot) { }
@@ -246,7 +246,7 @@ public class AddressSpaceControllerTests
     {
         // Arrange
         var fixture = new AddressSpaceFixture();
-        fixture.SystemRam[0x0000] = 0xAB;
+        fixture.SystemRam.Write(0x0000, 0xAB);
 
         // Act
         var value = fixture.AddressSpace.Read(0x0000);
@@ -260,7 +260,7 @@ public class AddressSpaceControllerTests
     {
         // Arrange
         var fixture = new AddressSpaceFixture();
-        fixture.SystemRam[0x0400] = 0xCD;
+        fixture.SystemRam.Write(0x0400, 0xCD);
 
         // Act
         var value = fixture.AddressSpace.Read(0x0400);
@@ -274,7 +274,7 @@ public class AddressSpaceControllerTests
     {
         // Arrange
         var fixture = new AddressSpaceFixture();
-        fixture.SystemRam[0xBFFF] = 0xEF;
+        fixture.SystemRam.Write(0xBFFF, 0xEF);
 
         // Act
         var value = fixture.AddressSpace.Read(0xBFFF);
@@ -360,7 +360,7 @@ public class AddressSpaceControllerTests
     {
         // Arrange
         var fixture = new AddressSpaceFixture();
-        fixture.LanguageCard[0xD000] = 0x33;
+        fixture.LanguageCard.Write(0xD000, 0x33);
 
         // Act
         var value = fixture.AddressSpace.Read(0xD000);
@@ -374,7 +374,7 @@ public class AddressSpaceControllerTests
     {
         // Arrange
         var fixture = new AddressSpaceFixture();
-        fixture.LanguageCard[0xFFFF] = 0x11;
+        fixture.LanguageCard.Write(0xFFFF, 0x11);
 
         // Act
         var value = fixture.AddressSpace.Read(0xFFFF);
@@ -397,7 +397,7 @@ public class AddressSpaceControllerTests
         fixture.AddressSpace.Write(0x0000, 0xAB);
 
         // Assert
-        Assert.Equal(0xAB, fixture.SystemRam[0x0000]);
+        Assert.Equal(0xAB, fixture.SystemRam.Read(0x0000));
     }
 
     [Fact]
@@ -410,7 +410,7 @@ public class AddressSpaceControllerTests
         fixture.AddressSpace.Write(0x0800, 0xCD);
 
         // Assert
-        Assert.Equal(0xCD, fixture.SystemRam[0x0800]);
+        Assert.Equal(0xCD, fixture.SystemRam.Read(0x0800));
     }
 
     [Fact]
@@ -423,7 +423,7 @@ public class AddressSpaceControllerTests
         fixture.AddressSpace.Write(0xBFFF, 0xEF);
 
         // Assert
-        Assert.Equal(0xEF, fixture.SystemRam[0xBFFF]);
+        Assert.Equal(0xEF, fixture.SystemRam.Read(0xBFFF));
     }
 
     [Fact]
@@ -504,7 +504,7 @@ public class AddressSpaceControllerTests
         fixture.AddressSpace.Write(0xD000, 0x33);
 
         // Assert
-        Assert.Equal(0x33, fixture.LanguageCard[0xD000]);
+        Assert.Equal(0x33, fixture.LanguageCard.Read(0xD000));
     }
 
     [Fact]
@@ -517,64 +517,7 @@ public class AddressSpaceControllerTests
         fixture.AddressSpace.Write(0xFFFF, 0x11);
 
         // Assert
-        Assert.Equal(0x11, fixture.LanguageCard[0xFFFF]);
-    }
-
-    #endregion
-
-    #region Indexer Tests (4 tests)
-
-    [Fact]
-    public void Indexer_Get_DelegatesToRead()
-    {
-        // Arrange
-        var fixture = new AddressSpaceFixture();
-        fixture.SystemRam[0x1234] = 0xAB;
-
-        // Act
-        var value = fixture.AddressSpace[0x1234];
-
-        // Assert
-        Assert.Equal(0xAB, value);
-    }
-
-    [Fact]
-    public void Indexer_Set_DelegatesToWrite()
-    {
-        // Arrange
-        var fixture = new AddressSpaceFixture();
-
-        // Act
-        fixture.AddressSpace[0x5678] = 0xCD;
-
-        // Assert
-        Assert.Equal(0xCD, fixture.SystemRam[0x5678]);
-    }
-
-    [Fact]
-    public void Indexer_Get_SystemIoAddress_RoutesToHandler()
-    {
-        // Arrange
-        var fixture = new AddressSpaceFixture();
-
-        // Act
-        _ = fixture.AddressSpace[0xC010];
-
-        // Assert - Should route to IoHandler, not throw
-        Assert.NotNull(fixture.IoHandler);
-    }
-
-    [Fact]
-    public void Indexer_Set_SystemIoAddress_RoutesToHandler()
-    {
-        // Arrange
-        var fixture = new AddressSpaceFixture();
-
-        // Act
-        fixture.AddressSpace[0xC020] = 0x42;
-
-        // Assert - Should route to IoHandler, not throw
-        Assert.NotNull(fixture.IoHandler);
+        Assert.Equal(0x11, fixture.LanguageCard.Read(0xFFFF));
     }
 
     #endregion
@@ -587,7 +530,7 @@ public class AddressSpaceControllerTests
         // Arrange
         var fixture = new AddressSpaceFixture();
         // Use indexer to write, then read raw
-        fixture.SystemRam[0x2000] = 0xAA;
+        fixture.SystemRam.Write(0x2000, 0xAA);
 
         // Act
         var value = fixture.AddressSpace.ReadRawMain(0x2000);
@@ -618,7 +561,7 @@ public class AddressSpaceControllerTests
     {
         // Arrange - Video renderer use case
         var fixture = new AddressSpaceFixture();
-        fixture.SystemRam[0x4000] = 0xCC; // Hi-res page 2
+        fixture.SystemRam.Write(0x4000, 0xCC); // Hi-res page 2
 
         // Act
         var value = fixture.AddressSpace.ReadRawMain(0x4000);
@@ -632,7 +575,7 @@ public class AddressSpaceControllerTests
     {
         // Arrange - 80-column text mode use case
         var fixture = new AddressSpaceFixture();
-        fixture.SystemRam[0x0400] = 0xDD; // Text page 1
+        fixture.SystemRam.Write(0x0400, 0xDD); // Text page 1
 
         // Act - ReadRawAux should delegate to SystemRam
         _ = fixture.AddressSpace.ReadRawAux(0x0400);

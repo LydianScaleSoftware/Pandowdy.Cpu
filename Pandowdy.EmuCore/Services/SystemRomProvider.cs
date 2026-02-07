@@ -107,6 +107,9 @@ public sealed class SystemRomProvider : ISystemRomProvider
         return _romData[address];
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public byte Peek(ushort address) => Read(address);
+
     /// <summary>
     /// Write operation - ROM is read-only, this is a no-op.
     /// </summary>
@@ -120,17 +123,6 @@ public sealed class SystemRomProvider : ISystemRomProvider
     public void Write(ushort address, byte data)
     {
         // ROM is read-only - no-op
-    }
-
-    /// <summary>
-    /// Gets or sets a byte at the specified address. Setter is a no-op (ROM is read-only).
-    /// </summary>
-    /// <param name="address">Address within the ROM (0x0000-0x3FFF).</param>
-    /// <returns>Byte value at the specified address.</returns>
-    public byte this[ushort address]
-    {
-        get => Read(address);
-        set { /* ROM is read-only - no-op */ }
     }
 
     /// <summary>

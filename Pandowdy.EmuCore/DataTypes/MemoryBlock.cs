@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0
 // See LICENSE file for details
 
+using System.Runtime.CompilerServices;
 using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore.DataTypes
@@ -42,9 +43,9 @@ namespace Pandowdy.EmuCore.DataTypes
     /// // Read back
     /// byte opcode = memory.Read(0x0000); // Returns 0xA9
     /// 
-    /// // Array-like indexer
-    /// memory[0x0200] = 0xFF;
-    /// byte value = memory[0x0200]; // Returns 0xFF
+    /// // Write and read using explicit methods
+    /// memory.Write(0x0200, 0xFF);
+    /// byte value = memory.Read(0x0200); // Returns 0xFF
     /// </code>
     /// </para>
     /// <para>
@@ -93,7 +94,7 @@ namespace Pandowdy.EmuCore.DataTypes
         /// Backing array holding the memory contents. Initialized to all zeros.
         /// </summary>
         private byte[] _data = size <= 0 || size > MaxSize
-            ? throw new ArgumentOutOfRangeException(nameof(size), size, 
+            ? throw new ArgumentOutOfRangeException(nameof(size), size,
                 $"Memory size must be between 1 and {MaxSize} (0x{MaxSize:X}) bytes. ushort addresses cannot access beyond 64KB.")
             : new byte[size];
 
@@ -131,7 +132,10 @@ namespace Pandowdy.EmuCore.DataTypes
         /// </para>
         /// </remarks>
         public byte Read(ushort address) => _data[address];
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte Peek(ushort address) => Read(address);
+
         /// <summary>
         /// Writes a byte to the specified memory address.
         /// </summary>
@@ -157,33 +161,6 @@ namespace Pandowdy.EmuCore.DataTypes
             _data[address] = data;
         }
 
-        /// <summary>
-        /// Gets or sets the byte value at the specified memory address using array-like indexer syntax.
-        /// </summary>
-        /// <param name="address">16-bit memory address (0x0000-0xFFFF).</param>
-        /// <returns>Byte value at the specified address.</returns>
-        /// <exception cref="IndexOutOfRangeException">
-        /// Thrown if <paramref name="address"/> is beyond the memory block size.
-        /// </exception>
-        /// <remarks>
-        /// <para>
-        /// <strong>Convenience Syntax:</strong> Provides array-like access to memory:
-        /// <code>
-        /// memory[0x1000] = 0x42;      // Write
-        /// byte value = memory[0x1000]; // Read
-        /// </code>
-        /// </para>
-        /// <para>
-        /// <strong>Implementation:</strong> Getter provides direct array access for maximum
-        /// performance. Setter delegates to <see cref="Write"/> for consistency. No additional
-        /// logic or overhead.
-        /// </para>
-        /// </remarks>
-        public byte this[ushort address]
-        {
-            get => _data[address];
-            set => Write(address, value);
-        }
     }
 
 

@@ -15,7 +15,12 @@ public static class Disassembler
         {
             sbyte offset = unchecked((sbyte) p1);
             ushort dest = (ushort) (pc + 2 + offset);
-            return $"{info.Mnemonic,-4} ${dest:X4}";
+            return $"{pc:X4}: {info.Mnemonic,-4} ${dest:X4}";
+        }
+
+        if (t == "%undef")
+        {
+            t = "";
         }
 
         // General template replacement
@@ -32,6 +37,6 @@ public static class Disassembler
             result = result.Replace("%2", $"${addr:X4}");
         }
 
-        return $"{info.Mnemonic,-4} {result}".TrimEnd();
+        return $"{pc:X4}: {info.Mnemonic,-4} {result}".TrimEnd();
     }
 }

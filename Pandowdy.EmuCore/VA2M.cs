@@ -21,8 +21,7 @@
 //    - PID-based adaptive throttling to maintain ~1.023 MHz Apple IIe speed
 //
 // 3. **Reset Handling:**
-//    - Reset() - Full system reset (power cycle)
-//    - UserReset() - Warm reset (Ctrl+Reset) - thread-safe
+//    - Reset() - Full system reset  
 //
 // 4. **External Input Delegation:**
 //    - EnqueueKey() - Keyboard input injection (delegates to IKeyboardSetter)
@@ -286,10 +285,6 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// <value>Observable that publishes CPU state snapshots (PC, SP, cycles, BASIC line).</value>
     /// <remarks>
     /// <para>
-    /// <strong>Implementation:</strong> Returns the injected <see cref="IEmulatorState"/> instance
-    /// (EmulatorStateProvider) that VA2M publishes state updates to via <see cref="PublishState"/>.
-    /// </para>
-    /// <para>
     /// <strong>Observable Pattern:</strong> State changes are pushed through reactive streams.
     /// The UI can subscribe to <see cref="IEmulatorState.Stream"/> to receive real-time updates.
     /// </para>
@@ -377,7 +372,9 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
                 SP = state.SP,
                 PC = state.PC,
                 Status = (DataTypes.CpuExecutionStatus)state.Status,
-                CyclesRemaining = state.CyclesRemaining
+                CyclesRemaining = state.CyclesRemaining,
+                CurrentOpcode = state.CurrentOpcode,
+                OpcodeAddress = state.OpcodeAddress
             };
         }
     }
@@ -1023,7 +1020,7 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         Enqueue(() =>
         {
             // Reset keyboard state (clear pending keystrokes and strobe)
-            _keyboardSetter.Reset();
+            _keyboardSetter.ResetKeyboard();
 
             Bus.Reset();
             _throttleCycles = 0;
@@ -1286,6 +1283,33 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     {
         // Enqueue to run on emulator thread - now calls keyboard handler directly
         Enqueue(() => _keyboardSetter.EnqueueKey(ascii));
+    }
+
+    /// <summary>
+    /// Resets the keyboard state to power-on defaults, clearing pending keystrokes and strobe.
+    /// </summary>
+    /// <inheritdoc cref="IKeyboardSetter.ResetKeyboard" path="/remarks"/>
+    /// <remarks>
+    /// <para>
+    /// <strong>Architecture:</strong> This method delegates to the injected <see cref="IKeyboardSetter"/>
+    /// instance (SingularKeyHandler). Like <see cref="EnqueueKey"/>, this ensures single source of truth
+    /// for keyboard state management.
+    /// </para>
+    /// <para>
+    /// <strong>Thread Safety:</strong> This method is thread-safe. It enqueues the keyboard reset
+    /// command which will be executed on the emulator thread at the next instruction boundary
+    /// (via ProcessAnyPendingActions). This is typically called internally by <see cref="Reset"/>
+    /// during full system reset.
+    /// </para>
+    /// <para>
+    /// <strong>Note:</strong> For full system reset (power cycle), use <see cref="Reset"/> instead,
+    /// which resets the entire emulator including CPU, memory, and all peripherals.
+    /// </para>
+    /// </remarks>
+    public void ResetKeyboard()
+    {
+        // Enqueue to run on emulator thread - delegates to keyboard handler
+        Enqueue(() => _keyboardSetter.ResetKeyboard());
     }
 
     /// <summary>

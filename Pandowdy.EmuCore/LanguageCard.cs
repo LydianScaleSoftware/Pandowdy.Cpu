@@ -129,6 +129,9 @@ public class LanguageCard(
         return actualAddress;
     }
 
+
+
+
     /// <summary>
     /// Maps a Language Card address ($D000-$FFFF) to the ROM address (0x1000-0x3FFF).
     /// </summary>
@@ -164,6 +167,9 @@ public class LanguageCard(
     {
         return (ushort)(address - 0xC000);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public byte Peek(ushort address) => Read(address);
 
     /// <summary>
     /// Reads a byte from the Language Card address space.
@@ -206,13 +212,13 @@ public class LanguageCard(
         if (_status.StateHighRead)
         {
             IPandowdyMemory? targetMemory =  _status.StateAltZp ? _auxRam : _mainRam;
-            
+
             return targetMemory != null 
-                ? targetMemory[DetermineMappedRamAddress(address)]
+                ? targetMemory.Read(DetermineMappedRamAddress(address))
                 : _floatingBus.Read();
         }
-        
-        return _systemRom[DetermineMappedRomAddress(address)];
+
+        return _systemRom.Read(DetermineMappedRomAddress(address));
     }
 
     /// <summary>
@@ -264,36 +270,10 @@ public class LanguageCard(
         }
         
         IPandowdyMemory? targetMemory = _status.StateAltZp ? _auxRam : _mainRam;
-        
+
         if (targetMemory != null)
         {
-            targetMemory[DetermineMappedRamAddress(address)] = data;
+            targetMemory.Write(DetermineMappedRamAddress(address), data);
         }
-    }
-
-    /// <summary>
-    /// Gets or sets a byte at the specified address using array-like indexer syntax.
-    /// </summary>
-    /// <param name="address">
-    /// Address to access, typically in the $D000-$FFFF range.
-    /// </param>
-    /// <returns>Byte value from RAM, ROM, or floating bus.</returns>
-    /// <remarks>
-    /// <para>
-    /// <strong>Convenience Syntax:</strong> Provides array-like access to the Language Card:
-    /// <code>
-    /// byte value = languageCard[0xD000];  // Read
-    /// languageCard[0xE000] = 0x42;        // Write
-    /// </code>
-    /// </para>
-    /// <para>
-    /// <strong>Implementation:</strong> Getter delegates to <see cref="Read"/>, setter
-    /// delegates to <see cref="Write"/>. See those methods for detailed behavior.
-    /// </para>
-    /// </remarks>
-    public byte this[ushort address]
-    {
-        get => Read(address);
-        set => Write(address, value);
     }
 }

@@ -651,7 +651,7 @@ public class QueuedKeyHandlerTests
             handler.EnqueueKey(0x41); // 'A' with strobe set (0xC1)
 
             // Act
-            handler.Reset();
+            handler.ResetKeyboard();
 
             // Assert
             Assert.False(handler.StrobePending()); // Strobe cleared
@@ -670,7 +670,7 @@ public class QueuedKeyHandlerTests
             Assert.Equal(3, handler.NumKeysPending()); // 1 in latch + 2 in queue
 
             // Act
-            handler.Reset();
+            handler.ResetKeyboard();
 
             // Assert
             Assert.Equal(0, handler.NumKeysPending()); // Queue cleared
@@ -688,7 +688,7 @@ public class QueuedKeyHandlerTests
             handler.ClearStrobe(); // Start timer to feed 'B' after 10ms
 
             // Act - Reset before timer fires
-            handler.Reset();
+            handler.ResetKeyboard();
             await Task.Delay(30); // Wait past timer window
 
             // Assert - 'B' should not have been fed
@@ -704,7 +704,7 @@ public class QueuedKeyHandlerTests
             using var handler = new QueuedKeyHandler();
 
             // Act & Assert - Should not throw
-            handler.Reset();
+            handler.ResetKeyboard();
             Assert.False(handler.StrobePending());
             Assert.Equal(0, handler.NumKeysPending());
         }
@@ -716,7 +716,7 @@ public class QueuedKeyHandlerTests
             using var handler = new QueuedKeyHandler();
             handler.EnqueueKey(0x41); // 'A'
             handler.EnqueueKey(0x42); // 'B'
-            handler.Reset();
+            handler.ResetKeyboard();
 
             // Act - Enqueue new keys after reset
             handler.EnqueueKey(0x43); // 'C'
@@ -739,7 +739,7 @@ public class QueuedKeyHandlerTests
                 handler.ClearStrobe(); // Start timer
 
                 // Act - Reset immediately (well before 100ms timer fires)
-                handler.Reset();
+                handler.ResetKeyboard();
                 await Task.Delay(150); // Wait past timer window
 
                 // Assert - Timer was canceled, 'B' not fed despite waiting past delay

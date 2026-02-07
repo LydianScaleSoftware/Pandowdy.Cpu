@@ -202,9 +202,6 @@ public interface ISlots : IPandowdyMemory, IConfigurable
     //   Handles card I/O, card ROM, and extended ROM based on soft switch settings.
     //   Most writes are no-ops since ROM is read-only, but some cards may use RAM.
     //
-    // byte this[ushort address] { get; set; }
-    //   Indexer providing array-style access to Read/Write methods.
-    //
     // Note: All addresses are offset by $C000. For example, to access $C600, pass 0x0600.
 
 

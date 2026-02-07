@@ -767,4 +767,603 @@ public class FrameGeneratorTests
     }
 
     #endregion
+
+    #region Buffer Management Tests (7 tests)
+
+    [Fact]
+    public void RenderFrameFromSnapshot_WhenNoBufferAvailable_SkipsFrame()
+    {
+        // Arrange - Create a custom provider that returns null (all buffers busy)
+        var busyProvider = new BusyFrameProvider();
+        var memReader = new TestMemoryReader();
+        var statusProvider = new TestStatusProvider();
+        var renderer = new TestRenderer();
+        var frameGen = new FrameGenerator(busyProvider, memReader, statusProvider, renderer);
+
+        // Act
+        var snapshot = CreateTestSnapshot(statusProvider);
+        frameGen.RenderFrameFromSnapshot(snapshot);
+
+        // Assert - Renderer should NOT be called when no buffer available
+        Assert.Equal(0, renderer.RenderCount);
+        Assert.Equal(0, busyProvider.CommitCount);
+    }
+
+    [Fact]
+    public void RenderFrameFromSnapshot_BufferContention_HandlesGracefully()
+    {
+        // Arrange - Simulate buffer contention scenario
+        var fixture = new FrameGeneratorFixture();
+
+        // Act - Render many frames rapidly (simulating 60 FPS)
+        for (int i = 0; i < 100; i++)
+        {
+            var snapshot = CreateTestSnapshot(fixture.StatusProvider);
+            fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
+        }
+
+        // Assert - All frames should be processed (test provider never returns null)
+        Assert.Equal(100, fixture.Renderer.RenderCount);
+        Assert.Equal(100, fixture.FrameProvider.CommitCount);
+    }
+
+    [Fact]
+    public void RenderFrameFromSnapshot_CommitsBuffer_AfterRendering()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+        var snapshot = CreateTestSnapshot(fixture.StatusProvider);
+
+        // Act
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
+
+        // Assert - Buffer should be borrowed and committed
+        Assert.Equal(1, fixture.FrameProvider.BorrowCount);
+        Assert.Equal(1, fixture.FrameProvider.CommitCount);
+    }
+
+    [Fact]
+    public void RenderFrameFromSnapshot_RapidSequentialFrames_MaintainsCorrectCount()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+
+        // Act - Render 1000 frames rapidly (stress test)
+        for (int i = 0; i < 1000; i++)
+        {
+            var snapshot = CreateTestSnapshot(fixture.StatusProvider);
+            fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
+        }
+
+        // Assert
+        Assert.Equal(1000, fixture.FrameProvider.BorrowCount);
+        Assert.Equal(1000, fixture.Renderer.RenderCount);
+        Assert.Equal(1000, fixture.FrameProvider.CommitCount);
+    }
+
+    [Fact]
+    public void RenderFrameFromSnapshot_AlternatingDisplayModes_UpdatesMetadataCorrectly()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+
+        // Act & Assert - Alternate between text and graphics rapidly
+        for (int i = 0; i < 50; i++)
+        {
+            fixture.StatusProvider.StateTextMode = (i % 2 == 0);
+            fixture.StatusProvider.StateMixed = (i % 3 == 0);
+
+            var snapshot = CreateTestSnapshot(fixture.StatusProvider);
+            fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
+
+            Assert.Equal(!fixture.StatusProvider.StateTextMode, fixture.FrameProvider.IsGraphics);
+            Assert.Equal(fixture.StatusProvider.StateMixed, fixture.FrameProvider.IsMixed);
+        }
+    }
+
+    [Fact]
+    public void RenderFrameFromSnapshot_FrameProviderFiresEvent_OnCommit()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+        int eventCount = 0;
+        fixture.FrameProvider.FrameAvailable += (sender, args) => eventCount++;
+
+        // Act - Render 5 frames
+        for (int i = 0; i < 5; i++)
+        {
+            var snapshot = CreateTestSnapshot(fixture.StatusProvider);
+            fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
+        }
+
+        // Assert - Event should fire for each frame
+        Assert.Equal(5, eventCount);
+    }
+
+    [Fact]
+    public void RenderFrameFromSnapshot_BorrowsOneBufferPerFrame()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+
+        // Act - Render single frame
+        var snapshot = CreateTestSnapshot(fixture.StatusProvider);
+        fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
+
+        // Assert - Should borrow exactly once
+        Assert.Equal(1, fixture.FrameProvider.BorrowCount);
+    }
+
+    private class BusyFrameProvider : IFrameProvider
+    {
+        public int Width => 560;
+        public int Height => 192;
+        public bool IsGraphics { get; set; }
+        public bool IsMixed { get; set; }
+        public int CommitCount { get; private set; }
+        public event EventHandler? FrameAvailable;
+
+        public BitmapDataArray GetFrame() => new BitmapDataArray();
+        public BitmapDataArray? BorrowWritable() => null; // Always busy
+        public void CommitWritable(BitmapDataArray renderedBuffer)
+        {
+            CommitCount++;
+            FrameAvailable?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    #endregion
+
+    #region SnapshotMemoryReader Tests (8 tests)
+
+    [Fact]
+    public void SnapshotMemoryReader_ReadRawMain_WithinRange_ReturnsValue()
+    {
+        // Arrange
+        var snapshot = new VideoMemorySnapshot
+        {
+            SoftSwitches = new SystemStatusSnapshot(
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, 0, 0, 0, 0, 0, 1.023)
+        };
+        snapshot.MainRam[0x0400] = 0x42;
+        snapshot.MainRam[0x2000] = 0x43;
+        snapshot.MainRam[0xBFFF] = 0x44;
+
+        var reader = new SnapshotMemoryReader(snapshot);
+
+        // Act & Assert
+        Assert.Equal(0x42, reader.ReadRawMain(0x0400));
+        Assert.Equal(0x43, reader.ReadRawMain(0x2000));
+        Assert.Equal(0x44, reader.ReadRawMain(0xBFFF));
+    }
+
+    [Fact]
+    public void SnapshotMemoryReader_ReadRawAux_WithinRange_ReturnsValue()
+    {
+        // Arrange
+        var snapshot = new VideoMemorySnapshot
+        {
+            SoftSwitches = new SystemStatusSnapshot(
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, 0, 0, 0, 0, 0, 1.023)
+        };
+        snapshot.AuxRam[0x0400] = 0x52;
+        snapshot.AuxRam[0x2000] = 0x53;
+        snapshot.AuxRam[0xBFFF] = 0x54;
+
+        var reader = new SnapshotMemoryReader(snapshot);
+
+        // Act & Assert
+        Assert.Equal(0x52, reader.ReadRawAux(0x0400));
+        Assert.Equal(0x53, reader.ReadRawAux(0x2000));
+        Assert.Equal(0x54, reader.ReadRawAux(0xBFFF));
+    }
+
+    [Fact]
+    public void SnapshotMemoryReader_ReadRawMain_OutsideRange_ReturnsZero()
+    {
+        // Arrange
+        var snapshot = new VideoMemorySnapshot
+        {
+            SoftSwitches = new SystemStatusSnapshot(
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, 0, 0, 0, 0, 0, 1.023)
+        };
+
+        var reader = new SnapshotMemoryReader(snapshot);
+
+        // Act & Assert - Addresses outside 48KB range
+        Assert.Equal(0x00, reader.ReadRawMain(-1));
+        Assert.Equal(0x00, reader.ReadRawMain(0xC000));
+        Assert.Equal(0x00, reader.ReadRawMain(0xC100));
+        Assert.Equal(0x00, reader.ReadRawMain(0xFFFF));
+    }
+
+    [Fact]
+    public void SnapshotMemoryReader_ReadRawAux_OutsideRange_ReturnsZero()
+    {
+        // Arrange
+        var snapshot = new VideoMemorySnapshot
+        {
+            SoftSwitches = new SystemStatusSnapshot(
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, 0, 0, 0, 0, 0, 1.023)
+        };
+
+        var reader = new SnapshotMemoryReader(snapshot);
+
+        // Act & Assert - Addresses outside 48KB range
+        Assert.Equal(0x00, reader.ReadRawAux(-1));
+        Assert.Equal(0x00, reader.ReadRawAux(0xC000));
+        Assert.Equal(0x00, reader.ReadRawAux(0xC100));
+        Assert.Equal(0x00, reader.ReadRawAux(0xFFFF));
+    }
+
+    [Fact]
+    public void SnapshotMemoryReader_BoundaryAddresses_Main()
+    {
+        // Arrange
+        var snapshot = new VideoMemorySnapshot
+        {
+            SoftSwitches = new SystemStatusSnapshot(
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, 0, 0, 0, 0, 0, 1.023)
+        };
+        snapshot.MainRam[0x0000] = 0xAA;
+        snapshot.MainRam[0xBFFF] = 0xBB;
+
+        var reader = new SnapshotMemoryReader(snapshot);
+
+        // Act & Assert - Boundary addresses
+        Assert.Equal(0xAA, reader.ReadRawMain(0x0000));
+        Assert.Equal(0xBB, reader.ReadRawMain(0xBFFF));
+        Assert.Equal(0x00, reader.ReadRawMain(0xC000)); // Just outside
+    }
+
+    [Fact]
+    public void SnapshotMemoryReader_BoundaryAddresses_Aux()
+    {
+        // Arrange
+        var snapshot = new VideoMemorySnapshot
+        {
+            SoftSwitches = new SystemStatusSnapshot(
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, 0, 0, 0, 0, 0, 1.023)
+        };
+        snapshot.AuxRam[0x0000] = 0xCC;
+        snapshot.AuxRam[0xBFFF] = 0xDD;
+
+        var reader = new SnapshotMemoryReader(snapshot);
+
+        // Act & Assert - Boundary addresses
+        Assert.Equal(0xCC, reader.ReadRawAux(0x0000));
+        Assert.Equal(0xDD, reader.ReadRawAux(0xBFFF));
+        Assert.Equal(0x00, reader.ReadRawAux(0xC000)); // Just outside
+    }
+
+    [Fact]
+    public void SnapshotMemoryReader_TextPageAddresses_AccessCorrectly()
+    {
+        // Arrange
+        var snapshot = new VideoMemorySnapshot
+        {
+            SoftSwitches = new SystemStatusSnapshot(
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, 0, 0, 0, 0, 0, 1.023)
+        };
+        // Text Page 1: $0400-$07FF
+        snapshot.MainRam[0x0400] = 0x41; // 'A'
+        snapshot.MainRam[0x07FF] = 0x5A; // 'Z'
+        // Text Page 2: $0800-$0BFF
+        snapshot.MainRam[0x0800] = 0x42; // 'B'
+        snapshot.MainRam[0x0BFF] = 0x59; // 'Y'
+
+        var reader = new SnapshotMemoryReader(snapshot);
+
+        // Act & Assert - Text pages accessible
+        Assert.Equal(0x41, reader.ReadRawMain(0x0400));
+        Assert.Equal(0x5A, reader.ReadRawMain(0x07FF));
+        Assert.Equal(0x42, reader.ReadRawMain(0x0800));
+        Assert.Equal(0x59, reader.ReadRawMain(0x0BFF));
+    }
+
+    [Fact]
+    public void SnapshotMemoryReader_HiResPageAddresses_AccessCorrectly()
+    {
+        // Arrange
+        var snapshot = new VideoMemorySnapshot
+        {
+            SoftSwitches = new SystemStatusSnapshot(
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, false, false,
+                false, false, false, false, false, 0, 0, 0, 0, 0, 1.023)
+        };
+        // Hi-Res Page 1: $2000-$3FFF
+        snapshot.MainRam[0x2000] = 0xAA;
+        snapshot.MainRam[0x3FFF] = 0xBB;
+        // Hi-Res Page 2: $4000-$5FFF
+        snapshot.MainRam[0x4000] = 0xCC;
+        snapshot.MainRam[0x5FFF] = 0xDD;
+
+        var reader = new SnapshotMemoryReader(snapshot);
+
+        // Act & Assert - Hi-res pages accessible
+        Assert.Equal(0xAA, reader.ReadRawMain(0x2000));
+        Assert.Equal(0xBB, reader.ReadRawMain(0x3FFF));
+        Assert.Equal(0xCC, reader.ReadRawMain(0x4000));
+        Assert.Equal(0xDD, reader.ReadRawMain(0x5FFF));
+    }
+
+    #endregion
+
+    #region SnapshotStatusProvider Tests (6 tests)
+
+    [Fact]
+    public void SnapshotStatusProvider_ReturnsSnapshotValues()
+    {
+        // Arrange
+        var snapshot = new SystemStatusSnapshot(
+            State80Store: true,
+            StateRamRd: true,
+            StateRamWrt: false,
+            StateIntCxRom: true,
+            StateIntC8Rom: false,
+            StateAltZp: true,
+            StateSlotC3Rom: false,
+            StatePb0: true,
+            StatePb1: false,
+            StatePb2: true,
+            StateAnn0: false,
+            StateAnn1: true,
+            StateAnn2: false,
+            StateAnn3_DGR: true,
+            StatePage2: false,
+            StateHiRes: true,
+            StateMixed: false,
+            StateTextMode: true,
+            StateShow80Col: false,
+            StateAltCharSet: true,
+            StateFlashOn: false,
+            StatePrewrite: true,
+            StateUseBank1: false,
+            StateHighRead: true,
+            StateHighWrite: false,
+            StateVBlank: true,
+            StatePdl0: 128,
+            StatePdl1: 64,
+            StatePdl2: 192,
+            StatePdl3: 32,
+            StateIntC8RomSlot: 7,
+            StateCurrentMhz: 2.046
+        );
+
+        var provider = new SnapshotStatusProvider(snapshot);
+
+        // Act & Assert - All properties return snapshot values
+        Assert.True(provider.State80Store);
+        Assert.True(provider.StateRamRd);
+        Assert.False(provider.StateRamWrt);
+        Assert.True(provider.StateIntCxRom);
+        Assert.False(provider.StateIntC8Rom);
+        Assert.True(provider.StateAltZp);
+        Assert.False(provider.StateSlotC3Rom);
+        Assert.True(provider.StatePb0);
+        Assert.False(provider.StatePb1);
+        Assert.True(provider.StatePb2);
+        Assert.False(provider.StateAnn0);
+        Assert.True(provider.StateAnn1);
+        Assert.False(provider.StateAnn2);
+        Assert.True(provider.StateAnn3_DGR);
+        Assert.False(provider.StatePage2);
+        Assert.True(provider.StateHiRes);
+        Assert.False(provider.StateMixed);
+        Assert.True(provider.StateTextMode);
+        Assert.False(provider.StateShow80Col);
+        Assert.True(provider.StateAltCharSet);
+        Assert.False(provider.StateFlashOn);
+        Assert.False(provider.StateUseBank1);
+        Assert.True(provider.StateHighRead);
+        Assert.False(provider.StateHighWrite);
+        Assert.True(provider.StateVBlank);
+        // Paddle values are not captured in snapshots (not needed for rendering)
+        Assert.Equal(0, provider.Pdl0);
+        Assert.Equal(0, provider.Pdl1);
+        Assert.Equal(0, provider.Pdl2);
+        Assert.Equal(0, provider.Pdl3);
+        Assert.Equal(7, provider.StateIntC8RomSlot);
+        Assert.Equal(2.046, provider.StateCurrentMhz);
+    }
+
+    [Fact]
+    public void SnapshotStatusProvider_CurrentProperty_ReturnsSameSnapshot()
+    {
+        // Arrange
+        var snapshot = new SystemStatusSnapshot(
+            false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false,
+            false, false, false, true, false, false, false,
+            false, false, false, false, false, 0, 0, 0, 0, 0, 1.5
+        );
+
+        var provider = new SnapshotStatusProvider(snapshot);
+
+        // Act & Assert
+        Assert.Same(snapshot, provider.Current);
+    }
+
+    [Fact]
+    public void SnapshotStatusProvider_NonRenderingProperties_ReturnDefaults()
+    {
+        // Arrange
+        var snapshot = new SystemStatusSnapshot(
+            false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false,
+            false, false, false, false, false, 0, 0, 0, 0, 0, 1.023
+        );
+
+        var provider = new SnapshotStatusProvider(snapshot);
+
+        // Act & Assert - Properties not in snapshot return defaults
+        Assert.False(provider.StatePreWrite);
+    }
+
+    [Fact]
+    public void SnapshotStatusProvider_StreamProperty_ThrowsNotSupportedException()
+    {
+        // Arrange
+        var snapshot = new SystemStatusSnapshot(
+            false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false,
+            false, false, false, false, false, 0, 0, 0, 0, 0, 1.023
+        );
+
+        var provider = new SnapshotStatusProvider(snapshot);
+
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(() => _ = provider.Stream);
+    }
+
+    [Fact]
+    public void SnapshotStatusProvider_Mutate_ThrowsNotSupportedException()
+    {
+        // Arrange
+        var snapshot = new SystemStatusSnapshot(
+            false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false,
+            false, false, false, false, false, 0, 0, 0, 0, 0, 1.023
+        );
+
+        var provider = new SnapshotStatusProvider(snapshot);
+
+        // Act & Assert
+        Assert.Throws<NotSupportedException>(() =>
+            provider.Mutate(builder => builder.StateTextMode = true));
+    }
+
+    [Fact]
+    public void SnapshotStatusProvider_Events_NoOp()
+    {
+        // Arrange
+        var snapshot = new SystemStatusSnapshot(
+            false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false,
+            false, false, false, false, false, 0, 0, 0, 0, 0, 1.023
+        );
+
+        var provider = new SnapshotStatusProvider(snapshot);
+
+        // Act & Assert - Adding/removing event handlers should not throw
+        EventHandler<SystemStatusSnapshot>? handler = (sender, args) => { };
+        provider.Changed += handler;
+        provider.Changed -= handler;
+        provider.MemoryMappingChanged += handler;
+        provider.MemoryMappingChanged -= handler;
+    }
+
+    #endregion
+
+    #region Legacy API Tests (2 tests)
+
+    [Fact]
+    public void AllocateRenderContext_ReturnsValidContext()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+
+        // Act
+        var context = fixture.FrameGenerator.AllocateRenderContext();
+
+        // Assert
+        Assert.NotNull(context);
+        Assert.NotNull(context.FrameBuffer);
+        Assert.Equal(1, fixture.FrameProvider.BorrowCount);
+    }
+
+    [Fact]
+    public void RenderFrame_ThrowsNotSupportedException()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+        var context = fixture.FrameGenerator.AllocateRenderContext();
+
+        // Act & Assert - Legacy method not supported
+        Assert.Throws<NotSupportedException>(() =>
+            fixture.FrameGenerator.RenderFrame(context));
+    }
+
+    #endregion
+
+    #region Stress and Edge Case Tests (2 tests)
+
+    [Fact]
+    public void RenderFrameFromSnapshot_LargeSequence_MaintainsStability()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+
+        // Act - Render equivalent to 1 minute at 60 FPS (3600 frames)
+        for (int i = 0; i < 3600; i++)
+        {
+            // Vary display modes throughout
+            fixture.StatusProvider.StateTextMode = (i % 10 < 3);
+            fixture.StatusProvider.StateMixed = (i % 15 < 5);
+            fixture.StatusProvider.StateHiRes = (i % 20 < 10);
+
+            var snapshot = CreateTestSnapshot(fixture.StatusProvider);
+            fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
+        }
+
+        // Assert
+        Assert.Equal(3600, fixture.Renderer.RenderCount);
+        Assert.Equal(3600, fixture.FrameProvider.CommitCount);
+    }
+
+    [Fact]
+    public void RenderFrameFromSnapshot_AllDisplayModeCombinations_HandlesCorrectly()
+    {
+        // Arrange
+        var fixture = new FrameGeneratorFixture();
+        var combinations = new[]
+        {
+            (TextMode: true, Mixed: false, Expected: (IsGraphics: false, IsMixed: false)),
+            (TextMode: false, Mixed: false, Expected: (IsGraphics: true, IsMixed: false)),
+            (TextMode: true, Mixed: true, Expected: (IsGraphics: false, IsMixed: true)),
+            (TextMode: false, Mixed: true, Expected: (IsGraphics: true, IsMixed: true))
+        };
+
+        // Act & Assert - Test all combinations
+        foreach (var combo in combinations)
+        {
+            fixture.StatusProvider.StateTextMode = combo.TextMode;
+            fixture.StatusProvider.StateMixed = combo.Mixed;
+
+            var snapshot = CreateTestSnapshot(fixture.StatusProvider);
+            fixture.FrameGenerator.RenderFrameFromSnapshot(snapshot);
+
+            Assert.Equal(combo.Expected.IsGraphics, fixture.FrameProvider.IsGraphics);
+            Assert.Equal(combo.Expected.IsMixed, fixture.FrameProvider.IsMixed);
+        }
+    }
+
+    #endregion
 }

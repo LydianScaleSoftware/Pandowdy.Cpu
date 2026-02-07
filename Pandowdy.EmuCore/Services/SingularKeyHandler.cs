@@ -194,7 +194,7 @@ public class SingularKeyHandler : IKeyboardReader, IKeyboardSetter
         /// <strong>Example:</strong>
         /// <code>
         /// // Before reset: _key = 0xC1 ('A' with strobe set)
-        /// Reset();
+        /// ResetKeyboard();
         /// // After reset: _key = 0x41 ('A' with strobe cleared)
         /// </code>
         /// </para>
@@ -203,7 +203,7 @@ public class SingularKeyHandler : IKeyboardReader, IKeyboardSetter
         /// (strobe cleared). Subsequent reads of $C000 will return the key value without the strobe bit set.
         /// </para>
         /// </remarks>
-        public void Reset()
+        public void ResetKeyboard()
         {
             _key &= 0x7F; // Clear strobe bit, preserve low 7 bits
         }

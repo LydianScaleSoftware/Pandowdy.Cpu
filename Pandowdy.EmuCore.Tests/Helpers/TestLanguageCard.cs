@@ -31,20 +31,16 @@ public sealed class TestLanguageCard : ILanguageCard
     /// Returns 0xFF for all reads (unmapped memory behavior).
     /// </summary>
     public byte Read(ushort address) => 0xFF;
-    
+
+    /// <summary>
+    /// Returns 0xFF for peek (same as Read for unmapped memory).
+    /// </summary>
+    public byte Peek(ushort address) => 0xFF;
+
     /// <summary>
     /// Ignores all writes (no-op).
     /// </summary>
     public void Write(ushort address, byte value) { /* No-op */ }
-    
-    /// <summary>
-    /// Indexer that returns 0xFF for reads and ignores writes.
-    /// </summary>
-    public byte this[ushort address]
-    {
-        get => 0xFF;
-        set { /* No-op */ }
-    }
 }
 
 /// <summary>
@@ -55,17 +51,13 @@ public sealed class TestSystemRam(int size) : ISystemRam
     private readonly byte[] _memory = new byte[size];
 
     public int Size => _memory.Length;
-    
+
     public byte Read(ushort address) => _memory[address];
-    
+
+    public byte Peek(ushort address) => _memory[address];
+
     public void Write(ushort address, byte value) => _memory[address] = value;
-    
-    public byte this[ushort address]
-    {
-        get => _memory[address];
-        set => _memory[address] = value;
-    }
-    
+
     public void CopyIntoSpan(Span<byte> destination)
     {
         _memory.AsSpan().CopyTo(destination);
@@ -80,17 +72,13 @@ public sealed class TestSystemRomProvider(int size) : ISystemRomProvider
     private readonly byte[] _memory = new byte[size];
 
     public int Size => _memory.Length;
-    
+
     public byte Read(ushort address) => _memory[address];
-    
+
+    public byte Peek(ushort address) => _memory[address];
+
     public void Write(ushort address, byte value) => _memory[address] = value;
-    
-    public byte this[ushort address]
-    {
-        get => _memory[address];
-        set => _memory[address] = value;
-    }
-    
+
     public void LoadRomFile(string filename)
     {
         throw new NotImplementedException("LoadRomFile not needed for tests");
@@ -118,13 +106,9 @@ public sealed class TestSystemRamSelector : ISystemRamSelector
 
     public byte Read(ushort address) => 0xFF;
 
-    public void Write(ushort address, byte value) { /* No-op */ }
+    public byte Peek(ushort address) => 0xFF;
 
-    public byte this[ushort address]
-    {
-        get => 0xFF;
-        set { /* No-op */ }
-    }
+    public void Write(ushort address, byte value) { /* No-op */ }
 
     public byte ReadRawMain(int address) => 0xFF;
 
@@ -147,12 +131,8 @@ public sealed class Test64KSystemRamSelector : ISystemRamSelector
     private byte[] data = new byte[0xC000];
     public int Size => 0xC000;
     public byte Read(ushort address) => data[address];
+    public byte Peek(ushort address) => data[address];
     public void Write(ushort address, byte value) { data[address] = value; }
-    public byte this[ushort address]
-    {
-        get => Read(address);
-        set => Write(address, value);
-    }
     public byte ReadRawMain(int address) => Read((ushort)(address & 0xffff));
 
     public byte ReadRawAux(int address) => Read((ushort)(address & 0xffff));

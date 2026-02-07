@@ -103,7 +103,7 @@ public sealed class MemoryInspector(
                 int ownerSlot = _status.StateIntC8RomSlot;
                 if (ownerSlot >= 1 && ownerSlot <= 7)
                 {
-                    var card = _slots.GetCardIn((SlotNumber)(ownerSlot - 1));
+                    var card = _slots.GetCardIn((SlotNumber)(ownerSlot));
                     if (card.Id != 0)
                     {
                         // Use direct ROM read - offset is $C800-$CFFF → 0x000-0x7FF
@@ -156,7 +156,7 @@ public sealed class MemoryInspector(
             int slot = (address >> 8) & 0x07; // Extract slot number from address
             if (slot >= 1 && slot <= 7)
             {
-                var card = _slots.GetCardIn((SlotNumber)(slot - 1));
+                var card = _slots.GetCardIn((SlotNumber)(slot));
                 if (card.Id != 0)
                 {
                     var value = card.ReadRom((byte)(address & 0xFF));
@@ -195,7 +195,7 @@ public sealed class MemoryInspector(
         }
 
         // Read directly from the card to avoid any side effects
-        var card = _slots.GetCardIn((SlotNumber)(slot - 1));
+        var card = _slots.GetCardIn((SlotNumber)(slot));
 
         // If slot is empty, return 0
         if (card.Id == 0)
@@ -228,7 +228,7 @@ public sealed class MemoryInspector(
         }
 
         // Read directly from the card to avoid any side effects
-        var card = _slots.GetCardIn((SlotNumber)(slot - 1));
+        var card = _slots.GetCardIn((SlotNumber)(slot));
 
         // If slot is empty, return 0
         if (card.Id == 0)

@@ -50,8 +50,8 @@ public class SystemRomProviderTests
         Assert.NotNull(rom);
         Assert.Equal(RomSize, rom.Size);
         // Verify ROM contains expected reset vector at end (offset 0x3FFC-0x3FFD = $FFFC-$FFFD)
-        byte vectorLo = rom[0x3FFC]; // $FFFC
-        byte vectorHigh = rom[0x3FFD]; // $FFFD
+        byte vectorLo = rom.Read(0x3FFC); // $FFFC
+        byte vectorHigh = rom.Read(0x3FFD); // $FFFD
         // Reset vector should point into Monitor/BASIC ROM area ($C000+)
         ushort resetVector = (ushort)(vectorLo | (vectorHigh << 8));
         Assert.True(resetVector >= 0xC000, $"Reset vector should be >= $C000, was ${resetVector:X4}");
@@ -292,39 +292,6 @@ public class SystemRomProviderTests
 
     #endregion
 
-    #region Indexer Tests
-
-    [Fact]
-    public void Indexer_Get_ReadsValue()
-    {
-        // Arrange
-        string romPath = GetTestRomPath("valid16kb.rom");
-        var rom = new SystemRomProvider(romPath);
-
-        // Act
-        byte value = rom[0x0500];
-
-        // Assert - 0x0500 % 255 = 5
-        Assert.Equal(0x05, value);
-    }
-
-    [Fact]
-    public void Indexer_Set_IsNoOp()
-    {
-        // Arrange
-        string romPath = GetTestRomPath("valid16kb.rom");
-        var rom = new SystemRomProvider(romPath);
-        byte originalValue = rom[0x0500];
-
-        // Act
-        rom[0x0500] = 0xBB;
-
-        // Assert - ROM unchanged
-        Assert.Equal(originalValue, rom[0x0500]);
-    }
-
-    #endregion
-
     #region LoadRomFile Tests (Interface Method)
 
     [Fact]
@@ -391,8 +358,8 @@ public class SystemRomProviderTests
         var rom = new SystemRomProvider(romPath);
 
         // Act - Read reset vector location
-        byte vectorLo = rom[0x3FFC];   // $FFFC in ROM space (offset 0x3FFC)
-        byte vectorHigh = rom[0x3FFD];  // $FFFD in ROM space (offset 0x3FFD)
+        byte vectorLo = rom.Read(0x3FFC);   // $FFFC in ROM space (offset 0x3FFC)
+        byte vectorHigh = rom.Read(0x3FFD);  // $FFFD in ROM space (offset 0x3FFD)
 
         // Assert - Verify pattern (0x3FFC % 255 = 60 = 0x3C, 0x3FFD % 255 = 61 = 0x3D)
         Assert.Equal(0x3C, vectorLo);   // 16380 % 255 = 60 = 0x3C
@@ -408,7 +375,7 @@ public class SystemRomProviderTests
 
         // Act & Assert - Monitor ROM area ($D000 = offset 0x1000)
         // Should start with 0x10 (0x1000 % 255 = 16 = 0x10)
-        byte value = rom[0x1000];
+        byte value = rom.Read(0x1000);
         Assert.Equal(0x10, value);
     }
 
@@ -423,17 +390,17 @@ public class SystemRomProviderTests
         // Each page should have unique starting value for error detection
         
         // $D000 -> ROM offset 0x1000 (page 0x10)
-        Assert.Equal(0x10, rom[0x1000]);
+        Assert.Equal(0x10, rom.Read(0x1000));
         
         // $E000 -> ROM offset 0x2000 (page 0x20)
-        Assert.Equal(0x20, rom[0x2000]);
+        Assert.Equal(0x20, rom.Read(0x2000));
         
         // $FFFF -> ROM offset 0x3FFF (0x3FFF % 255 = 63 = 0x3F)
-        Assert.Equal(0x3F, rom[0x3FFF]);
+        Assert.Equal(0x3F, rom.Read(0x3FFF));
         
         // Verify different pages have different values
-        Assert.NotEqual(rom[0x1000], rom[0x2000]);
-        Assert.NotEqual(rom[0x2000], rom[0x3000]);
+        Assert.NotEqual(rom.Read(0x1000), rom.Read(0x2000));
+        Assert.NotEqual(rom.Read(0x2000), rom.Read(0x3000));
     }
 
     #endregion

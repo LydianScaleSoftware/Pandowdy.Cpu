@@ -416,7 +416,7 @@ public sealed class QueuedKeyHandler : IKeyboardReader, IKeyboardSetter, IDispos
         /// from being injected into the freshly reset system.
         /// </para>
         /// </remarks>
-        public void Reset()
+        public void ResetKeyboard()
         {
             lock (_lock)
             {

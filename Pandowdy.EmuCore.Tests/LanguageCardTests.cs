@@ -39,15 +39,11 @@ public class LanguageCardTests
 
         public int Size => _memory.Size;
 
-        public byte this[ushort address]
-        {
-            get => _memory[address];
-            set => _memory[address] = value;
-        }
+        public byte Read(ushort address) => _memory.Read(address);
 
-        public byte Read(ushort address) => _memory[address];
+        public byte Peek(ushort address) => _memory.Peek(address);
 
-        public void Write(ushort address, byte value) => _memory[address] = value;
+        public void Write(ushort address, byte value) => _memory.Write(address, value);
 
         public void LoadRomFile(string filename)
         {
@@ -270,7 +266,7 @@ public class LanguageCardTests
         // Arrange
         var fixture = new TestFixture();
         fixture.Status.StateHighRead = false;
-        fixture.SystemRom[0x1000] = 0x4C; // JMP instruction at ROM offset 0x1000 ($D000)
+        fixture.SystemRom.Write(0x1000, 0x4C); // JMP instruction at ROM offset 0x1000 ($D000)
         var lc = fixture.CreateLanguageCard();
 
         // Act
@@ -286,8 +282,8 @@ public class LanguageCardTests
         // Arrange
         var fixture = new TestFixture();
         fixture.Status.StateHighRead = false;
-        fixture.MainRam[0x1000] = 0xAA; // Bank 2 $D000 position in RAM
-        fixture.SystemRom[0x1000] = 0xBB; // ROM offset 0x1000 ($D000 position)
+        fixture.MainRam.Write(0x1000, 0xAA); // Bank 2 $D000 position in RAM
+        fixture.SystemRom.Write(0x1000, 0xBB); // ROM offset 0x1000 ($D000 position)
         var lc = fixture.CreateLanguageCard();
 
         // Act
@@ -309,7 +305,7 @@ public class LanguageCardTests
         // Arrange
         var fixture = new TestFixture();
         fixture.Status.StateHighRead = false;
-        fixture.SystemRom[romOffset] = 0x42;
+        fixture.SystemRom.Write(romOffset, 0x42);
         var lc = fixture.CreateLanguageCard();
 
         // Act
@@ -330,7 +326,7 @@ public class LanguageCardTests
         var fixture = new TestFixture();
         fixture.Status.StateHighRead = true;
         fixture.Status.StateRamRd = false; // Main RAM
-        fixture.MainRam[0x1000] = 0x60; // RTS at Bank 2 $D000 position
+        fixture.MainRam.Write(0x1000, 0x60); // RTS at Bank 2 $D000 position
         var lc = fixture.CreateLanguageCard();
 
         // Act
@@ -350,9 +346,9 @@ public class LanguageCardTests
         fixture.Status.StateUseBank1 = false; // Bank 2
         
         // Bank 2: $D000-$FFFF maps to $1000-$3FFF (12KB contiguous)
-        fixture.MainRam[0x1000] = 0xAA; // $D000
-        fixture.MainRam[0x2000] = 0xBB; // $E000
-        fixture.MainRam[0x3FFF] = 0xCC; // $FFFF
+        fixture.MainRam.Write(0x1000, 0xAA); // $D000
+        fixture.MainRam.Write(0x2000, 0xBB); // $E000
+        fixture.MainRam.Write(0x3FFF, 0xCC); // $FFFF
         
         var lc = fixture.CreateLanguageCard();
 
@@ -372,10 +368,10 @@ public class LanguageCardTests
         fixture.Status.StateUseBank1 = true; // Bank 1
         
         // Bank 1: $D000-$DFFF maps to $0000-$0FFF, $E000-$FFFF maps to $2000-$3FFF
-        fixture.MainRam[0x0000] = 0xDD; // $D000
-        fixture.MainRam[0x0FFF] = 0xEE; // $DFFF
-        fixture.MainRam[0x2000] = 0xFF; // $E000
-        fixture.MainRam[0x3FFF] = 0x11; // $FFFF
+        fixture.MainRam.Write(0x0000, 0xDD); // $D000
+        fixture.MainRam.Write(0x0FFF, 0xEE); // $DFFF
+        fixture.MainRam.Write(0x2000, 0xFF); // $E000
+        fixture.MainRam.Write(0x3FFF, 0x11); // $FFFF
         
         var lc = fixture.CreateLanguageCard();
 
@@ -397,7 +393,7 @@ public class LanguageCardTests
         
         // The gap at $1000-$1FFF should not be accessed
         // Verify that $D000-$DFFF maps to $0000-$0FFF (not $1000-$1FFF)
-        fixture.MainRam[0x0500] = 0x42;
+        fixture.MainRam.Write(0x0500, 0x42);
         
         var lc = fixture.CreateLanguageCard();
 
@@ -419,7 +415,7 @@ public class LanguageCardTests
         var fixture = new TestFixture();
         fixture.Status.StateHighRead = true;
         fixture.Status.StateAltZp = true; // Aux RAM
-        fixture.AuxRam[0x1000] = 0x77;
+        fixture.AuxRam.Write(0x1000, 0x77);
         var lc = fixture.CreateLanguageCard();
 
         // Act
@@ -436,8 +432,8 @@ public class LanguageCardTests
         var fixture = new TestFixture();
         fixture.Status.StateHighRead = true;
         fixture.Status.StateAltZp = true;
-        fixture.MainRam[0x1000] = 0xAA;
-        fixture.AuxRam[0x1000] = 0xBB;
+        fixture.MainRam.Write(0x1000, 0xAA);
+        fixture.AuxRam.Write(0x1000, 0xBB);
         var lc = fixture.CreateLanguageCard();
 
         // Act
@@ -475,14 +471,14 @@ public class LanguageCardTests
         // Arrange
         var fixture = new TestFixture();
         fixture.Status.StateHighWrite = false;
-        fixture.MainRam[0x1000] = 0x00;
+        fixture.MainRam.Write(0x1000, 0x00);
         var lc = fixture.CreateLanguageCard();
 
         // Act
         lc.Write(0xD000, 0x42);
 
         // Assert
-        Assert.Equal(0x00, fixture.MainRam[0x1000]); // Should remain unchanged
+        Assert.Equal(0x00, fixture.MainRam.Read(0x1000)); // Should remain unchanged
     }
 
     [Fact]
@@ -491,14 +487,14 @@ public class LanguageCardTests
         // Arrange
         var fixture = new TestFixture();
         fixture.Status.StateHighWrite = false;
-        fixture.SystemRom[0x0000] = 0xFF;
+        fixture.SystemRom.Write(0x0000, 0xFF);
         var lc = fixture.CreateLanguageCard();
 
         // Act
         lc.Write(0xD000, 0x00);
 
         // Assert
-        Assert.Equal(0xFF, fixture.SystemRom[0x0000]); // ROM unchanged
+        Assert.Equal(0xFF, fixture.SystemRom.Read(0x0000)); // ROM unchanged
     }
 
     #endregion
@@ -518,7 +514,7 @@ public class LanguageCardTests
         lc.Write(0xD000, 0x42);
 
         // Assert
-        Assert.Equal(0x42, fixture.MainRam[0x1000]); // Bank 2 $D000 position
+        Assert.Equal(0x42, fixture.MainRam.Read(0x1000)); // Bank 2 $D000 position
     }
 
     [Fact]
@@ -537,9 +533,9 @@ public class LanguageCardTests
         lc.Write(0xFFFF, 0xCC);
 
         // Assert
-        Assert.Equal(0xAA, fixture.MainRam[0x1000]);
-        Assert.Equal(0xBB, fixture.MainRam[0x2000]);
-        Assert.Equal(0xCC, fixture.MainRam[0x3FFF]);
+        Assert.Equal(0xAA, fixture.MainRam.Read(0x1000));
+        Assert.Equal(0xBB, fixture.MainRam.Read(0x2000));
+        Assert.Equal(0xCC, fixture.MainRam.Read(0x3FFF));
     }
 
     [Fact]
@@ -559,10 +555,10 @@ public class LanguageCardTests
         lc.Write(0xFFFF, 0x11);
 
         // Assert
-        Assert.Equal(0xDD, fixture.MainRam[0x0000]);
-        Assert.Equal(0xEE, fixture.MainRam[0x0FFF]);
-        Assert.Equal(0xFF, fixture.MainRam[0x2000]);
-        Assert.Equal(0x11, fixture.MainRam[0x3FFF]);
+        Assert.Equal(0xDD, fixture.MainRam.Read(0x0000));
+        Assert.Equal(0xEE, fixture.MainRam.Read(0x0FFF));
+        Assert.Equal(0xFF, fixture.MainRam.Read(0x2000));
+        Assert.Equal(0x11, fixture.MainRam.Read(0x3FFF));
     }
 
     #endregion
@@ -582,8 +578,8 @@ public class LanguageCardTests
         lc.Write(0xD000, 0x77);
 
         // Assert
-        Assert.Equal(0x77, fixture.AuxRam[0x1000]);
-        Assert.Equal(0x00, fixture.MainRam[0x1000]); // Main unchanged
+        Assert.Equal(0x77, fixture.AuxRam.Read(0x1000));
+        Assert.Equal(0x00, fixture.MainRam.Read(0x1000)); // Main unchanged
     }
 
     [Fact]
@@ -599,44 +595,12 @@ public class LanguageCardTests
         lc.Write(0xD000, 0x42);
 
         // Assert - Main RAM should remain unchanged
-        Assert.Equal(0x00, fixture.MainRam[0x1000]);
+        Assert.Equal(0x00, fixture.MainRam.Read(0x1000));
     }
 
     #endregion
 
     #region Indexer Tests
-
-    [Fact]
-    public void Indexer_Get_CallsRead()
-    {
-        // Arrange
-        var fixture = new TestFixture();
-        fixture.Status.StateHighRead = false;
-        fixture.SystemRom[0x1000] = 0x4C; // ROM offset 0x1000 ($D000)
-        var lc = fixture.CreateLanguageCard();
-
-        // Act
-        byte value = lc[0xD000];
-
-        // Assert
-        Assert.Equal(0x4C, value);
-    }
-
-    [Fact]
-    public void Indexer_Set_CallsWrite()
-    {
-        // Arrange
-        var fixture = new TestFixture();
-        fixture.Status.StateHighWrite = true;
-        fixture.Status.StateRamWrt = false;
-        var lc = fixture.CreateLanguageCard();
-
-        // Act
-        lc[0xD000] = 0x42;
-
-        // Assert
-        Assert.Equal(0x42, fixture.MainRam[0x1000]);
-    }
 
     #endregion
 
@@ -690,7 +654,7 @@ public class LanguageCardTests
         fixture.Status.StateHighRead = false; // Read ROM
         fixture.Status.StateHighWrite = true;  // Write RAM
         fixture.Status.StateRamWrt = false;
-        fixture.SystemRom[0x1100] = 0x4C; // ROM offset 0x1100 ($D100)
+        fixture.SystemRom.Write(0x1100, 0x4C); // ROM offset 0x1100 ($D100)
         var lc = fixture.CreateLanguageCard();
 
         // Act - Read from ROM, write to RAM
@@ -699,7 +663,7 @@ public class LanguageCardTests
 
         // Assert
         Assert.Equal(0x4C, romValue);
-        Assert.Equal(0x4C, fixture.MainRam[0x1100]); // Copied to RAM
+        Assert.Equal(0x4C, fixture.MainRam.Read(0x1100)); // Copied to RAM
     }
 
     #endregion

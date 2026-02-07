@@ -71,6 +71,12 @@ public readonly struct CpuStateSnapshot
     /// <summary>Cycles remaining in current instruction (0 = at instruction boundary).</summary>
     public int CyclesRemaining { get; init; }
 
+    /// <summary>Current opcode being executed. Set during instruction fetch.</summary>
+    public byte CurrentOpcode { get; init; }
+
+    /// <summary>Address from which the current opcode was read (PC at start of instruction).</summary>
+    public ushort OpcodeAddress { get; init; }
+
     #region Status Flag Accessors
 
     // Flag bit positions in P register:

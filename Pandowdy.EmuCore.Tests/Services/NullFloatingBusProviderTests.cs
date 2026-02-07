@@ -183,7 +183,7 @@ public class NullFloatingBusProviderTests
         
         // Simulate Language Card trying to read non-existent aux memory
         IPandowdyMemory? auxRam = null;
-        byte value = auxRam is not null ? auxRam[0x1000] : fb.Read();
+        byte value = auxRam is not null ? auxRam.Read(0x1000) : fb.Read();
 
         // Assert - Should get zero from floating bus
         Assert.Equal(0, value);

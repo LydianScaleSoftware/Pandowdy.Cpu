@@ -88,6 +88,7 @@ public class MainWindowViewModelTests
         public void UserReset() { }
         public void SetPushButton(byte button, bool pressed) { }
         public void EnqueueKey(byte key) { }
+        public void ResetKeyboard() { }
         public void Reset() { }
     }
 

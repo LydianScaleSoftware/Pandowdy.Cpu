@@ -531,11 +531,11 @@ public abstract class DiskIIControllerCard : ICard
     /// <para>
     /// <strong>Drive Switching Behavior:</strong> When switching from one drive to another:
     /// <list type="bullet">
-    /// <item>OLD drive: Motor is scheduled to turn off (1-second delay), phases are cleared</item>
+    /// <item>OLD drive: Motor turns off IMMEDIATELY (hardware can only power one motor), phases are cleared</item>
     /// <item>NEW drive: Phases are cleared (controller resets phases during switch)</item>
     /// </list>
-    /// This matches real Disk II hardware where the controller typically turns off all phases
-    /// during a drive selection change, and software must reactivate them as needed.
+    /// This matches real Disk II hardware where the controller can only supply current to one motor at a time,
+    /// and typically turns off all phases during a drive selection change. Software must reactivate them as needed.
     /// </para>
     /// </remarks>
     protected virtual void HandleDriveSelection(byte ioAddr)
@@ -550,22 +550,19 @@ public abstract class DiskIIControllerCard : ICard
                     Debug.WriteLine($"[{_clocking.TotalCycles}] ðŸ’¿ DRIVE SELECT: Drive {_selectedDriveIndex + 1} (was Drive {oldDriveIndex + 1})");
         #endif
 
-                    // Handle OLD drive: schedule motor-off and clear phases
+                    // Handle OLD drive: immediate motor-off (hardware can only power one motor at a time)
                     var oldDrive = _drives[oldDriveIndex];
                     if (oldDrive != null && oldDrive.MotorOn)
                     {
-                        // Schedule motor-off for the deselected drive (1-second delay)
-                        _motorOffScheduledCycle = _clocking.TotalCycles + MotorOffDelayCycles;
-        #if ControllerDebug
-                        Debug.WriteLine($"[{_clocking.TotalCycles}] â±ï¸ MOTOR-OFF SCHEDULED for Drive {oldDriveIndex + 1} at cycle {_motorOffScheduledCycle}");
-        #endif
-
-                        // Update status for old drive's motor-off scheduling
-                        int slotNumber = (int)_slotNumber;
-                        _statusMutator.MutateDrive(slotNumber, oldDriveIndex + 1, builder =>
+                        // Turn off immediately - no delay when switching drives
+                        oldDrive.MotorOn = false;
+                        
+                        // Cancel any pending scheduled motor-off if one was active
+                        if (_motorOffScheduledCycle > 0)
                         {
-                            builder.MotorOffScheduled = true;
-                        });
+                            _motorOffScheduledCycle = 0;
+                            UpdateMotorOffScheduledStatus(false);
+                        }
                     }
 
                     // Clear controller phases during drive switch (common hardware behavior)

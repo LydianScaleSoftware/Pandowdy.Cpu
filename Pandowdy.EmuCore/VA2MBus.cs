@@ -273,36 +273,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
         _clockCounters.Reset();
     }
 
-    /// <summary>
-    /// Performs a warm reset (Ctrl+Reset) without fully clearing state.
-    /// </summary>
-    /// <exception cref="ObjectDisposedException">Thrown if the bus has been disposed.</exception>
-    /// <remarks>
-    /// <para>
-    /// <strong>Reset Operations:</strong>
-    /// <list type="number">
-    /// <item>Reset address space controller (memory ranges, banking, I/O handlers)</item>
-    /// <item>Reset CPU (PC loaded from $FFFC/$FFFD)</item>
-    /// <item>Reset timing counters (TotalCycles = 0, VBlankCounter = 0, NextVBlankCycle = 12,480)</item>
-    /// </list>
-    /// </para>
-    /// <para>
-    /// <strong>Current Implementation Note:</strong> In the current implementation, UserReset() and
-    /// Reset() are identical. Future enhancements may preserve more state during UserReset (e.g.,
-    /// RAM contents, some soft switches) to better match Apple IIe Ctrl+Reset behavior.
-    /// </para>
-    /// <para>
-    /// <strong>Thread Context:</strong> Must be called from emulator thread only.
-    /// </para>
-    /// </remarks>
-    public void UserReset()
-    {
-        ThrowIfDisposed();
 
-        _addressSpace.Reset();
-        _cpu!.Reset(this);
-        _clockCounters.Reset();
-    }
 
     /// <summary>
     /// Disposes the bus, cleaning up resources and preventing further operation.

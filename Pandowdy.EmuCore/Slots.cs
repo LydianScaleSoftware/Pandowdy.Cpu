@@ -224,26 +224,49 @@ public class Slots : ISlots
     }
 
     /// <summary>
+    /// Reads a byte from the slots address space ($C090-$CFFF) without affecting IO Status.
+    /// </summary>
+    /// <param name="address">
+    /// The address to read, offset by $C000. For example, to read from $C600, pass 0x0600.
+    /// Valid range: 0x0090-0x0FFF.
+    /// </param>
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public byte Peek(ushort address)
+    {
+        return ReadWithConditionalUpdatedIo(address, false);
+    }
+
+    /// <summary>
     /// Reads a byte from the slots address space ($C090-$CFFF).
     /// </summary>
     /// <param name="address">
     /// The address to read, offset by $C000. For example, to read from $C600, pass 0x0600.
     /// Valid range: 0x0090-0x0FFF.
     /// </param>
-   
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public byte Read(ushort address)
+    {
+        return ReadWithConditionalUpdatedIo(address, true);
+    }
+    /// <summary>
+    /// Reads a byte from the slots address space ($C090-$CFFF).
+    /// </summary>
+    /// <param name="address">
+    /// The address to read, offset by $C000. For example, to read from $C600, pass 0x0600.
+    /// Valid range: 0x0090-0x0FFF.
+    /// </param>
+    /// <param name="readAffectsIo"></param>
+    /// If true, then the read affects internal state, such as INTC8ROM
+    /// If false, then the read only returns a value without affecting the state
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private byte ReadWithConditionalUpdatedIo(ushort address, bool readAffectsIo)
     {
         // $C090-$C0FF: Card I/O space
         if (address >= 0x0090 && address <= 0x00FF)
         {
-            //// INTCXROM overrides all card I/O and ROM
-            //if (_status.StateIntCxRom)
-            //{
-            //    // Internal ROM enabled, return system ROM
-            //    return _rom.Read(address);  // _rom is also offset by $C000
-            //}
-
             // Determine slot from address: $C090-$C09F=slot1, $C0A0-$C0AF=slot2, etc.
             int slot = ((address >> 4) & 0x07);
             byte offset = (byte) (address & 0x0F);
@@ -258,7 +281,10 @@ public class Slots : ISlots
             
             int slot = (address >> 8) & 0x07;
             byte offset = (byte) (address & 0xFF);
-            ManageC800((byte) (slot));
+            if (readAffectsIo)
+            {
+                ManageC800((byte) (slot));
+            }
 
             // INTCXROM overrides SLOTCXROM and SLOTC3ROM
             if (_status.StateIntCxRom)
@@ -291,7 +317,7 @@ public class Slots : ISlots
         // $C800-$CFFF: Extended ROM 
         if (address >= 0x0800 && address <= 0x0FFF)
         {
-            if (address == 0x0FFF)
+            if (address == 0x0FFF && readAffectsIo)
             {
                 ManageC800(255); // Reset C8Rom to peripheral ROM
             }
@@ -417,34 +443,6 @@ public class Slots : ISlots
 
         // Shouldn't reach here in normal operation ($C000-$C08F handled elsewhere)
         throw new InvalidOperationException($"ISlots.Write() called with invalid address: ${address + 0xC000:X4}");
-    }
-
-    /// <summary>
-    /// Gets or sets a byte at the specified address using array-style indexing.
-    /// </summary>
-    /// <param name="address">
-    /// The address to access, offset by $C000. For example, to access $C600, use 0x0600.
-    /// </param>
-    /// <value>
-    /// The byte value at the specified address (reading or writing).
-    /// </value>
-    /// <remarks>
-    /// This indexer provides convenient array-style access to the slots address space,
-    /// delegating to <see cref="Read"/> for gets and <see cref="Write"/> for sets.
-    /// </remarks>
-    /// <example>
-    /// <code>
-    /// // Read from $C600
-    /// byte bootByte = slots[0x0600];
-    /// 
-    /// // Write to $C0EC (slot 6, I/O offset $0C)
-    /// slots[0x00EC] = 0x00;
-    /// </code>
-    /// </example>
-    public byte this[ushort address]
-    {
-        get => Read(address);
-        set => Write(address, value);
     }
 
     /// <summary>

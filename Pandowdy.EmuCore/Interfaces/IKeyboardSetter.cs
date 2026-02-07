@@ -128,7 +128,8 @@ public interface IKeyboardSetter
         /// <remarks>
         /// <para>
         /// <strong>Purpose:</strong> This method simulates a hardware reset (power cycle) of the Apple IIe
-        /// keyboard system. It is typically called when the emulator performs a cold boot or system reset.
+        /// keyboard system. It is typically called when the emulator performs a cold boot or system reset
+        /// via <see cref="IEmulatorCoreInterface.Reset"/>.
         /// </para>
         /// <para>
         /// <strong>Reset Behavior:</strong>
@@ -163,12 +164,12 @@ public interface IKeyboardSetter
         /// // In VA2M.Reset() - full system reset
         /// public void Reset()
         /// {
-        ///     _keyboardSetter.Reset();  // Clear pending keys, preserve latch with strobe cleared
-        ///     Bus.Reset();               // Reset CPU, memory, etc.
+        ///     _keyboardSetter.ResetKeyboard();  // Clear pending keys, preserve latch with strobe cleared
+        ///     Bus.Reset();                      // Reset CPU, memory, etc.
         ///     // ... other reset operations
         /// }
         /// </code>
         /// </para>
         /// </remarks>
-        public void Reset();
+        void ResetKeyboard();
     }

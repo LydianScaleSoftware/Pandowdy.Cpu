@@ -10,7 +10,7 @@
 |--------|---------|
 | **Branch** | `tasks` |
 | **Tests** | 3378 tests (Including Pandowdy.Cpu.Tests) passing ✅ |
-| **Last Milestone** | CPU Migration to Pandowdy.Cpu (Task 18) ✅ COMPLETE |
+| **Last Milestone** | DiskII Motor-Off Fix (Task 24) ✅ COMPLETE |
 | **Current Focus** | Task 22 (Intermediate Debugger Implementation) ⏳ NOT STARTED |
 
 ---
@@ -36,6 +36,7 @@
    - [Task 17: Research Compute-Shader Toolkits for Bitplane Processing](#task-17-research-compute-shader-toolkits-for-bitplane-processing-medium-priority)
    - [Task 20: Advanced Debugger Features](#task-20-advanced-debugger-features-low-priority)
    - [Task 21: Peripheral Discovery and Enumeration API](#task-21-peripheral-discovery-and-enumeration-api-medium-priority)
+   - [Task 23: Split IKeyboardSetter into IKeyboardSetter and IKeyboardResetter](#task-23-split-ikeyboardsetter-into-ikeyboardsetter-and-ikeyboardresetter-low-priority)
 4. [Completed Tasks](#completed-tasks)
    - [Task 1: Migrate VA2M to CpuClockingCounters.VBlankOccurred](#task-1-migrate-va2m-to-cpuclockingcountersvblankoccurred)
    - [Task 2: Remove VA2MBus.VBlank Event](#task-2-remove-va2mbusvblank-event)
@@ -58,6 +59,14 @@ None
 ---
 
 ## Active Tasks
+// Drive 1 motor is not scheduled to turn off when switching to Drive 2
+```
+
+**Implementation Strategy:**
+
+**1. Understand Current Behavior:**
+- Review `DiskIIControllerCard.cs` drive switching logic
+- Identify where motor-off scheduling should occur but doesn't
 
 ### Task 22: Intermediate Debugger Implementation (High Priority)
 
@@ -75,6 +84,10 @@ None
 - CPU Status Panel displays real-time state ✅
 - Instruction stepping capabilities available ✅
 - Ready to implement breakpoints and UI panels
+- Need to make sure MemoryInspector can access the AddressSpaceController to Peek() at the live state of memory.
+  - InitIoReadHandlers should be consulted to make a set of ReadHandlers for Peek()ing at teh IO space safely
+  - IO Space Peek() is stubbed out to 0
+  - IoReadHandlers should be nullable and return null for FloatingBus values (as in Cards.cs) they currently return $A0
 
 **Features to Implement:**
 
@@ -1680,6 +1693,115 @@ public enum PeripheralType
 
 ---
 
+### Task 23: Split IKeyboardSetter into IKeyboardSetter and IKeyboardResetter (Low Priority)
+
+**Goal:** Refactor `IKeyboardSetter` interface to follow Interface Segregation Principle by splitting keyboard input injection and keyboard reset into separate interfaces.
+
+**Status:** ⏳ NOT STARTED
+
+**Current State:**
+- `IKeyboardSetter` contains both `EnqueueKey()` and `ResetKeyboard()` methods
+- `IEmulatorCoreInterface` inherits from `IKeyboardSetter`, causing method name collision with its own `Reset()` method
+- Currently resolved by renaming keyboard reset to `ResetKeyboard()` to avoid collision
+- Interface mixing two concerns: input injection and state reset
+
+**Problem:**
+- Interface Segregation Principle violation: clients that only need key injection must also implement reset
+- Name collision between `IEmulatorCoreInterface.Reset()` (full system reset) and `IKeyboardSetter.ResetKeyboard()` (keyboard state only)
+- Future implementations might only need one interface or the other
+- Mixed responsibility makes the interface less focused
+
+**Proposed Solution:**
+
+Split `IKeyboardSetter` into two focused interfaces:
+
+```csharp
+/// <summary>
+/// Interface for injecting keyboard input into the emulator.
+/// </summary>
+public interface IKeyboardSetter
+{
+    /// <summary>
+    /// Enqueues a raw key value with strobe bit automatically set.
+    /// </summary>
+    void EnqueueKey(byte key);
+}
+
+/// <summary>
+/// Interface for resetting keyboard state to power-on defaults.
+/// </summary>
+public interface IKeyboardResetter
+{
+    /// <summary>
+    /// Resets the keyboard state to power-on defaults, clearing pending keystrokes and strobe.
+    /// </summary>
+    void ResetKeyboard();
+}
+```
+
+**Implementation Changes:**
+
+1. **Split Interface:**
+   - Create new `IKeyboardResetter` interface with `ResetKeyboard()` method
+   - Keep `IKeyboardSetter` with only `EnqueueKey()` method
+   - Update documentation for both interfaces
+
+2. **Update Implementations:**
+   - `SingularKeyHandler` implements both `IKeyboardSetter` and `IKeyboardResetter`
+   - `QueuedKeyHandler` implements both interfaces (if exists)
+   - No behavior changes, just interface compliance
+
+3. **Update Consumers:**
+   - `IEmulatorCoreInterface` inherits only from `IKeyboardSetter` (removes `ResetKeyboard()` from interface contract)
+   - `VA2M` takes both `IKeyboardSetter` and `IKeyboardResetter` as constructor parameters (or single instance implementing both)
+   - `VA2M.Reset()` calls injected `IKeyboardResetter.ResetKeyboard()`
+   - `VA2M.EnqueueKey()` delegates to injected `IKeyboardSetter.EnqueueKey()`
+   - DI container registers `SingularKeyHandler` for both interface types
+
+4. **Remove Explicit ResetKeyboard() from IEmulatorCoreInterface:**
+   - Since `IEmulatorCoreInterface.Reset()` internally calls keyboard reset, the explicit `ResetKeyboard()` method exposure becomes optional
+   - Simplifies the interface - clients call `Reset()` for full system reset (including keyboard)
+
+**Benefits:**
+- ✅ Follows Interface Segregation Principle (single responsibility per interface)
+- ✅ Eliminates method name collision concerns
+- ✅ Clients that only need input injection don't need reset capability
+- ✅ Future test fixtures can mock just the interface they need
+- ✅ Cleaner separation of concerns (input vs. state management)
+- ✅ Better encapsulation - reset is internal implementation detail
+
+**Files to Create:**
+- `Pandowdy.EmuCore\Interfaces\IKeyboardResetter.cs` - New reset interface
+
+**Files to Modify:**
+- `Pandowdy.EmuCore\Interfaces\IKeyboardSetter.cs` - Remove `ResetKeyboard()` method
+- `Pandowdy.EmuCore\Interfaces\IEmulatorCoreInterface.cs` - Remove inheritance from full `IKeyboardSetter`, add targeted inheritance or remove `ResetKeyboard()` exposure
+- `Pandowdy.EmuCore\Services\SingularKeyHandler.cs` - Implement both interfaces
+- `Pandowdy.EmuCore\VA2M.cs` - Update constructor to accept both interfaces, update delegation
+- `Pandowdy\Program.cs` - Update DI registration for both interface types
+- `Pandowdy.EmuCore.Tests\SingularKeyHandlerTests.cs` - Update test assertions for split interfaces
+
+**Technical Considerations:**
+- DI container can register same instance (`SingularKeyHandler`) for both interface types
+- No runtime behavior changes - purely structural refactoring
+- Backward compatible if new interface added before old one removed
+- Can be done incrementally (add `IKeyboardResetter`, then refactor consumers, then remove from `IKeyboardSetter`)
+
+**Alternative Considered:**
+- Rename `IKeyboardSetter.ResetKeyboard()` to `ResetKeyboard()` (current solution)
+- **Chosen Alternative:** Current workaround with `ResetKeyboard()` name is acceptable for now, but proper split is cleaner long-term
+
+**Priority:** Low (current workaround is functional, this is architectural cleanup)
+
+**Dependencies:**
+- None (pure refactoring)
+
+**Related:**
+- Improves architecture established in Task 6 (Clear Pending Keystrokes on Reset)
+- Makes interface design more consistent with SOLID principles
+
+---
+
 ## Completed Tasks
 
 ### ✅ Task 1: Migrate VA2M to CpuClockingCounters.VBlankOccurred
@@ -1754,6 +1876,40 @@ public enum PeripheralType
 ---
 
 ### ✅ Task 3: Removed
+
+---
+
+### ✅ Task 24: Fix DiskII Motor-Off Behavior on Drive Switching
+
+**Completed:** 2025-01-28 - All 53 DiskII tests passing
+
+**Summary:**
+- Fixed DiskII controller to turn off old drive's motor **immediately** when switching drives
+- This matches physical Apple II hardware constraint: only one motor can be powered at a time
+- Updated `DiskIIControllerCard.HandleDriveSelection()` to implement immediate motor-off
+- Clarified that 1-second delay only applies to `$C088` motor-off I/O, not drive switching
+- Updated test expectations to reflect correct hardware behavior
+
+**Key Changes:**
+- When switching drives, old drive motor now turns off immediately (no delay)
+- Cancels any pending scheduled motor-off when switching
+- Updated XML documentation to explain hardware current limitation
+- Test renamed: `DriveSelect_Switching_ShouldImmediatelyTurnOffOldDrive`
+
+**Initial Misunderstanding:**
+- Original test expected **scheduled** motor-off with 1-second delay
+- Research revealed this was incorrect - hardware limitation requires immediate motor-off
+- Test was updated to reflect correct specification
+
+**Files Modified:**
+- `Pandowdy.EmuCore\Cards\DiskIIControllerCard.cs` - Immediate motor-off implementation
+- `Pandowdy.EmuCore.Tests\DiskII\DiskIISpecificationTests.cs` - Updated test expectations
+
+**Benefits:**
+- ✅ Accurate Apple II hardware emulation
+- ✅ All 53 DiskII specification tests passing
+- ✅ Prevents incorrect multi-drive motor states
+- ✅ Matches authentic hardware behavior
 
 ---
 

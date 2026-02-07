@@ -160,7 +160,7 @@ public class SystemRamSelector(
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public byte ReadRawMain(int address)
     {
-        return _mainRam[(ushort)(address & 0xffff)];
+        return _mainRam.Read((ushort)(address & 0xffff));
     }
 
 
@@ -198,10 +198,12 @@ public class SystemRamSelector(
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public byte ReadRawAux(int address)
     {
-        return _auxRam == null ? _floatingBus.Read() : _auxRam[(ushort) (address & 0xffff)];
+        return _auxRam == null ? _floatingBus.Read() : _auxRam.Read((ushort)(address & 0xffff));
     }
 
-           
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public byte Peek(ushort address) => Read(address);
+
     /// <summary>
     /// Reads a byte from system RAM, routing to main or auxiliary memory based on soft switch states.
     /// </summary>
@@ -273,7 +275,7 @@ public class SystemRamSelector(
         }
 
         IPandowdyMemory? targetMemory = readAux ? _auxRam : _mainRam;
-        return targetMemory != null ? targetMemory[address] : _floatingBus.Read();
+        return targetMemory != null ? targetMemory.Read(address) : _floatingBus.Read();
     }
 
     
@@ -347,29 +349,12 @@ public class SystemRamSelector(
         IPandowdyMemory? targetMemory = writeAux ? _auxRam : _mainRam;
         if (targetMemory != null)
         {
-            targetMemory[address] = data;
+            targetMemory.Write(address, data);
         }
         else
         {
             // No Op. Possibly FloatingBus.Write() later on?
         }
-    }
-
-
-    /// <summary>
-    /// Gets or sets a byte at the specified address using indexer syntax.
-    /// </summary>
-    /// <param name="address">Address to access ($0000-$BFFF).</param>
-    /// <returns>Byte value from the selected memory bank.</returns>
-    /// <remarks>
-    /// Provides array-like syntax for memory access: <c>memory[0x1000] = 0x42;</c>
-    /// Delegates to <see cref="Read"/> and <see cref="Write"/> methods, which handle
-    /// all soft switch logic for main/auxiliary memory selection.
-    /// </remarks>
-    public byte this[ushort address]
-    {
-        get => Read(address);
-        set => Write(address, value);
     }
 }
 

@@ -84,21 +84,6 @@ public sealed class AddressSpaceController : IPandowdyMemory, IMemoryAccessNotif
     public int Size => 0x10000; // 64k addressable space
 
     /// <summary>
-    /// Gets or sets a byte at the specified address (indexer syntax).
-    /// </summary>
-    /// <param name="address">16-bit address ($0000-$FFFF).</param>
-    /// <returns>Byte value at the mapped physical location.</returns>
-    /// <remarks>
-    /// Provides array-like syntax for memory access: <c>memory[0x1000] = 0x42;</c>
-    /// Delegates to <see cref="Read"/> and <see cref="Write"/>.
-    /// </remarks>
-    public byte this[ushort address]
-    {
-        get => Read(address);
-        set => Write(address, value);
-    }
-
-    /// <summary>
     /// Event raised when memory is written to.
     /// </summary>
     /// <remarks>
@@ -265,7 +250,17 @@ public sealed class AddressSpaceController : IPandowdyMemory, IMemoryAccessNotif
         _ => _systemRam.Read(address)                // $0000-$BFFF
     };
 
-    public void Reset()
+
+    public byte Peek(ushort address) => address switch
+    {
+        >= 0xE000 => _langCard.Read(address),        // $E000-$FFFF
+        >= 0xD000 => _langCard.Read(address),        // $D000-$DFFF
+        >= 0xC090 => _slots.Peek((ushort)(address - 0xC000)), // $C090-$CFFF
+        >= 0xC000 => 0, //_io.Read((ushort) (address - 0xC000)),
+        _ => _systemRam.Read(address)                // $0000-$BFFF
+};
+
+public void Reset()
     {
         _slots.Reset();
         _io.Reset();

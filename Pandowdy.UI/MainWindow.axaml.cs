@@ -796,13 +796,13 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             try
             {
 #pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-                var json = System.Text.Json.JsonSerializer.Serialize(settings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                var json = JsonSerializer.Serialize(settings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
 #pragma warning restore CA1869
-                var path = System.IO.Path.Combine(
+                var path = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                     "LydianScaleSoftware", "Pandowdy", "window-settings.json");
 
-                var dir = System.IO.Path.GetDirectoryName(path);
+                var dir = Path.GetDirectoryName(path);
                 if (dir != null)
                 {
                     Directory.CreateDirectory(dir);

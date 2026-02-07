@@ -32,6 +32,16 @@ public class TestSlots(ISystemStatusProvider status) : ISlots
         return 0x00;
     }
 
+    public byte Peek(ushort address)
+    {
+        // Same as Read for test - no side effects
+        if (address < _memory.Length)
+        {
+            return _memory[address];
+        }
+        return 0x00;
+    }
+
     public void Write(ushort address, byte val)
     {
         // Store write in memory (ROMs are read-only but test allows writes for verification)
@@ -39,12 +49,6 @@ public class TestSlots(ISystemStatusProvider status) : ISlots
         {
             _memory[address] = val;
         }
-    }
-
-    public byte this[ushort address]
-    {
-        get => Read(address);
-        set => Write(address, value);
     }
 
     public void InstallCard(int id, SlotNumber slot)

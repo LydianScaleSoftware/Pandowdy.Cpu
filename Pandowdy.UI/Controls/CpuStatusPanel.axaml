@@ -14,6 +14,10 @@
     <Border Background="#1A1A1A" BorderBrush="#303030" BorderThickness="0,1,0,0" Padding="8,4">
         <StackPanel Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
             <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="Instruction:" Foreground="#888888" FontFamily="Consolas" FontSize="12" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding DisassemblyText}" Foreground="#FFAA00" FontFamily="Consolas" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" MinWidth="120" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="4">
                 <TextBlock Text="PC:" Foreground="#888888" FontFamily="Consolas" FontSize="12" VerticalAlignment="Center" />
                 <TextBlock Text="{Binding PC, StringFormat=X4}" Foreground="#00FF00" FontFamily="Consolas" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" />
             </StackPanel>

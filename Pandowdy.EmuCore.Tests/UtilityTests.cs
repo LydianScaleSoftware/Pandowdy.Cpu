@@ -111,7 +111,7 @@ public class UtilityTests
     {
         // Arrange
         var memory = new MemoryBlock(0x1000);
-        memory[0x0100] = 0x42; // Set a value
+        memory.Write(0x0100, 0x42); // Set a value
 
         // Act
         // Use ISystemRam to verify reference preservation works with interface types
@@ -121,7 +121,7 @@ public class UtilityTests
 
         // Assert - Should be same instance
         Assert.Same(memory, result);
-        Assert.Equal(0x42, result[0x0100]); // Value should be preserved
+        Assert.Equal(0x42, result.Read(0x0100)); // Value should be preserved
     }
 
     [Fact]

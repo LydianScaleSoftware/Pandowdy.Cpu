@@ -294,86 +294,6 @@ public class MemoryBlockTests
 
     #endregion
 
-    #region Indexer Tests
-
-    [Fact]
-    public void Indexer_Get_ReadsValue()
-    {
-        // Arrange
-        var memory = new MemoryBlock(256);
-        memory.Write(0x30, 0x77);
-
-        // Act
-        byte value = memory[0x30];
-
-        // Assert
-        Assert.Equal(0x77, value);
-    }
-
-    [Fact]
-    public void Indexer_Set_WritesValue()
-    {
-        // Arrange
-        var memory = new MemoryBlock(256);
-
-        // Act
-        memory[0x40] = 0x88;
-
-        // Assert
-        Assert.Equal(0x88, memory.Read(0x40));
-    }
-
-    [Fact]
-    public void Indexer_Get_MatchesReadMethod()
-    {
-        // Arrange
-        var memory = new MemoryBlock(256);
-        memory.Write(0x50, 0x99);
-
-        // Act
-        byte indexerValue = memory[0x50];
-        byte readValue = memory.Read(0x50);
-
-        // Assert
-        Assert.Equal(readValue, indexerValue);
-    }
-
-    [Fact]
-    public void Indexer_Set_MatchesWriteMethod()
-    {
-        // Arrange
-        var memory = new MemoryBlock(256);
-
-        // Act
-        memory[0x60] = 0xAA;
-        memory.Write(0x61, 0xAA);
-
-        // Assert
-        Assert.Equal(memory[0x60], memory[0x61]);
-    }
-
-    [Fact]
-    public void Indexer_GetBeyondSize_ThrowsIndexOutOfRangeException()
-    {
-        // Arrange
-        var memory = new MemoryBlock(256);
-
-        // Act & Assert
-        Assert.Throws<IndexOutOfRangeException>(() => memory[256]);
-    }
-
-    [Fact]
-    public void Indexer_SetBeyondSize_ThrowsIndexOutOfRangeException()
-    {
-        // Arrange
-        var memory = new MemoryBlock(256);
-
-        // Act & Assert
-        Assert.Throws<IndexOutOfRangeException>(() => memory[256] = 0x42);
-    }
-
-    #endregion
-
     #region Size Property Tests
 
     [Fact]
@@ -426,20 +346,6 @@ public class MemoryBlockTests
 
         // Assert
         Assert.Equal(0xCC, ((MemoryBlock)memory).Read(0x80));
-    }
-
-    [Fact]
-    public void IPandowdyMemory_Indexer_WorksThroughInterface()
-    {
-        // Arrange
-        IPandowdyMemory memory = new MemoryBlock(256);
-
-        // Act
-        memory[0x90] = 0xDD;
-        byte value = memory[0x90];
-
-        // Assert
-        Assert.Equal(0xDD, value);
     }
 
     [Fact]
@@ -496,19 +402,19 @@ public class MemoryBlockTests
         // Act - Fill first 64 bytes with 0xFF
         for (ushort i = 0; i < 64; i++)
         {
-            memory[i] = fillValue;
+            memory.Write(i, fillValue);
         }
 
         // Assert - Verify filled range
         for (ushort i = 0; i < 64; i++)
         {
-            Assert.Equal(fillValue, memory[i]);
+            Assert.Equal(fillValue, memory.Read(i));
         }
 
         // Assert - Verify unfilled range is still zero
         for (ushort i = 64; i < 256; i++)
         {
-            Assert.Equal(0, memory[i]);
+            Assert.Equal(0, memory.Read(i));
         }
     }
 
@@ -524,19 +430,20 @@ public class MemoryBlockTests
         // Act - Write source data
         for (int i = 0; i < sourceData.Length; i++)
         {
-            memory[(ushort)(sourceAddress + i)] = sourceData[i];
+            memory.Write((ushort)(sourceAddress + i), sourceData[i]);
         }
 
         // Copy data from source to destination
         for (int i = 0; i < sourceData.Length; i++)
         {
-            memory[(ushort)(destAddress + i)] = memory[(ushort)(sourceAddress + i)];
+            byte value = memory.Read((ushort)(sourceAddress + i));
+            memory.Write((ushort)(destAddress + i), value);
         }
 
         // Assert - Verify copied data
         for (int i = 0; i < sourceData.Length; i++)
         {
-            Assert.Equal(sourceData[i], memory[(ushort)(destAddress + i)]);
+            Assert.Equal(sourceData[i], memory.Read((ushort)(destAddress + i)));
         }
     }
 
@@ -547,14 +454,14 @@ public class MemoryBlockTests
         var memory = new MemoryBlock(256);
 
         // Act - Write to various zero page addresses
-        memory[0x00] = 0x10;
-        memory[0x42] = 0x20;
-        memory[0xFF] = 0x30;
+        memory.Write(0x00, 0x10);
+        memory.Write(0x42, 0x20);
+        memory.Write(0xFF, 0x30);
 
         // Assert
-        Assert.Equal(0x10, memory[0x00]);
-        Assert.Equal(0x20, memory[0x42]);
-        Assert.Equal(0x30, memory[0xFF]);
+        Assert.Equal(0x10, memory.Read(0x00));
+        Assert.Equal(0x20, memory.Read(0x42));
+        Assert.Equal(0x30, memory.Read(0xFF));
     }
 
     [Fact]
@@ -566,14 +473,14 @@ public class MemoryBlockTests
 
         // Act - Push values onto stack (stack grows downward)
         byte stackPointer = 0xFF;
-        memory[(ushort)(stackBase + stackPointer--)] = 0xAA;
-        memory[(ushort)(stackBase + stackPointer--)] = 0xBB;
-        memory[(ushort)(stackBase + stackPointer--)] = 0xCC;
+        memory.Write((ushort)(stackBase + stackPointer--), 0xAA);
+        memory.Write((ushort)(stackBase + stackPointer--), 0xBB);
+        memory.Write((ushort)(stackBase + stackPointer--), 0xCC);
 
         // Assert - Pop values from stack
-        Assert.Equal(0xCC, memory[(ushort)(stackBase + ++stackPointer)]);
-        Assert.Equal(0xBB, memory[(ushort)(stackBase + ++stackPointer)]);
-        Assert.Equal(0xAA, memory[(ushort)(stackBase + ++stackPointer)]);
+        Assert.Equal(0xCC, memory.Read((ushort)(stackBase + ++stackPointer)));
+        Assert.Equal(0xBB, memory.Read((ushort)(stackBase + ++stackPointer)));
+        Assert.Equal(0xAA, memory.Read((ushort)(stackBase + ++stackPointer)));
     }
 
     #endregion
@@ -588,8 +495,8 @@ public class MemoryBlockTests
 
         // Assert
         Assert.Equal(1, memory.Size);
-        memory[0] = 0x42;
-        Assert.Equal(0x42, memory[0]);
+        memory.Write(0, 0x42);
+        Assert.Equal(0x42, memory.Read(0));
     }
 
     [Fact]
@@ -629,8 +536,8 @@ public class MemoryBlockTests
         for (ushort i = 0; i < 256; i++)
         {
             byte testValue = (byte)i;
-            memory[i] = testValue;
-            Assert.Equal(testValue, memory[i]);
+            memory.Write(i, testValue);
+            Assert.Equal(testValue, memory.Read(i));
         }
     }
 
@@ -693,14 +600,14 @@ public class MemoryBlockTests
         var memory = new MemoryBlock64k();
 
         // Act & Assert - Can write and read from start, middle, and end
-        memory[0x0000] = 0xAA;
-        Assert.Equal(0xAA, memory[0x0000]);
+        memory.Write(0x0000, 0xAA);
+        Assert.Equal(0xAA, memory.Read(0x0000));
 
-        memory[0x8000] = 0xBB;
-        Assert.Equal(0xBB, memory[0x8000]);
+        memory.Write(0x8000, 0xBB);
+        Assert.Equal(0xBB, memory.Read(0x8000));
 
-        memory[0xFFFF] = 0xCC;
-        Assert.Equal(0xCC, memory[0xFFFF]);
+        memory.Write(0xFFFF, 0xCC);
+        Assert.Equal(0xCC, memory.Read(0xFFFF));
     }
 
     [Fact]
@@ -710,10 +617,10 @@ public class MemoryBlockTests
         var memory = new MemoryBlock64k();
 
         // Assert - Sample various addresses
-        Assert.Equal(0, memory[0x0000]);
-        Assert.Equal(0, memory[0x1000]);
-        Assert.Equal(0, memory[0x8000]);
-        Assert.Equal(0, memory[0xFFFF]);
+        Assert.Equal(0, memory.Read(0x0000));
+        Assert.Equal(0, memory.Read(0x1000));
+        Assert.Equal(0, memory.Read(0x8000));
+        Assert.Equal(0, memory.Read(0xFFFF));
     }
 
     [Fact]
@@ -725,13 +632,13 @@ public class MemoryBlockTests
         // Act - Write to all zero page addresses
         for (ushort i = 0x00; i <= 0xFF; i++)
         {
-            memory[i] = (byte)i;
+            memory.Write(i, (byte)i);
         }
 
         // Assert - Verify all zero page addresses
         for (ushort i = 0x00; i <= 0xFF; i++)
         {
-            Assert.Equal((byte)i, memory[i]);
+            Assert.Equal((byte)i, memory.Read(i));
         }
     }
 
@@ -744,13 +651,13 @@ public class MemoryBlockTests
         // Act - Write to all stack addresses
         for (ushort i = 0x0100; i <= 0x01FF; i++)
         {
-            memory[i] = (byte)(i & 0xFF);
+            memory.Write(i, (byte)(i & 0xFF));
         }
 
         // Assert - Verify all stack addresses
         for (ushort i = 0x0100; i <= 0x01FF; i++)
         {
-            Assert.Equal((byte)(i & 0xFF), memory[i]);
+            Assert.Equal((byte)(i & 0xFF), memory.Read(i));
         }
     }
 
@@ -761,12 +668,12 @@ public class MemoryBlockTests
         var memory = new MemoryBlock64k();
 
         // Act & Assert - Text page 1 ($0400-$07FF)
-        memory[0x0400] = 0x41; // 'A'
-        Assert.Equal(0x41, memory[0x0400]);
+        memory.Write(0x0400, 0x41); // 'A'
+        Assert.Equal(0x41, memory.Read(0x0400));
 
         // Text page 2 ($0800-$0BFF)
-        memory[0x0800] = 0x42; // 'B'
-        Assert.Equal(0x42, memory[0x0800]);
+        memory.Write(0x0800, 0x42); // 'B'
+        Assert.Equal(0x42, memory.Read(0x0800));
     }
 
     [Fact]
@@ -776,12 +683,12 @@ public class MemoryBlockTests
         var memory = new MemoryBlock64k();
 
         // Act & Assert - Hi-res page 1 ($2000-$3FFF)
-        memory[0x2000] = 0xAA;
-        Assert.Equal(0xAA, memory[0x2000]);
+        memory.Write(0x2000, 0xAA);
+        Assert.Equal(0xAA, memory.Read(0x2000));
 
         // Hi-res page 2 ($4000-$5FFF)
-        memory[0x4000] = 0xBB;
-        Assert.Equal(0xBB, memory[0x4000]);
+        memory.Write(0x4000, 0xBB);
+        Assert.Equal(0xBB, memory.Read(0x4000));
     }
 
     [Fact]
@@ -791,13 +698,13 @@ public class MemoryBlockTests
         var memory = new MemoryBlock64k();
 
         // Act & Assert - ROM area ($D000-$FFFF)
-        memory[0xD000] = 0xC3; // Monitor ROM start
-        Assert.Equal(0xC3, memory[0xD000]);
+        memory.Write(0xD000, 0xC3); // Monitor ROM start
+        Assert.Equal(0xC3, memory.Read(0xD000));
 
-        memory[0xFFFC] = 0x00; // Reset vector low byte
-        memory[0xFFFD] = 0xC6; // Reset vector high byte
-        Assert.Equal(0x00, memory[0xFFFC]);
-        Assert.Equal(0xC6, memory[0xFFFD]);
+        memory.Write(0xFFFC, 0x00); // Reset vector low byte
+        memory.Write(0xFFFD, 0xC6); // Reset vector high byte
+        Assert.Equal(0x00, memory.Read(0xFFFC));
+        Assert.Equal(0xC6, memory.Read(0xFFFD));
     }
 
     [Fact]
@@ -808,9 +715,9 @@ public class MemoryBlockTests
 
         // Assert
         Assert.Equal(0x10000, memory.Size);
-        
-        memory[0x1000] = 0x42;
-        Assert.Equal(0x42, memory[0x1000]);
+
+        memory.Write(0x1000, 0x42);
+        Assert.Equal(0x42, memory.Read(0x1000));
     }
 
     [Fact]
@@ -822,12 +729,12 @@ public class MemoryBlockTests
 
         // Assert - Both should have identical size
         Assert.Equal(memory64k.Size, memoryBlock.Size);
-        
+
         // Both should support the same address range
-        memory64k[0x5000] = 0x55;
-        memoryBlock[0x5000] = 0x55;
-        
-        Assert.Equal(memory64k[0x5000], memoryBlock[0x5000]);
+        memory64k.Write(0x5000, 0x55);
+        memoryBlock.Write(0x5000, 0x55);
+
+        Assert.Equal(memory64k.Read(0x5000), memoryBlock.Read(0x5000));
     }
 
     [Fact]
@@ -838,29 +745,29 @@ public class MemoryBlockTests
         
         // Act - Store a complete 6502 program with reset vector
         // Program at $C000: Simple loop that increments accumulator
-        memory[0xC000] = 0xA9; // LDA #$00
-        memory[0xC001] = 0x00;
-        memory[0xC002] = 0x69; // ADC #$01
-        memory[0xC003] = 0x01;
-        memory[0xC004] = 0x4C; // JMP $C002
-        memory[0xC005] = 0x02;
-        memory[0xC006] = 0xC0;
-        
+        memory.Write(0xC000, 0xA9); // LDA #$00
+        memory.Write(0xC001, 0x00);
+        memory.Write(0xC002, 0x69); // ADC #$01
+        memory.Write(0xC003, 0x01);
+        memory.Write(0xC004, 0x4C); // JMP $C002
+        memory.Write(0xC005, 0x02);
+        memory.Write(0xC006, 0xC0);
+
         // Reset vector points to program
-        memory[0xFFFC] = 0x00; // Low byte
-        memory[0xFFFD] = 0xC0; // High byte
+        memory.Write(0xFFFC, 0x00); // Low byte
+        memory.Write(0xFFFD, 0xC0); // High byte
         
         // Assert - Verify program and reset vector
-        Assert.Equal(0xA9, memory[0xC000]);
-        Assert.Equal(0x00, memory[0xC001]);
-        Assert.Equal(0x69, memory[0xC002]);
-        Assert.Equal(0x01, memory[0xC003]);
-        Assert.Equal(0x4C, memory[0xC004]);
-        Assert.Equal(0x02, memory[0xC005]);
-        Assert.Equal(0xC0, memory[0xC006]);
-        
+        Assert.Equal(0xA9, memory.Read(0xC000));
+        Assert.Equal(0x00, memory.Read(0xC001));
+        Assert.Equal(0x69, memory.Read(0xC002));
+        Assert.Equal(0x01, memory.Read(0xC003));
+        Assert.Equal(0x4C, memory.Read(0xC004));
+        Assert.Equal(0x02, memory.Read(0xC005));
+        Assert.Equal(0xC0, memory.Read(0xC006));
+
         // Verify reset vector
-        ushort resetVector = (ushort)(memory[0xFFFC] | (memory[0xFFFD] << 8));
+        ushort resetVector = (ushort)(memory.Read(0xFFFC) | (memory.Read(0xFFFD) << 8));
         Assert.Equal(0xC000, resetVector);
     }
 

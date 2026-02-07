@@ -47,6 +47,12 @@ public class NoSlotClockIoHandlerTests
             return ReturnValue;
         }
 
+        public byte Peek(ushort loc)
+        {
+            // Peek doesn't increment counters
+            return ReturnValue;
+        }
+
         public void Write(ushort loc, byte val)
         {
             WriteCount++;
@@ -58,12 +64,6 @@ public class NoSlotClockIoHandlerTests
         {
             ReadCount = 0;
             WriteCount = 0;
-        }
-
-        public byte this[ushort offset]
-        {
-            get => Read(offset);
-            set => Write(offset, value);
         }
     }
 
@@ -573,40 +573,6 @@ public class NoSlotClockIoHandlerTests
         Assert.Equal(12, result.Hour);
         Assert.Equal(45, result.Minute);
         Assert.Equal(30, result.Second);
-    }
-
-    #endregion
-
-    #region Indexer Tests (2 tests)
-
-    [Fact]
-    public void Indexer_Get_DelegatesToRead()
-    {
-        // Arrange
-        var fixture = new NoSlotClockFixture();
-        fixture.Downstream.ReturnValue = 0xAB;
-
-        // Act
-        byte value = fixture.Clock[0x10];
-
-        // Assert
-        Assert.Equal(0xAB, value);
-        Assert.Equal(1, fixture.Downstream.ReadCount);
-    }
-
-    [Fact]
-    public void Indexer_Set_DelegatesToWrite()
-    {
-        // Arrange
-        var fixture = new NoSlotClockFixture();
-
-        // Act
-        fixture.Clock[0x10] = 0xCD;
-
-        // Assert
-        Assert.Equal(1, fixture.Downstream.WriteCount);
-        Assert.Equal(0x10, fixture.Downstream.LastWriteAddress);
-        Assert.Equal(0xCD, fixture.Downstream.LastWriteValue);
     }
 
     #endregion
