@@ -368,8 +368,17 @@ public void StepOver()
 - Currently using InternalWozDiskImageProvider (primary focus)
 - May also need to verify external WozDiskImageProvider
 
+**CRITICAL INSIGHTS (2025-02-05):**
+- ⚠️ **Drive Switching Issues:** Errors primarily occur when switching between Drive 1 and Drive 2
+- ⚠️ **Bit Timing Accuracy:** Cycle-to-bit-position calculation may have subtle timing errors
+- ⚠️ **Bit Skipping/Double-Reading:** Bits may be skipped or read twice due to timing drift
+- ⚠️ **CyclesPerBit Uncertainty:** Need to verify if 45/11 (≈4.09) or exactly 4.0 is correct
+- ⚠️ **"Close Enough" Syndrome:** Timing may work most of the time but fails on edge cases
+
 **Areas to Investigate:**
-- Bit timing and synchronization
+- **PRIORITY 1:** Verify `CyclesPerBit = 45.0 / 11.0` vs `4.0` (consult external references)
+- **PRIORITY 2:** Drive switching behavior - position/state preservation between drives
+- **PRIORITY 3:** Bit timing and synchronization - position calculation drift over time
 - Track data decoding (WOZ stores raw flux transitions)
 - Self-sync byte detection
 - Address field parsing
@@ -416,7 +425,17 @@ public void StepOver()
 - Need to verify NIB provider is not contributing to DOS 3.3 I/O errors
 - NIB format is simpler than WOZ but still requires careful bit-level handling
 
+**CRITICAL INSIGHTS (2025-02-05):**
+- ⚠️ **Drive Switching Issues:** Same as WOZ - errors primarily occur when switching between drives
+- ⚠️ **Bit Timing Accuracy:** Uses same `CyclesPerBit = 45.0 / 11.0` - may need verification
+- ⚠️ **Bit Skipping/Double-Reading:** Bits may be skipped or read twice due to timing drift
+- ⚠️ **CyclesPerBit Uncertainty:** Need to verify if 45/11 (≈4.09) or exactly 4.0 is correct
+- ⚠️ **Position Calculation Drift:** `(cycleCount / CyclesPerBit) % BitsPerTrack` may accumulate error
+
 **Areas to Investigate:**
+- **PRIORITY 1:** Verify `CyclesPerBit = 45.0 / 11.0` vs `4.0` (consult external references)
+- **PRIORITY 2:** Drive switching behavior - position preserved correctly between switches?
+- **PRIORITY 3:** Bit position calculation - does fractional cycle cause cumulative drift?
 - NIB format parsing (6-and-2 encoding)
 - Track offset calculations
 - Self-sync byte handling
