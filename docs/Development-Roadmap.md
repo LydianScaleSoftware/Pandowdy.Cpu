@@ -27,7 +27,7 @@
 3. [Backlog](#backlog)
    - [Task 4: HGR Flicker Investigation](#task-4-hgr-flicker-investigation-medium-priority)
    - [Task 7: Handle BRK Loops in Interrupt Handler](#task-7-handle-brk-loops-in-interrupt-handler-low-priority)
-   - [Task 9: Multi-Drive Operation Deep Dive](#task-9-multi-drive-operation-deep-dive-medium-priority)
+   - [Task 9: Multi-Drive Operation Deep Dive](#task-9-multi-drive-operation-deep-dive-low-priority)
    - [Task 11: Conditional Compilation for Disk Provider Debug Output](#task-11-conditional-compilation-for-disk-provider-debug-output-medium-priority)
    - [Task 12: Flexible Window Docking System](#task-12-flexible-window-docking-system-medium-priority)
    - [Task 14: Speed-Proportional Key Feeding](#task-14-speed-proportional-key-feeding-low-priority)
@@ -60,167 +60,6 @@ None
 ---
 
 ## Active Tasks
-// Drive 1 motor is not scheduled to turn off when switching to Drive 2
-```
-
-**Implementation Strategy:**
-
-**1. Understand Current Behavior:**
-- Review `DiskIIControllerCard.cs` drive switching logic
-- Identify where motor-off scheduling should occur but doesn't
-
-### Task 22: Intermediate Debugger Implementation (High Priority)
-
-**Goal:** Implement breakpoints and debugger UI panels to complete the intermediate debugging infrastructure.
-
-**Status:** ⏳ NOT STARTED
-
-**Prerequisites:**
-- ✅ Task 19 (Basic Debugger Foundation) - COMPLETED
-- Foundation infrastructure provides CPU state inspection, memory inspection, and stepping capabilities
-
-**Current State:**
-- CPU state accessible via `IEmulatorCoreInterface.CpuState` ✅
-- Memory accessible via `IEmulatorCoreInterface.MemoryInspector` ✅
-- CPU Status Panel displays real-time state ✅
-- Instruction stepping capabilities available ✅
-- Ready to implement breakpoints and UI panels
-- Need to make sure MemoryInspector can access the AddressSpaceController to Peek() at the live state of memory.
-  - InitIoReadHandlers should be consulted to make a set of ReadHandlers for Peek()ing at teh IO space safely
-  - IO Space Peek() is stubbed out to 0
-  - IoReadHandlers should be nullable and return null for FloatingBus values (as in Cards.cs) they currently return $A0
-
-**Features to Implement:**
-
-**1. Breakpoints**
-   - Address breakpoints (break when PC reaches address)
-   - Conditional breakpoints (break when condition met, e.g., A == $FF)
-   - Enable/disable breakpoints without removing
-   - Breakpoint list management (add, remove, clear all)
-
-**2. Watches**
-   - Memory watches (monitor specific addresses)
-   - Register watches (A, X, Y, SP, PC, Status)
-   - Watch display in UI panel
-   - Optional: break on memory write to watched address
-
-**3. Debugger UI Panels**
-   - Breakpoint list panel (add/remove/enable/disable)
-   - Watch panel (monitor variables)
-   - Basic disassembly view (current instruction context)
-   - Integration with existing CPU Status Panel
-
-**4. Execution Control**
-   - Pause/Resume execution
-   - Run to cursor/address
-   - Enhanced stepping modes (Step Over, Step Out, Run Until)
-
-**Technical Approach:**
-
-**Breakpoint Check Pattern:**
-```csharp
-public void RunWithBreakpoints()
-{
-    while (_running)
-    {
-        if (_breakpoints.Contains(_cpu.PC))
-        {
-            _running = false;
-            OnBreakpointHit?.Invoke(_cpu.PC);
-            break;
-        }
-
-        _cpu.Clock(bus);
-
-        if (_cpu.IsInstructionComplete())
-        {
-            CheckConditionalBreakpoints();
-            CheckWatchBreakpoints();
-        }
-    }
-}
-```
-
-**Step Over Implementation:**
-```csharp
-public void StepOver()
-{
-    ushort currentPC = _cpu.PC;
-    byte opcode = bus.CpuRead(currentPC);
-
-    if (IsJsrInstruction(opcode))
-    {
-        // Set temporary breakpoint at next instruction
-        ushort returnAddress = (ushort)(currentPC + 3); // JSR is 3 bytes
-        RunUntil(returnAddress);
-    }
-    else
-    {
-        StepInstruction();
-    }
-}
-```
-
-**Files to Create:**
-
-*Core Debugger:*
-- `Pandowdy.EmuCore\Debugging\IDebugger.cs` - Debugger interface
-- `Pandowdy.EmuCore\Debugging\Debugger.cs` - Main debugger implementation
-- `Pandowdy.EmuCore\Debugging\Breakpoint.cs` - Breakpoint model
-- `Pandowdy.EmuCore\Debugging\Watch.cs` - Watch model
-- `Pandowdy.EmuCore\Debugging\DebuggerState.cs` - Debugger state enum (Running, Paused, Stepping)
-
-*UI Components:*
-- `Pandowdy.UI\Controls\BreakpointListPanel.axaml` - Breakpoint management
-- `Pandowdy.UI\ViewModels\BreakpointListPanelViewModel.cs` - Breakpoint panel view model
-- `Pandowdy.UI\Controls\WatchPanel.axaml` - Watch variables display
-- `Pandowdy.UI\ViewModels\WatchPanelViewModel.cs` - Watch panel view model
-- `Pandowdy.UI\Controls\DisassemblyPanel.axaml` - Basic disassembly view
-- `Pandowdy.UI\ViewModels\DisassemblyPanelViewModel.cs` - Disassembly view model
-
-*Tests:*
-- `Pandowdy.EmuCore.Tests\Debugging\DebuggerTests.cs` - Unit tests for debugger
-- `Pandowdy.EmuCore.Tests\Debugging\BreakpointTests.cs` - Breakpoint logic tests
-
-**Modified Files:**
-- `Pandowdy.EmuCore\VA2M.cs` - Integrate debugger into main emulation loop
-- `Pandowdy.UI\MainWindow.axaml` - Add debugger panel/menu
-- `Pandowdy.UI\ViewModels\MainWindowViewModel.cs` - Debugger commands
-- `Pandowdy\Program.cs` - Register debugger in DI
-
-**Architecture Notes:**
-- Debugger is injected via DI (follows project guidelines)
-- Debugger coordinates with CPU execution via VA2M
-- UI binds to debugger state via ReactiveUI
-- Breakpoint checks happen at instruction boundaries (not every cycle)
-- Stepping defaults to instruction-level granularity
-
-**UI Integration:**
-- Debugger panels dockable (integrates with future Task 12)
-- Keyboard shortcuts: F5 (Run), F10 (Step Over), F11 (Step Into), Shift+F11 (Step Out)
-- Toolbar buttons for common operations
-- Status bar shows debugger state (Running/Paused/Stepping)
-
-**Testing Strategy:**
-- Unit tests for breakpoint matching
-- Unit tests for step over/into/out logic
-- Integration tests with simple 6502 programs
-- Verify stepping doesn't affect cycle timing
-
-**Benefits:**
-- ✅ Enables debugging of disk loading issues (Task 5)
-- ✅ Essential for GCR/sector debugging (Task 10)
-- ✅ Helps debug audio timing (Task 13)
-- ✅ General development productivity improvement
-- ✅ Foundation for advanced debugger features (Task 20)
-
-**Priority:** High (unblocks Tasks 5, 10, 13)
-
-**Dependencies:**
-- **Requires:** Task 19 (Basic Debugger Foundation) ✅ COMPLETED
-- **Enables:** Tasks 5, 10, 13 (debugging support)
-- **Related:** Task 12 (docking system for debugger panels)
-- **Leads to:** Task 20 (Advanced Debugger Features)
 
 ---
 
@@ -717,22 +556,53 @@ public void StepOver()
 
 ---
 
-### Task 9: Multi-Drive Operation Deep Dive (Medium Priority)
+### Task 9: Multi-Drive Operation Deep Dive (Low Priority)
 
-**Goal:** Thorough testing and debugging of multi-drive operation in the controller card.
+**Goal:** Verify multi-drive operation matches real Disk II hardware behavior.
 
-**Test Scenarios:**
-- Switching between drives during active read
-- Both motors running simultaneously
-- Motor-off timing with drive switching
-- Phase state when switching drives
-- Programs that use both drives (e.g., copy utilities)
+**Status:** ✅ MOSTLY COMPLETE - Real-world testing recommended
 
-**Files to Focus On:**
-- `Pandowdy.EmuCore\Cards\DiskIIControllerCard.cs`
-- `Pandowdy.EmuCore.Tests\DiskII\DiskIIIntegrationTests.cs` (28 tests exist)
+**Implementation Summary:**
 
-**Priority:** Medium
+| Feature | Status | Notes |
+|---------|--------|-------|
+| 2 independent drives | ✅ COMPLETE | Each DiskIIDrive has own QuarterTrack, MotorOn, disk media |
+| Single motor at a time | ✅ COMPLETE | Drive switch immediately turns off old drive's motor |
+| Motor-off timing with drive switch | ✅ COMPLETE | Scheduled motor-off cancelled on switch |
+| Per-drive head position | ✅ COMPLETE | Each drive maintains own QuarterTrack (0-139) - preserved across switches |
+| Controller phase reset on switch | ✅ COMPLETE | `_currentPhase` cleared on drive switch |
+
+**Architecture Notes:**
+
+The implementation correctly separates controller state from drive state:
+
+| State | Location | Behavior on Drive Switch |
+|-------|----------|--------------------------|
+| `_currentPhase` | Controller | **Cleared** - stepper coils are shared controller hardware |
+| `QuarterTrack` | Each Drive | **Preserved** - models physical head position that stays where it was |
+| `MotorOn` | Each Drive | Old drive turned **OFF** immediately (hardware can only power one motor) |
+
+This matches real Disk II hardware:
+- The stepper motor magnets are energized by the controller, so phases must be re-established after switching
+- Each drive's head physically stays at whatever track it was on
+- Software must re-activate phases to seek on the newly selected drive
+
+**Existing Tests:**
+- `MultiDrive_Drive1Selected_ByDefault`
+- `MultiDrive_SelectDrive2_AffectsMotorCommands`
+- `MultiDrive_SwitchingDrives_TurnsOffOldDriveMotor`
+- `MultiDrive_SelectDrive1_AfterDrive2`
+
+**Remaining Verification:**
+- [ ] Test with real-world copy utilities (Copy II Plus, Locksmith, etc.)
+- [ ] Optional: Add explicit test for head position preservation across drive switches
+
+**Files:**
+- `Pandowdy.EmuCore\Cards\DiskIIControllerCard.cs` (HandleDriveSelection, lines 538-571)
+- `Pandowdy.EmuCore\DiskII\DiskIIDrive.cs` (QuarterTrack property preserved per-drive)
+- `Pandowdy.EmuCore.Tests\DiskII\DiskIIIntegrationTests.cs` (Multi-Drive Tests region)
+
+**Priority:** Low (core implementation complete and architecturally correct)
 
 ---
 

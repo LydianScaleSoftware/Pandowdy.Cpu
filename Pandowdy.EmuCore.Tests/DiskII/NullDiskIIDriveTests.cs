@@ -59,18 +59,20 @@ public class NullDiskIIDriveTests
     #region Reset Tests
 
     [Fact]
-    public void Reset_RestoresTrackTo17()
+    public void Reset_PreservesHeadPosition()
     {
-        // Arrange
+        // Arrange - start at track 17 (default), step twice to track 17.5
         var drive = new NullDiskIIDrive();
+        Assert.Equal(17.0, drive.Track); // Verify initial position
         drive.StepToHigherTrack();
         drive.StepToHigherTrack();
+        Assert.Equal(17.5, drive.Track); // Verify stepped position
 
         // Act
         drive.Reset();
 
-        // Assert
-        Assert.Equal(17.0, drive.Track);
+        // Assert - head position should be preserved per interface contract
+        Assert.Equal(17.5, drive.Track);
     }
 
     [Fact]
@@ -190,9 +192,8 @@ public class NullDiskIIDriveTests
     [Fact]
     public void Track_ReturnsQuarterTrackDividedBy4()
     {
-        // Arrange
+        // Arrange - drive starts at track 17 (quarter track 68)
         var drive = new NullDiskIIDrive();
-        drive.Reset();
 
         // Step to quarter track 70 (track 17.5)
         drive.StepToHigherTrack();

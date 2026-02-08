@@ -89,7 +89,8 @@ public class DiskIIDebugDecoratorTests
     {
         // Arrange
         var inner = new NullDiskIIDrive();
-        var decorator = new DiskIIDebugDecorator(inner)
+
+        _ = new DiskIIDebugDecorator(inner)
         {
             // Act
             MotorOn = true
@@ -117,20 +118,20 @@ public class DiskIIDebugDecoratorTests
     [Fact]
     public void Reset_DelegatesToInner()
     {
-        // Arrange
+        // Arrange - step to track 17.25 with motor on
         var inner = new NullDiskIIDrive
         {
             MotorOn = true
         };
-        inner.StepToHigherTrack();
+        inner.StepToHigherTrack(); // Now at track 17.25
         var decorator = new DiskIIDebugDecorator(inner);
 
         // Act
         decorator.Reset();
 
-        // Assert - should be reset to initial state
+        // Assert - motor off, but head position preserved per interface contract
         Assert.False(inner.MotorOn);
-        Assert.Equal(17.0, inner.Track);
+        Assert.Equal(17.25, inner.Track); // Head position NOT reset
     }
 
     [Fact]

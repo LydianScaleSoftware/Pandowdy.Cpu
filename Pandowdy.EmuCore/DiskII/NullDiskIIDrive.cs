@@ -26,29 +26,23 @@ namespace Pandowdy.EmuCore.DiskII;
 /// </list>
 /// </para>
 /// </remarks>
-public class NullDiskIIDrive : IDiskIIDrive
+/// <remarks>
+/// Initializes a new instance of the <see cref="NullDiskIIDrive"/> class.
+/// </remarks>
+/// <param name="name">The display name for this drive. Defaults to "NullDrive".</param>
+public class NullDiskIIDrive(string name = "NullDrive") : IDiskIIDrive
 {
-    private bool _motor;
-    private int _quarterSteps;
+    private bool _motor = false;
+    private int _quarterSteps = 4 * 17;
 
     /// <inheritdoc />
-    public string Name { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="NullDiskIIDrive"/> class.
-    /// </summary>
-    /// <param name="name">The display name for this drive. Defaults to "NullDrive".</param>
-    public NullDiskIIDrive(string name = "NullDrive")
-    {
-        Name = name;
-        Reset();
-    }
+    public string Name { get; } = name;
 
     /// <inheritdoc />
     public void Reset()
     {
-        // Start at track 17 (middle of disk) - common boot track
-        _quarterSteps = 4 * 17;
+        // Per interface contract: motor off, head position preserved
+        // Head position (_quarterSteps) is intentionally NOT reset
         MotorOn = false;
     }
 

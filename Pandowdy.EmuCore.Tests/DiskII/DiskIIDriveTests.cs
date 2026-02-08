@@ -82,18 +82,20 @@ public class DiskIIDriveTests
     #region Reset Tests
 
     [Fact]
-    public void Reset_RestoresTrackTo17()
+    public void Reset_PreservesHeadPosition()
     {
-        // Arrange
+        // Arrange - start at track 17 (default), step twice to track 17.5
         _drive = new DiskIIDrive("TestDrive");
+        Assert.Equal(17.0, _drive.Track); // Verify initial position
         _drive.StepToHigherTrack();
         _drive.StepToHigherTrack();
+        Assert.Equal(17.5, _drive.Track); // Verify stepped position
 
         // Act
         _drive.Reset();
 
-        // Assert
-        Assert.Equal(17.0, _drive.Track);
+        // Assert - head position should be preserved per interface contract
+        Assert.Equal(17.5, _drive.Track);
     }
 
     [Fact]

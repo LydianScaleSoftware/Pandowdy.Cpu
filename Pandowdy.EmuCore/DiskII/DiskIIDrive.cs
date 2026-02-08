@@ -58,7 +58,10 @@ public class DiskIIDrive : IDiskIIDrive
         _imageProvider = imageProvider;
         _diskImageFactory = diskImageFactory;
 
-        Reset();
+        // Initialize head to track 17 (typical boot track area)
+        // This is only done on drive creation, not on Reset()
+        _quarterSteps = 4 * 17;
+        _motorOn = false;
 
         // Notify image provider of initial track position
         _imageProvider?.SetQuarterTrack(_quarterSteps);
@@ -102,8 +105,9 @@ public class DiskIIDrive : IDiskIIDrive
     /// <inheritdoc />
     public void Reset()
     {
-        // Start at track 17 (typical boot track area)
-        _quarterSteps = 4 * 17;
+        // Per interface contract: motor off, head position preserved
+        // Head position (_quarterSteps) is intentionally NOT reset - it represents
+        // the physical head location which doesn't change on system reset
         MotorOn = false;
         _hitMinLogged = false;
         _hitMaxLogged = false;

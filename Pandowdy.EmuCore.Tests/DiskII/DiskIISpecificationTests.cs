@@ -954,10 +954,9 @@ internal class MockDiskIIDrive(string name) : IDiskIIDrive
 
     public void Reset()
     {
-        QuarterTrack = 68;
+        // Per interface contract: motor off, head position preserved
+        // (matches real Disk II hardware behavior)
         MotorOn = false;
-        // Note: Per spec, reset does NOT reset head position in real hardware,
-        // but for testing purposes we reset to a known state
     }
 
     public void StepToHigherTrack()
