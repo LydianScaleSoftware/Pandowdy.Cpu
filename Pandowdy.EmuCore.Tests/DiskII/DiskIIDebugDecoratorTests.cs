@@ -70,35 +70,7 @@ public class DiskIIDebugDecoratorTests
         Assert.Equal(68, decorator.QuarterTrack);
     }
 
-    [Fact]
-    public void MotorOn_Get_DelegatesToInner()
-    {
-        // Arrange
-        var inner = new NullDiskIIDrive
-        {
-            MotorOn = true
-        };
-        var decorator = new DiskIIDebugDecorator(inner);
-
-        // Assert
-        Assert.True(decorator.MotorOn);
-    }
-
-    [Fact]
-    public void MotorOn_Set_DelegatesToInner()
-    {
-        // Arrange
-        var inner = new NullDiskIIDrive();
-
-        _ = new DiskIIDebugDecorator(inner)
-        {
-            // Act
-            MotorOn = true
-        };
-
-        // Assert
-        Assert.True(inner.MotorOn);
-    }
+    // PHASE 5: MotorOn delegation tests removed - motor state is controller-level, not drive-level
 
     [Fact]
     public void HasDisk_DelegatesToInner()
@@ -118,19 +90,16 @@ public class DiskIIDebugDecoratorTests
     [Fact]
     public void Reset_DelegatesToInner()
     {
-        // Arrange - step to track 17.25 with motor on
-        var inner = new NullDiskIIDrive
-        {
-            MotorOn = true
-        };
+        // Arrange - step to track 17.25
+        var inner = new NullDiskIIDrive();
+        // PHASE 5: Motor control is controller-level
         inner.StepToHigherTrack(); // Now at track 17.25
         var decorator = new DiskIIDebugDecorator(inner);
 
         // Act
         decorator.Reset();
 
-        // Assert - motor off, but head position preserved per interface contract
-        Assert.False(inner.MotorOn);
+        // Assert - head position preserved per interface contract
         Assert.Equal(17.25, inner.Track); // Head position NOT reset
     }
 
@@ -248,8 +217,9 @@ public class DiskIIDebugDecoratorTests
 
         // Act & Assert - all operations should work through the chain
         Assert.Equal("InnerDrive", decorator2.Name);
-        decorator2.MotorOn = true;
-        Assert.True(inner.MotorOn);
+        // PHASE 5: Motor control is controller-level, decorator only passes through mechanical operations
+        decorator2.StepToHigherTrack();
+        Assert.Equal(69, inner.QuarterTrack); // Verify delegation through chain
     }
 
     #endregion

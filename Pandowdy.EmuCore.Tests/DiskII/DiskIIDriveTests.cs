@@ -54,15 +54,8 @@ public class DiskIIDriveTests
         Assert.Equal(68, _drive.QuarterTrack); // 17 * 4
     }
 
-    [Fact]
-    public void Constructor_InitializesMotorOff()
-    {
-        // Act
-        _drive = new DiskIIDrive("TestDrive");
-
-        // Assert
-        Assert.False(_drive.MotorOn);
-    }
+    // PHASE 5: Motor tests removed - motor state is now controller-level, not drive-level
+    // Drive only handles mechanical operations (track positioning, disk insertion)
 
     [Fact]
     public void Constructor_WithImageProvider_SetsQuarterTrack()
@@ -98,41 +91,12 @@ public class DiskIIDriveTests
         Assert.Equal(17.5, _drive.Track);
     }
 
-    [Fact]
-    public void Reset_TurnsMotorOff()
-    {
-        // Arrange
-        _drive = new DiskIIDrive("TestDrive")
-        {
-            MotorOn = true
-        };
-
-        // Act
-        _drive.Reset();
-
-        // Assert
-        Assert.False(_drive.MotorOn);
-    }
+    // PHASE 5: Reset motor test removed - motor state is controller-level
 
     #endregion
 
-    #region Motor Tests
-
-    [Fact]
-    public void MotorOn_CanBeToggled()
-    {
-        // Arrange
-        _drive = new DiskIIDrive("TestDrive");
-
-        // Act & Assert
-        Assert.False(_drive.MotorOn);
-        _drive.MotorOn = true;
-        Assert.True(_drive.MotorOn);
-        _drive.MotorOn = false;
-        Assert.False(_drive.MotorOn);
-    }
-
-    #endregion
+    // PHASE 5: Motor Tests section removed - motor state is now controller-level
+    // Motor control tests should be in DiskIIControllerCardTests instead
 
     #region Track Stepping Tests
 
@@ -309,10 +273,8 @@ public class DiskIIDriveTests
     public void GetBit_ReturnsNull_WhenNoDisk()
     {
         // Arrange
-        _drive = new DiskIIDrive("TestDrive")
-        {
-            MotorOn = true
-        };
+        _drive = new DiskIIDrive("TestDrive");
+        // PHASE 5: Motor control is controller-level
 
         // Act
         bool? bit = _drive.GetBit(1000);
@@ -322,14 +284,12 @@ public class DiskIIDriveTests
     }
 
     [Fact]
-    public void GetBit_DelegatesToProvider_WhenMotorOn()
+    public void GetBit_DelegatesToProvider()
     {
         // Arrange
         var mockProvider = new MockDiskImageProvider { NextBitValue = true };
-        _drive = new DiskIIDrive("TestDrive", mockProvider)
-        {
-            MotorOn = true
-        };
+        _drive = new DiskIIDrive("TestDrive", mockProvider);
+        // PHASE 5: Motor control is controller-level, drive always delegates
 
         // Act
         bool? bit = _drive.GetBit(1000);
@@ -339,31 +299,15 @@ public class DiskIIDriveTests
         Assert.Equal(1000UL, mockProvider.LastGetBitCycle);
     }
 
-    [Fact]
-    public void SetBit_ReturnsFalse_WhenMotorOff()
-    {
-        // Arrange
-        var mockProvider = new MockDiskImageProvider();
-        _drive = new DiskIIDrive("TestDrive", mockProvider)
-        {
-            MotorOn = false
-        };
-
-        // Act
-        bool result = _drive.SetBit(true);
-
-        // Assert
-        Assert.False(result);
-    }
+    // PHASE 5: SetBit_ReturnsFalse_WhenMotorOff test removed - motor is controller-level
+    // Controller ensures motor is running before calling SetBit()
 
     [Fact]
     public void SetBit_ReturnsFalse_WhenNoDisk()
     {
         // Arrange
-        _drive = new DiskIIDrive("TestDrive")
-        {
-            MotorOn = true
-        };
+        _drive = new DiskIIDrive("TestDrive");
+        // PHASE 5: Motor control is controller-level
 
         // Act
         bool result = _drive.SetBit(true);
@@ -373,14 +317,12 @@ public class DiskIIDriveTests
     }
 
     [Fact]
-    public void SetBit_DelegatesToProvider_WhenMotorOn()
+    public void SetBit_DelegatesToProvider()
     {
         // Arrange
         var mockProvider = new MockDiskImageProvider { WriteBitReturnValue = true };
-        _drive = new DiskIIDrive("TestDrive", mockProvider)
-        {
-            MotorOn = true
-        };
+        _drive = new DiskIIDrive("TestDrive", mockProvider);
+        // PHASE 5: Motor control is controller-level, drive always delegates
 
         // Act
         bool result = _drive.SetBit(true);

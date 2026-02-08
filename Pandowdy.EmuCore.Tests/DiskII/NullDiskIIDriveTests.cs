@@ -44,15 +44,7 @@ public class NullDiskIIDriveTests
         Assert.Equal(68, drive.QuarterTrack); // 17 * 4 = 68
     }
 
-    [Fact]
-    public void Constructor_InitializesMotorOff()
-    {
-        // Act
-        var drive = new NullDiskIIDrive();
-
-        // Assert
-        Assert.False(drive.MotorOn);
-    }
+    // PHASE 5: Motor tests removed - motor state is now controller-level, not drive-level
 
     #endregion
 
@@ -75,57 +67,11 @@ public class NullDiskIIDriveTests
         Assert.Equal(17.5, drive.Track);
     }
 
-    [Fact]
-    public void Reset_TurnsMotorOff()
-    {
-        // Arrange
-        var drive = new NullDiskIIDrive
-        {
-            MotorOn = true
-        };
-
-        // Act
-        drive.Reset();
-
-        // Assert
-        Assert.False(drive.MotorOn);
-    }
+    // PHASE 5: Reset motor test removed - motor state is controller-level
 
     #endregion
 
-    #region Motor Tests
-
-    [Fact]
-    public void MotorOn_CanBeSetToTrue()
-    {
-        // Arrange
-        var drive = new NullDiskIIDrive
-        {
-            // Act
-            MotorOn = true
-        };
-
-        // Assert
-        Assert.True(drive.MotorOn);
-    }
-
-    [Fact]
-    public void MotorOn_CanBeSetToFalse()
-    {
-        // Arrange
-        var drive = new NullDiskIIDrive
-        {
-            MotorOn = true
-        };
-
-        // Act
-        drive.MotorOn = false;
-
-        // Assert
-        Assert.False(drive.MotorOn);
-    }
-
-    #endregion
+    // PHASE 5: Motor Tests section removed - motor state is now controller-level
 
     #region Track Stepping Tests
 
@@ -257,10 +203,8 @@ public class NullDiskIIDriveTests
     public void GetBit_AlwaysReturnsNull()
     {
         // Arrange
-        var drive = new NullDiskIIDrive
-        {
-            MotorOn = true
-        };
+        var drive = new NullDiskIIDrive();
+        // PHASE 5: Motor control is controller-level
 
         // Act
         bool? bit = drive.GetBit(12345);
