@@ -9,8 +9,8 @@
 | Status | Details |
 |--------|---------|
 | **Branch** | `tasks` |
-| **Tests** | 3378 tests (Including Pandowdy.Cpu.Tests) passing ✅ |
-| **Last Milestone** | DiskII Motor-Off Fix (Task 24) ✅ COMPLETE |
+| **Tests** | 2039 tests (1766 EmuCore + 126 Disassembler + 147 UI) passing ✅ |
+| **Last Milestone** | Disk II Motor State Refactoring (Task 25) ✅ COMPLETE |
 | **Current Focus** | Task 22 (Intermediate Debugger Implementation) ⏳ NOT STARTED |
 
 ---
@@ -46,6 +46,7 @@
    - [Task 18: Migrate to Pandowdy.Cpu](#task-18-migrate-to-pandowdycpu-critical-priority)
    - [Task 19: Basic Debugger Foundation](#task-19-basic-debugger-foundation)
    - [Task 24: Fix DiskII Motor-Off Behavior on Drive Switching](#task-24-fix-diskii-motor-off-behavior-on-drive-switching)
+   - [Task 25: Disk II Motor State Refactoring - Move to Controller Level](#task-25-disk-ii-motor-state-refactoring---move-to-controller-level)
 5. [Code Style Guidelines](#code-style-guidelines)
 6. [Git Best Practices](#git-best-practices)
 7. [Testing Guidelines](#testing-guidelines)
