@@ -209,4 +209,27 @@ public class DiskIIDrive : IDiskIIDrive
         // Delegate to image provider
         return _imageProvider.IsWriteProtected;
     }
+
+    /// <inheritdoc />
+    public void NotifyMotorStateChanged(bool motorOn, ulong cycleCount)
+    {
+        // Forward motor state notification to disk image provider
+        _imageProvider?.NotifyMotorStateChanged(motorOn, cycleCount);
+    }
+
+    /// <inheritdoc />
+    public int AdvanceAndReadBits(double elapsedCycles, Span<bool> bits)
+    {
+        // No disk inserted = no bits read
+        if (_imageProvider == null)
+        {
+            return 0;
+        }
+
+        // Delegate to image provider's incremental timing model
+        return _imageProvider.AdvanceAndReadBits(elapsedCycles, bits);
+    }
+
+    /// <inheritdoc />
+    public byte OptimalBitTiming => _imageProvider?.OptimalBitTiming ?? 32;
 }

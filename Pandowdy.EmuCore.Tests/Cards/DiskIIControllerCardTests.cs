@@ -1217,9 +1217,15 @@ internal class MockDiskIIDrive(string name) : IDiskIIDrive
 
     public bool? GetBit(ulong cycle) => null;
 
+    public int AdvanceAndReadBits(double elapsedCycles, Span<bool> bits) => 0;
+
+    public byte OptimalBitTiming => 32;
+
     public bool SetBit(bool value) => false;
 
     public bool IsWriteProtected() => _writeProtected;
+
+    public void NotifyMotorStateChanged(bool motorOn, ulong cycleCount) { }
 
     public void InsertDisk(string diskImagePath) { }
 

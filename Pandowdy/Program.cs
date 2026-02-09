@@ -198,7 +198,7 @@ namespace Pandowdy
             {
                 // Example: Insert a disk image into Drive 1
                 // diskController6.Drives[0].InsertDisk(@"E:\XPS Diagnostic IIe 1.0.5.nib");
-                diskController6.Drives[0].InsertDisk(@"E:\test.nib");
+                diskController6.Drives[0].InsertDisk(@"E:\test.woz");
                 // diskController6.Drives[0].InsertDisk(@"E:\A2eDiagnostics_v2.1.nib");
                 // diskController6.Drives[0].InsertDisk(@"E:\missing_ring_good.nib");
 
@@ -212,12 +212,11 @@ namespace Pandowdy
             {
                 // Example: Insert a disk image into Drive 1
                 // diskController5.Drives[0].InsertDisk(@"E:\XPS Diagnostic IIe 1.0.5.nib");
-                diskController5.Drives[0].InsertDisk(@"E:\test.woz");
+                diskController5.Drives[0].InsertDisk(diskImagePath: @"E:\XPS Diagnostic IIe 1.0.5.nib");
                 // diskController5.Drives[0].InsertDisk(@"E:\A2eDiagnostics_v2.1.nib");
-                // diskController5.Drives[0].InsertDisk(@"E:\missing_ring_good.nib");
 
                 // Example: Insert a disk image into Drive 2
-                 diskController5.Drives[1].InsertDisk(@"E:\test.woz");
+                diskController5.Drives[1].InsertDisk(@"E:\test.do");
                 //diskController5.Drives[1].InsertDisk(@"E:\blank.nib");
             }
             return Task.CompletedTask;

@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- Disable TypeScript compilation - _docs_ contains reference TS files only -->
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +28,14 @@
     <EmbeddedResource Include="..\assets\a2e_enh_video.rom">
       <Link>Resources\a2e_enh_video.rom</Link>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Remove="_docs_\**\*.ts" />
+    <None Include="_docs_\**\*.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="_Hold_\**\*.cs" />
   </ItemGroup>
 
 </Project>

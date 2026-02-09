@@ -84,6 +84,34 @@ public class NibDiskImageProvider : IDiskImageProvider, IDisposable
     public int CurrentQuarterTrack => _currentQuarterTrack;
 
     /// <summary>
+    /// Gets the optimal bit timing for this disk image.
+    /// NIB format has no timing information, so always returns the default 32 (4µs/bit).
+    /// </summary>
+    public byte OptimalBitTiming => 32;
+
+    /// <summary>
+    /// Gets the number of bits on the current track.
+    /// NIB format always has exactly 53,248 bits per track.
+    /// </summary>
+    public int CurrentTrackBitCount => DiskIIConstants.BitsPerTrack;
+
+    /// <summary>
+    /// Gets the current bit position within the track.
+    /// </summary>
+    public int TrackBitPosition
+    {
+        get
+        {
+            int track = _currentQuarterTrack / 4;
+            if (track < 0 || track >= DiskIIConstants.TrackCount)
+            {
+                return 0;
+            }
+            return _tracks[track].BitPosition;
+        }
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="NibDiskImageProvider"/> class.
     /// </summary>
     /// <param name="filePath">Full path to the .nib disk image file.</param>
@@ -162,6 +190,25 @@ public class NibDiskImageProvider : IDiskImageProvider, IDisposable
     }
 
     /// <summary>
+    /// Notifies the provider of motor state changes.
+    /// </summary>
+    /// <param name="motorOn">True if motor is turning on, false if turning off.</param>
+    /// <param name="cycleCount">Current CPU cycle count when state changed.</param>
+    /// <remarks>
+    /// Sets the cycle offset when motor turns ON to establish the rotational starting position.
+    /// This ensures bit reads happen at correct positions relative to when the disk started spinning.
+    /// </remarks>
+    public void NotifyMotorStateChanged(bool motorOn, ulong cycleCount)
+    {
+        if (motorOn)
+        {
+            Debug.WriteLine($"NIB NotifyMotorStateChanged: Motor ON at cycle {cycleCount}");
+            _cycleOffsetAtFirstAccess = cycleCount;
+            _hasBeenAccessed = true;
+        }
+    }
+
+    /// <summary>
     /// Sets the current track position based on the quarter-track value.
     /// </summary>
     /// <param name="qTrack">Quarter-track position (0-139 for 35 tracks).</param>
@@ -222,11 +269,20 @@ public class NibDiskImageProvider : IDiskImageProvider, IDisposable
     /// </remarks>
     public bool? GetBit(ulong cycleCount)
     {
-        // Initialize cycle offset on first access (simulates motor start)
+        // Cycle offset should be set by NotifyMotorStateChanged when motor turns on
+        // Fallback: if somehow GetBit is called before notification, initialize here
         if (!_hasBeenAccessed)
         {
+            Debug.WriteLine($"NIB GetBit: WARNING - GetBit called before NotifyMotorStateChanged! cycleCount={cycleCount}");
             _cycleOffsetAtFirstAccess = cycleCount;
             _hasBeenAccessed = true;
+        }
+
+        // Handle cycle count going backwards (system reset)
+        if (cycleCount < _cycleOffsetAtFirstAccess)
+        {
+            Debug.WriteLine($"NIB GetBit: Cycle count went backwards (reset). Reinitializing offset. cycleCount={cycleCount}, oldOffset={_cycleOffsetAtFirstAccess}");
+            _cycleOffsetAtFirstAccess = cycleCount;
         }
 
         // Convert quarter-track to full track
@@ -263,10 +319,53 @@ public class NibDiskImageProvider : IDiskImageProvider, IDisposable
     }
 
     /// <summary>
+    /// Advances the disk by the specified number of CPU cycles and returns bits read.
+    /// </summary>
+    /// <param name="elapsedCycles">CPU cycles elapsed since last call.</param>
+    /// <param name="bits">Buffer to receive the bits read.</param>
+    /// <returns>Number of bits actually read.</returns>
+    /// <remarks>
+    /// <para>
+    /// <strong>Stub Implementation:</strong> This is a compatibility stub for the NIB provider.
+    /// NIB format will receive full incremental timing support in a later phase.
+    /// </para>
+    /// <para>
+    /// Currently uses the legacy absolute position calculation rather than true incremental tracking.
+    /// </para>
+    /// </remarks>
+    public int AdvanceAndReadBits(double elapsedCycles, Span<bool> bits)
+    {
+        // Stub implementation - NIB will get full incremental timing in Phase 2
+        // For now, just advance and read using the legacy model
+        const double cyclesPerBit = 32.0 / 8.0; // Default timing
+        int bitsToRead = (int)(elapsedCycles / cyclesPerBit);
+        bitsToRead = Math.Min(bitsToRead, bits.Length);
+
+        int track = _currentQuarterTrack / 4;
+        if (track < 0 || track >= DiskIIConstants.TrackCount)
+        {
+            // Out of bounds - return random bits
+            for (int i = 0; i < bitsToRead; i++)
+            {
+                bits[i] = RandBit();
+            }
+            return bitsToRead;
+        }
+
+        CircularBitBuffer currentTrackBuffer = _tracks[track];
+        for (int i = 0; i < bitsToRead; i++)
+        {
+            bits[i] = currentTrackBuffer.ReadNextBit() == 1;
+        }
+
+        return bitsToRead;
+    }
+
+    /// <summary>
     /// Writes a bit to the current track.
     /// </summary>
     /// <param name="bit">The bit value to write.</param>
-    /// <param name="cycleCount">Current CPU cycle count used to calculate write position.</param>
+    /// <param name="cycleCount">Current CPU cycle count used to calculate write position.
     /// <returns>True if write succeeded, false if write-protected.</returns>
     /// <remarks>
     /// Writes use the same cycle-based position calculation as reads (45/11 cycles per bit).
@@ -274,11 +373,18 @@ public class NibDiskImageProvider : IDiskImageProvider, IDisposable
     /// </remarks>
     public bool WriteBit(bool bit, ulong cycleCount)
     {
-        // Initialize cycle offset on first access (simulates motor start)
+        // Cycle offset should be set by NotifyMotorStateChanged when motor turns on
+        // Fallback: if somehow WriteBit is called before notification, initialize here
         if (!_hasBeenAccessed)
         {
             _cycleOffsetAtFirstAccess = cycleCount;
             _hasBeenAccessed = true;
+        }
+
+        // Handle cycle count going backwards (system reset)
+        if (cycleCount < _cycleOffsetAtFirstAccess)
+        {
+            _cycleOffsetAtFirstAccess = cycleCount;
         }
 
         if (_isWriteProtected)

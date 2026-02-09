@@ -3,6 +3,7 @@
 // See LICENSE file for details
 
 using System.Diagnostics;
+using CommonUtil;
 using DiskArc;
 using DiskArc.Disk;
 using Pandowdy.EmuCore.Interfaces;
@@ -17,20 +18,20 @@ namespace Pandowdy.EmuCore.DiskII.Providers;
 /// <para>
 /// This provider uses CiderPress2's DiskArc library to read logical sectors from
 /// sector-based disk images. Since these formats don't contain GCR-encoded data,
-/// it synthesizes disk tracks on demand using <see cref="GcrEncoder"/>.
+/// it synthesizes disk tracks on demand using DiskArc's <see cref="TrackInit"/> and
+/// <see cref="SectorCodec"/> classes.
 /// </para>
 /// <para>
 /// <strong>Track Synthesis:</strong><br/>
 /// When software accesses a track, this provider generates GCR-encoded data that matches
 /// what would appear on a physical disk. The synthesized tracks are cached to avoid
 /// repeated encoding overhead. Each track contains 16 sectors with proper address/data
-/// fields, gaps, and sync bytes.
+/// fields, gaps, and sync bytes encoded by DiskArc's battle-tested encoder.
 /// </para>
 /// <para>
-/// <strong>Performance:</strong><br/>
-/// Track synthesis is relatively fast (~1ms per track), and caching ensures each track
-/// is only synthesized once. This allows the ROM boot code to operate normally while
-/// providing good performance.
+/// <strong>Bit-Level Access:</strong><br/>
+/// Track data is accessed via <see cref="CircularBitBuffer"/>, providing the same
+/// interface as <see cref="WozDiskImageProvider"/> and <see cref="NibDiskImageProvider"/>.
 /// </para>
 /// </remarks>
 public class SectorDiskImageProvider : IDiskImageProvider, IDisposable
@@ -38,12 +39,17 @@ public class SectorDiskImageProvider : IDiskImageProvider, IDisposable
     private readonly Stream _stream;
     private readonly IDiskImage _diskImage;
     private readonly IChunkAccess _chunkAccess;
-    private readonly GcrEncoder _encoder;
-    private readonly Dictionary<int, SynthesizedTrack> _trackCache;
+    private readonly SectorCodec _codec;
+    private readonly CircularBitBuffer?[] _trackCache;
+    private readonly int[] _trackBitCounts;
 
     private int _currentQuarterTrack;
     private bool _isWriteProtected;
     private bool _disposed;
+
+    private const int NumTracks = 35;
+    private const int SectorsPerTrack = 16;
+    private const byte DefaultVolume = 254;
 
     /// <summary>
     /// Gets the file path of the disk image.
@@ -68,6 +74,45 @@ public class SectorDiskImageProvider : IDiskImageProvider, IDisposable
     /// Gets the current quarter-track position.
     /// </summary>
     public int CurrentQuarterTrack => _currentQuarterTrack;
+
+    /// <summary>
+    /// Gets the optimal bit timing for this disk image.
+    /// Sector-based formats have no timing information, so always returns the default 32 (4µs/bit).
+    /// </summary>
+    public byte OptimalBitTiming => 32;
+
+    /// <summary>
+    /// Gets the number of bits on the current track.
+    /// </summary>
+    public int CurrentTrackBitCount
+    {
+        get
+        {
+            int track = _currentQuarterTrack / 4;
+            if (track >= 0 && track < NumTracks && _trackBitCounts[track] > 0)
+            {
+                return _trackBitCounts[track];
+            }
+            return DiskIIConstants.BitsPerTrack;
+        }
+    }
+
+    /// <summary>
+    /// Gets the current bit position within the track.
+    /// </summary>
+    public int TrackBitPosition
+    {
+        get
+        {
+            int track = _currentQuarterTrack / 4;
+            if (track >= 0 && track < NumTracks)
+            {
+                var buffer = _trackCache[track];
+                return buffer?.BitPosition ?? 0;
+            }
+            return 0;
+        }
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SectorDiskImageProvider"/> class.
@@ -110,16 +155,16 @@ public class SectorDiskImageProvider : IDiskImageProvider, IDisposable
             _chunkAccess = _diskImage.ChunkAccess;
 
             // Verify it's a 5.25" disk with sectors
-            if (!_chunkAccess.HasSectors || _chunkAccess.NumTracks != DiskIIConstants.TrackCount)
+            if (!_chunkAccess.HasSectors || _chunkAccess.NumTracks != NumTracks)
             {
                 throw new InvalidDataException(
-                    $"Expected {DiskIIConstants.TrackCount}-track 5.25\" disk, got {_chunkAccess.NumTracks} tracks");
+                    $"Expected {NumTracks}-track 5.25\" disk, got {_chunkAccess.NumTracks} tracks");
             }
 
-            if (_chunkAccess.NumSectorsPerTrack != DiskIIConstants.SectorsPerTrack16)
+            if (_chunkAccess.NumSectorsPerTrack != SectorsPerTrack)
             {
                 throw new InvalidDataException(
-                    $"Expected {DiskIIConstants.SectorsPerTrack16} sectors per track, got {_chunkAccess.NumSectorsPerTrack}");
+                    $"Expected {SectorsPerTrack} sectors per track, got {_chunkAccess.NumSectorsPerTrack}");
             }
         }
         catch
@@ -128,10 +173,25 @@ public class SectorDiskImageProvider : IDiskImageProvider, IDisposable
             throw;
         }
 
-        _encoder = new GcrEncoder();
-        _trackCache = [];
+        // Use DiskArc's standard 16-sector codec for GCR encoding
+        _codec = StdSectorCodec.GetCodec(StdSectorCodec.CodecIndex525.Std_525_16);
+        _trackCache = new CircularBitBuffer?[NumTracks];
+        _trackBitCounts = new int[NumTracks];
 
-        Debug.WriteLine($"Loaded sector disk image: {filePath} ({DiskIIConstants.TrackCount} tracks, {DiskIIConstants.SectorsPerTrack16} sectors/track)");
+        Debug.WriteLine($"Loaded sector disk image: {filePath} ({NumTracks} tracks, {SectorsPerTrack} sectors/track)");
+    }
+
+    /// <summary>
+    /// Notifies the provider of motor state changes.
+    /// </summary>
+    /// <param name="motorOn">True if motor is turning on, false if turning off.</param>
+    /// <param name="cycleCount">Current CPU cycle count when state changed.</param>
+    /// <remarks>
+    /// SectorDiskImageProvider doesn't track rotational position, so this is a no-op.
+    /// </remarks>
+    public void NotifyMotorStateChanged(bool motorOn, ulong cycleCount)
+    {
+        // Sector provider doesn't use cycle-based timing - no action needed
     }
 
     /// <summary>
@@ -154,20 +214,21 @@ public class SectorDiskImageProvider : IDiskImageProvider, IDisposable
     {
         // Convert quarter-track to full track
         int track = _currentQuarterTrack / 4;
-        if (track < 0 || track >= DiskIIConstants.TrackCount)
+        if (track < 0 || track >= NumTracks)
         {
             return null;
         }
 
         // Get or synthesize the track
-        if (!_trackCache.TryGetValue(track, out SynthesizedTrack? synthTrack))
+        CircularBitBuffer? buffer = GetOrSynthesizeTrack(track);
+        if (buffer == null)
         {
-            synthTrack = SynthesizeTrack(track);
-            _trackCache[track] = synthTrack;
+            return null;
         }
 
         // Read the next bit
-        return synthTrack.ReadNextBit();
+        byte bit = buffer.LatchNextByte();
+        return (bit & 0x80) != 0; // Return high bit of latched byte
     }
 
     /// <summary>
@@ -184,6 +245,39 @@ public class SectorDiskImageProvider : IDiskImageProvider, IDisposable
     }
 
     /// <summary>
+    /// Advances the disk by the specified number of CPU cycles and returns bits read.
+    /// </summary>
+    /// <param name="elapsedCycles">CPU cycles elapsed since last call.</param>
+    /// <param name="bits">Buffer to receive the bits read.</param>
+    /// <returns>Number of bits actually read.</returns>
+    public int AdvanceAndReadBits(double elapsedCycles, Span<bool> bits)
+    {
+        const double cyclesPerBit = 32.0 / 8.0; // Default timing (4µs/bit at 1MHz)
+        int bitsToRead = (int)(elapsedCycles / cyclesPerBit);
+        bitsToRead = Math.Min(bitsToRead, bits.Length);
+
+        int track = _currentQuarterTrack / 4;
+        if (track < 0 || track >= NumTracks)
+        {
+            return 0;
+        }
+
+        // Get or synthesize the track
+        CircularBitBuffer? buffer = GetOrSynthesizeTrack(track);
+        if (buffer == null)
+        {
+            return 0;
+        }
+
+        for (int i = 0; i < bitsToRead; i++)
+        {
+            bits[i] = buffer.ReadNextBit() == 1;
+        }
+
+        return bitsToRead;
+    }
+
+    /// <summary>
     /// Flushes any pending writes to disk.
     /// </summary>
     public void Flush()
@@ -192,26 +286,70 @@ public class SectorDiskImageProvider : IDiskImageProvider, IDisposable
     }
 
     /// <summary>
-    /// Synthesizes a GCR-encoded track from logical sectors.
+    /// Gets or synthesizes a track, caching the result.
     /// </summary>
-    private SynthesizedTrack SynthesizeTrack(int track)
+    private CircularBitBuffer? GetOrSynthesizeTrack(int track)
     {
-        byte[] trackData = new byte[DiskIIConstants.BytesPerNibTrack];
-        int offset = 0;
-
-        // Synthesize all 16 sectors with proper GCR encoding
-        for (int sector = 0; sector < DiskIIConstants.SectorsPerTrack16; sector++)
+        if (track < 0 || track >= NumTracks)
         {
-            // Check if we have enough space for this sector
-            // Address field (~24 bytes) + Data field (~354 bytes) + small gap = ~400 bytes
-            if (offset + 400 > DiskIIConstants.BytesPerNibTrack)
+            return null;
+        }
+
+        if (_trackCache[track] == null)
+        {
+            SynthesizeTrack(track);
+        }
+
+        return _trackCache[track];
+    }
+
+    /// <summary>
+    /// Synthesizes a GCR-encoded track from logical sectors using DiskArc's encoder.
+    /// </summary>
+    /// <remarks>
+    /// This method generates a GCR track structure directly, writing the actual sector data
+    /// during construction rather than filling with zeros and patching afterward.
+    /// The structure matches what TrackInit.GenerateTrack525_16 produces:
+    /// - Gap 3 (20 self-sync bytes) before each sector
+    /// - Address field (14 bytes)
+    /// - Gap 2 (5 self-sync bytes)
+    /// - Data field prolog (3 bytes) + encoded data (343 bytes) + epilog (3 bytes)
+    /// </remarks>
+    private void SynthesizeTrack(int track)
+    {
+        const int DefaultTrackLength = 6336; // Standard track length in bytes
+        const int Gap2Len = 5;
+        const int Gap3Len = 20;
+
+        byte[] trackData = new byte[DefaultTrackLength];
+        var buffer = new CircularBitBuffer(trackData, 0, 0, trackData.Length * 8);
+
+        // Fill track with sync bytes first (gap 1 filler)
+        buffer.Fill(0xFF, 8); // Byte-aligned (8 bits per byte)
+
+        // Write sectors - start with gap 3 so track begins with self-sync
+        for (byte sector = 0; sector < SectorsPerTrack; sector++)
+        {
+            // Gap 3 (inter-sector gap)
+            for (int i = 0; i < Gap3Len; i++)
             {
-                Debug.WriteLine($"Warning: Track {track} synthesis ran out of space at sector {sector}");
-                break;
+                buffer.WriteByte(0xFF, 8);
             }
 
-            // Read logical sector from disk image
-            byte[] sectorData = new byte[DiskIIConstants.BytesPerSector];
+            // Address field
+            _codec.WriteAddressField_525(buffer, DefaultVolume, (byte)track, sector);
+
+            // Gap 2 (address-to-data gap)
+            for (int i = 0; i < Gap2Len; i++)
+            {
+                buffer.WriteByte(0xFF, 8);
+            }
+
+            // Data field prolog
+            buffer.WriteOctets(_codec.DataProlog);
+
+            // Read the actual sector data from disk image
+            byte[] sectorData = new byte[256];
             try
             {
                 _chunkAccess.ReadSector((uint)track, (uint)sector, sectorData, 0);
@@ -219,35 +357,25 @@ public class SectorDiskImageProvider : IDiskImageProvider, IDisposable
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error reading track {track} sector {sector}: {ex.Message}");
-                // Fill with zeros on error
-                Array.Clear(sectorData, 0, DiskIIConstants.BytesPerSector);
+                // Leave as zeros on error
             }
 
-            // Write address field
-            offset += GcrEncoder.WriteAddressField(trackData, offset,
-                volume: 254, track, sector);
+            // Encode sector data (6&2 encoding: 256 bytes -> 343 bytes including checksum)
+            _codec.EncodeSector62_256(buffer, buffer.BitPosition, sectorData, 0);
 
-            // Write data field (6&2 encoded)
-            offset += GcrEncoder.WriteDataField(trackData, offset, sectorData);
-
-            // Write gap between sectors (if not the last sector)
-            if (sector < DiskIIConstants.SectorsPerTrack16 - 1)
-            {
-                int remainingSpace = DiskIIConstants.BytesPerNibTrack - offset;
-                int sectorsLeft = DiskIIConstants.SectorsPerTrack16 - sector - 1;
-                int gapSize = remainingSpace / (sectorsLeft + 1);  // Distribute remaining space
-                gapSize = Math.Min(Math.Max(gapSize, 10), 50);  // Clamp between 10-50 bytes
-                offset += GcrEncoder.WriteSyncGap(trackData, offset, gapSize);
-            }
+            // Data field epilog
+            buffer.WriteOctets(_codec.DataEpilog);
         }
 
-        // Fill remaining space with sync bytes
-        while (offset < DiskIIConstants.BytesPerNibTrack)
-        {
-            trackData[offset++] = 0xFF;
-        }
+        int bitCount = buffer.BitPosition;
 
-        return new SynthesizedTrack(trackData);
+        // Reset buffer position to start for reading
+        buffer.BitPosition = 0;
+
+        _trackCache[track] = buffer;
+        _trackBitCounts[track] = bitCount;
+
+        Debug.WriteLine($"Synthesized track {track}: {bitCount} bits ({trackData.Length} bytes)");
     }
 
     /// <summary>
@@ -266,29 +394,6 @@ public class SectorDiskImageProvider : IDiskImageProvider, IDisposable
             _stream?.Dispose();
             _disposed = true;
             GC.SuppressFinalize(this);
-        }
-    }
-
-    /// <summary>
-    /// Represents a synthesized GCR-encoded track with bit-level access.
-    /// </summary>
-    private class SynthesizedTrack(byte[] data)
-    {
-        private readonly byte[] _data = data;
-        private int _bitPosition;
-        private readonly int _totalBits = data.Length * 8;
-
-        public bool ReadNextBit()
-        {
-            int byteIndex = _bitPosition / 8;
-            int bitIndex = 7 - (_bitPosition % 8); // MSB first
-
-            bool bit = (_data[byteIndex] & (1 << bitIndex)) != 0;
-
-            // Advance position (circular)
-            _bitPosition = (_bitPosition + 1) % _totalBits;
-
-            return bit;
         }
     }
 }

@@ -76,3 +76,4 @@ docs/docfx.log
 # Keep embedded resources XML intact
 !**/Resources/**/*.xml
 
+*.ts

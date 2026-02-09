@@ -331,6 +331,9 @@ public class DiskIIDriveTests
         public bool IsWritable => true;
         public bool IsWriteProtected { get; set; }
         public int CurrentQuarterTrack { get; private set; }
+        public byte OptimalBitTiming => 32;
+        public int CurrentTrackBitCount => 51024;
+        public int TrackBitPosition => 0;
         public bool WasDisposed { get; private set; }
         public bool WasFlushed { get; private set; }
         public bool? NextBitValue { get; set; }
@@ -346,6 +349,17 @@ public class DiskIIDriveTests
             return NextBitValue;
         }
 
+        public int AdvanceAndReadBits(double elapsedCycles, Span<bool> bits)
+        {
+            // Simple stub - return one bit if we have a value
+            if (bits.Length > 0 && NextBitValue.HasValue)
+            {
+                bits[0] = NextBitValue.Value;
+                return 1;
+            }
+            return 0;
+        }
+
         public bool WriteBit(bool bit, ulong cycleCount)
         {
             LastWrittenBit = bit;
@@ -353,6 +367,8 @@ public class DiskIIDriveTests
         }
 
         public void Flush() => WasFlushed = true;
+
+        public void NotifyMotorStateChanged(bool motorOn, ulong cycleCount) { }
 
         public void Dispose() => WasDisposed = true;
     }

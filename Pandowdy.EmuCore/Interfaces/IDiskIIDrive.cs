@@ -68,7 +68,31 @@ public interface IDiskIIDrive
     /// </summary>
     /// <param name="currentCycle">Current CPU cycle count for timing.</param>
     /// <returns>The bit value, or null if no disk is inserted or read fails.</returns>
+    /// <remarks>
+    /// <strong>Deprecated:</strong> Prefer <see cref="AdvanceAndReadBits"/> for proper timing.
+    /// </remarks>
     bool? GetBit(ulong currentCycle);
+
+    /// <summary>
+    /// Advances the disk by the specified number of CPU cycles and returns bits read.
+    /// </summary>
+    /// <param name="elapsedCycles">CPU cycles elapsed since last call.</param>
+    /// <param name="bits">Buffer to receive the bits read.</param>
+    /// <returns>Number of bits actually read (may be 0 if not enough cycles for a full bit).</returns>
+    /// <remarks>
+    /// This method delegates to the disk image provider's incremental timing model.
+    /// The provider maintains cycle remainder and track position state.
+    /// </remarks>
+    int AdvanceAndReadBits(double elapsedCycles, Span<bool> bits);
+
+    /// <summary>
+    /// Gets the optimal bit timing for the current disk (default 32 = 4µs/bit).
+    /// </summary>
+    /// <remarks>
+    /// Returns 32 if no disk is inserted. For WOZ files, this value comes from
+    /// the INFO chunk and may be 31, 32, or other values for copy-protected disks.
+    /// </remarks>
+    byte OptimalBitTiming { get; }
 
     /// <summary>
     /// Writes a bit to the disk at the current position.
@@ -82,6 +106,17 @@ public interface IDiskIIDrive
     /// </summary>
     /// <returns>True if write-protected or no disk inserted.</returns>
     bool IsWriteProtected();
+
+    /// <summary>
+    /// Notifies the drive of motor state changes from the controller.
+    /// </summary>
+    /// <param name="motorOn">True if motor is turning on, false if turning off.</param>
+    /// <param name="cycleCount">Current CPU cycle count when state changed.</param>
+    /// <remarks>
+    /// This allows the drive to notify its disk image provider to synchronize timing.
+    /// Critical for per-provider cycle tracking to maintain independent rotational positions.
+    /// </remarks>
+    void NotifyMotorStateChanged(bool motorOn, ulong cycleCount);
 
     /// <summary>
     /// Inserts a disk image into the drive.

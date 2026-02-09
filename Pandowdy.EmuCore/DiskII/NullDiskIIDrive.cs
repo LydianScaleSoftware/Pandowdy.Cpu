@@ -103,6 +103,12 @@ public class NullDiskIIDrive(string name = "NullDrive") : IDiskIIDrive
     }
 
     /// <inheritdoc />
+    public void NotifyMotorStateChanged(bool motorOn, ulong cycleCount)
+    {
+        // No-op: Null drive has no provider to notify
+    }
+
+    /// <inheritdoc />
     /// <remarks>No-op: Null drive doesn't support disk insertion.</remarks>
     public void InsertDisk(string diskImagePath)
     {
@@ -115,6 +121,18 @@ public class NullDiskIIDrive(string name = "NullDrive") : IDiskIIDrive
     {
         // No-op: Null drive doesn't have a disk to eject
     }
+
+    /// <inheritdoc />
+    /// <returns>Always returns 0 since no disk is present.</returns>
+    public int AdvanceAndReadBits(double elapsedCycles, Span<bool> bits)
+    {
+        // No disk = no bits
+        return 0;
+    }
+
+    /// <inheritdoc />
+    /// <returns>Returns default timing (32) since no disk is present.</returns>
+    public byte OptimalBitTiming => 32;
 
     /// <inheritdoc />
     /// <returns>Always returns false since no disk is ever present.</returns>

@@ -46,7 +46,7 @@ public class DiskImageFactory : IDiskImageFactory
         return extension switch
         {
             ".nib" => new NibDiskImageProvider(filePath),
-            ".woz" => new InternalWozDiskImageProvider(filePath), // Native WOZ parser (default)
+            ".woz" => new WozDiskImageProvider(filePath), 
             ".dsk" or ".do" or ".po" => new SectorDiskImageProvider(filePath),
             ".2mg" or ".2img" => new SectorDiskImageProvider(filePath),
             _ => throw new NotSupportedException(

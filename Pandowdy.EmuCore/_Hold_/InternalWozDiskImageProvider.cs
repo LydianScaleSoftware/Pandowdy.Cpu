@@ -54,10 +54,33 @@ public class InternalWozDiskImageProvider : IDiskImageProvider, IDisposable
     private int _currentQuarterTrack;
     private readonly HashSet<int> _missingTracks = [];
 
-    // Per-provider cycle tracking (fixes drive switching bug)
-    // Each provider instance maintains its own rotational position independent of other drives
-    private ulong _cycleOffsetAtFirstAccess = 0;
-    private bool _hasBeenAccessed = false;
+    // ========================================================================
+    // Incremental timing state (Phase 1 - matching TypeScript model)
+    // ========================================================================
+
+    /// <summary>
+    /// Current bit position within the track (0 to trackBitCount-1).
+    /// Increments with each bit read, wraps at track end.
+    /// </summary>
+    private int _trackLocation = 0;
+
+    /// <summary>
+    /// Fractional cycle accumulator for sub-bit timing precision.
+    /// When this reaches cyclesPerBit, we read the next bit.
+    /// </summary>
+    private double _cycleRemainder = 0;
+
+    /// <summary>
+    /// Sliding window of last 4 bits for weak bit detection.
+    /// If all 4 are 0, we're in a weak bit region.
+    /// </summary>
+    private int _headWindow = 0;
+
+    /// <summary>
+    /// Counter for detecting full revolutions without finding sync.
+    /// Prevents infinite loops on unformatted tracks.
+    /// </summary>
+    private int _fullRevolutionCount = 0;
 
     // Random bit pattern for simulating MC3470 behavior when no track data exists
     // Approximately 30% ones, matching the TypeScript reference implementation
@@ -68,6 +91,7 @@ public class InternalWozDiskImageProvider : IDiskImageProvider, IDisposable
     private const int MaxTracks = 35;
     private const int QuartersPerTrack = 4;
     private const int MaxQuarterTracks = 160;
+    private const int DefaultTrackBitCount = 51024; // Default empty track size (matches TypeScript)
 
     /// <summary>
     /// Gets the file path of the disk image.
@@ -87,6 +111,28 @@ public class InternalWozDiskImageProvider : IDiskImageProvider, IDisposable
         get => _isWriteProtected;
         set => _isWriteProtected = value;
     }
+
+    /// <summary>
+    /// Gets the optimal bit timing for this disk image.
+    /// </summary>
+    public byte OptimalBitTiming => _optimalBitTiming;
+
+    /// <summary>
+    /// Gets the number of bits on the current track.
+    /// </summary>
+    public int CurrentTrackBitCount
+    {
+        get
+        {
+            int bitCount = GetBitCountForTrack(_currentQuarterTrack);
+            return bitCount > 0 ? bitCount : DefaultTrackBitCount;
+        }
+    }
+
+    /// <summary>
+    /// Gets the current bit position within the track.
+    /// </summary>
+    public int TrackBitPosition => _trackLocation;
 
     /// <summary>
     /// Gets the current quarter-track position.
@@ -440,87 +486,233 @@ public class InternalWozDiskImageProvider : IDiskImageProvider, IDisposable
     }
 
     /// <summary>
-    /// Sets the current quarter-track position.
+    /// Notifies the provider of motor state changes.
     /// </summary>
-    public void SetQuarterTrack(int qTrack)
+    /// <param name="motorOn">True if motor is turning on, false if turning off.</param>
+    /// <param name="cycleCount">Current CPU cycle count when state changed.</param>
+    /// <remarks>
+    /// When motor turns ON, resets the cycle remainder to establish timing baseline.
+    /// Track location is NOT reset - the disk continues from wherever it was.
+    /// </remarks>
+    public void NotifyMotorStateChanged(bool motorOn, ulong cycleCount)
     {
-        if (_currentQuarterTrack != qTrack)
+        if (motorOn)
         {
-            int printableTrack = qTrack / QuartersPerTrack;
-            int printableQuarter = (qTrack % QuartersPerTrack) * 25;
-            _currentQuarterTrack = qTrack;
-            Debug.WriteLine($"InternalWozDiskImageProvider: Disk head moved to track {printableTrack}.{printableQuarter} (quarter-track {qTrack})");
+            Debug.WriteLine($"WOZ NotifyMotorStateChanged: Motor ON at cycle {cycleCount}");
+            // Reset cycle remainder when motor starts (matches TypeScript: cycleRemainder = 0)
+            _cycleRemainder = 0;
+            // Track location is NOT reset - disk continues from current position
+            // Reset weak bit window
+            _headWindow = 0;
         }
     }
 
     /// <summary>
-    /// Reads the next bit from the current track.
+    /// Sets the current quarter-track position with Applesauce position scaling.
     /// </summary>
-    public bool? GetBit(ulong cycleCount)
+    /// <remarks>
+    /// Implements the Applesauce formula for cross-track synchronization:
+    /// newPos = oldPos × (newBitCount / oldBitCount)
+    /// This maintains relative position when tracks have different lengths.
+    /// </remarks>
+    public void SetQuarterTrack(int qTrack)
     {
-        // Initialize cycle offset on first access (simulates motor start)
-        if (!_hasBeenAccessed)
+        if (_currentQuarterTrack == qTrack)
         {
-            _cycleOffsetAtFirstAccess = cycleCount;
-            _hasBeenAccessed = true;
+            return;
         }
 
-        // Clamp to valid range
-        if (_currentQuarterTrack < 0 || _currentQuarterTrack >= MaxQuarterTracks)
+        int prevQuarterTrack = _currentQuarterTrack;
+        _currentQuarterTrack = qTrack;
+
+        // Applesauce formula: scale position based on track length ratio
+        int prevBitCount = GetBitCountForTrack(prevQuarterTrack);
+        int newBitCount = GetBitCountForTrack(qTrack);
+
+        if (prevBitCount > 0 && newBitCount > 0)
         {
-            return RandBit();
+            _trackLocation = (int)(_trackLocation * ((double)newBitCount / prevBitCount));
         }
 
-        // Check if we've already determined this track is missing
-        if (_missingTracks.Contains(_currentQuarterTrack))
+        // Ensure within bounds
+        if (newBitCount > 0)
         {
-            return RandBit();
+            _trackLocation = _trackLocation % newBitCount;
         }
 
-        // Get track index from map
-        byte trackIndex = _trackMap[_currentQuarterTrack];
+        // Reset full revolution counter on track change
+        _fullRevolutionCount = 0;
 
+        int printableTrack = qTrack / QuartersPerTrack;
+        int printableQuarter = (qTrack % QuartersPerTrack) * 25;
+        Debug.WriteLine($"InternalWozDiskImageProvider: Disk head moved to track {printableTrack}.{printableQuarter} (quarter-track {qTrack}), bitPos={_trackLocation}");
+    }
+
+    /// <summary>
+    /// Gets the bit count for a specific quarter-track.
+    /// </summary>
+    private int GetBitCountForTrack(int qTrack)
+    {
+        if (qTrack < 0 || qTrack >= MaxQuarterTracks)
+        {
+            return DefaultTrackBitCount;
+        }
+
+        byte trackIndex = _trackMap[qTrack];
         if (trackIndex == 0xFF)
         {
-            // No track data mapped - log once and mark as missing
-            Debug.WriteLine($"InternalWozDiskImageProvider: Quarter-track {_currentQuarterTrack} not mapped in TMAP");
-            _missingTracks.Add(_currentQuarterTrack);
+            return DefaultTrackBitCount;
+        }
+
+        int bitCount = _trackBitCount[trackIndex];
+        return bitCount > 0 ? bitCount : DefaultTrackBitCount;
+    }
+
+    /// <summary>
+    /// Applies the weak bit window to detect areas of magnetic ambiguity.
+    /// </summary>
+    /// <remarks>
+    /// If 4 consecutive 0-bits are seen, returns a random bit to simulate
+    /// the MC3470 controller's behavior when reading weak flux transitions.
+    /// </remarks>
+    private bool ApplyWeakBitWindow(bool bit)
+    {
+        _headWindow <<= 1;
+        _headWindow |= (bit ? 1 : 0);
+        _headWindow &= 0x0F; // Keep last 4 bits
+
+        if (_headWindow == 0x00)
+        {
+            // Four consecutive 0s = weak bit area, return random
             return RandBit();
         }
 
-        // Get track data
-        byte[] trackData = _trackData[trackIndex];
-        int bitCount = _trackBitCount[trackIndex];
+        return bit;
+    }
 
+    /// <summary>
+    /// Reads the next bit from the track at the current location and advances position.
+    /// </summary>
+    private bool GetNextBitInternal()
+    {
+        int bitCount = GetBitCountForTrack(_currentQuarterTrack);
+        int oldLocation = _trackLocation;
+
+        // Wrap track location
+        _trackLocation = _trackLocation % bitCount;
+
+        // Full revolution detection (prevents infinite loops on unformatted tracks)
+        if (oldLocation != _trackLocation)
+        {
+            if (_fullRevolutionCount >= 9)
+            {
+                _fullRevolutionCount = 0;
+                _trackLocation += 4; // Small nudge
+            }
+            else
+            {
+                _fullRevolutionCount++;
+            }
+        }
+
+        // Check for missing or empty track
+        if (_missingTracks.Contains(_currentQuarterTrack))
+        {
+            _trackLocation++;
+            return RandBit();
+        }
+
+        byte trackIndex = _trackMap[_currentQuarterTrack];
+        if (trackIndex == 0xFF)
+        {
+            _missingTracks.Add(_currentQuarterTrack);
+            _trackLocation++;
+            return RandBit();
+        }
+
+        byte[] trackData = _trackData[trackIndex];
         if (trackData.Length == 0 || bitCount == 0)
         {
-            // Track mapped but has no data - return random noise
             if (!_missingTracks.Contains(_currentQuarterTrack))
             {
-                Debug.WriteLine($"InternalWozDiskImageProvider: Track {trackIndex} (qtrack {_currentQuarterTrack}) has no data");
                 _missingTracks.Add(_currentQuarterTrack);
             }
+            _trackLocation++;
             return RandBit();
         }
 
-        // Calculate bit position based on cycle count (continuously spinning disk)
-        // Use relative cycles so each provider instance maintains independent rotational position
-        ulong relativeCycles = cycleCount - _cycleOffsetAtFirstAccess;
-        int bitPosition = (int)((relativeCycles / DiskIIConstants.CyclesPerBit) % bitCount);
-
         // Extract bit from track data
-        int byteIndex = bitPosition / 8;
-        int bitInByte = 7 - (bitPosition % 8); // MSB first
+        int byteIndex = _trackLocation / 8;
+        int bitInByte = 7 - (_trackLocation % 8); // MSB first
 
         if (byteIndex >= trackData.Length)
         {
-            return RandBit(); // Safety check
+            _trackLocation++;
+            return RandBit();
         }
 
         byte dataByte = trackData[byteIndex];
         bool bit = ((dataByte >> bitInByte) & 1) == 1;
 
+        // Apply weak bit window
+        bit = ApplyWeakBitWindow(bit);
+
+        _trackLocation++;
         return bit;
+    }
+
+    /// <summary>
+    /// Advances the disk by the specified number of CPU cycles and returns bits read.
+    /// </summary>
+    /// <param name="elapsedCycles">CPU cycles elapsed since last call.</param>
+    /// <param name="bits">Buffer to receive the bits read.</param>
+    /// <returns>Number of bits actually read.</returns>
+    public int AdvanceAndReadBits(double elapsedCycles, Span<bool> bits)
+    {
+        // Calculate cycles per bit from optimal timing
+        // optimalTiming is in 125ns units, so 32 = 4µs = 4 CPU cycles at 1.023 MHz
+        double cyclesPerBit = _optimalBitTiming / 8.0;
+
+        _cycleRemainder += elapsedCycles;
+
+        int bitsRead = 0;
+        int maxBits = bits.Length;
+
+        while (_cycleRemainder >= cyclesPerBit && bitsRead < maxBits)
+        {
+            bits[bitsRead++] = GetNextBitInternal();
+            _cycleRemainder -= cyclesPerBit;
+        }
+
+        // DEBUG: Log occasionally
+        //if (bitsRead > 0 && _trackLocation < 100)
+        //{
+        //    Debug.WriteLine($"WOZ AdvanceAndReadBits: elapsed={elapsedCycles:F1}, cyclesPerBit={cyclesPerBit:F1}, remainder={_cycleRemainder:F1}, read {bitsRead} bits, trackLoc={_trackLocation}");
+        //}
+
+        // Clamp cycle remainder to prevent runaway accumulation
+        if (_cycleRemainder < 0)
+        {
+            _cycleRemainder = 0;
+        }
+
+        return bitsRead;
+    }
+
+    /// <summary>
+    /// Reads the next bit from the current track.
+    /// </summary>
+    /// <remarks>
+    /// <strong>Deprecated:</strong> Prefer <see cref="AdvanceAndReadBits"/> for proper timing.
+    /// This method advances by exactly one bit using default timing.
+    /// </remarks>
+    public bool? GetBit(ulong cycleCount)
+    {
+        // Use the incremental model - advance by one bit's worth of cycles
+        double cyclesPerBit = _optimalBitTiming / 8.0;
+        Span<bool> bits = stackalloc bool[1];
+        int count = AdvanceAndReadBits(cyclesPerBit, bits);
+        return count > 0 ? bits[0] : null;
     }
 
     /// <summary>
@@ -528,13 +720,6 @@ public class InternalWozDiskImageProvider : IDiskImageProvider, IDisposable
     /// </summary>
     public bool WriteBit(bool bit, ulong cycleCount)
     {
-        // Initialize cycle offset on first access (simulates motor start)
-        if (!_hasBeenAccessed)
-        {
-            _cycleOffsetAtFirstAccess = cycleCount;
-            _hasBeenAccessed = true;
-        }
-
         if (_isWriteProtected || !IsWritable)
         {
             return false;
@@ -563,10 +748,8 @@ public class InternalWozDiskImageProvider : IDiskImageProvider, IDisposable
             return false; // Can't write to empty track
         }
 
-        // Calculate bit position
-        // Use relative cycles so each provider instance maintains independent rotational position
-        ulong relativeCycles = cycleCount - _cycleOffsetAtFirstAccess;
-        int bitPosition = (int)((relativeCycles / DiskIIConstants.CyclesPerBit) % bitCount);
+        // Use incremental track location for write position
+        int bitPosition = _trackLocation % bitCount;
 
         // Write bit to track data
         int byteIndex = bitPosition / 8;

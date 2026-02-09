@@ -164,6 +164,23 @@ public class DiskIIStatusDecorator : IDiskIIDrive
         return _innerDrive.IsWriteProtected();
     }
 
+    /// <inheritdoc />
+    public void NotifyMotorStateChanged(bool motorOn, ulong cycleCount)
+    {
+        // Forward to inner drive - no status update needed (motor state is controller-level)
+        _innerDrive.NotifyMotorStateChanged(motorOn, cycleCount);
+    }
+
+    /// <inheritdoc />
+    public int AdvanceAndReadBits(double elapsedCycles, Span<bool> bits)
+    {
+        // Read-only operation, no status update needed
+        return _innerDrive.AdvanceAndReadBits(elapsedCycles, bits);
+    }
+
+    /// <inheritdoc />
+    public byte OptimalBitTiming => _innerDrive.OptimalBitTiming;
+
     #endregion
 
     /// <summary>

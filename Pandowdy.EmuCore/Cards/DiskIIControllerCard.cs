@@ -454,6 +454,8 @@ public abstract class DiskIIControllerCard : ICard
 
                     // PHASE 4: Only update controller state (old drive state removed)
                     _motorState = DiskIIMotorState.On;
+                    // Notify drive (and its provider) that motor turned on
+                    SelectedDrive.NotifyMotorStateChanged(true, _clocking.TotalCycles);
                     // Motor on status is handled by controller, not drive
                 }
             }
@@ -717,13 +719,17 @@ public abstract class DiskIIControllerCard : ICard
     /// <remarks>
     /// <para>
     /// This method ensures the virtual disk "spins" in sync with CPU cycles.
-    /// It processes one bit for every 45/11 CPU cycles (≈4.09 cycles) elapsed since the last call.
+    /// It uses the provider's incremental timing model which respects the WOZ
+    /// file's optimalTiming value and maintains proper cycle remainder tracking.
     /// </para>
     /// <para>
-    /// The cycle-based disk position in NibDiskImageProvider already handles
-    /// continuous disk rotation - the position is calculated from the absolute
-    /// cycle count, not incremented per read. This means we just need to read
-    /// one bit per 45/11 cycles elapsed, and the disk position naturally advances.
+    /// <strong>Self-Synchronization Logic (from TypeScript reference):</strong>
+    /// GCR encoding requires special handling when a byte is complete (MSB=1):
+    /// <list type="bullet">
+    /// <item>If byte complete AND incoming bit is 0: DON'T shift (preserve byte for software)</item>
+    /// <item>If byte complete AND incoming bit is 1: CLEAR register and start new byte</item>
+    /// </list>
+    /// This is how sync bytes (FF with no consecutive 0-bits) signal "start fresh".
     /// </para>
     /// </remarks>
     protected virtual void ProcessBits(ulong currentCycle)
@@ -736,33 +742,61 @@ public abstract class DiskIIControllerCard : ICard
             return;
         }
 
-        // Calculate how many bits should have been processed based on elapsed cycles
+        // Calculate elapsed cycles since last call
         double elapsedCycles = currentCycle - _lastBitShiftCycle;
-        int bitsToProcess = (int)(elapsedCycles / DiskIIConstants.CyclesPerBit);
+        _lastBitShiftCycle = currentCycle;
 
-        // Process each bit sequentially
-        for (int i = 0; i < bitsToProcess; i++)
+        // Skip if no time has elapsed
+        if (elapsedCycles <= 0)
         {
-            // Advance to the cycle when this bit should be read (maintaining fractional precision)
-            _lastBitShiftCycle += DiskIIConstants.CyclesPerBit;
+            return;
+        }
 
-            // Get the bit at this specific cycle time
-            // The disk position is calculated from the cycle count in GetBit()
-            bool? bit = drive.GetBit((ulong)_lastBitShiftCycle);
+        // Get bits from provider using incremental timing model
+        // Provider handles cycle remainder and respects optimalTiming from WOZ
+        Span<bool> bits = stackalloc bool[64]; // Max bits we'd process in one call
+        double cyclesPerBit = drive.OptimalBitTiming / 8.0;
+        double cyclesToProcess = elapsedCycles;
 
-            if (bit.HasValue)
+        while (true)
+        {
+            int bitCount = drive.AdvanceAndReadBits(cyclesToProcess, bits);
+            cyclesToProcess = 0;
+
+            if (bitCount <= 0)
             {
-                // CRITICAL: Only shift if byte is not yet complete (MSB not set)
-                // Once a byte is latched (MSB = 1), preserve it until software reads it
-                // This matches real Disk II hardware behavior
-                if ((_shiftRegister & 0x80) == 0)
+                return;
+            }
+
+            // DEBUG: Log when we get bits
+            //if (_diagnosticByteCount < 10)
+            //{
+            //    Debug.WriteLine($"[{currentCycle}] ProcessBits: elapsed={elapsedCycles:F1}, got {bitCount} bits, shiftReg=0x{_shiftRegister:X2}");
+            //}
+
+            bool stopEarly = false;
+
+            // Process each bit with TypeScript self-sync logic
+            for (int i = 0; i < bitCount; i++)
+            {
+                bool bit = bits[i];
+                bool byteComplete = (_shiftRegister & 0x80) != 0;
+
+                // CRITICAL: TypeScript self-sync condition
+                // Don't shift if byte is complete AND incoming bit is 0 (preserves completed byte)
+                if (!(byteComplete && !bit))
                 {
+                    if (byteComplete)
+                    {
+                        // Byte was complete, incoming bit is 1: clear and start fresh
+                        _shiftRegister = 0;
+                    }
                     // Shift in the new bit
-                    _shiftRegister = (byte)((_shiftRegister << 1) | (bit.Value ? 1 : 0));
+                    _shiftRegister = (byte)((_shiftRegister << 1) | (bit ? 1 : 0));
                 }
 
                 // DIAGNOSTIC tracking - always processes every bit
-                _diagnosticShiftReg = (byte)((_diagnosticShiftReg << 1) | (bit.Value ? 1 : 0));
+                _diagnosticShiftReg = (byte)((_diagnosticShiftReg << 1) | (bit ? 1 : 0));
                 if ((_diagnosticShiftReg & 0x80) != 0)
                 {
                     byte detectedByte = _diagnosticShiftReg;
@@ -782,13 +816,20 @@ public abstract class DiskIIControllerCard : ICard
                     // Check for prologues
                     CheckForPrologues(drive);
                 }
+
+                // CRITICAL: Stop when main register has a valid byte ready for ROM
+                // Break AFTER diagnostic has processed this bit
+                // Only break early if there's not enough time remaining for another bit
+                if ((_shiftRegister & 0x80) != 0 && (bitCount - i - 1) * cyclesPerBit <= cyclesPerBit / 2)
+                {
+                    stopEarly = true;
+                    break;
+                }
             }
 
-            // CRITICAL: Stop when main register has a valid byte ready for ROM
-            // Break AFTER diagnostic has processed this bit
-            if ((_shiftRegister & 0x80) != 0)
+            if (stopEarly || bitCount < bits.Length)
             {
-                break;
+                return;
             }
         }
     }

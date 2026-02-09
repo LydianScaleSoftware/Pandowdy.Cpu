@@ -126,6 +126,24 @@ public class DiskIIDebugDecorator : IDiskIIDrive
     }
 
     /// <inheritdoc />
+    public void NotifyMotorStateChanged(bool motorOn, ulong cycleCount)
+    {
+        Debug.WriteLine($"IDiskIIDrive ({Name}) NotifyMotorStateChanged(motorOn={motorOn}, cycle={cycleCount})");
+        _inner.NotifyMotorStateChanged(motorOn, cycleCount);
+    }
+
+    /// <inheritdoc />
+    public int AdvanceAndReadBits(double elapsedCycles, Span<bool> bits)
+    {
+        // Disabled to reduce spam - uncomment if needed for detailed bit debugging
+        // Debug.WriteLine($"IDiskIIDrive ({Name}) AdvanceAndReadBits(cycles={elapsedCycles:F2}, bufferSize={bits.Length})");
+        return _inner.AdvanceAndReadBits(elapsedCycles, bits);
+    }
+
+    /// <inheritdoc />
+    public byte OptimalBitTiming => _inner.OptimalBitTiming;
+
+    /// <inheritdoc />
     public void InsertDisk(string diskImagePath)
     {
         Debug.WriteLine($"IDiskIIDrive ({Name}) InsertDisk('{diskImagePath}')");

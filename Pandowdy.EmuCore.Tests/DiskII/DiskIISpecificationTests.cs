@@ -223,7 +223,7 @@ public class DiskIISpecificationTests
         // Specification: $C0n9 turns motor on immediately
         var card = CreateCard();
         card.OnInstalled(SlotNumber.Slot6);
-        var drive = card.Drives[0];
+        //var drive = card.Drives[0];
 
         Assert.False(card.IsMotorRunning, "Motor should be off initially");
 
@@ -981,6 +981,14 @@ internal class MockDiskIIDrive(string name) : IDiskIIDrive
         return null;
     }
 
+    public int AdvanceAndReadBits(double elapsedCycles, Span<bool> bits)
+    {
+        // No disk - no bits
+        return 0;
+    }
+
+    public byte OptimalBitTiming => 32;
+
     public bool SetBit(bool value)
     {
         // No disk - write fails
@@ -988,6 +996,11 @@ internal class MockDiskIIDrive(string name) : IDiskIIDrive
     }
 
     public bool IsWriteProtected() => _writeProtected;
+
+    public void NotifyMotorStateChanged(bool motorOn, ulong cycleCount)
+    {
+        // Mock - do nothing
+    }
 
     public void InsertDisk(string diskImagePath)
     {

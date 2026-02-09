@@ -85,6 +85,47 @@ public class WozDiskImageProvider : IDiskImageProvider, IDisposable
     public int CurrentQuarterTrack => _currentQuarterTrack;
 
     /// <summary>
+    /// Gets the optimal bit timing for this disk image.
+    /// </summary>
+    /// <remarks>
+    /// This CiderPress2-based provider doesn't expose the optimal timing from WOZ metadata.
+    /// For accurate timing, use <see cref="InternalWozDiskImageProvider"/> instead.
+    /// </remarks>
+    public byte OptimalBitTiming => 32; // Default timing
+
+    /// <summary>
+    /// Gets the number of bits on the current track.
+    /// </summary>
+    public int CurrentTrackBitCount
+    {
+        get
+        {
+            if (_currentQuarterTrack >= 0 && _currentQuarterTrack < _trackBitCounts.Length)
+            {
+                ulong bitCount = _trackBitCounts[_currentQuarterTrack];
+                return bitCount > 0 ? (int)bitCount : DiskIIConstants.BitsPerTrack;
+            }
+            return DiskIIConstants.BitsPerTrack;
+        }
+    }
+
+    /// <summary>
+    /// Gets the current bit position within the track.
+    /// </summary>
+    public int TrackBitPosition
+    {
+        get
+        {
+            if (_currentQuarterTrack >= 0 && _currentQuarterTrack < _trackCache.Length)
+            {
+                var buffer = _trackCache[_currentQuarterTrack];
+                return buffer?.BitPosition ?? 0;
+            }
+            return 0;
+        }
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="WozDiskImageProvider"/> class.
     /// </summary>
     /// <param name="filePath">Full path to the .woz disk image file.</param>
@@ -145,6 +186,19 @@ public class WozDiskImageProvider : IDiskImageProvider, IDisposable
     {
         _randPos++;
         return RandBits[_randPos & 0x1F] == 1;
+    }
+
+    /// <summary>
+    /// Notifies the provider of motor state changes.
+    /// </summary>
+    /// <param name="motorOn">True if motor is turning on, false if turning off.</param>
+    /// <param name="cycleCount">Current CPU cycle count when state changed.</param>
+    /// <remarks>
+    /// WozDiskImageProvider uses absolute cycle counts, so this is a no-op.
+    /// </remarks>
+    public void NotifyMotorStateChanged(bool motorOn, ulong cycleCount)
+    {
+        // This provider uses absolute cycle-based timing - no offset tracking needed
     }
 
     /// <summary>
@@ -293,6 +347,64 @@ public class WozDiskImageProvider : IDiskImageProvider, IDisposable
         trackBuffer.WriteBit(bit ? 1 : 0);
 
         return true;
+    }
+
+    /// <summary>
+    /// Advances the disk by the specified number of CPU cycles and returns bits read.
+    /// </summary>
+    /// <param name="elapsedCycles">CPU cycles elapsed since last call.</param>
+    /// <param name="bits">Buffer to receive the bits read.</param>
+    /// <returns>Number of bits actually read.</returns>
+    /// <remarks>
+    /// <strong>Stub Implementation:</strong> This CiderPress2-based provider uses legacy absolute timing.
+    /// For proper incremental timing, use <see cref="InternalWozDiskImageProvider"/> instead.
+    /// </remarks>
+    public int AdvanceAndReadBits(double elapsedCycles, Span<bool> bits)
+    {
+        // Stub implementation - uses sequential reading without proper timing
+        const double cyclesPerBit = 32.0 / 8.0;
+        int bitsToRead = (int)(elapsedCycles / cyclesPerBit);
+        bitsToRead = Math.Min(bitsToRead, bits.Length);
+
+        int track = _currentQuarterTrack / QuartersPerTrack;
+        int quarter = _currentQuarterTrack % QuartersPerTrack;
+
+        if (track < 0 || track >= MaxTracks)
+        {
+            for (int i = 0; i < bitsToRead; i++)
+            {
+                bits[i] = RandBit();
+            }
+            return bitsToRead;
+        }
+
+        // Get or cache the track buffer
+        if (_trackCache[_currentQuarterTrack] == null)
+        {
+            if (!_wozImage.GetTrackBits((uint)track, (uint)quarter, out CircularBitBuffer? cbb))
+            {
+                for (int i = 0; i < bitsToRead; i++)
+                {
+                    bits[i] = RandBit();
+                }
+                return bitsToRead;
+            }
+            _trackCache[_currentQuarterTrack] = cbb;
+            _trackBitCounts[_currentQuarterTrack] = (ulong)cbb!.BitCount;
+        }
+
+        var trackBuffer = _trackCache[_currentQuarterTrack];
+        if (trackBuffer == null)
+        {
+            return 0;
+        }
+
+        for (int i = 0; i < bitsToRead; i++)
+        {
+            bits[i] = trackBuffer.ReadNextBit() == 1;
+        }
+
+        return bitsToRead;
     }
 
     /// <summary>
