@@ -52,6 +52,13 @@ public class SectorDiskImageProvider : IDiskImageProvider, IDisposable
     private const byte DefaultVolume = 254;
 
     /// <summary>
+    /// DOS 3.3 physical-to-logical sector interleave table.
+    /// Physical position P contains data from logical sector PhysicalToLogical[P].
+    /// </summary>
+    private static readonly byte[] Dos33PhysicalToLogical =
+        { 0, 7, 14, 6, 13, 5, 12, 4, 11, 3, 10, 2, 9, 1, 8, 15 };
+
+    /// <summary>
     /// Gets the file path of the disk image.
     /// </summary>
     public string FilePath { get; }
@@ -327,17 +334,20 @@ public class SectorDiskImageProvider : IDiskImageProvider, IDisposable
         // Fill track with sync bytes first (gap 1 filler)
         buffer.Fill(0xFF, 8); // Byte-aligned (8 bits per byte)
 
-        // Write sectors - start with gap 3 so track begins with self-sync
-        for (byte sector = 0; sector < SectorsPerTrack; sector++)
+        // Write sectors in physical order, applying DOS 3.3 interleave
+        // Physical position P contains data from logical sector PhysicalToLogical[P]
+        for (byte physicalSector = 0; physicalSector < SectorsPerTrack; physicalSector++)
         {
+            byte logicalSector = Dos33PhysicalToLogical[physicalSector];
+
             // Gap 3 (inter-sector gap)
             for (int i = 0; i < Gap3Len; i++)
             {
                 buffer.WriteByte(0xFF, 8);
             }
 
-            // Address field
-            _codec.WriteAddressField_525(buffer, DefaultVolume, (byte)track, sector);
+            // Address field uses PHYSICAL sector number (what the drive head sees)
+            _codec.WriteAddressField_525(buffer, DefaultVolume, (byte)track, physicalSector);
 
             // Gap 2 (address-to-data gap)
             for (int i = 0; i < Gap2Len; i++)
@@ -348,15 +358,15 @@ public class SectorDiskImageProvider : IDiskImageProvider, IDisposable
             // Data field prolog
             buffer.WriteOctets(_codec.DataProlog);
 
-            // Read the actual sector data from disk image
+            // Read the LOGICAL sector data from disk image
             byte[] sectorData = new byte[256];
             try
             {
-                _chunkAccess.ReadSector((uint)track, (uint)sector, sectorData, 0);
+                _chunkAccess.ReadSector((uint)track, logicalSector, sectorData, 0);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error reading track {track} sector {sector}: {ex.Message}");
+                Debug.WriteLine($"Error reading track {track} logical sector {logicalSector} (physical {physicalSector}): {ex.Message}");
                 // Leave as zeros on error
             }
 

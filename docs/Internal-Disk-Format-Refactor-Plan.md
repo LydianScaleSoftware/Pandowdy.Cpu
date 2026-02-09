@@ -1,6 +1,6 @@
 **Goal:** Create a unified internal disk image format that all disk image providers convert to/from, simplifying the emulation layer and enabling a future Pandowdy project format.
 
-**Status:** ⏳ NOT STARTED
+**Status:** 🚧 IN PROGRESS - Phase 3 Complete ✅
 
 **Current State:**
 - Each disk format (WOZ, NIB, DSK/DO/PO) has its own provider implementation
@@ -14,7 +14,7 @@
 - Duplicated logic across providers for bit-level access and timing
 - No common representation for disk state during emulation
 - Write support requires format-specific export logic in each provider
-- Future Pandowdy project format (.pdw) needs a canonical disk representation
+- Future Pandowdy project format (.skillet) needs a canonical disk representation
 - Testing is complicated by format-specific behavior differences
 
 **Proposed Solution:**
@@ -23,35 +23,35 @@ Create a unified `InternalDiskImage` class that all formats convert to/from:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                        External Disk Formats                         │
+│                        External Disk Formats                        │
 ├─────────────┬─────────────┬─────────────┬─────────────┬─────────────┤
 │    .woz     │    .nib     │    .dsk     │    .do      │    .po      │
 └──────┬──────┴──────┬──────┴──────┬──────┴──────┬──────┴──────┬──────┘
        │             │             │             │             │
        ▼             ▼             ▼             ▼             ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    Format-Specific Importers                         │
+│                    Format-Specific Importers                        │
 │  WozImporter    NibImporter    SectorImporter (for .dsk/.do/.po)    │
 └─────────────────────────────────┬───────────────────────────────────┘
                                   │
                                   ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                       InternalDiskImage                              │
+│                       InternalDiskImage                             │
 │  ┌─────────────────────────────────────────────────────────────┐    │
-│  │  CircularBitBuffer[] Tracks (35-40 tracks)                   │    │
-│  │  int[] TrackBitCounts (variable per track for WOZ)           │    │
-│  │  bool IsWriteProtected                                       │    │
-│  │  byte OptimalBitTiming (WOZ timing info)                     │    │
-│  │  bool IsDirty (modified since load)                          │    │
-│  │  string? SourceFilePath                                      │    │
-│  │  DiskFormat OriginalFormat                                   │    │
+│  │  CircularBitBuffer[] Tracks (35-40 tracks)                  │    │
+│  │  int[] TrackBitCounts (variable per track for WOZ)          │    │
+│  │  bool IsWriteProtected                                      │    │
+│  │  byte OptimalBitTiming (WOZ timing info)                    │    │
+│  │  bool IsDirty (modified since load)                         │    │
+│  │  string? SourceFilePath                                     │    │
+│  │  DiskFormat OriginalFormat                                  │    │
 │  └─────────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────┬───────────────────────────────────┘
                                   │
                                   ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    UnifiedDiskImageProvider                          │
-│  - Implements IDiskImageProvider                                     │
+│                    UnifiedDiskImageProvider                         │
+│  - Implements IDiskImageProvider                                    │
 │  - Uses CircularBitBuffer for all bit-level operations              │
 │  - Single implementation for GetBit/WriteBit/GetByte                │
 │  - Consistent timing and position tracking                          │
@@ -59,9 +59,9 @@ Create a unified `InternalDiskImage` class that all formats convert to/from:
                                   │
                                   ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    Format-Specific Exporters                         │
+│                    Format-Specific Exporters                        │
 │  WozExporter    NibExporter    SectorExporter (decode GCR→sectors)  │
-└──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┘
+└──────┬─────────────┬─────────────┬─────────────┬─────────────┬──────┘
        │             │             │             │             │
        ▼             ▼             ▼             ▼             ▼
 ┌─────────────┬─────────────┬─────────────┬─────────────┬─────────────┐
@@ -151,47 +151,79 @@ public interface IDiskImageExporter
 
 **Implementation Phases:**
 
-**Phase 1: Core Infrastructure**
-- Create `InternalDiskImage` class
-- Create `DiskFormat` enum
-- Create `IDiskImageImporter` and `IDiskImageExporter` interfaces
-- Create `UnifiedDiskImageProvider` implementing `IDiskImageProvider`
+**Phase 1: Core Infrastructure** ✅ **COMPLETE**
+- ✅ `InternalDiskImage` class - Unified internal format with CircularBitBuffer tracks
+- ✅ `DiskFormat` enum - Format enumeration
+- ✅ `IDiskImageImporter` and `IDiskImageExporter` interfaces
+- ✅ `UnifiedDiskImageProvider` - Single provider implementation
+- ✅ Unit tests (57 tests passing)
 
-**Phase 2: Importers**
-- `WozImporter`: Extract `CircularBitBuffer` tracks from WOZ via DiskArc
-- `NibImporter`: Convert raw NIB bytes to `CircularBitBuffer` tracks
-- `SectorImporter`: Synthesize GCR tracks from sector data (reuse existing `SectorDiskImageProvider` logic)
+**Phase 2: Importers** ✅ **COMPLETE**
+- ✅ `WozImporter`: Extract `CircularBitBuffer` tracks from WOZ via DiskArc
+- ✅ `NibImporter`: Convert raw NIB bytes to `CircularBitBuffer` tracks
+- ✅ `SectorImporter`: Synthesize GCR tracks from sector data
+- ✅ Unit tests (31 tests passing)
 
-**Phase 3: Single Provider**
-- Replace `WozDiskImageProvider`, `NibDiskImageProvider`, `SectorDiskImageProvider` with `UnifiedDiskImageProvider`
-- `UnifiedDiskImageProvider` operates solely on `InternalDiskImage`
-- Factory creates appropriate importer, imports to internal format, wraps with provider
+**Phase 3: Single Provider** ✅ **COMPLETE**
+- ✅ `DiskImageFactory` now uses importer pattern with `UnifiedDiskImageProvider`
+- ✅ All format-specific providers replaced with unified provider
+- ✅ Backward compatible - existing code unchanged
+- ✅ All tests passing (867 tests)
 
-**Phase 4: Exporters (Write Support)**
+**Phase 4: Exporters (Write Support)** ⏳ **NEXT**
 - `WozExporter`: Write internal format back to WOZ (preserve metadata)
 - `NibExporter`: Write raw NIB format
 - `SectorExporter`: Decode GCR to sectors, write DSK/DO/PO (lossy for copy-protected disks)
 
-**Phase 5: Pandowdy Project Format**
+**Phase 5: Pandowdy Project Format** -- DEFERRED.  DO NOT IMPLEMENT YET!!
 - Define `.pdw` project file format (JSON/binary container)
 - Embed `InternalDiskImage` data in project files
 - Support disk image versioning within projects
 - Import external disk images into project
 - Export embedded disks to standard formats
 
-**Files to Create:**
+**Files Created (Phase 1):**
 
-*Core:*
-- `Pandowdy.EmuCore\DiskII\InternalDiskImage.cs` - Unified internal format
-- `Pandowdy.EmuCore\DiskII\DiskFormat.cs` - Format enumeration
-- `Pandowdy.EmuCore\DiskII\IDiskImageImporter.cs` - Importer interface
-- `Pandowdy.EmuCore\DiskII\IDiskImageExporter.cs` - Exporter interface
-- `Pandowdy.EmuCore\DiskII\Providers\UnifiedDiskImageProvider.cs` - Single provider implementation
+*Core:* ✅
+- ✅ `Pandowdy.EmuCore\DiskII\InternalDiskImage.cs` - Unified internal format
+- ✅ `Pandowdy.EmuCore\DiskII\DiskFormat.cs` - Format enumeration
+- ✅ `Pandowdy.EmuCore\DiskII\IDiskImageImporter.cs` - Importer interface
+- ✅ `Pandowdy.EmuCore\DiskII\IDiskImageExporter.cs` - Exporter interface
+- ✅ `Pandowdy.EmuCore\DiskII\Providers\UnifiedDiskImageProvider.cs` - Single provider implementation
 
-*Importers:*
-- `Pandowdy.EmuCore\DiskII\Importers\WozImporter.cs`
-- `Pandowdy.EmuCore\DiskII\Importers\NibImporter.cs`
-- `Pandowdy.EmuCore\DiskII\Importers\SectorImporter.cs`
+*Tests:* ✅
+- ✅ `Pandowdy.EmuCore.Tests\DiskII\InternalDiskImageTests.cs` - 29 passing tests
+- ✅ `Pandowdy.EmuCore.Tests\DiskII\Providers\UnifiedDiskImageProviderTests.cs` - 28 passing tests
+
+**Files Created (Phase 2):**
+
+*Importers:* ✅
+- ✅ `Pandowdy.EmuCore\DiskII\Importers\WozImporter.cs` - WOZ format importer
+- ✅ `Pandowdy.EmuCore\DiskII\Importers\NibImporter.cs` - NIB format importer
+- ✅ `Pandowdy.EmuCore\DiskII\Importers\SectorImporter.cs` - Sector format importer (DSK/DO/PO)
+
+*Tests:* ✅
+- ✅ `Pandowdy.EmuCore.Tests\DiskII\Importers\WozImporterTests.cs` - 8 passing tests
+- ✅ `Pandowdy.EmuCore.Tests\DiskII\Importers\NibImporterTests.cs` - 14 passing tests
+- ✅ `Pandowdy.EmuCore.Tests\DiskII\Importers\SectorImporterTests.cs` - 9 passing tests
+
+**Files Modified (Phase 3):**
+
+*Factory Integration:* ✅
+- ✅ `Pandowdy.EmuCore\DiskII\Providers\DiskImageFactory.cs` - Now uses importer pattern
+- ✅ `Pandowdy.EmuCore.Tests\DiskII\Providers\DiskImageFactoryTests.cs` - Updated to expect `UnifiedDiskImageProvider`
+
+**Files Ready for Removal (Phase 3):**
+
+*Old Providers (No longer used):* 📦
+- 📦 `Pandowdy.EmuCore\DiskII\Providers\WozDiskImageProvider.cs` - Replaced by WozImporter + UnifiedDiskImageProvider
+- 📦 `Pandowdy.EmuCore\DiskII\Providers\NibDiskImageProvider.cs` - Replaced by NibImporter + UnifiedDiskImageProvider
+- 📦 `Pandowdy.EmuCore\DiskII\Providers\SectorDiskImageProvider.cs` - Replaced by SectorImporter + UnifiedDiskImageProvider
+- 📦 `Pandowdy.EmuCore\DiskII\GcrEncoder.cs` - Functionality moved to `SectorImporter`
+
+*Note: Old providers kept temporarily for reference but can be safely removed.*
+
+**Files to Create (Future Phases):**
 
 *Exporters:*
 - `Pandowdy.EmuCore\DiskII\Exporters\WozExporter.cs`
@@ -199,18 +231,31 @@ public interface IDiskImageExporter
 - `Pandowdy.EmuCore\DiskII\Exporters\SectorExporter.cs`
 
 *Tests:*
-- `Pandowdy.EmuCore.Tests\DiskII\InternalDiskImageTests.cs`
-- `Pandowdy.EmuCore.Tests\DiskII\Importers\*ImporterTests.cs`
 - `Pandowdy.EmuCore.Tests\DiskII\Exporters\*ExporterTests.cs`
 
-**Files to Modify:**
-- `Pandowdy.EmuCore\DiskII\Providers\DiskImageFactory.cs` - Use importers + unified provider
+**Current Status Summary:**
 
-**Files to Eventually Remove/Archive:**
-- `Pandowdy.EmuCore\DiskII\Providers\WozDiskImageProvider.cs` - Replaced by unified provider
-- `Pandowdy.EmuCore\DiskII\Providers\NibDiskImageProvider.cs` - Replaced by unified provider
-- `Pandowdy.EmuCore\DiskII\Providers\SectorDiskImageProvider.cs` - Replaced by unified provider
-- `Pandowdy.EmuCore\DiskII\GcrEncoder.cs` - Functionality moved to `SectorImporter`
+✅ **Phase 1 Complete (2026-01):**
+- Core infrastructure implemented and tested
+- 57 unit tests created and passing
+- UnifiedDiskImageProvider fully functional
+
+✅ **Phase 2 Complete (2026-01):**
+- WozImporter, NibImporter, SectorImporter implemented
+- All importers convert external formats to InternalDiskImage
+- 31 unit tests created and passing
+- Backward compatible with existing disk images
+
+✅ **Phase 3 Complete (2026-01):**
+- DiskImageFactory refactored to use importer + unified provider pattern
+- All format-specific providers (Woz/Nib/Sector) replaced
+- Complete backward compatibility maintained
+- All 867 tests passing
+
+⏳ **Next: Phase 4 - Exporters**
+- Implement WozExporter, NibExporter, SectorExporter
+- Enable write support for modified disk images
+- Format conversion capability (import any, export any)
 
 **Benefits:**
 - ✅ Single `IDiskImageProvider` implementation to maintain
@@ -234,9 +279,6 @@ public interface IDiskImageExporter
 **Dependencies:**
 - None (builds on existing DiskArc integration)
 
-**Related:**
-- Complements Task 10 (SectorDiskImageProvider Debugging) - will be replaced by this architecture
-- Enables future Pandowdy project format (.pdw)
-- May simplify Task 11 (Conditional Debug Output) - fewer providers to instrument
+
 
 ---

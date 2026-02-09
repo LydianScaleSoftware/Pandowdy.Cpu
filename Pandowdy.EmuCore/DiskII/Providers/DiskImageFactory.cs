@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0
 // See LICENSE file for details
 
+using Pandowdy.EmuCore.DiskII.Importers;
 using Pandowdy.EmuCore.Interfaces;
 
 namespace Pandowdy.EmuCore.DiskII.Providers;
@@ -10,17 +11,24 @@ namespace Pandowdy.EmuCore.DiskII.Providers;
 /// Factory for creating disk image providers based on file format detection.
 /// </summary>
 /// <remarks>
-/// This factory examines the file extension to determine which provider implementation
-/// to create. Supported formats:
+/// This factory examines the file extension to determine which importer to use,
+/// then wraps the imported disk image in a <see cref="UnifiedDiskImageProvider"/>.
+/// Supported formats:
 /// <list type="bullet">
 /// <item><strong>.nib</strong> - Raw GCR nibble format (232,960 bytes)</item>
 /// <item><strong>.woz</strong> - WOZ format with timing information (most accurate)</item>
 /// <item><strong>.dsk, .do, .po</strong> - Sector-based formats (143,360 bytes)</item>
 /// <item><strong>.2mg, .2img</strong> - 2IMG wrapper format (with header)</item>
 /// </list>
+/// All formats are imported to a unified <see cref="InternalDiskImage"/> representation
+/// for consistent emulation behavior.
 /// </remarks>
 public class DiskImageFactory : IDiskImageFactory
 {
+    // TEMPORARY: Set to true to use legacy SectorDiskImageProvider for .do/.dsk files
+    // This helps isolate whether the bug is in SectorImporter or UnifiedDiskImageProvider
+    private const bool UseLegacySectorProvider = false;
+
     /// <summary>
     /// Creates an appropriate disk image provider for the given file.
     /// </summary>
@@ -42,17 +50,37 @@ public class DiskImageFactory : IDiskImageFactory
         }
 
         string extension = Path.GetExtension(filePath).ToLowerInvariant();
+        System.Diagnostics.Debug.WriteLine($"DiskImageFactory: Creating provider for '{filePath}' (extension: {extension})");
 
-        return extension switch
+        //// TEMPORARY: Use legacy provider for sector formats to isolate the bug
+        //if (UseLegacySectorProvider && extension is ".dsk" or ".do" or ".po")
+        //{
+        //    System.Diagnostics.Debug.WriteLine($"DiskImageFactory: Using LEGACY SectorDiskImageProvider for {extension}");
+        //    return new SectorDiskImageProvider(filePath);
+        //}
+
+        // Select appropriate importer based on file extension
+        IDiskImageImporter importer = extension switch
         {
-            ".nib" => new NibDiskImageProvider(filePath),
-            ".woz" => new WozDiskImageProvider(filePath), 
-            ".dsk" or ".do" or ".po" => new SectorDiskImageProvider(filePath),
-            ".2mg" or ".2img" => new SectorDiskImageProvider(filePath),
+            ".nib" => new NibImporter(),
+            ".woz" => new WozImporter(),
+            ".dsk" or ".do" or ".po" or ".2mg" or ".2img" => new SectorImporter(),
             _ => throw new NotSupportedException(
                 $"Unsupported disk image format: {extension}\n" +
                 "Supported formats: .nib, .woz, .dsk, .do, .po, .2mg, .2img")
         };
+
+        System.Diagnostics.Debug.WriteLine($"DiskImageFactory: Using {importer.GetType().Name} for {extension}");
+
+        // Import disk image to internal format
+        InternalDiskImage diskImage = importer.Import(filePath);
+
+        System.Diagnostics.Debug.WriteLine($"DiskImageFactory: Imported {diskImage.TrackCount} tracks, format={diskImage.OriginalFormat}");
+
+        // Wrap with unified provider
+        var provider = new UnifiedDiskImageProvider(diskImage);
+        System.Diagnostics.Debug.WriteLine($"DiskImageFactory: Created UnifiedDiskImageProvider for '{filePath}'");
+        return provider;
     }
 
     /// <summary>

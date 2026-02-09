@@ -1768,8 +1768,11 @@ public interface IKeyboardResetter
 
 ### Task 28: Unified Internal Disk Format Architecture (Medium Priority)
 
-- See File: docs/Internal-Disk-Format-Refactor-Plan.md
+**See File: docs/Internal-Disk-Format-Refactor-Plan.md**
 
+**Related:**
+- Complements Task 10 (SectorDiskImageProvider Debugging) - will be replaced by this architecture
+- Enables future Pandowdy project format (.skillet)
 
 ## Completed Tasks
 

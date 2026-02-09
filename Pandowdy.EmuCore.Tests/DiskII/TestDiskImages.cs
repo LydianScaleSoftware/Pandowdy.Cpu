@@ -50,6 +50,11 @@ public static class TestDiskImages
     public static string ProdosNib => Path.Combine(TestImagesFolder, "prodos.nib");
 
     /// <summary>
+    /// Gets the path to test.do disk image.
+    /// </summary>
+    public static string TestDo => Path.Combine(TestImagesFolder, "test.do");
+
+    /// <summary>
     /// Checks if test images are available.
     /// </summary>
     public static bool TestImagesAvailable => Directory.Exists(TestImagesFolder) && File.Exists(TestNib);

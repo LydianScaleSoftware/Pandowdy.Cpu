@@ -149,7 +149,7 @@ public class DiskImageFactoryTests
         using IDiskImageProvider provider = _factory.CreateProvider(TestDiskImages.TestNib);
 
         // Assert
-        Assert.IsType<NibDiskImageProvider>(provider);
+        Assert.IsType<UnifiedDiskImageProvider>(provider);
         Assert.Equal(TestDiskImages.TestNib, provider.FilePath);
     }
 
@@ -167,7 +167,7 @@ public class DiskImageFactoryTests
         using IDiskImageProvider provider = _factory.CreateProvider(TestDiskImages.TestWoz);
 
         // Assert
-        Assert.IsType<WozDiskImageProvider>(provider);
+        Assert.IsType<UnifiedDiskImageProvider>(provider);
         Assert.Equal(TestDiskImages.TestWoz, provider.FilePath);
     }
 
@@ -185,7 +185,7 @@ public class DiskImageFactoryTests
         using IDiskImageProvider provider = _factory.CreateProvider(TestDiskImages.DosDsk);
 
         // Assert
-        Assert.IsType<SectorDiskImageProvider>(provider);
+        Assert.IsType<UnifiedDiskImageProvider>(provider);
         Assert.Equal(TestDiskImages.DosDsk, provider.FilePath);
     }
 
