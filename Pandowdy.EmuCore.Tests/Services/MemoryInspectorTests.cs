@@ -54,14 +54,9 @@ public class MemoryInspectorTests
         public void LoadRomFile(string filePath) { }
     }
 
-    private class MockLanguageCard : ILanguageCard
+    private class MockLanguageCard(byte fillValue = 0xCC) : ILanguageCard
     {
-        private readonly byte _fillValue;
-
-        public MockLanguageCard(byte fillValue = 0xCC)
-        {
-            _fillValue = fillValue;
-        }
+        private readonly byte _fillValue = fillValue;
 
         public int Size => 0x3000;
         public byte Read(ushort address) => _fillValue;
@@ -72,23 +67,15 @@ public class MemoryInspectorTests
         public void Reset() { }
     }
 
-    private class MockCard : ICard
+    private class MockCard(int id, string name, byte romFill = 0x00, byte extRomFill = 0x00) : ICard
     {
-        private readonly byte _romFill;
-        private readonly byte _extRomFill;
-
-        public MockCard(int id, string name, byte romFill = 0x00, byte extRomFill = 0x00)
-        {
-            Id = id;
-            Name = name;
-            _romFill = romFill;
-            _extRomFill = extRomFill;
-        }
+        private readonly byte _romFill = romFill;
+        private readonly byte _extRomFill = extRomFill;
 
         public SlotNumber Slot { get; private set; } = SlotNumber.Unslotted;
-        public string Name { get; }
+        public string Name { get; } = name;
         public string Description => $"Mock card: {Name}";
-        public int Id { get; }
+        public int Id { get; } = id;
 
         public void OnInstalled(SlotNumber slot) => Slot = slot;
         public byte? ReadIO(byte offset) => null;

@@ -1481,40 +1481,27 @@ public class SlotsTests
     /// <summary>
     /// Testable card with callbacks for testing side effects.
     /// </summary>
-    private class TestableCard : ICard
+    private class TestableCard(int id, string name,
+        byte ioFill = 0x00,
+        byte romFill = 0x00,
+        byte extRomFill = 0x00,
+        Action? onReset = null,
+        Action? onWriteIO = null,
+        Action? onWriteRom = null,
+        Action? onWriteExtRom = null) : ICard
     {
-        private readonly byte _ioFillValue;
-        private readonly byte _romFillValue;
-        private readonly byte _extRomFillValue;
-        private readonly Action? _onReset;
-        private readonly Action? _onWriteIO;
-        private readonly Action? _onWriteRom;
-        private readonly Action? _onWriteExtRom;
-
-        public TestableCard(int id, string name, 
-            byte ioFill = 0x00, 
-            byte romFill = 0x00, 
-            byte extRomFill = 0x00,
-            Action? onReset = null,
-            Action? onWriteIO = null,
-            Action? onWriteRom = null,
-            Action? onWriteExtRom = null)
-        {
-            Id = id;
-            Name = name;
-            _ioFillValue = ioFill;
-            _romFillValue = romFill;
-            _extRomFillValue = extRomFill;
-            _onReset = onReset;
-            _onWriteIO = onWriteIO;
-            _onWriteRom = onWriteRom;
-            _onWriteExtRom = onWriteExtRom;
-        }
+        private readonly byte _ioFillValue = ioFill;
+        private readonly byte _romFillValue = romFill;
+        private readonly byte _extRomFillValue = extRomFill;
+        private readonly Action? _onReset = onReset;
+        private readonly Action? _onWriteIO = onWriteIO;
+        private readonly Action? _onWriteRom = onWriteRom;
+        private readonly Action? _onWriteExtRom = onWriteExtRom;
 
         public SlotNumber Slot { get; private set; } = SlotNumber.Unslotted;
-        public string Name { get; }
+        public string Name { get; } = name;
         public string Description => $"Testable card: {Name}";
-        public int Id { get; }
+        public int Id { get; } = id;
 
         public void OnInstalled(SlotNumber slot) => Slot = slot;
         public byte? ReadIO(byte offset) => _ioFillValue;

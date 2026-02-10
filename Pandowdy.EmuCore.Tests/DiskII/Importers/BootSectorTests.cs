@@ -17,14 +17,9 @@ namespace Pandowdy.EmuCore.Tests.DiskII.Importers;
 /// <summary>
 /// Tests to verify boot sector and track 0 are correctly formatted for DOS booting.
 /// </summary>
-public class BootSectorTests
+public class BootSectorTests(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper _output;
-
-    public BootSectorTests(ITestOutputHelper output)
-    {
-        _output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
     [Fact]
     public void ShowTrack0PhysicalLayout_LegacyProvider()

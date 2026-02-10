@@ -6,14 +6,9 @@ using Xunit.Abstractions;
 
 namespace Pandowdy.EmuCore.Tests.DiskII.Exporters;
 
-public class WozExporterDebugTest
+public class WozExporterDebugTest(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper _output;
-
-    public WozExporterDebugTest(ITestOutputHelper output)
-    {
-        _output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
     [Fact]
     [Trait("Category", "FullDiskTests")]

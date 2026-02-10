@@ -375,19 +375,13 @@ public class RenderingServiceTests : IDisposable
     /// <summary>
     /// Mock frame generator for testing.
     /// </summary>
-    private class MockFrameGenerator : IFrameGenerator
+    private class MockFrameGenerator(int renderDelayMs = 0, bool throwException = false) : IFrameGenerator
     {
         private int _renderCount = 0;
-        private readonly int _renderDelayMs;
-        private readonly bool _throwException;
+        private readonly int _renderDelayMs = renderDelayMs;
+        private readonly bool _throwException = throwException;
 
         public int RenderCount => _renderCount;
-
-        public MockFrameGenerator(int renderDelayMs = 0, bool throwException = false)
-        {
-            _renderDelayMs = renderDelayMs;
-            _throwException = throwException;
-        }
 
         public RenderContext AllocateRenderContext()
         {

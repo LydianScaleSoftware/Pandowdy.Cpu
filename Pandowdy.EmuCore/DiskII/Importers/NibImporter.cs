@@ -28,7 +28,7 @@ public class NibImporter : IDiskImageImporter
     /// <summary>
     /// Supported file extensions for NIB format.
     /// </summary>
-    public IReadOnlyList<string> SupportedExtensions { get; } = new[] { ".nib" };
+    public IReadOnlyList<string> SupportedExtensions { get; } = [".nib"];
 
     /// <summary>
     /// Import a .nib disk image file to internal format.
@@ -64,10 +64,7 @@ public class NibImporter : IDiskImageImporter
     /// <exception cref="InvalidDataException">Thrown if stream format is invalid.</exception>
     public InternalDiskImage Import(Stream stream, DiskFormat format)
     {
-        if (stream == null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
+        ArgumentNullException.ThrowIfNull(nameof(stream));
 
         if (format != DiskFormat.Nib)
         {
@@ -80,7 +77,7 @@ public class NibImporter : IDiskImageImporter
     /// <summary>
     /// Internal import implementation shared by file and stream imports.
     /// </summary>
-    private InternalDiskImage ImportFromStream(Stream stream, string? sourcePath)
+    private static InternalDiskImage ImportFromStream(Stream stream, string? sourcePath)
     {
         // Load the entire disk image into memory
         byte[] diskData = new byte[stream.Length];
@@ -99,24 +96,14 @@ public class NibImporter : IDiskImageImporter
                 $"Invalid .nib file size. Expected {expectedSize} bytes, got {diskData.Length} bytes.");
         }
 
-<<<<<<< HEAD
-        // Create tracks and wrap each track's bytes in a CircularBitBuffer
-=======
+
         // Create tracks, each with its own independent byte array
->>>>>>> internaldiskimage
         var tracks = new CircularBitBuffer[DiskIIConstants.TrackCount];
         var trackBitCounts = new int[DiskIIConstants.TrackCount];
 
         for (int track = 0; track < DiskIIConstants.TrackCount; track++)
         {
             int byteOffset = track * DiskIIConstants.BytesPerNibTrack;
-<<<<<<< HEAD
-            trackBitCounts[track] = DiskIIConstants.BitsPerTrack;
-
-            tracks[track] = new CircularBitBuffer(
-                diskData,
-                byteOffset,
-=======
             byte[] trackData = new byte[DiskIIConstants.BytesPerNibTrack];
             Array.Copy(diskData, byteOffset, trackData, 0, DiskIIConstants.BytesPerNibTrack);
 
@@ -125,7 +112,6 @@ public class NibImporter : IDiskImageImporter
             tracks[track] = new CircularBitBuffer(
                 trackData,
                 byteOffset: 0,
->>>>>>> internaldiskimage
                 bitOffset: 0,
                 bitCount: DiskIIConstants.BitsPerTrack,
                 new GroupBool(),

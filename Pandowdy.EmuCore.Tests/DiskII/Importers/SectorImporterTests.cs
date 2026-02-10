@@ -38,28 +38,19 @@ public class SectorImporterTests
     }
 
     [Fact]
-<<<<<<< HEAD
-    public void Import_ValidDskFile_ReturnsInternalDiskImage()
-    {
-        var importer = new SectorImporter();
-        if (!File.Exists(TestDiskImages.DosDsk))
-=======
     [Trait("Category", "FullDiskTests")]
     public void Import_ValidDskFile_ReturnsInternalDiskImage()
     {
         var importer = new SectorImporter();
         using var sourceCopy = TempDiskImageCopy.TryCreate(TestDiskImages.DosDsk);
         if (sourceCopy == null)
->>>>>>> internaldiskimage
+
         {
             return;
         }
 
-<<<<<<< HEAD
-        var diskImage = importer.Import(TestDiskImages.DosDsk);
-=======
+
         var diskImage = importer.Import(sourceCopy.FilePath);
->>>>>>> internaldiskimage
 
         Assert.NotNull(diskImage);
         Assert.Equal(35, diskImage.TrackCount);
@@ -70,28 +61,18 @@ public class SectorImporterTests
     }
 
     [Fact]
-<<<<<<< HEAD
-    public void Import_ValidDskFile_SynthesizesGcrTracks()
-    {
-        var importer = new SectorImporter();
-        if (!File.Exists(TestDiskImages.DosDsk))
-=======
+
     [Trait("Category", "FullDiskTests")]
     public void Import_ValidDskFile_SynthesizesGcrTracks()
     {
         var importer = new SectorImporter();
         using var sourceCopy = TempDiskImageCopy.TryCreate(TestDiskImages.DosDsk);
         if (sourceCopy == null)
->>>>>>> internaldiskimage
         {
             return;
         }
 
-<<<<<<< HEAD
-        var diskImage = importer.Import(TestDiskImages.DosDsk);
-=======
         var diskImage = importer.Import(sourceCopy.FilePath);
->>>>>>> internaldiskimage
 
         // Verify tracks are synthesized and readable
         for (int track = 0; track < diskImage.TrackCount; track++)
@@ -127,28 +108,18 @@ public class SectorImporterTests
     }
 
     [Fact]
-<<<<<<< HEAD
-    public void ImportStream_ValidDskStream_ReturnsInternalDiskImage()
-    {
-        var importer = new SectorImporter();
-        if (!File.Exists(TestDiskImages.DosDsk))
-=======
     [Trait("Category", "FullDiskTests")]
     public void ImportStream_ValidDskStream_ReturnsInternalDiskImage()
     {
         var importer = new SectorImporter();
         using var sourceCopy = TempDiskImageCopy.TryCreate(TestDiskImages.DosDsk);
         if (sourceCopy == null)
->>>>>>> internaldiskimage
         {
             return;
         }
 
-<<<<<<< HEAD
-        using var stream = File.OpenRead(TestDiskImages.DosDsk);
-=======
+
         using var stream = File.OpenRead(sourceCopy.FilePath);
->>>>>>> internaldiskimage
         var diskImage = importer.Import(stream, DiskFormat.Dsk);
 
         Assert.NotNull(diskImage);
@@ -158,25 +129,17 @@ public class SectorImporterTests
     }
 
     [Fact]
-<<<<<<< HEAD
-=======
+
     [Trait("Category", "FullDiskTests")]
->>>>>>> internaldiskimage
     public void Import_DifferentFormats_PreservesOriginalFormat()
     {
         var importer = new SectorImporter();
 
         // Test with DSK format
-<<<<<<< HEAD
-        if (File.Exists(TestDiskImages.DosDsk))
-        {
-            var dskImage = importer.Import(TestDiskImages.DosDsk);
-=======
         using var sourceCopy = TempDiskImageCopy.TryCreate(TestDiskImages.DosDsk);
         if (sourceCopy != null)
         {
             var dskImage = importer.Import(sourceCopy.FilePath);
->>>>>>> internaldiskimage
             Assert.Equal(DiskFormat.Dsk, dskImage.OriginalFormat);
         }
 
@@ -184,28 +147,17 @@ public class SectorImporterTests
     }
 
     [Fact]
-<<<<<<< HEAD
-    public void Import_SynthesizesTracks_WithProperGcrStructure()
-    {
-        var importer = new SectorImporter();
-        if (!File.Exists(TestDiskImages.DosDsk))
-=======
     [Trait("Category", "FullDiskTests")]
     public void Import_SynthesizesTracks_WithProperGcrStructure()
     {
         var importer = new SectorImporter();
         using var sourceCopy = TempDiskImageCopy.TryCreate(TestDiskImages.DosDsk);
         if (sourceCopy == null)
->>>>>>> internaldiskimage
         {
             return;
         }
 
-<<<<<<< HEAD
-        var diskImage = importer.Import(TestDiskImages.DosDsk);
-=======
         var diskImage = importer.Import(sourceCopy.FilePath);
->>>>>>> internaldiskimage
 
         // Verify track 0 has reasonable GCR structure
         var track0 = diskImage.Tracks[0];

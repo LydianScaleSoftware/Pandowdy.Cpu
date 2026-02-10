@@ -4,14 +4,9 @@ using Xunit.Abstractions;
 
 namespace Pandowdy.EmuCore.Tests.DiskII.Exporters;
 
-public class ScanWozChunksTest
+public class ScanWozChunksTest(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper _output;
-
-    public ScanWozChunksTest(ITestOutputHelper output)
-    {
-        _output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
     [Fact]
     [Trait("Category", "FullDiskTests")]

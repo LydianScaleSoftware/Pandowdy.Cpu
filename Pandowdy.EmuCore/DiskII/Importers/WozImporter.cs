@@ -33,12 +33,11 @@ namespace Pandowdy.EmuCore.DiskII.Importers;
 public class WozImporter : IDiskImageImporter
 {
     private const int MaxTracks = 35;
-    private const int QuartersPerTrack = 4;
 
     /// <summary>
     /// Supported file extensions for WOZ format.
     /// </summary>
-    public IReadOnlyList<string> SupportedExtensions { get; } = new[] { ".woz" };
+    public IReadOnlyList<string> SupportedExtensions { get; } = [".woz"];
 
     /// <summary>
     /// Import a .woz disk image file to internal format.
@@ -74,10 +73,8 @@ public class WozImporter : IDiskImageImporter
     /// <exception cref="InvalidDataException">Thrown if stream format is invalid.</exception>
     public InternalDiskImage Import(Stream stream, DiskFormat format)
     {
-        if (stream == null)
-        {
-            throw new ArgumentNullException(nameof(stream));
-        }
+ 
+        ArgumentNullException.ThrowIfNull(stream);
 
         if (format != DiskFormat.Woz)
         {
@@ -90,7 +87,7 @@ public class WozImporter : IDiskImageImporter
     /// <summary>
     /// Internal import implementation shared by file and stream imports.
     /// </summary>
-    private InternalDiskImage ImportFromStream(Stream stream, string? sourcePath)
+    private  static InternalDiskImage ImportFromStream(Stream stream, string? sourcePath)
     {
         // Open WOZ file using CiderPress2 and ensure proper disposal
         // Provide a no-op MessageLog to avoid NullReferenceException in Woz.Dispose
@@ -124,10 +121,6 @@ public class WozImporter : IDiskImageImporter
                 // Try to get the main track (quarter position 0)
                 if (wozImage.GetTrackBits((uint)track, 0, out CircularBitBuffer? cbb) && cbb != null)
                 {
-<<<<<<< HEAD
-                    tracks[track] = cbb;
-                    trackBitCounts[track] = cbb.BitCount;
-=======
                     // DiskArc returns read-only buffers; copy into writable buffers
                     // so the emulator can write to disk
                     int bitCount = cbb.BitCount;
@@ -149,7 +142,6 @@ public class WozImporter : IDiskImageImporter
                         isReadOnly: false
                     );
                     trackBitCounts[track] = bitCount;
->>>>>>> internaldiskimage
                     tracksFound++;
                 }
                 else

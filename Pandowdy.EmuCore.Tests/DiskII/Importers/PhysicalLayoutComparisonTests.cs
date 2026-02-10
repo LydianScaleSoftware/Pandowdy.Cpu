@@ -16,25 +16,17 @@ namespace Pandowdy.EmuCore.Tests.DiskII.Importers;
 /// <summary>
 /// Diagnostic test to compare physical sector layout between new and legacy providers.
 /// </summary>
-public class PhysicalLayoutComparisonTests
+public class PhysicalLayoutComparisonTests(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper _output;
-
-    public PhysicalLayoutComparisonTests(ITestOutputHelper output)
-    {
-        _output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
     [Fact]
     public void ComparePhysicalLayout_Track0_NewVsLegacy()
     {
-<<<<<<< HEAD
-        if (!File.Exists(TestDiskImages.TestDo))
-=======
+
         // Use temp copy to avoid file locking conflicts with parallel tests
         using var sourceCopy = TempDiskImageCopy.TryCreate(TestDiskImages.TestDo);
         if (sourceCopy == null)
->>>>>>> internaldiskimage
         {
             _output.WriteLine("test.do not found");
             return;
@@ -44,18 +36,6 @@ public class PhysicalLayoutComparisonTests
         _output.WriteLine($"=== Physical Layout Comparison: Track {track} ===");
         _output.WriteLine("");
 
-<<<<<<< HEAD
-        // New importer
-        var importer = new SectorImporter();
-        InternalDiskImage newImage = importer.Import(TestDiskImages.TestDo);
-        CircularBitBuffer newTrack = newImage.Tracks[track];
-
-        // Legacy provider
-        using var legacyProvider = new SectorDiskImageProvider(TestDiskImages.TestDo);
-        legacyProvider.SetQuarterTrack(track * 4);
-        legacyProvider.GetBit(0);
-        
-=======
         // New importer (using temp copy)
         var importer = new SectorImporter();
         InternalDiskImage newImage = importer.Import(sourceCopy.FilePath);
@@ -66,7 +46,6 @@ public class PhysicalLayoutComparisonTests
         legacyProvider.SetQuarterTrack(track * 4);
         legacyProvider.GetBit(0);
 
->>>>>>> internaldiskimage
         var legacyTrackCacheField = typeof(SectorDiskImageProvider)
             .GetField("_trackCache", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var legacyTrackCache = (CircularBitBuffer?[])legacyTrackCacheField!.GetValue(legacyProvider)!;

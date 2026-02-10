@@ -5,14 +5,9 @@ using Xunit.Abstractions;
 
 namespace Pandowdy.EmuCore.Tests.DiskII.Exporters;
 
-public class CompareWozStructureTest
+public class CompareWozStructureTest(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper _output;
-
-    public CompareWozStructureTest(ITestOutputHelper output)
-    {
-        _output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
     [Fact]
     public void CompareRealWozStructure()

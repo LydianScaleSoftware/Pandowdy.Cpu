@@ -365,7 +365,7 @@ public class NibDiskImageProvider : IDiskImageProvider, IDisposable
     /// Writes a bit to the current track.
     /// </summary>
     /// <param name="bit">The bit value to write.</param>
-    /// <param name="cycleCount">Current CPU cycle count used to calculate write position.
+    /// <param name="cycleCount">Current CPU cycle count used to calculate write position.</param>
     /// <returns>True if write succeeded, false if write-protected.</returns>
     /// <remarks>
     /// Writes use the same cycle-based position calculation as reads (45/11 cycles per bit).

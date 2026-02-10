@@ -14,14 +14,9 @@ namespace Pandowdy.EmuCore.Tests.DiskII.Exporters;
 /// <summary>
 /// Debug test to scan the structure of a newly exported WOZ file.
 /// </summary>
-public class ScanExportedWozTest
+public class ScanExportedWozTest(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper _output;
-
-    public ScanExportedWozTest(ITestOutputHelper output)
-    {
-        _output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
     [Fact]
     [Trait("Category", "FullDiskTests")]
