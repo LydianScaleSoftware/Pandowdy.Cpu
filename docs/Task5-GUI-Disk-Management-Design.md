@@ -54,11 +54,11 @@
 
 ## Tasks
 
-### Current task in progress
+### Current task in progress:
 
 - None
 
-### Next proposed task
+### Next proposed task:
 
 - Phase 1: Card Management Infrastructure
 
