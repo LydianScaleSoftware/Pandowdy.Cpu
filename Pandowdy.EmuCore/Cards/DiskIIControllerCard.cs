@@ -1206,4 +1206,28 @@ public abstract class DiskIIControllerCard : ICard
         UpdateMotorOffScheduledStatus(false); // No motor-off scheduled
         UpdatePhaseState(); // All phases off
     }
+
+    /// <summary>
+    /// Handles a message sent to this card.
+    /// </summary>
+    /// <param name="message">The message to process.</param>
+    /// <exception cref="Exceptions.CardMessageException">
+    /// Thrown if the message is not recognized or cannot be processed.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// <strong>Placeholder Implementation:</strong> This base class provides a minimal
+    /// implementation for common messages (IdentifyCardMessage, EnumerateDevicesMessage,
+    /// RefreshStatusMessage). Card-specific messages (InsertDiskMessage, etc.) will be
+    /// implemented in Phase 2 of Task 5.
+    /// </para>
+    /// </remarks>
+    public virtual void HandleMessage(ICardMessage message)
+    {
+        // Phase 1 placeholder: Only handle identification messages
+        // Full disk management messages will be added in Phase 2
+        throw new Exceptions.CardMessageException(
+            $"Disk II controller does not yet support message type '{message.GetType().Name}'. " +
+            "Full message handling will be implemented in Phase 2 of Task 5.");
+    }
 }

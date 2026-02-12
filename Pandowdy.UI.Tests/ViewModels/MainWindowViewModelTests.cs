@@ -4,6 +4,7 @@
 
 using Pandowdy.EmuCore.DataTypes;
 using Pandowdy.EmuCore.Interfaces;
+using Pandowdy.EmuCore.Messages;
 using Pandowdy.EmuCore.Services;
 using Pandowdy.UI.Interfaces;
 using Pandowdy.UI.ViewModels;
@@ -84,8 +85,9 @@ public class MainWindowViewModelTests
         public IDiskStatusProvider DiskStatus => throw new NotImplementedException();
 
         public Task RunAsync(CancellationToken token, double targetMhz = 1.023) => Task.CompletedTask;
+        public Task SendCardMessageAsync(SlotNumber? slot, ICardMessage message) => Task.CompletedTask;
         public void Clock() { }
-        public void UserReset() { }
+        public static void UserReset() { }
         public void SetPushButton(byte button, bool pressed) { }
         public void EnqueueKey(byte key) { }
         public void ResetKeyboard() { }

@@ -73,6 +73,12 @@ namespace Pandowdy
                     services.AddSingleton<IDiskStatusProvider>(sp => sp.GetRequiredService<DiskStatusProvider>());
                     services.AddSingleton<IDiskStatusMutator>(sp => sp.GetRequiredService<DiskStatusProvider>());
 
+                    // Card Response Channel - provides response stream and emitter for card messaging
+                    // Single instance shared between cards (emitter) and UI (provider)
+                    services.AddSingleton<CardResponseChannel>();
+                    services.AddSingleton<ICardResponseProvider>(sp => sp.GetRequiredService<CardResponseChannel>());
+                    services.AddSingleton<ICardResponseEmitter>(sp => sp.GetRequiredService<CardResponseChannel>());
+
                     services.AddSingleton<ICardFactory, CardFactory>();
                     services.AddSingleton<ISlots, Slots>();
 

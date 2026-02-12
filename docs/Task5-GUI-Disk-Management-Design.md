@@ -60,13 +60,24 @@
 
 ## Tasks
 
+### ✅ Completed:
+
+- **Phase 1: Card Message Infrastructure** (Completed: January 2026)
+  - All infrastructure files created (13 new files)
+  - All production files modified (5 files)
+  - All test files created (3 test files, 25 passing tests)
+  - Build compiles successfully
+  - DI registration complete
+  - NullCard.HandleMessage fully implemented
+  - VA2M.SendCardMessageAsync with broadcast support
+
 ### Current task in progress:
 
-- None
+- None (Phase 1 complete)
 
 ### Next proposed task:
 
-- Phase 1: Card Management Infrastructure
+- Phase 2: Disk II Message Implementations
 
 ---
 
@@ -88,10 +99,21 @@
 6. **Forgiving APIs:** Operations that target a no-op state (e.g., eject on empty drive) are silently ignored. The GUI should prevent such operations from being offered, but they should be benign if they occur.
 7. **Never overwrite originals:** Disk images loaded from files are converted to the internal `InternalDiskImage` format in memory. Writes go to the in-memory copy only (`Flush()` is a no-op on `UnifiedDiskImageProvider`). The original source file is never modified. Each imported disk gets an attached **destination path** (derived from the source with a `_new` suffix) for save operations. "Save" writes to the attached destination; "Save As" lets the user choose a new path. This protects source disk images from accidental corruption and matches the read-import / write-export architecture already in place.
 8. **Tests track code:** Every new file of production code gets a corresponding test file. Test cases are added in the same PR as the code they cover. The design document is updated as decisions are made or implementations diverge from the plan.
+9. **Third-party project boundaries:** The **DiskArc**, **FileConv**, and **CommonUtil** projects are third-party dependencies and **must not be modified**. All disk image import/export functionality uses the existing interfaces and types provided by these libraries (`IDiskImageImporter`, `IDiskImageExporter`, `DiskFormat`, etc.) without modification. New functionality wraps or delegates to these libraries rather than extending them directly. Task 5 implementation consumes these services as-is through the existing Pandowdy.EmuCore abstractions.
 
 ---
 
 ## Phase 1: Card Message Infrastructure
+
+**Status:** ✅ **Completed** (January 2026)
+
+**Summary:** Established the foundational generic card message system, enabling any card to receive messages and emit responses through a unified interface. Implemented `ICardMessage`, `ICardResponseProvider`, `ICardResponseEmitter`, `CardResponseChannel`, and three base messages (`IdentifyCardMessage`, `EnumerateDevicesMessage`, `RefreshStatusMessage`). Integrated with VA2M's command queue for thread-safe execution. NullCard fully implements message handling.
+
+**Files Created:** 13 new files (interfaces, messages, services, exception)
+**Files Modified:** 5 production files (ICard, IEmulatorCoreInterface, NullCard, DiskIIControllerCard, VA2M)
+**Tests:** 25 passing tests (CardResponseChannelTests, IdentifyCardMessageTests, CardMessageTests)
+**Build Status:** ✅ Compiles successfully
+**Runtime Status:** ✅ DI registration complete, no exceptions
 
 ### ICardMessage and Message Types
 
@@ -1507,6 +1529,49 @@ These items were originally open questions that have been resolved:
 > **📋 Extracted from `.github/copilot-instructions.md` and `docs/Development-Roadmap.md`**
 > These guidelines ensure consistency across Task 5 implementation without requiring the full roadmap context.
 
+### Copyright Headers
+
+**All C# source files must include a copyright header at the very top of the file, before any code or namespace declarations.**
+
+**Required Format:**
+
+```csharp
+// Copyright 2026 Mark D. Long
+// Licensed under the Apache License, Version 2.0
+// See LICENSE file for details
+
+```
+
+**Rules:**
+- The header must be exactly 3 lines of comments followed by one blank line
+- The header must appear at the very top of the file (line 1)
+- The header must precede all `using` statements, namespace declarations, and code
+- This applies to **all C# source files**: production code and test code
+- No variations in spacing, punctuation, or content are permitted
+
+**Example File Structure:**
+
+```csharp
+// Copyright 2026 Mark D. Long
+// Licensed under the Apache License, Version 2.0
+// See LICENSE file for details
+
+using System;
+using Pandowdy.EmuCore.Interfaces;
+
+namespace Pandowdy.EmuCore.Messages;
+
+/// <summary>
+/// Message requesting a disk image be inserted into a specific drive.
+/// </summary>
+public record InsertDiskMessage(int DriveNumber, string DiskImagePath) : ICardMessage;
+```
+
+**Verification:**
+- All Phase 1 files have been verified to include the correct copyright header
+- Future phases must include copyright headers on all new files created
+- Code reviews should verify copyright headers are present and correctly formatted
+
 ### Dependency Injection and Architecture
 
 **Prefer Dependency Injection over other patterns:**
@@ -1803,18 +1868,23 @@ This document is the **single source of truth** for Task 5 design decisions. It 
 The [Tasks](#tasks) section at the top of this document tracks work in progress:
 
 - **When starting a phase:** Move the phase name from "Next proposed task" to "Current task in progress".
-- **When completing a phase:** Mark the current task as "✅ Complete" and update "Next proposed task" to the subsequent phase.
-- **When all phases are complete:** Set both fields to "None" or "✅ All phases complete".
+- **When completing a phase:** Move the completed phase to the "✅ Completed" list with completion date. Set "Current task in progress" to "None (Phase X complete)". Move "Next proposed task" to the subsequent phase.
+- **When all phases are complete:** Set "Current task in progress" to "None" or "✅ All phases complete". Set "Next proposed task" to "None".
 
 Example progression:
 ```
 Current task in progress: Phase 1: Card Message Infrastructure
 Next proposed task: Phase 2: Disk II Message Implementations
 
-→ After Phase 1 completes:
+→ After Phase 1 completes (intermediate state):
+
+Current task in progress: None (Phase 1 complete)
+Next proposed task: Phase 2: Disk II Message Implementations
+
+→ After starting Phase 2:
 
 Current task in progress: Phase 2: Disk II Message Implementations  
-Next proposed task: Phase 3: UI Integration
+Next proposed task: Phase 3A: UI Integration — Core Controls
 ```
 
 ### Table of Contents Updates
