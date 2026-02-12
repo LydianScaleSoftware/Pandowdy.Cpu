@@ -3,7 +3,9 @@
 // See LICENSE file for details
 
 using System;
+using System.Reactive;
 using Avalonia.Media;
+using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.EmuCore.Services;
 using ReactiveUI;
 
@@ -21,10 +23,80 @@ namespace Pandowdy.UI.ViewModels;
 /// <strong>Color Coding:</strong> Uses red for read-only indicators to provide
 /// visual feedback about write-protection status.
 /// </para>
+/// <para>
+/// <strong>Commands:</strong> Provides reactive commands for disk operations (insert, eject,
+/// save, etc.) that are enabled/disabled based on drive state.
+/// </para>
 /// </remarks>
-public class DiskStatusWidgetViewModel(DiskDriveStatusSnapshot initialSnapshot) : ReactiveObject
+public class DiskStatusWidgetViewModel : ReactiveObject
 {
-    private DiskDriveStatusSnapshot _snapshot = initialSnapshot;
+    private readonly IEmulatorCoreInterface _emulator;
+    private DiskDriveStatusSnapshot _snapshot;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DiskStatusWidgetViewModel"/> class.
+    /// </summary>
+    /// <param name="emulator">Emulator core interface for sending card messages.</param>
+    /// <param name="initialSnapshot">Initial drive status snapshot.</param>
+    public DiskStatusWidgetViewModel(IEmulatorCoreInterface emulator, DiskDriveStatusSnapshot initialSnapshot)
+    {
+        _emulator = emulator;
+        _snapshot = initialSnapshot;
+
+        // Create observables for command enablement
+        var hasDiskObservable = this.WhenAnyValue(x => x.HasDisk);
+        var canSaveObservable = this.WhenAnyValue(
+            x => x.HasDisk,
+            x => x.HasDestinationPath,
+            x => x.IsDirty,
+            (hasDisk, hasDest, isDirty) => hasDisk && hasDest && isDirty);
+
+        // Commands - note: actual file dialog integration will come in Phase 3B
+        // For now, these commands send messages with empty paths (which will fail)
+        // The UI layer will intercept these and show file dialogs before sending
+        InsertDiskCommand = ReactiveCommand.Create(() => { /* File dialog in Phase 3B */ });
+        InsertBlankDiskCommand = ReactiveCommand.Create(() => { /* Implementation in Phase 3B */ });
+
+        EjectDiskCommand = ReactiveCommand.CreateFromTask(
+            async () => await _emulator.SendCardMessageAsync(
+                (SlotNumber)_snapshot.SlotNumber,
+                new Pandowdy.EmuCore.DiskII.Messages.EjectDiskMessage(_snapshot.DriveNumber)),
+            hasDiskObservable);
+
+        SaveCommand = ReactiveCommand.Create(() => { /* Implementation in Phase 3B */ }, canSaveObservable);
+        SaveAsCommand = ReactiveCommand.Create(() => { /* Implementation in Phase 3B */ }, hasDiskObservable);
+        ToggleWriteProtectCommand = ReactiveCommand.Create(() => { /* Implementation in Phase 3B */ }, hasDiskObservable);
+    }
+
+    /// <summary>
+    /// Gets the command for inserting a disk image.
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> InsertDiskCommand { get; }
+
+    /// <summary>
+    /// Gets the command for inserting a blank disk.
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> InsertBlankDiskCommand { get; }
+
+    /// <summary>
+    /// Gets the command for ejecting the current disk.
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> EjectDiskCommand { get; }
+
+    /// <summary>
+    /// Gets the command for saving the disk to its attached destination path.
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> SaveCommand { get; }
+
+    /// <summary>
+    /// Gets the command for saving the disk to a user-chosen path (Save As).
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> SaveAsCommand { get; }
+
+    /// <summary>
+    /// Gets the command for toggling write-protect state.
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> ToggleWriteProtectCommand { get; }
 
     /// <summary>
     /// Updates the widget with a new snapshot.
@@ -33,6 +105,9 @@ public class DiskStatusWidgetViewModel(DiskDriveStatusSnapshot initialSnapshot) 
     {
         _snapshot = snapshot;
         this.RaisePropertyChanged(nameof(DiskId));
+        this.RaisePropertyChanged(nameof(HasDisk));
+        this.RaisePropertyChanged(nameof(IsDirty));
+        this.RaisePropertyChanged(nameof(HasDestinationPath));
         this.RaisePropertyChanged(nameof(Filename));
         this.RaisePropertyChanged(nameof(DiskImagePathTooltip));
         this.RaisePropertyChanged(nameof(FilenameForeground));
@@ -46,6 +121,21 @@ public class DiskStatusWidgetViewModel(DiskDriveStatusSnapshot initialSnapshot) 
     /// Gets the disk identifier (e.g., "S6D1").
     /// </summary>
     public string DiskId => _snapshot.DiskId;
+
+    /// <summary>
+    /// Gets a value indicating whether a disk is inserted in this drive.
+    /// </summary>
+    public bool HasDisk => !string.IsNullOrEmpty(_snapshot.DiskImageFilename);
+
+    /// <summary>
+    /// Gets a value indicating whether the disk has unsaved changes.
+    /// </summary>
+    public bool IsDirty => _snapshot.IsDirty;
+
+    /// <summary>
+    /// Gets a value indicating whether the disk has an attached destination path for Save operations.
+    /// </summary>
+    public bool HasDestinationPath => _snapshot.HasDestinationPath;
 
     /// <summary>
     /// Gets the filename without path, or "(empty)" if no disk.

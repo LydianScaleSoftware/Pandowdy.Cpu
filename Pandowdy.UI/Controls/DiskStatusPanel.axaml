@@ -33,10 +33,10 @@
             <!-- Drive Status Widgets (scrollable) -->
             <ScrollViewer VerticalScrollBarVisibility="Auto"
                           Padding="8">
-                <ItemsControl ItemsSource="{Binding Drives}">
+                <ItemsControl ItemsSource="{Binding Cards}">
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="vm:DiskStatusWidgetViewModel">
-                            <controls:DiskStatusWidget DataContext="{Binding}" />
+                        <DataTemplate DataType="vm:DiskCardPanelViewModel">
+                            <controls:DiskCardPanel DataContext="{Binding}" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

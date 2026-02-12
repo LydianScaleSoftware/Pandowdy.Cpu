@@ -83,13 +83,27 @@
   - Build compiles successfully
   - All tests pass (54 new tests + all existing tests)
 
+- **Phase 3A: UI Integration — Core Controls** (Completed: 2026-02-11)
+  - DiskCardPanelViewModel created with slot grouping and swap command
+  - DiskCardPanel control created (AXAML + code-behind)
+  - DiskStatusWidgetViewModel updated with commands (InsertDisk, InsertBlank, Eject, Save, SaveAs, ToggleWriteProtect)
+  - DiskStatusWidgetViewModel updated with HasDisk, IsDirty, HasDestinationPath properties
+  - Context menu added to DiskStatusWidget with all disk operations
+  - DiskStatusPanelViewModel updated to produce DiskCardPanelViewModel instances grouped by slot
+  - DiskStatusPanel updated to display card-level grouping
+  - DiskCardPanelViewModelTests created with 7 passing tests
+  - DiskStatusWidgetViewModelTests updated for new constructor signature
+  - MainWindowViewModelTests updated for DiskStatusPanelViewModel constructor change
+  - Build compiles successfully
+  - All tests pass (157 total: 150 existing + 7 new)
+
 ### Current task in progress:
 
-- None (Phase 2 complete)
+- None (Phase 3A complete)
 
 ### Next proposed task:
 
-- Phase 3A: UI Integration — Core Controls
+- Phase 3B: UI Integration — Menus and Polish
 
 ---
 

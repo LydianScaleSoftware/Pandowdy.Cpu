@@ -117,7 +117,7 @@ public class MainWindowViewModelTests
 
             EmulatorStateViewModel = new EmulatorStateViewModel(emulatorCoreInterface, refreshTicker);
             SystemStatusViewModel = new SystemStatusViewModel(statusProvider);
-            DiskStatusViewModel = new DiskStatusPanelViewModel(diskStatusProvider);
+            DiskStatusViewModel = new DiskStatusPanelViewModel(emulatorCoreInterface, diskStatusProvider);
             CpuStatusViewModel = new CpuStatusPanelViewModel(emulatorCoreInterface, refreshTicker);
             StatusBarViewModel = new StatusBarViewModel(CpuStatusViewModel, SystemStatusViewModel);
             ViewModel = new MainWindowViewModel(EmulatorStateViewModel, EmulatorState, SystemStatusViewModel, DiskStatusViewModel, CpuStatusViewModel, StatusBarViewModel);
