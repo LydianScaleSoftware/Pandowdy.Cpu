@@ -6,14 +6,12 @@ using System;
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Media;
-using Avalonia.Platform.Storage;
 using Pandowdy.EmuCore.Cards;
 using Pandowdy.EmuCore.DiskII.Messages;
 using Pandowdy.EmuCore.Exceptions;
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.EmuCore.Services;
 using Pandowdy.UI.Interfaces;
-using Pandowdy.UI.Services;
 using ReactiveUI;
 
 namespace Pandowdy.UI.ViewModels;
@@ -38,22 +36,25 @@ namespace Pandowdy.UI.ViewModels;
 public class DiskStatusWidgetViewModel : ReactiveObject
 {
     private readonly IEmulatorCoreInterface _emulator;
+    private readonly IDiskFileDialogService _fileDialogService;
     private readonly IMessageBoxService _messageBoxService;
     private DiskDriveStatusSnapshot _snapshot;
-    private IStorageProvider? _storageProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DiskStatusWidgetViewModel"/> class.
     /// </summary>
     /// <param name="emulator">Emulator core interface for sending card messages.</param>
+    /// <param name="fileDialogService">Service for displaying file picker dialogs.</param>
     /// <param name="messageBoxService">Service for displaying error and confirmation dialogs.</param>
     /// <param name="initialSnapshot">Initial drive status snapshot.</param>
     public DiskStatusWidgetViewModel(
         IEmulatorCoreInterface emulator,
+        IDiskFileDialogService fileDialogService,
         IMessageBoxService messageBoxService,
         DiskDriveStatusSnapshot initialSnapshot)
     {
         _emulator = emulator;
+        _fileDialogService = fileDialogService;
         _messageBoxService = messageBoxService;
         _snapshot = initialSnapshot;
 
@@ -111,15 +112,6 @@ public class DiskStatusWidgetViewModel : ReactiveObject
     }
 
     /// <summary>
-    /// Sets the storage provider for file dialog operations.
-    /// </summary>
-    /// <param name="storageProvider">The storage provider from the active window.</param>
-    public void SetStorageProvider(IStorageProvider storageProvider)
-    {
-        _storageProvider = storageProvider;
-    }
-
-    /// <summary>
     /// Inserts a disk image from a file path (called by drag-and-drop or command).
     /// </summary>
     /// <param name="filePath">The full path to the disk image file.</param>
@@ -132,12 +124,7 @@ public class DiskStatusWidgetViewModel : ReactiveObject
 
     private async Task InsertDiskWithDialogAsync()
     {
-        if (_storageProvider == null)
-        {
-            return;
-        }
-
-        var filePath = await DiskFileDialogService.PickDiskImageForInsertAsync(_storageProvider);
+        var filePath = await _fileDialogService.ShowOpenFileDialogAsync();
         if (!string.IsNullOrEmpty(filePath))
         {
             try
@@ -160,13 +147,8 @@ public class DiskStatusWidgetViewModel : ReactiveObject
 
     private async Task SaveAsAsync()
     {
-        if (_storageProvider == null)
-        {
-            return;
-        }
-
         var suggestedName = _snapshot.DiskImageFilename;
-        var filePath = await DiskFileDialogService.PickDiskImageForSaveAsync(_storageProvider, suggestedName);
+        var filePath = await _fileDialogService.ShowSaveFileDialogAsync(suggestedName);
 
         if (!string.IsNullOrEmpty(filePath))
         {

@@ -2,10 +2,15 @@
 // Licensed under the Apache License, Version 2.0
 // See LICENSE file for details
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
+using Pandowdy.UI.Interfaces;
 
 namespace Pandowdy.UI.Services;
 
@@ -13,18 +18,42 @@ namespace Pandowdy.UI.Services;
 /// Provides file dialog services for disk image selection and export operations.
 /// </summary>
 /// <remarks>
+/// <para>
 /// This service wraps Avalonia's StorageProvider API to provide consistent
 /// file picker dialogs with appropriate filters for disk image formats.
+/// </para>
+/// <para>
+/// This service resolves the active window's storage provider dynamically,
+/// allowing it to be registered as a singleton in the DI container before
+/// the main window is created.
+/// </para>
 /// </remarks>
-public class DiskFileDialogService
+public class DiskFileDialogService : IDiskFileDialogService
 {
     /// <summary>
-    /// Opens a file picker dialog for selecting a disk image to insert.
+    /// Gets the current active window, or null if none is available.
     /// </summary>
-    /// <param name="storageProvider">The storage provider from the active window.</param>
-    /// <returns>The selected file path, or null if the user canceled.</returns>
-    public static async Task<string?> PickDiskImageForInsertAsync(IStorageProvider storageProvider)
+    private static Window? GetMainWindow()
     {
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            return desktop.MainWindow ?? (desktop.Windows.Count > 0 ? desktop.Windows[0] : null);
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Shows an open file dialog for selecting a disk image to insert.
+    /// </summary>
+    /// <returns>The selected file path, or null if the user canceled.</returns>
+    public async Task<string?> ShowOpenFileDialogAsync()
+    {
+        var window = GetMainWindow();
+        if (window?.StorageProvider == null)
+        {
+            return null; // No window available to show dialog
+        }
+
         var options = new FilePickerOpenOptions
         {
             Title = "Insert Disk Image",
@@ -66,18 +95,23 @@ public class DiskFileDialogService
             ]
         };
 
-        var result = await storageProvider.OpenFilePickerAsync(options);
+        var result = await window.StorageProvider.OpenFilePickerAsync(options);
         return result.Count > 0 ? result[0].Path.LocalPath : null;
     }
 
     /// <summary>
-    /// Opens a file picker dialog for saving/exporting a disk image.
+    /// Shows a save file dialog for saving/exporting a disk image.
     /// </summary>
-    /// <param name="storageProvider">The storage provider from the active window.</param>
-    /// <param name="suggestedFileName">Optional suggested filename (without path).</param>
+    /// <param name="suggestedFileName">Optional suggested filename (without path), or null for no suggestion.</param>
     /// <returns>The selected file path, or null if the user canceled.</returns>
-    public static async Task<string?> PickDiskImageForSaveAsync(IStorageProvider storageProvider, string? suggestedFileName = null)
+    public async Task<string?> ShowSaveFileDialogAsync(string? suggestedFileName = null)
     {
+        var window = GetMainWindow();
+        if (window?.StorageProvider == null)
+        {
+            return null; // No window available to show dialog
+        }
+
         var options = new FilePickerSaveOptions
         {
             Title = "Save Disk Image As",
@@ -111,7 +145,7 @@ public class DiskFileDialogService
             ]
         };
 
-        var result = await storageProvider.SaveFilePickerAsync(options);
+        var result = await window.StorageProvider.SaveFilePickerAsync(options);
         return result?.Path.LocalPath;
     }
 

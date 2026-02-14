@@ -115,11 +115,12 @@ public class MainWindowViewModelTests
             var diskStatusProvider = new DiskStatusProvider();
             var emulatorCoreInterface = new TestEmulatorCoreInterface();
             var refreshTicker = new TestRefreshTicker();
+            var mockFileDialogService = new Mock<IDiskFileDialogService>();
             var mockMessageBoxService = new Mock<IMessageBoxService>();
 
             EmulatorStateViewModel = new EmulatorStateViewModel(emulatorCoreInterface, refreshTicker);
             SystemStatusViewModel = new SystemStatusViewModel(statusProvider);
-            DiskStatusViewModel = new DiskStatusPanelViewModel(emulatorCoreInterface, diskStatusProvider, mockMessageBoxService.Object);
+            DiskStatusViewModel = new DiskStatusPanelViewModel(emulatorCoreInterface, diskStatusProvider, mockFileDialogService.Object, mockMessageBoxService.Object);
             CpuStatusViewModel = new CpuStatusPanelViewModel(emulatorCoreInterface, refreshTicker);
             StatusBarViewModel = new StatusBarViewModel(CpuStatusViewModel, SystemStatusViewModel);
             ViewModel = new MainWindowViewModel(EmulatorStateViewModel, EmulatorState, SystemStatusViewModel, DiskStatusViewModel, CpuStatusViewModel, StatusBarViewModel);

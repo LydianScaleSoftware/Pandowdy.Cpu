@@ -35,6 +35,7 @@ public class DiskStatusPanelViewModel : ReactiveObject
 {
     private readonly IDiskStatusProvider _statusProvider;
     private readonly IEmulatorCoreInterface _emulator;
+    private readonly IDiskFileDialogService _fileDialogService;
     private readonly IMessageBoxService _messageBoxService;
 
     /// <summary>
@@ -47,14 +48,17 @@ public class DiskStatusPanelViewModel : ReactiveObject
     /// </summary>
     /// <param name="emulator">Emulator core interface for sending card messages.</param>
     /// <param name="statusProvider">Status provider for observing drive state changes.</param>
+    /// <param name="fileDialogService">Service for displaying file picker dialogs.</param>
     /// <param name="messageBoxService">Service for displaying error and confirmation dialogs.</param>
     public DiskStatusPanelViewModel(
         IEmulatorCoreInterface emulator,
         IDiskStatusProvider statusProvider,
+        IDiskFileDialogService fileDialogService,
         IMessageBoxService messageBoxService)
     {
         _emulator = emulator;
         _statusProvider = statusProvider;
+        _fileDialogService = fileDialogService;
         _messageBoxService = messageBoxService;
 
         // Initialize card panels grouped by slot
@@ -73,7 +77,7 @@ public class DiskStatusPanelViewModel : ReactiveObject
 
             foreach (var driveSnapshot in slotGroup)
             {
-                drives.Add(new DiskStatusWidgetViewModel(_emulator, _messageBoxService, driveSnapshot));
+                drives.Add(new DiskStatusWidgetViewModel(_emulator, _fileDialogService, _messageBoxService, driveSnapshot));
             }
 
             // TODO: Card name should come from card identification (Phase 3B)

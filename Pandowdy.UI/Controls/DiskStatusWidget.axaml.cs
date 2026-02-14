@@ -30,19 +30,6 @@ public partial class DiskStatusWidget : UserControl
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
         AddHandler(DragDrop.DropEvent, OnDrop);
         AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
-
-        // Set storage provider when attached to visual tree
-        AttachedToVisualTree += OnAttachedToVisualTree;
-    }
-
-    private void OnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
-    {
-        // Find the parent window and set the storage provider on the ViewModel
-        var window = this.FindLogicalAncestorOfType<Window>();
-        if (window != null && DataContext is DiskStatusWidgetViewModel vm)
-        {
-            vm.SetStorageProvider(window.StorageProvider);
-        }
     }
 
     private void OnDragOver(object? sender, DragEventArgs e)

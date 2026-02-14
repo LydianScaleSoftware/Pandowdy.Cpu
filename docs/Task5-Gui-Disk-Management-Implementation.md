@@ -220,10 +220,10 @@ await driveStateService.LoadAndRestoreDriveStateAsync(coreInterface);
 ```
 Peripherals
 ├── Disks
-│   ├── Slot 6 — Disk II Controller
+│   ├── Slot 5 — Disk II Controller
 │   │   ├── S6D1 - game.woz      → opens drive dialog
 │   │   └── S6D2 - (empty)       → opens drive dialog
-│   └── Slot 5 — Disk II Controller
+│   └── Slot 6 — Disk II Controller
 │       └── ...
 └── (future: Communication, Audio, etc.)
 ```
@@ -235,6 +235,7 @@ Peripherals
 4. Group disk controllers under "Disks"
 5. Populate drive details from `IDiskStatusProvider.Current`
 6. Rebuild on `IDiskStatusProvider.Stream` changes
+7. Disks should be sorted by Slot # then by Drive #
 
 ### Other Phase 3D Items
 

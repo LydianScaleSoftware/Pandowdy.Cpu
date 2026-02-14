@@ -21,11 +21,13 @@ namespace Pandowdy.UI.Tests.ViewModels;
 public class DiskCardPanelViewModelTests
 {
     private readonly Mock<IEmulatorCoreInterface> _mockEmulator;
+    private readonly Mock<IDiskFileDialogService> _mockFileDialogService;
     private readonly Mock<IMessageBoxService> _mockMessageBoxService;
 
     public DiskCardPanelViewModelTests()
     {
         _mockEmulator = new Mock<IEmulatorCoreInterface>();
+        _mockFileDialogService = new Mock<IDiskFileDialogService>();
         _mockMessageBoxService = new Mock<IMessageBoxService>();
     }
 
@@ -50,7 +52,7 @@ public class DiskCardPanelViewModelTests
             IsDirty: false,
             HasDestinationPath: hasDisk
         );
-        return new DiskStatusWidgetViewModel(emulator, _mockMessageBoxService.Object, snapshot);
+        return new DiskStatusWidgetViewModel(emulator, _mockFileDialogService.Object, _mockMessageBoxService.Object, snapshot);
     }
 
     #region Constructor Tests

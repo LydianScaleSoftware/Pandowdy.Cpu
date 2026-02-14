@@ -171,6 +171,7 @@ namespace Pandowdy
                     // UI services
                     services.AddSingleton<IRefreshTicker, AvaloniaRefreshTicker>();
                     services.AddSingleton<IMessageBoxService, MessageBoxService>();
+                    services.AddSingleton<IDiskFileDialogService, DiskFileDialogService>();
 
                     // ViewModels
                     services.AddTransient<EmulatorStateViewModel>();
