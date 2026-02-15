@@ -8,9 +8,9 @@
 
 | Status | Details |
 |--------|---------|
-| **Branch** | `tasks` |
-| **Tests** | 2039 tests (1766 EmuCore + 126 Disassembler + 147 UI) passing ✅ |
-| **Last Milestone** | Task 27: Drive Switching Bug Fixed (NIB/WOZ Providers) ✅ COMPLETE |
+| **Branch** | `newtasks` |
+| **Tests** | 2246 tests (1766 EmuCore + 126 Disassembler + 354 UI) passing ✅ |
+| **Last Milestone** | Task 5: GUI Disk Management Features ✅ COMPLETE |
 | **Current Focus** | Task 22 (Intermediate Debugger Implementation) ⏳ NOT STARTED |
 
 ---
@@ -20,7 +20,7 @@
 1. [In Progress Tasks](#in-progress-tasks)
    - None
 2. [Active Tasks](#active-tasks)
-   - [Task 5: GUI Disk Management Features](#task-5-gui-disk-management-features-high-priority)
+   - Task 32: Implement .skillet project files
    - [Task 22: Intermediate Debugger Implementation](#task-22-intermediate-debugger-implementation-high-priority)
    - [Task 13: Audio Emulation Implementation](#task-13-audio-emulation-implementation-medium-priority)
 3. [Backlog](#backlog)
@@ -35,10 +35,12 @@
    - [Task 20: Advanced Debugger Features](#task-20-advanced-debugger-features-low-priority)
    - [Task 21: Peripheral Discovery and Enumeration API](#task-21-peripheral-discovery-and-enumeration-api-medium-priority)
    - [Task 23: Split IKeyboardSetter into IKeyboardSetter and IKeyboardResetter](#task-23-split-ikeyboardsetter-into-ikeyboardsetter-and-ikeyboardresetter-low-priority)
+   - Task 31: Implement DHGR graphics
 4. [Completed Tasks](#completed-tasks)
    - [Task 1: Migrate VA2M to CpuClockingCounters.VBlankOccurred](#task-1-migrate-va2m-to-cpuclockingcountersvblankoccurred)
    - [Task 2: Remove VA2MBus.VBlank Event](#task-2-remove-va2mbusvblank-event)
    - [Task 3: Removed](#task-3-removed)
+   - [Task 5: GUI Disk Management Features](#task-5-gui-disk-management-features)
    - [Task 6: Clear Pending Keystrokes on Reset](#task-6-clear-pending-keystrokes-on-reset)
    - [Task 8: Check for Race Conditions at High Speeds](#task-8-check-for-race-conditions-at-high-speeds)
    - [Task 9: Multi-Drive Operation Deep Dive](#task-9-multi-drive-operation-deep-dive)
@@ -310,56 +312,6 @@ public void StepOver()
 
 ## Active Tasks
 
-### Task 5: GUI Disk Management Features (High Priority)
-
-**Goal:** Add user-facing disk management capabilities to the GUI.
-
-**Status:** ⏳ NOT STARTED
-
-**Features to Implement:**
-
-1. **Insert Disk Image from GUI**
-   - File open dialog to select disk images
-   - Support all formats: .dsk, .do, .po, .nib, .woz, .2mg
-   - Menu item: File → Insert Disk → Drive 1 / Drive 2
-   - Keyboard shortcuts (e.g., Ctrl+1, Ctrl+2)
-
-2. **Eject Disk from GUI**
-   - Context menu on drive status panel
-   - Menu item: File → Eject Disk → Drive 1 / Drive 2
-   - Confirmation if disk has unsaved changes (write support)
-
-3. **Swap Drive 1 and Drive 2 Disk Images**
-   - Quick swap button/menu item
-   - Useful for programs that expect different disk in different drive
-   - Keyboard shortcut (e.g., Ctrl+Shift+S for swap)
-
-4. **Drag and Drop Support**
-   - Drop disk image file onto drive status panel
-   - Drop onto main window defaults to Drive 1
-
-5. **Recent Disk Images**
-   - Track recently used disk images
-   - Quick access submenu
-
-**Files to Modify:**
-- `Pandowdy.UI\MainWindow.axaml` - Add menu items
-- `Pandowdy.UI\ViewModels\MainWindowViewModel.cs` - Add command handlers
-- `Pandowdy.UI\Controls\DiskStatusPanel.axaml` - Add context menu, drag/drop support
-- `Pandowdy.UI\ViewModels\DiskStatusPanelViewModel.cs` - Add insert/eject/swap logic
-- `Pandowdy\Program.cs` - Remove hardcoded disk inserts (lines 181-204)
-
-**Priority:** High
-
-**Notes:**
-- Hardcoded test images in `Program.cs` are intentional for development
-- Location on E:\ drive is intentional for development
-
-**Dependencies:**
-- Would benefit from debugger (Task 19) for troubleshooting disk load/format issues
-
----
-
 ### Task 22: Intermediate Debugger Implementation (High Priority)
 
 **Goal:** Expand basic debugger with intermediate features for comprehensive debugging.
@@ -380,24 +332,6 @@ public void StepOver()
 
 **Dependencies:**
 - Builds on Task 19 foundation
-
----
-
-### Task 5: GUI Disk Management Features (High Priority)
-
-**Goal:** Add user-facing disk management capabilities to the GUI.
-
-**Status:** ⏳ NOT STARTED
-
-**Features to Implement:**
-- Insert/eject disk images from GUI
-- Swap drive images
-- Drag and drop support
-- Recent disk images menu
-
-**Priority:** High
-
----
 
 ### Task 13: Audio Emulation Implementation (Medium Priority)
 
@@ -1656,6 +1590,25 @@ public interface IKeyboardResetter
 ---
 
 ### ✅ Task 3: Removed
+
+---
+
+### ✅ Task 5: GUI Disk Management Features
+
+**Completed:** 2026-01 - All 2246 tests passing (230 UI tests)
+
+**Summary:** Implemented comprehensive GUI disk management capabilities including:
+- Insert/Eject disk via context menus and dialogs
+- Drag-and-drop disk image support
+- Swap drives functionality
+- Save As disk operations
+- Dirty disk indicators and confirmation dialogs
+- Write-protect toggle
+- Settings persistence (window, display, drive state)
+- Peripherals menu with dynamic card discovery
+- Exit confirmation for unsaved disks
+
+**See Also:** `docs/Task5-Gui-Disk-Management-Implementation.md` for complete implementation details
 
 ---
 
