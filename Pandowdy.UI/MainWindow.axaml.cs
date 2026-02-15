@@ -135,12 +135,17 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// 60 Hz refresh ticker for driving display updates (injected via Initialize).
     /// </summary>
     private IRefreshTicker? _refreshTicker;
-    
+
     /// <summary>
     /// Subscription to refresh ticker stream, disposed on window close.
     /// </summary>
     private IDisposable? _refreshSub;
-    
+
+    /// <summary>
+    /// Drive state service for restoring disk images on startup (injected via Initialize).
+    /// </summary>
+    private IDriveStateService? _driveStateService;
+
     /// <summary>
     /// True while mouse pointer is over the menu bar (prevents keyboard capture).
     /// </summary>
@@ -150,6 +155,11 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// Guard flag ensuring Initialize() is called exactly once.
     /// </summary>
     private bool _depsInjected;
+
+    /// <summary>
+    /// Flag indicating exit has been confirmed (prevents re-prompting on second close).
+    /// </summary>
+    private bool _exitConfirmed;
 
     /// <summary>
     /// Caps lock emulation state (default ON for Apple IIe authenticity).
@@ -428,7 +438,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// </code>
     /// </para>
     /// </remarks>
-    public void Initialize(MainWindowViewModel viewModel, IEmulatorCoreInterface machine, IRefreshTicker refreshTicker)
+    public void Initialize(MainWindowViewModel viewModel, IEmulatorCoreInterface machine, IRefreshTicker refreshTicker, IDriveStateService driveStateService)
     {
         if (_depsInjected)
         {
@@ -439,6 +449,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         DataContext = viewModel;
         _machine = machine;
         _refreshTicker = refreshTicker;
+        _driveStateService = driveStateService;
 
         // Initialize child controls with their dependencies
         // Use x:Name generated field or fall back to FindControl if XAML compilation didn't generate it
@@ -750,9 +761,16 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// <para>
     /// <strong>Shutdown Sequence:</strong>
     /// <list type="number">
+    /// <item>Check for dirty disks and confirm exit with user (async, may cancel close)</item>
+    /// <item>Save drive state (which disks are inserted)</item>
     /// <item>Save window position/size to configuration file</item>
     /// <item>Save display settings to configuration file</item>
     /// </list>
+    /// </para>
+    /// <para>
+    /// <strong>Async Pattern:</strong> OnClosing is synchronous, but dirty disk checking requires
+    /// showing a dialog. To avoid UI thread deadlock, we cancel the close event on first attempt,
+    /// run the async check, then close again if confirmed (using _exitConfirmed flag to prevent loop).
     /// </para>
     /// <para>
     /// <strong>Important:</strong> Settings are saved in OnClosing (not OnClosed) because
@@ -769,15 +787,80 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     protected override void OnClosing(WindowClosingEventArgs e)
     {
         base.OnClosing(e);
-        
-        System.Diagnostics.Debug.WriteLine($"[MainWindow.OnClosing] WindowState={WindowState}, _normalBounds.HasValue={_normalBounds.HasValue}");
-        System.Diagnostics.Debug.WriteLine($"[MainWindow.OnClosing] Current size: {(int)Width}x{(int)Height} at ({Position.X},{Position.Y})");
-        
+
+        // If we've already confirmed exit, save settings and proceed with close
+        if (_exitConfirmed)
+        {
+            System.Diagnostics.Debug.WriteLine("[MainWindow.OnClosing] Exit confirmed, saving settings before close");
+
+            // Save window geometry and display settings
+            SaveWindowAndDisplaySettings();
+
+            return;
+        }
+
+        // Check for dirty disks and save drive state (async operation)
+        if (ViewModel != null)
+        {
+            // Cancel the close event - we'll close again after async check
+            e.Cancel = true;
+
+            // Run async check on UI thread (required for showing dialogs)
+            _ = Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                try
+                {
+                    var canExit = await ViewModel.OnClosingAsync().ConfigureAwait(true);
+
+                    if (canExit)
+                    {
+                        // User confirmed exit - close for real
+                        _exitConfirmed = true;
+                        Close();
+                    }
+                    // else: User cancelled - stay open (e.Cancel = true already set)
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[MainWindow.OnClosing] Error during exit confirmation: {ex.Message}");
+
+                    // On error, allow exit anyway
+                    _exitConfirmed = true;
+                    Close();
+                }
+            });
+
+            return; // Exit OnClosing early - we'll close again if confirmed
+        }
+    }
+
+    /// <summary>
+    /// Saves both window geometry and display settings to their respective configuration files.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <strong>Two-File Strategy:</strong> Window geometry (position/size) and display settings
+    /// (scanlines, colors) are stored in separate JSON files for cleaner organization.
+    /// </para>
+    /// <para>
+    /// <strong>Maximized Window Handling:</strong> When the window is maximized, saves the
+    /// tracked "normal" bounds instead of current maximized bounds. This ensures proper
+    /// restoration when the user un-maximizes the window.
+    /// </para>
+    /// <para>
+    /// <strong>Called From:</strong> OnClosing when exit is confirmed (_exitConfirmed = true).
+    /// </para>
+    /// </remarks>
+    private void SaveWindowAndDisplaySettings()
+    {
+        System.Diagnostics.Debug.WriteLine($"[MainWindow.SaveWindowAndDisplaySettings] WindowState={WindowState}, _normalBounds.HasValue={_normalBounds.HasValue}");
+        System.Diagnostics.Debug.WriteLine($"[MainWindow.SaveWindowAndDisplaySettings] Current size: {(int)Width}x{(int)Height} at ({Position.X},{Position.Y})");
+
         // Save window position/size (use normal bounds if maximized)
         if (WindowState == WindowState.Maximized && _normalBounds.HasValue)
         {
-            System.Diagnostics.Debug.WriteLine("[MainWindow.OnClosing] Using maximized save path with normal bounds");
-            
+            System.Diagnostics.Debug.WriteLine("[MainWindow.SaveWindowAndDisplaySettings] Using maximized save path with normal bounds");
+
             // Create a temporary settings object with normal bounds
             var settings = new Models.WindowSettings
             {
@@ -791,7 +874,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                     ? $"{Screens.ScreenFromWindow(this)!.Bounds.X},{Screens.ScreenFromWindow(this)!.Bounds.Y},{Screens.ScreenFromWindow(this)!.Bounds.Width},{Screens.ScreenFromWindow(this)!.Bounds.Height}"
                     : null
             };
-            
+
             // Save with normal bounds
             try
             {
@@ -808,21 +891,21 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                     Directory.CreateDirectory(dir);
                 }
                 File.WriteAllText(path, json);
-                System.Diagnostics.Debug.WriteLine($"[MainWindow.OnClosing] Maximized save completed to: {path}");
+                System.Diagnostics.Debug.WriteLine($"[MainWindow.SaveWindowAndDisplaySettings] Maximized save completed to: {path}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[MainWindow.OnClosing] Maximized save failed: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[MainWindow.SaveWindowAndDisplaySettings] Maximized save failed: {ex.Message}");
                 // Silently ignore - settings loss is non-fatal
             }
         }
         else
         {
-            System.Diagnostics.Debug.WriteLine("[MainWindow.OnClosing] Using normal save path (WindowSettingsHelper)");
+            System.Diagnostics.Debug.WriteLine("[MainWindow.SaveWindowAndDisplaySettings] Using normal save path (WindowSettingsHelper)");
             // Normal save for non-maximized windows
             WindowSettingsHelper.Save(this);
         }
-        
+
         // Save display settings (scan-lines, colors, etc.)
         SaveSettingsToConfigFile();
     }
@@ -967,6 +1050,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// <para>
     /// <strong>Startup Sequence:</strong>
     /// <list type="number">
+    /// <item>Restore disk images from saved drive state (_driveStateService.LoadAndRestoreDriveStateAsync())</item>
     /// <item>Reset machine to initial state (_machine.Reset())</item>
     /// <item>Start emulator thread (OnEmuStartClicked)</item>
     /// </list>
@@ -974,16 +1058,34 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// <para>
     /// <strong>Called From:</strong> OnOpened event handler after window initialization completes.
     /// </para>
+    /// <para>
+    /// <strong>Architecture:</strong> Disk restoration happens here (GUI layer) rather than in
+    /// Program.InitializeCoreAsync (core layer) to maintain proper separation between hardware
+    /// setup (core) and user state restoration (GUI).
+    /// </para>
     /// </remarks>
-    private void InitialStartup()
+    private async void InitialStartup()
     {
         if (!_depsInjected || _machine is null) { return; }
 
+        System.Diagnostics.Debug.WriteLine("[MainWindow] === Initial Startup Sequence ===");
+
+        // Restore disk images from saved drive state
+        if (_driveStateService != null)
+        {
+            System.Diagnostics.Debug.WriteLine("[MainWindow] Restoring disk images from saved state...");
+            await _driveStateService.LoadAndRestoreDriveStateAsync();
+            System.Diagnostics.Debug.WriteLine("[MainWindow] Disk restoration complete");
+        }
+
         // Reset to establish known initial state
+        System.Diagnostics.Debug.WriteLine("[MainWindow] Resetting machine to initial state");
         _machine.Reset();
 
         // Start emulator thread
+        System.Diagnostics.Debug.WriteLine("[MainWindow] Starting emulator thread");
         OnEmuStartClicked(this, new RoutedEventArgs());
+        System.Diagnostics.Debug.WriteLine("[MainWindow] === Startup Sequence Complete ===");
     }
 
     /// <summary>
@@ -1304,16 +1406,25 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         try
         {
             var path = GetConfigPath();
+            System.Diagnostics.Debug.WriteLine($"[MainWindow.RestoreSettings] Loading display settings from: {path}");
+
             if (!File.Exists(path))
             {
+                System.Diagnostics.Debug.WriteLine($"[MainWindow.RestoreSettings] Settings file not found, using defaults");
                 return;
             }
             var json = File.ReadAllText(path);
+            System.Diagnostics.Debug.WriteLine($"[MainWindow.RestoreSettings] JSON content: {json}");
+
             var data = JsonSerializer.Deserialize<SettingsConfig>(json);
             if (data == null)
             {
+                System.Diagnostics.Debug.WriteLine($"[MainWindow.RestoreSettings] Deserialization returned null");
                 return;
             }
+
+            System.Diagnostics.Debug.WriteLine($"[MainWindow.RestoreSettings] Deserialized: ShowScanLines={data.ShowScanLines}, MonoMixed={data.MonoMixed}, ThrottleEnabled={data.ThrottleEnabled}");
+
             // Note: Width and Height are now handled by WindowSettingsHelper
             if (ViewModel != null)
             {
@@ -1324,9 +1435,14 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                 if (data.ThrottleEnabled.HasValue) { ViewModel.ThrottleEnabled = data.ThrottleEnabled.Value; } else { ViewModel.ThrottleEnabled = true; }
                 if (data.ShowSoftSwitchStatus.HasValue) { ViewModel.ShowSoftSwitchStatus = data.ShowSoftSwitchStatus.Value; } else { ViewModel.ShowSoftSwitchStatus = true; }
                 if (data.ShowDiskStatus.HasValue) { ViewModel.ShowDiskStatus = data.ShowDiskStatus.Value; } else { ViewModel.ShowDiskStatus = false; }
+
+                System.Diagnostics.Debug.WriteLine($"[MainWindow.RestoreSettings] Applied to ViewModel successfully");
             }
         }
-        catch { }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[MainWindow.RestoreSettings] Failed to load settings: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -1376,9 +1492,15 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 #pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
             var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
 #pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-            File.WriteAllText(GetConfigPath(), json);
+            var path = GetConfigPath();
+            File.WriteAllText(path, json);
+            System.Diagnostics.Debug.WriteLine($"[MainWindow.SaveSettings] Saved display settings to: {path}");
+            System.Diagnostics.Debug.WriteLine($"[MainWindow.SaveSettings] Settings: ShowScanLines={data.ShowScanLines}, MonoMixed={data.MonoMixed}, ThrottleEnabled={data.ThrottleEnabled}");
         }
-        catch { }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[MainWindow.SaveSettings] Failed to save settings: {ex.Message}");
+        }
     }
 
     /// <summary>

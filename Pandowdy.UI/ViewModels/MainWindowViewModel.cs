@@ -5,7 +5,10 @@
 using ReactiveUI;
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.EmuCore.Services;
+using Pandowdy.UI.Interfaces;
+using System.Linq;
 using System.Reactive;
+using System.Threading.Tasks;
 
 namespace Pandowdy.UI.ViewModels;
 
@@ -560,6 +563,16 @@ public sealed class MainWindowViewModel : ReactiveObject
     /// </summary>
     private readonly IEmulatorState _emuState;
 
+    /// <summary>
+    /// Drive state service for saving disk state on exit.
+    /// </summary>
+    private readonly IDriveStateService _driveStateService;
+
+    /// <summary>
+    /// Message box service for showing exit confirmation dialogs.
+    /// </summary>
+    private readonly IMessageBoxService _messageBoxService;
+
     #endregion
 
     #region Constructor
@@ -573,6 +586,8 @@ public sealed class MainWindowViewModel : ReactiveObject
     /// <param name="diskStatus">View model for displaying disk drive status.</param>
     /// <param name="cpuStatus">View model for displaying CPU register and flag status.</param>
     /// <param name="statusBar">View model for displaying status bar content (aggregates CPU status and system status).</param>
+    /// <param name="driveStateService">Drive state service for saving disk state on exit.</param>
+    /// <param name="messageBoxService">Message box service for showing exit confirmation dialogs.</param>
     /// <remarks>
     /// <para>
     /// <strong>Dependency Injection:</strong> All dependencies are injected via constructor,
@@ -601,7 +616,9 @@ public sealed class MainWindowViewModel : ReactiveObject
                                SystemStatusViewModel systemStatus,
                                DiskStatusPanelViewModel diskStatus,
                                CpuStatusPanelViewModel cpuStatus,
-                               StatusBarViewModel statusBar)
+                               StatusBarViewModel statusBar,
+                               IDriveStateService driveStateService,
+                               IMessageBoxService messageBoxService)
     {
         EmulatorState = emulatorState;
         //ErrorLog = errorLog;
@@ -611,6 +628,8 @@ public sealed class MainWindowViewModel : ReactiveObject
         DiskStatus = diskStatus;
         CpuStatus = cpuStatus;
         StatusBar = statusBar;
+        _driveStateService = driveStateService;
+        _messageBoxService = messageBoxService;
 
         // Initialize emulator control commands
         PauseCommand = ReactiveCommand.Create(() => _emuState.RequestPause());
@@ -635,6 +654,53 @@ public sealed class MainWindowViewModel : ReactiveObject
         ResetEmu = ReactiveCommand.Create(() => { });
         StepOnce = ReactiveCommand.Create(() => { });
         TogglePauseOrContinue = ReactiveCommand.Create(() => { });
+    }
+
+    #endregion
+
+    #region Application Lifecycle
+
+    /// <summary>
+    /// Handles application exit, checking for dirty disks and saving drive state.
+    /// </summary>
+    /// <returns>True to allow exit, false to cancel.</returns>
+    /// <remarks>
+    /// <para>
+    /// <strong>Dirty Disk Confirmation:</strong> If any disk has unsaved changes,
+    /// shows a confirmation dialog before exiting. User can cancel exit to save disks.
+    /// </para>
+    /// <para>
+    /// <strong>Drive State Persistence:</strong> Always saves drive state before exit
+    /// (which disks are inserted in which drives) so they can be restored on next launch.
+    /// </para>
+    /// </remarks>
+    public async Task<bool> OnClosingAsync()
+    {
+        // Check for dirty disks
+        var dirtyDisks = DiskStatus.Cards
+            .SelectMany(card => card.Drives)
+            .Where(drive => drive.IsDirty)
+            .ToList();
+
+        if (dirtyDisks.Any())
+        {
+            var diskList = string.Join("\n", dirtyDisks.Select(d => $"  • {d.DiskId}: {d.Filename}"));
+            var message = $"The following disks have unsaved changes:\n\n{diskList}\n\nExit anyway?";
+
+            var confirmed = await _messageBoxService.ShowConfirmationAsync(
+                "Unsaved Changes",
+                message);
+
+            if (!confirmed)
+            {
+                return false; // Cancel exit
+            }
+        }
+
+        // Always save drive state before exit
+        await _driveStateService.CaptureDriveStateAsync();
+
+        return true; // Allow exit
     }
 
     #endregion

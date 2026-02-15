@@ -70,10 +70,14 @@ namespace Pandowdy.UI;
 /// The 60 Hz refresh ticker that triggers periodic display updates, ensuring smooth
 /// animation and responsive UI. Must not be null.
 /// </param>
+/// <param name="driveStateService">
+/// The drive state service for restoring disk images from saved state. Must not be null.
+/// </param>
 public sealed class MainWindowFactory(
     MainWindowViewModel viewModel,
     IEmulatorCoreInterface machine,
-    IRefreshTicker refreshTicker) : IMainWindowFactory
+    IRefreshTicker refreshTicker,
+    IDriveStateService driveStateService) : IMainWindowFactory
 {
     /// <summary>
     /// Main window view model containing UI state, commands, and child view models.
@@ -83,7 +87,7 @@ public sealed class MainWindowFactory(
     /// data binding and reactive subscriptions.
     /// </remarks>
     private readonly MainWindowViewModel _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-    
+
     /// <summary>
     /// Emulator core control interface providing complete control surface for the emulator.
     /// </summary>
@@ -108,7 +112,7 @@ public sealed class MainWindowFactory(
     /// </para>
     /// </remarks>
     private readonly IEmulatorCoreInterface _machine = machine ?? throw new ArgumentNullException(nameof(machine));
-    
+
     /// <summary>
     /// 60 Hz refresh ticker for driving periodic display updates.
     /// </summary>
@@ -117,6 +121,15 @@ public sealed class MainWindowFactory(
     /// to its Stream to trigger RequestRefresh() calls on the display at 60 Hz.
     /// </remarks>
     private readonly IRefreshTicker _refreshTicker = refreshTicker ?? throw new ArgumentNullException(nameof(refreshTicker));
+
+    /// <summary>
+    /// Drive state service for restoring disk images from saved state.
+    /// </summary>
+    /// <remarks>
+    /// Validated as non-null in constructor. Passed to MainWindow.Initialize() which uses it
+    /// to restore disk images during the initial startup sequence.
+    /// </remarks>
+    private readonly IDriveStateService _driveStateService = driveStateService ?? throw new ArgumentNullException(nameof(driveStateService));
 
     /// <summary>
     /// Creates a new <see cref="MainWindow"/> instance and initializes it with all dependencies.
@@ -186,12 +199,12 @@ public sealed class MainWindowFactory(
     public MainWindow Create()
     {
         var window = new MainWindow();
-        window.Initialize(_viewModel, _machine, _refreshTicker);
-        
+        window.Initialize(_viewModel, _machine, _refreshTicker, _driveStateService);
+
         // Restore window position/size BEFORE showing (Windows 11 best practice)
         // This gives Windows 11 less opportunity to override our saved position
         var settings = WindowSettingsHelper.Load();
-        
+
         // For maximized windows: set position/size first (as restore bounds), THEN maximize in OnOpened
         // For normal windows: just set position/size normally
         if (settings != null && settings.IsMaximized)
@@ -209,7 +222,7 @@ public sealed class MainWindowFactory(
             // Normal (non-maximized) restore
             WindowSettingsHelper.Restore(window, settings);
         }
-        
+
         return window;
     }
 }

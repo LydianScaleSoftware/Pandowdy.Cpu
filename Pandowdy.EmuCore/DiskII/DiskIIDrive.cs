@@ -122,12 +122,12 @@ public class DiskIIDrive : IDiskIIDrive
         // Eject current disk if any
         EjectDisk();
 
-            // Load new disk
-            _imageProvider = _diskImageFactory.CreateProvider(diskImagePath);
-            _imageProvider.SetQuarterTrack(_quarterSteps);
+        // Load new disk
+        _imageProvider = _diskImageFactory.CreateProvider(diskImagePath);
+        _imageProvider.SetQuarterTrack(_quarterSteps);
 
-            Debug.WriteLine($"Drive '{Name}': Inserted disk '{diskImagePath}'");
-        }
+        Debug.WriteLine($"Drive '{Name}': Inserted disk '{diskImagePath}'");
+    }
 
     /// <inheritdoc />
     public void EjectDisk()

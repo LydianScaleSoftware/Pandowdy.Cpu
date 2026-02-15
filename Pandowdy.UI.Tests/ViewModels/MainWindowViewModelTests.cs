@@ -106,6 +106,8 @@ public class MainWindowViewModelTests
         public DiskStatusPanelViewModel DiskStatusViewModel { get; }
         public CpuStatusPanelViewModel CpuStatusViewModel { get; }
         public StatusBarViewModel StatusBarViewModel { get; }
+        public Mock<IDriveStateService> MockDriveStateService { get; }
+        public Mock<IMessageBoxService> MockMessageBoxService { get; }
         public MainWindowViewModel ViewModel { get; }
 
         public MainWindowViewModelFixture()
@@ -116,14 +118,23 @@ public class MainWindowViewModelTests
             var emulatorCoreInterface = new TestEmulatorCoreInterface();
             var refreshTicker = new TestRefreshTicker();
             var mockFileDialogService = new Mock<IDiskFileDialogService>();
-            var mockMessageBoxService = new Mock<IMessageBoxService>();
+            MockMessageBoxService = new Mock<IMessageBoxService>();
+            MockDriveStateService = new Mock<IDriveStateService>();
 
             EmulatorStateViewModel = new EmulatorStateViewModel(emulatorCoreInterface, refreshTicker);
             SystemStatusViewModel = new SystemStatusViewModel(statusProvider);
-            DiskStatusViewModel = new DiskStatusPanelViewModel(emulatorCoreInterface, diskStatusProvider, mockFileDialogService.Object, mockMessageBoxService.Object);
+            DiskStatusViewModel = new DiskStatusPanelViewModel(emulatorCoreInterface, diskStatusProvider, mockFileDialogService.Object, MockMessageBoxService.Object);
             CpuStatusViewModel = new CpuStatusPanelViewModel(emulatorCoreInterface, refreshTicker);
             StatusBarViewModel = new StatusBarViewModel(CpuStatusViewModel, SystemStatusViewModel);
-            ViewModel = new MainWindowViewModel(EmulatorStateViewModel, EmulatorState, SystemStatusViewModel, DiskStatusViewModel, CpuStatusViewModel, StatusBarViewModel);
+            ViewModel = new MainWindowViewModel(
+                EmulatorStateViewModel,
+                EmulatorState,
+                SystemStatusViewModel,
+                DiskStatusViewModel,
+                CpuStatusViewModel,
+                StatusBarViewModel,
+                MockDriveStateService.Object,
+                MockMessageBoxService.Object);
         }
     }
 
@@ -617,6 +628,190 @@ public class MainWindowViewModelTests
         Assert.True(viewModel.ForceMonochrome);     // Was false
         Assert.True(viewModel.DecreaseContrast);    // Was false
         Assert.True(viewModel.MonoMixed);           // Was false
+    }
+
+    #endregion
+
+    #region Exit Confirmation Tests
+
+    [Fact]
+    public async Task OnClosingAsync_WhenNoDirtyDisks_AllowsExitAndSavesDriveState()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+        var viewModel = fixture.ViewModel;
+
+        // Act
+        var canExit = await viewModel.OnClosingAsync();
+
+        // Assert
+        Assert.True(canExit);
+        fixture.MockDriveStateService.Verify(s => s.CaptureDriveStateAsync(), Times.Once);
+        fixture.MockMessageBoxService.Verify(
+            s => s.ShowConfirmationAsync(It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task OnClosingAsync_WhenDirtyDisksAndUserConfirms_AllowsExitAndSavesDriveState()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+        var viewModel = fixture.ViewModel;
+
+        // Create a dirty disk via DiskStatusProvider
+        var diskStatusProvider = new DiskStatusProvider();
+        diskStatusProvider.RegisterDrive(6, 1);
+        diskStatusProvider.MutateDrive(6, 1, builder =>
+        {
+            builder.DiskImagePath = "C:\\test.dsk";
+            builder.DiskImageFilename = "test.dsk";
+            builder.IsDirty = true;
+        });
+
+        // Recreate DiskStatusViewModel with the provider that has a dirty disk
+        var diskStatusViewModel = new DiskStatusPanelViewModel(
+            new TestEmulatorCoreInterface(),
+            diskStatusProvider,
+            new Mock<IDiskFileDialogService>().Object,
+            fixture.MockMessageBoxService.Object);
+
+        // Recreate MainWindowViewModel with the new disk status
+        var viewModelWithDirtyDisk = new MainWindowViewModel(
+            fixture.EmulatorStateViewModel,
+            fixture.EmulatorState,
+            fixture.SystemStatusViewModel,
+            diskStatusViewModel,
+            fixture.CpuStatusViewModel,
+            fixture.StatusBarViewModel,
+            fixture.MockDriveStateService.Object,
+            fixture.MockMessageBoxService.Object);
+
+        // Setup mock: user confirms exit
+        fixture.MockMessageBoxService
+            .Setup(s => s.ShowConfirmationAsync(
+                "Unsaved Changes",
+                It.IsAny<string>()))
+            .ReturnsAsync(true);
+
+        // Act
+        var canExit = await viewModelWithDirtyDisk.OnClosingAsync();
+
+        // Assert
+        Assert.True(canExit);
+        fixture.MockMessageBoxService.Verify(
+            s => s.ShowConfirmationAsync("Unsaved Changes", It.IsAny<string>()),
+            Times.Once);
+        fixture.MockDriveStateService.Verify(s => s.CaptureDriveStateAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task OnClosingAsync_WhenDirtyDisksAndUserCancels_PreventsExit()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+
+        // Create a dirty disk via DiskStatusProvider
+        var diskStatusProvider = new DiskStatusProvider();
+        diskStatusProvider.RegisterDrive(6, 1);
+        diskStatusProvider.MutateDrive(6, 1, builder =>
+        {
+            builder.DiskImagePath = "C:\\test.dsk";
+            builder.DiskImageFilename = "test.dsk";
+            builder.IsDirty = true;
+        });
+
+        // Recreate DiskStatusViewModel with the provider that has a dirty disk
+        var diskStatusViewModel = new DiskStatusPanelViewModel(
+            new TestEmulatorCoreInterface(),
+            diskStatusProvider,
+            new Mock<IDiskFileDialogService>().Object,
+            fixture.MockMessageBoxService.Object);
+
+        // Recreate MainWindowViewModel with the new disk status
+        var viewModelWithDirtyDisk = new MainWindowViewModel(
+            fixture.EmulatorStateViewModel,
+            fixture.EmulatorState,
+            fixture.SystemStatusViewModel,
+            diskStatusViewModel,
+            fixture.CpuStatusViewModel,
+            fixture.StatusBarViewModel,
+            fixture.MockDriveStateService.Object,
+            fixture.MockMessageBoxService.Object);
+
+        // Setup mock: user cancels exit
+        fixture.MockMessageBoxService
+            .Setup(s => s.ShowConfirmationAsync(
+                "Unsaved Changes",
+                It.IsAny<string>()))
+            .ReturnsAsync(false);
+
+        // Act
+        var canExit = await viewModelWithDirtyDisk.OnClosingAsync();
+
+        // Assert
+        Assert.False(canExit); // Exit was cancelled
+        fixture.MockMessageBoxService.Verify(
+            s => s.ShowConfirmationAsync("Unsaved Changes", It.IsAny<string>()),
+            Times.Once);
+        fixture.MockDriveStateService.Verify(s => s.CaptureDriveStateAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task OnClosingAsync_WhenMultipleDirtyDisks_ShowsAllInConfirmation()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+
+        // Create multiple dirty disks via DiskStatusProvider
+        var diskStatusProvider = new DiskStatusProvider();
+        diskStatusProvider.RegisterDrive(6, 1);
+        diskStatusProvider.RegisterDrive(6, 2);
+        diskStatusProvider.MutateDrive(6, 1, builder =>
+        {
+            builder.DiskImagePath = "C:\\disk1.dsk";
+            builder.DiskImageFilename = "disk1.dsk";
+            builder.IsDirty = true;
+        });
+        diskStatusProvider.MutateDrive(6, 2, builder =>
+        {
+            builder.DiskImagePath = "C:\\disk2.woz";
+            builder.DiskImageFilename = "disk2.woz";
+            builder.IsDirty = true;
+        });
+
+        // Recreate DiskStatusViewModel with the provider that has dirty disks
+        var diskStatusViewModel = new DiskStatusPanelViewModel(
+            new TestEmulatorCoreInterface(),
+            diskStatusProvider,
+            new Mock<IDiskFileDialogService>().Object,
+            fixture.MockMessageBoxService.Object);
+
+        // Recreate MainWindowViewModel with the new disk status
+        var viewModelWithDirtyDisks = new MainWindowViewModel(
+            fixture.EmulatorStateViewModel,
+            fixture.EmulatorState,
+            fixture.SystemStatusViewModel,
+            diskStatusViewModel,
+            fixture.CpuStatusViewModel,
+            fixture.StatusBarViewModel,
+            fixture.MockDriveStateService.Object,
+            fixture.MockMessageBoxService.Object);
+
+        // Capture the message shown to user
+        string? capturedMessage = null;
+        fixture.MockMessageBoxService
+            .Setup(s => s.ShowConfirmationAsync("Unsaved Changes", It.IsAny<string>()))
+            .ReturnsAsync(true)
+            .Callback<string, string>((_, msg) => capturedMessage = msg);
+
+        // Act
+        await viewModelWithDirtyDisks.OnClosingAsync();
+
+        // Assert
+        Assert.NotNull(capturedMessage);
+        Assert.Contains("disk1.dsk", capturedMessage);
+        Assert.Contains("disk2.woz", capturedMessage);
     }
 
     #endregion

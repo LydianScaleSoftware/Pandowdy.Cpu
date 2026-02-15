@@ -169,7 +169,22 @@ public class DiskIIStatusDecorator : IDiskIIDrive
     public bool SetBit(bool value)
     {
         // Write operation - delegates to inner drive
-        return _innerDrive.SetBit(value);
+        bool success = _innerDrive.SetBit(value);
+
+        // If write succeeded, update dirty flag in status
+        if (success)
+        {
+            var internalImage = _innerDrive.InternalImage;
+            if (internalImage != null && internalImage.IsDirty)
+            {
+                _statusMutator.MutateDrive(_slotNumber, _driveNumber, builder =>
+                {
+                    builder.IsDirty = true;
+                });
+            }
+        }
+
+        return success;
     }
 
     /// <inheritdoc />
