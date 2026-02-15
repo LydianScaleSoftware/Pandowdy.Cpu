@@ -172,7 +172,7 @@ namespace Pandowdy
                     services.AddSingleton<IRefreshTicker, AvaloniaRefreshTicker>();
                     services.AddSingleton<IMessageBoxService, MessageBoxService>();
                     services.AddSingleton<IDiskFileDialogService, DiskFileDialogService>();
-                    services.AddSingleton<ISettingsService, SettingsService>();
+                    services.AddSingleton<GuiSettingsService>(); // Master GUI settings service
                     services.AddSingleton<IDriveStateService, DriveStateService>();
 
                     // ViewModels
@@ -181,6 +181,7 @@ namespace Pandowdy
                     services.AddTransient<DiskStatusPanelViewModel>();
                     services.AddTransient<CpuStatusPanelViewModel>();
                     services.AddTransient<StatusBarViewModel>();
+                    services.AddTransient<PeripheralsMenuViewModel>();
                     services.AddTransient<MainWindowViewModel>();
 
                     services.AddSingleton<VA2M>();

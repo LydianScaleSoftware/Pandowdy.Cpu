@@ -9,7 +9,8 @@
              xmlns:vm="using:Pandowdy.UI.ViewModels"
              xmlns:controls="using:Pandowdy.UI.Controls"
              x:Class="Pandowdy.UI.Controls.DiskCardPanel"
-             x:DataType="vm:DiskCardPanelViewModel">
+             x:DataType="vm:DiskCardPanelViewModel"
+             MinWidth="180">
 
     <Border Background="#252525"
             BorderBrush="#404040"

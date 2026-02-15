@@ -4,6 +4,8 @@
 
 #pragma warning disable CS0618 // Type or member is obsolete - Avalonia API transition
 
+using System.Linq;
+using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -11,7 +13,6 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Pandowdy.UI.Services;
 using Pandowdy.UI.ViewModels;
-using System.Linq;
 
 namespace Pandowdy.UI.Controls;
 
@@ -30,6 +31,9 @@ public partial class DiskStatusWidget : UserControl
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
         AddHandler(DragDrop.DropEvent, OnDrop);
         AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
+
+        // Wire up double-click event to load disk
+        DoubleTapped += OnDoubleTapped;
     }
 
     private void OnDragOver(object? sender, DragEventArgs e)
@@ -93,6 +97,24 @@ public partial class DiskStatusWidget : UserControl
     {
         // Restore original border when drag leaves
         RestoreBorder();
+    }
+
+    private async void OnDoubleTapped(object? sender, global::Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        // Double-click triggers Insert Disk command
+        if (DataContext is DiskStatusWidgetViewModel vm)
+        {
+            // Execute the command asynchronously
+            try
+            {
+                await vm.InsertDiskCommand.Execute().GetAwaiter();
+            }
+            catch
+            {
+                // Errors are already handled within the command
+            }
+            e.Handled = true;
+        }
     }
 
     private void RestoreBorder()

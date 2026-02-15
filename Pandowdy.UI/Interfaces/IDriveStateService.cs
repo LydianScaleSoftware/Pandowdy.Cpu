@@ -34,6 +34,19 @@ public interface IDriveStateService
     Task CaptureDriveStateAsync();
 
     /// <summary>
+    /// Captures current drive states from the emulator and returns them as DriveStateSettings
+    /// for inclusion in the master GUI settings file (does NOT save to file).
+    /// </summary>
+    /// <returns>DriveStateSettings populated with currently inserted disks.</returns>
+    DriveStateSettings CaptureDriveStateSettings();
+
+    /// <summary>
+    /// Restores drive states from DriveStateSettings (from master GUI settings file).
+    /// </summary>
+    /// <param name="settings">Drive state settings to restore.</param>
+    void RestoreDriveState(DriveStateSettings? settings);
+
+    /// <summary>
     /// Loads drive state from persistent storage and restores disk images to drives.
     /// </summary>
     Task LoadAndRestoreDriveStateAsync();

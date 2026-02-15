@@ -40,5 +40,5 @@ public class DriveStateConfig
     /// <summary>
     /// List of drive state entries.
     /// </summary>
-    public List<DriveStateEntry> Drives { get; set; } = new();
+    public List<DriveStateEntry> Drives { get; set; } = [];
 }

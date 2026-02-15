@@ -106,6 +106,7 @@ public class MainWindowViewModelTests
         public DiskStatusPanelViewModel DiskStatusViewModel { get; }
         public CpuStatusPanelViewModel CpuStatusViewModel { get; }
         public StatusBarViewModel StatusBarViewModel { get; }
+        public PeripheralsMenuViewModel PeripheralsMenuViewModel { get; }
         public Mock<IDriveStateService> MockDriveStateService { get; }
         public Mock<IMessageBoxService> MockMessageBoxService { get; }
         public MainWindowViewModel ViewModel { get; }
@@ -116,6 +117,7 @@ public class MainWindowViewModelTests
             var statusProvider = new SystemStatusProvider();
             var diskStatusProvider = new DiskStatusProvider();
             var emulatorCoreInterface = new TestEmulatorCoreInterface();
+            var cardResponseProvider = new CardResponseChannel();
             var refreshTicker = new TestRefreshTicker();
             var mockFileDialogService = new Mock<IDiskFileDialogService>();
             MockMessageBoxService = new Mock<IMessageBoxService>();
@@ -126,6 +128,7 @@ public class MainWindowViewModelTests
             DiskStatusViewModel = new DiskStatusPanelViewModel(emulatorCoreInterface, diskStatusProvider, mockFileDialogService.Object, MockMessageBoxService.Object);
             CpuStatusViewModel = new CpuStatusPanelViewModel(emulatorCoreInterface, refreshTicker);
             StatusBarViewModel = new StatusBarViewModel(CpuStatusViewModel, SystemStatusViewModel);
+            PeripheralsMenuViewModel = new PeripheralsMenuViewModel(emulatorCoreInterface, cardResponseProvider, diskStatusProvider);
             ViewModel = new MainWindowViewModel(
                 EmulatorStateViewModel,
                 EmulatorState,
@@ -133,6 +136,7 @@ public class MainWindowViewModelTests
                 DiskStatusViewModel,
                 CpuStatusViewModel,
                 StatusBarViewModel,
+                PeripheralsMenuViewModel,
                 MockDriveStateService.Object,
                 MockMessageBoxService.Object);
         }
@@ -169,7 +173,7 @@ public class MainWindowViewModelTests
         Assert.True(viewModel.CapsLockEnabled);
         Assert.True(viewModel.ShowScanLines);
         Assert.False(viewModel.ForceMonochrome);
-        Assert.False(viewModel.DecreaseContrast);
+        Assert.False(viewModel.DecreaseFringing);
         Assert.False(viewModel.MonoMixed);
     }
 
@@ -188,7 +192,7 @@ public class MainWindowViewModelTests
         Assert.NotNull(viewModel.ToggleCapsLock);
         Assert.NotNull(viewModel.ToggleScanLines);
         Assert.NotNull(viewModel.ToggleMonochrome);
-        Assert.NotNull(viewModel.ToggleDecreaseContrast);
+        Assert.NotNull(viewModel.ToggleDecreaseFringing);
         Assert.NotNull(viewModel.ToggleMonoMixed);
         Assert.NotNull(viewModel.StartEmu);
         Assert.NotNull(viewModel.StopEmu);
@@ -306,18 +310,18 @@ public class MainWindowViewModelTests
         
         viewModel.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(MainWindowViewModel.DecreaseContrast))
+            if (e.PropertyName == nameof(MainWindowViewModel.DecreaseFringing))
             {
                 propertyChanged = true;
             }
         };
 
         // Act
-        viewModel.DecreaseContrast = true;
+        viewModel.DecreaseFringing = true;
 
         // Assert
         Assert.True(propertyChanged);
-        Assert.True(viewModel.DecreaseContrast);
+        Assert.True(viewModel.DecreaseFringing);
     }
 
     [Fact]
@@ -489,13 +493,13 @@ public class MainWindowViewModelTests
         // Arrange
         var fixture = new MainWindowViewModelFixture();
         var viewModel = fixture.ViewModel;
-        var initialValue = viewModel.DecreaseContrast;
+        var initialValue = viewModel.DecreaseFringing;
 
         // Act
-        viewModel.ToggleDecreaseContrast.Execute().Subscribe();
+        viewModel.ToggleDecreaseFringing.Execute().Subscribe();
 
         // Assert
-        Assert.Equal(!initialValue, viewModel.DecreaseContrast);
+        Assert.Equal(!initialValue, viewModel.DecreaseFringing);
     }
 
     [Fact]
@@ -576,15 +580,15 @@ public class MainWindowViewModelTests
         // Act - Simulate user changing multiple display settings
         viewModel.ToggleScanLines.Execute().Subscribe();
         viewModel.ToggleMonochrome.Execute().Subscribe();
-        viewModel.ToggleDecreaseContrast.Execute().Subscribe();
+        viewModel.ToggleDecreaseFringing.Execute().Subscribe();
 
         // Assert
         Assert.Contains(nameof(MainWindowViewModel.ShowScanLines), propertyChanges);
         Assert.Contains(nameof(MainWindowViewModel.ForceMonochrome), propertyChanges);
-        Assert.Contains(nameof(MainWindowViewModel.DecreaseContrast), propertyChanges);
+        Assert.Contains(nameof(MainWindowViewModel.DecreaseFringing), propertyChanges);
         Assert.False(viewModel.ShowScanLines);
         Assert.True(viewModel.ForceMonochrome);
-        Assert.True(viewModel.DecreaseContrast);
+        Assert.True(viewModel.DecreaseFringing);
     }
 
     [Fact]
@@ -618,7 +622,7 @@ public class MainWindowViewModelTests
         viewModel.ToggleCapsLock.Execute().Subscribe();
         viewModel.ToggleScanLines.Execute().Subscribe();
         viewModel.ToggleMonochrome.Execute().Subscribe();
-        viewModel.ToggleDecreaseContrast.Execute().Subscribe();
+        viewModel.ToggleDecreaseFringing.Execute().Subscribe();
         viewModel.ToggleMonoMixed.Execute().Subscribe();
 
         // Assert - Each property should be toggled independently
@@ -626,7 +630,7 @@ public class MainWindowViewModelTests
         Assert.False(viewModel.CapsLockEnabled);    // Was true
         Assert.False(viewModel.ShowScanLines);      // Was true
         Assert.True(viewModel.ForceMonochrome);     // Was false
-        Assert.True(viewModel.DecreaseContrast);    // Was false
+        Assert.True(viewModel.DecreaseFringing);    // Was false
         Assert.True(viewModel.MonoMixed);           // Was false
     }
 
@@ -646,7 +650,8 @@ public class MainWindowViewModelTests
 
         // Assert
         Assert.True(canExit);
-        fixture.MockDriveStateService.Verify(s => s.CaptureDriveStateAsync(), Times.Once);
+        // Note: Drive state is now saved by MainWindow.SaveWindowAndDisplaySettings() via GuiSettingsService,
+        // not by OnClosingAsync(). OnClosingAsync only handles dirty disk confirmation.
         fixture.MockMessageBoxService.Verify(
             s => s.ShowConfirmationAsync(It.IsAny<string>(), It.IsAny<string>()),
             Times.Never);
@@ -684,6 +689,7 @@ public class MainWindowViewModelTests
             diskStatusViewModel,
             fixture.CpuStatusViewModel,
             fixture.StatusBarViewModel,
+            fixture.PeripheralsMenuViewModel,
             fixture.MockDriveStateService.Object,
             fixture.MockMessageBoxService.Object);
 
@@ -702,7 +708,8 @@ public class MainWindowViewModelTests
         fixture.MockMessageBoxService.Verify(
             s => s.ShowConfirmationAsync("Unsaved Changes", It.IsAny<string>()),
             Times.Once);
-        fixture.MockDriveStateService.Verify(s => s.CaptureDriveStateAsync(), Times.Once);
+        // Note: Drive state is now saved by MainWindow.SaveWindowAndDisplaySettings() via GuiSettingsService,
+        // not by OnClosingAsync(). OnClosingAsync only handles dirty disk confirmation.
     }
 
     [Fact]
@@ -736,6 +743,7 @@ public class MainWindowViewModelTests
             diskStatusViewModel,
             fixture.CpuStatusViewModel,
             fixture.StatusBarViewModel,
+            fixture.PeripheralsMenuViewModel,
             fixture.MockDriveStateService.Object,
             fixture.MockMessageBoxService.Object);
 
@@ -754,6 +762,7 @@ public class MainWindowViewModelTests
         fixture.MockMessageBoxService.Verify(
             s => s.ShowConfirmationAsync("Unsaved Changes", It.IsAny<string>()),
             Times.Once);
+        // Drive state should NOT be saved when user cancels exit
         fixture.MockDriveStateService.Verify(s => s.CaptureDriveStateAsync(), Times.Never);
     }
 
@@ -795,6 +804,7 @@ public class MainWindowViewModelTests
             diskStatusViewModel,
             fixture.CpuStatusViewModel,
             fixture.StatusBarViewModel,
+            fixture.PeripheralsMenuViewModel,
             fixture.MockDriveStateService.Object,
             fixture.MockMessageBoxService.Object);
 
@@ -812,6 +822,196 @@ public class MainWindowViewModelTests
         Assert.NotNull(capturedMessage);
         Assert.Contains("disk1.dsk", capturedMessage);
         Assert.Contains("disk2.woz", capturedMessage);
+    }
+
+    #endregion
+
+    #region Disk Panel Width Tests
+
+    [Fact]
+    public void DiskPanelWidth_DefaultValue_Is200()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+
+        // Act & Assert
+        Assert.Equal(200.0, fixture.ViewModel.DiskPanelWidth);
+    }
+
+    [Fact]
+    public void DiskPanelWidth_PropertyChangedRaised_WhenValueChanges()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+        bool propertyChangedRaised = false;
+        fixture.ViewModel.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(MainWindowViewModel.DiskPanelWidth))
+            {
+                propertyChangedRaised = true;
+            }
+        };
+
+        // Act
+        fixture.ViewModel.DiskPanelWidth = 250.0;
+
+        // Assert
+        Assert.True(propertyChangedRaised);
+        Assert.Equal(250.0, fixture.ViewModel.DiskPanelWidth);
+    }
+
+    [Fact]
+    public void DiskPanelWidth_CanBeSetToMinimum()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+
+        // Act
+        fixture.ViewModel.DiskPanelWidth = 150.0;
+
+        // Assert
+        Assert.Equal(150.0, fixture.ViewModel.DiskPanelWidth);
+    }
+
+    [Fact]
+    public void DiskPanelWidth_CanBeSetToMaximum()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+
+        // Act
+        fixture.ViewModel.DiskPanelWidth = 400.0;
+
+        // Assert
+        Assert.Equal(400.0, fixture.ViewModel.DiskPanelWidth);
+    }
+
+    [Fact]
+    public void DiskPanelWidth_ClampsValuesBelowMinimum()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+
+        // Act
+        fixture.ViewModel.DiskPanelWidth = 100.0; // Below minimum
+
+        // Assert
+        Assert.Equal(150.0, fixture.ViewModel.DiskPanelWidth); // Clamped to minimum
+    }
+
+    [Fact]
+    public void DiskPanelWidth_ClampsValuesAboveMaximum()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+
+        // Act
+        fixture.ViewModel.DiskPanelWidth = 500.0; // Above maximum
+
+        // Assert
+        Assert.Equal(400.0, fixture.ViewModel.DiskPanelWidth); // Clamped to maximum
+    }
+
+    #endregion
+
+    #region Effective Disk Panel Width Tests
+
+    [Fact]
+    public void EffectiveDiskPanelWidth_ReturnsDiskPanelWidth_WhenShowDiskStatusIsTrue()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+        fixture.ViewModel.ShowDiskStatus = true;
+        fixture.ViewModel.DiskPanelWidth = 250.0;
+
+        // Act
+        var effectiveWidth = fixture.ViewModel.EffectiveDiskPanelWidth;
+
+        // Assert
+        Assert.Equal(250.0, effectiveWidth);
+    }
+
+    [Fact]
+    public void EffectiveDiskPanelWidth_ReturnsZero_WhenShowDiskStatusIsFalse()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+        fixture.ViewModel.ShowDiskStatus = false;
+        fixture.ViewModel.DiskPanelWidth = 250.0;
+
+        // Act
+        var effectiveWidth = fixture.ViewModel.EffectiveDiskPanelWidth;
+
+        // Assert
+        Assert.Equal(0.0, effectiveWidth);
+    }
+
+    [Fact]
+    public void EffectiveDiskPanelWidth_PropertyChangedRaised_WhenShowDiskStatusChanges()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+        fixture.ViewModel.ShowDiskStatus = true;
+        bool propertyChangedRaised = false;
+        fixture.ViewModel.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(MainWindowViewModel.EffectiveDiskPanelWidth))
+            {
+                propertyChangedRaised = true;
+            }
+        };
+
+        // Act
+        fixture.ViewModel.ShowDiskStatus = false;
+
+        // Assert
+        Assert.True(propertyChangedRaised);
+    }
+
+    [Fact]
+    public void EffectiveDiskPanelWidth_Setter_UpdatesDiskPanelWidth_WhenPanelIsVisible()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+        fixture.ViewModel.ShowDiskStatus = true;
+        fixture.ViewModel.DiskPanelWidth = 200.0;
+
+        // Act
+        fixture.ViewModel.EffectiveDiskPanelWidth = 300.0;
+
+        // Assert
+        Assert.Equal(300.0, fixture.ViewModel.DiskPanelWidth);
+        Assert.Equal(300.0, fixture.ViewModel.EffectiveDiskPanelWidth);
+    }
+
+    [Fact]
+    public void EffectiveDiskPanelWidth_Setter_IgnoresUpdates_WhenPanelIsHidden()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+        fixture.ViewModel.ShowDiskStatus = false;
+        fixture.ViewModel.DiskPanelWidth = 200.0;
+
+        // Act
+        fixture.ViewModel.EffectiveDiskPanelWidth = 300.0; // Attempt to set when hidden
+
+        // Assert
+        Assert.Equal(200.0, fixture.ViewModel.DiskPanelWidth); // Original value unchanged
+        Assert.Equal(0.0, fixture.ViewModel.EffectiveDiskPanelWidth); // Returns 0 when hidden
+    }
+
+    [Fact]
+    public void EffectiveDiskPanelWidth_Setter_EnforcesClamping_WhenPanelIsVisible()
+    {
+        // Arrange
+        var fixture = new MainWindowViewModelFixture();
+        fixture.ViewModel.ShowDiskStatus = true;
+
+        // Act
+        fixture.ViewModel.EffectiveDiskPanelWidth = 100.0; // Below minimum
+
+        // Assert
+        Assert.Equal(150.0, fixture.ViewModel.DiskPanelWidth); // Clamped by DiskPanelWidth setter
     }
 
     #endregion

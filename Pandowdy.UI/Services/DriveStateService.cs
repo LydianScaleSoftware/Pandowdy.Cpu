@@ -20,7 +20,13 @@ namespace Pandowdy.UI.Services;
 /// Service for managing disk drive state persistence across application restarts.
 /// Captures which disk images are inserted into which drives and restores them on startup.
 /// </summary>
-public class DriveStateService : IDriveStateService
+/// <remarks>
+/// Initializes a new instance of the <see cref="DriveStateService"/> class.
+/// </remarks>
+public class DriveStateService(
+    EmuCore.Services.IDiskStatusProvider diskStatusProvider,
+    EmuCore.Services.IDiskStatusMutator diskStatusMutator,
+    ISlots slots) : IDriveStateService
 {
     private const string DriveStateFileName = "drive-state.json";
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -28,22 +34,9 @@ public class DriveStateService : IDriveStateService
         WriteIndented = true
     };
 
-    private readonly EmuCore.Services.IDiskStatusProvider _diskStatusProvider;
-    private readonly EmuCore.Services.IDiskStatusMutator _diskStatusMutator;
-    private readonly ISlots _slots;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DriveStateService"/> class.
-    /// </summary>
-    public DriveStateService(
-        EmuCore.Services.IDiskStatusProvider diskStatusProvider,
-        EmuCore.Services.IDiskStatusMutator diskStatusMutator,
-        ISlots slots)
-    {
-        _diskStatusProvider = diskStatusProvider;
-        _diskStatusMutator = diskStatusMutator;
-        _slots = slots;
-    }
+    private readonly EmuCore.Services.IDiskStatusProvider _diskStatusProvider = diskStatusProvider;
+    private readonly EmuCore.Services.IDiskStatusMutator _diskStatusMutator = diskStatusMutator;
+    private readonly ISlots _slots = slots;
 
     /// <inheritdoc/>
     public virtual string GetDriveStateFilePath()
@@ -122,6 +115,133 @@ public class DriveStateService : IDriveStateService
         }
 
         await SaveDriveStateAsync(config);
+    }
+
+    /// <summary>
+    /// Captures current drive states from the emulator and returns them as DriveStateSettings
+    /// for inclusion in the master GUI settings file.
+    /// </summary>
+    /// <returns>DriveStateSettings populated with currently inserted disks.</returns>
+    /// <remarks>
+    /// This method does NOT save to a file - it returns the settings for the caller to save
+    /// via GuiSettingsService. This supports the unified settings architecture where all
+    /// settings go to a single master file.
+    /// </remarks>
+    public DriveStateSettings CaptureDriveStateSettings()
+    {
+        var settings = new DriveStateSettings
+        {
+            Controllers = []
+        };
+
+        // Get current disk status from provider
+        var snapshot = _diskStatusProvider.Current;
+
+        // Group drives by slot
+        var drivesBySlot = new System.Collections.Generic.Dictionary<int, System.Collections.Generic.List<(int DriveNumber, string ImagePath)>>();
+
+        foreach (var drive in snapshot.Drives)
+        {
+            // Only capture drives with disk images (including ghost disks)
+            if (!string.IsNullOrWhiteSpace(drive.DiskImagePath))
+            {
+                if (!drivesBySlot.ContainsKey(drive.SlotNumber))
+                {
+                    drivesBySlot[drive.SlotNumber] = [];
+                }
+
+                drivesBySlot[drive.SlotNumber].Add((drive.DriveNumber, drive.DiskImagePath));
+            }
+        }
+
+        // Create controller entries
+        foreach (var kvp in drivesBySlot)
+        {
+            var controller = new DiskControllerEntry
+            {
+                Slot = kvp.Key,
+                Drives = []
+            };
+
+            foreach (var (driveNumber, imagePath) in kvp.Value)
+            {
+                controller.Drives.Add(new DriveEntry
+                {
+                    Drive = driveNumber,
+                    ImagePath = imagePath
+                });
+            }
+
+            settings.Controllers.Add(controller);
+        }
+
+        return settings;
+    }
+
+    /// <summary>
+    /// Restores drive states from DriveStateSettings (from master GUI settings file).
+    /// </summary>
+    /// <param name="settings">Drive state settings to restore.</param>
+    /// <remarks>
+    /// This method restores disk images from the DriveStateSettings section of the master
+    /// pandowdy-settings.json file. It should be called during application startup after
+    /// loading settings via GuiSettingsService.
+    /// </remarks>
+    public void RestoreDriveState(DriveStateSettings? settings)
+    {
+        if (settings == null || settings.Controllers.Count == 0)
+        {
+            System.Diagnostics.Debug.WriteLine("[DriveStateService] No drive state to restore");
+            return;
+        }
+
+        System.Diagnostics.Debug.WriteLine($"[DriveStateService] Restoring drive state for {settings.Controllers.Count} controller(s)");
+
+        foreach (var controller in settings.Controllers)
+        {
+            var slotNumber = (SlotNumber)controller.Slot;
+            var card = _slots.GetCardIn(slotNumber);
+
+            // Verify it's a Disk II controller
+            if (card is not Pandowdy.EmuCore.Cards.DiskIIControllerCard diskController)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DriveStateService] Slot {controller.Slot} is not a Disk II controller");
+                continue;
+            }
+
+            foreach (var driveEntry in controller.Drives)
+            {
+                // Skip empty entries
+                if (string.IsNullOrWhiteSpace(driveEntry.ImagePath))
+                {
+                    continue;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[DriveStateService] Processing S{controller.Slot}D{driveEntry.Drive}: {driveEntry.ImagePath}");
+
+                // Drive number is 1-based in our model, but 0-based in array
+                var driveIndex = driveEntry.Drive - 1;
+
+                if (driveIndex < 0 || driveIndex >= diskController.Drives.Length)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DriveStateService] Invalid drive index: {driveIndex}");
+                    continue;
+                }
+
+                // Check if file exists before attempting to load
+                if (File.Exists(driveEntry.ImagePath))
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DriveStateService] File exists, inserting disk");
+                    diskController.Drives[driveIndex].InsertDisk(driveEntry.ImagePath);
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DriveStateService] File does not exist, skipping (drive will remain empty)");
+                }
+            }
+        }
+
+        System.Diagnostics.Debug.WriteLine("[DriveStateService] Drive state restoration complete");
     }
 
     /// <inheritdoc/>

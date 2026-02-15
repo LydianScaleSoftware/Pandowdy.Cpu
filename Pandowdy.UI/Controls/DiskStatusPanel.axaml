@@ -9,8 +9,7 @@
              xmlns:vm="using:Pandowdy.UI.ViewModels"
              xmlns:controls="using:Pandowdy.UI.Controls"
              x:Class="Pandowdy.UI.Controls.DiskStatusPanel"
-             x:DataType="vm:DiskStatusPanelViewModel"
-             Width="200">
+             x:DataType="vm:DiskStatusPanelViewModel">
 
     <Border Background="#1A1A1A"
             BorderBrush="#303030"

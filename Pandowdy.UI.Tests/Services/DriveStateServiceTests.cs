@@ -168,11 +168,11 @@ public class DriveStateServiceTests : IDisposable
         var originalConfig = new DriveStateConfig
         {
             Version = "1.0",
-            Drives = new List<DriveStateEntry>
-            {
+            Drives =
+            [
                 new() { Slot = 6, DriveNumber = 1, DiskImagePath = @"C:\test1.dsk" },
                 new() { Slot = 6, DriveNumber = 2, DiskImagePath = @"C:\test2.dsk" }
-            }
+            ]
         };
         await _service.SaveDriveStateAsync(originalConfig);
 
@@ -213,10 +213,10 @@ public class DriveStateServiceTests : IDisposable
         var config = new DriveStateConfig
         {
             Version = "1.0",
-            Drives = new List<DriveStateEntry>
-            {
+            Drives =
+            [
                 new() { Slot = 6, DriveNumber = 1, DiskImagePath = @"C:\test.dsk" }
-            }
+            ]
         };
 
         // Act
@@ -234,10 +234,10 @@ public class DriveStateServiceTests : IDisposable
         var config = new DriveStateConfig
         {
             Version = "1.0",
-            Drives = new List<DriveStateEntry>
-            {
+            Drives =
+            [
                 new() { Slot = 5, DriveNumber = 2, DiskImagePath = @"C:\disk.nib" }
-            }
+            ]
         };
 
         // Act
@@ -259,12 +259,12 @@ public class DriveStateServiceTests : IDisposable
         var originalConfig = new DriveStateConfig
         {
             Version = "1.0",
-            Drives = new List<DriveStateEntry>
-            {
+            Drives =
+            [
                 new() { Slot = 6, DriveNumber = 1, DiskImagePath = @"C:\disk1.dsk" },
                 new() { Slot = 6, DriveNumber = 2, DiskImagePath = @"C:\disk2.dsk" },
                 new() { Slot = 5, DriveNumber = 1, DiskImagePath = @"C:\disk3.nib" }
-            }
+            ]
         };
 
         // Act
@@ -369,10 +369,10 @@ public class DriveStateServiceTests : IDisposable
         var config = new DriveStateConfig
         {
             Version = "1.0",
-            Drives = new List<DriveStateEntry>
-            {
+            Drives =
+            [
                 new() { Slot = 6, DriveNumber = 1, DiskImagePath = @"C:\nonexistent.dsk" }
-            }
+            ]
         };
         await _service.SaveDriveStateAsync(config);
 
@@ -394,11 +394,11 @@ public class DriveStateServiceTests : IDisposable
         var config = new DriveStateConfig
         {
             Version = "1.0",
-            Drives = new List<DriveStateEntry>
-            {
+            Drives =
+            [
                 new() { Slot = 6, DriveNumber = 1, DiskImagePath = disk1Path },
                 new() { Slot = 6, DriveNumber = 2, DiskImagePath = disk2Path }
-            }
+            ]
         };
         await _service.SaveDriveStateAsync(config);
 
@@ -427,10 +427,10 @@ public class DriveStateServiceTests : IDisposable
         var config = new DriveStateConfig
         {
             Version = "1.0",
-            Drives = new List<DriveStateEntry>
-            {
+            Drives =
+            [
                 new() { Slot = 6, DriveNumber = 1, DiskImagePath = diskPath }
-            }
+            ]
         };
         await _service.SaveDriveStateAsync(config);
 
@@ -452,10 +452,10 @@ public class DriveStateServiceTests : IDisposable
         var config = new DriveStateConfig
         {
             Version = "1.0",
-            Drives = new List<DriveStateEntry>
-            {
+            Drives =
+            [
                 new() { Slot = 6, DriveNumber = 1, DiskImagePath = diskPath }
-            }
+            ]
         };
         await _service.SaveDriveStateAsync(config);
 
@@ -499,6 +499,149 @@ public class DriveStateServiceTests : IDisposable
         // Assert
         Assert.NotNull(testDrive.InsertedDiskPath);
         Assert.Contains("integration.dsk", testDrive.InsertedDiskPath);
+    }
+
+    #endregion
+
+    #region RestoreDriveState Tests
+
+    [Fact]
+    public void RestoreDriveState_WithNullSettings_ReturnsWithoutError()
+    {
+        // Arrange
+        DriveStateSettings? settings = null;
+
+        // Act & Assert - should not throw
+        _service.RestoreDriveState(settings);
+    }
+
+    [Fact]
+    public void RestoreDriveState_WithEmptyControllers_ReturnsWithoutError()
+    {
+        // Arrange
+        var settings = new DriveStateSettings
+        {
+            Controllers = []
+        };
+
+        // Act & Assert - should not throw
+        _service.RestoreDriveState(settings);
+    }
+
+    [Fact]
+    public void RestoreDriveState_WithValidSettings_RestoresDisksToCorrectDrives()
+    {
+        // Arrange
+        var disk1Path = Path.Combine(_testDirectory, "test1.dsk");
+        var disk2Path = Path.Combine(_testDirectory, "test2.dsk");
+        File.WriteAllText(disk1Path, "test disk 1");
+        File.WriteAllText(disk2Path, "test disk 2");
+
+        var drive1 = new TestDrive();
+        var drive2 = new TestDrive();
+        var controller = new TestDiskController(drive1, drive2);
+        _mockSlots.Setup(s => s.GetCardIn(SlotNumber.Slot6)).Returns(controller);
+
+        var settings = new DriveStateSettings
+        {
+            Controllers =
+            [
+                new DiskControllerEntry
+                {
+                    Slot = 6,
+                    Drives =
+                    [
+                        new DriveEntry { Drive = 1, ImagePath = disk1Path },
+                        new DriveEntry { Drive = 2, ImagePath = disk2Path }
+                    ]
+                }
+            ]
+        };
+
+        // Act
+        _service.RestoreDriveState(settings);
+
+        // Assert
+        Assert.Equal(disk1Path, drive1.InsertedDiskPath);
+        Assert.Equal(disk2Path, drive2.InsertedDiskPath);
+    }
+
+    [Fact]
+    public void RestoreDriveState_WithNonexistentFile_SkipsFilesAndContinues()
+    {
+        // Arrange
+        var existingDisk = Path.Combine(_testDirectory, "exists.dsk");
+        var nonexistentDisk = Path.Combine(_testDirectory, "nonexistent.dsk");
+        File.WriteAllText(existingDisk, "existing disk");
+
+        var drive1 = new TestDrive();
+        var drive2 = new TestDrive();
+        var controller = new TestDiskController(drive1, drive2);
+        _mockSlots.Setup(s => s.GetCardIn(SlotNumber.Slot6)).Returns(controller);
+
+        var settings = new DriveStateSettings
+        {
+            Controllers =
+            [
+                new DiskControllerEntry
+                {
+                    Slot = 6,
+                    Drives =
+                    [
+                        new DriveEntry { Drive = 1, ImagePath = nonexistentDisk },
+                        new DriveEntry { Drive = 2, ImagePath = existingDisk }
+                    ]
+                }
+            ]
+        };
+
+        // Act
+        _service.RestoreDriveState(settings);
+
+        // Assert
+        Assert.Null(drive1.InsertedDiskPath); // Nonexistent file skipped
+        Assert.Equal(existingDisk, drive2.InsertedDiskPath); // Existing file loaded
+    }
+
+    [Fact]
+    public void RestoreDriveState_WithMultipleControllers_RestoresAllControllers()
+    {
+        // Arrange
+        var disk1Path = Path.Combine(_testDirectory, "slot5d1.dsk");
+        var disk2Path = Path.Combine(_testDirectory, "slot6d1.dsk");
+        File.WriteAllText(disk1Path, "slot 5 disk 1");
+        File.WriteAllText(disk2Path, "slot 6 disk 1");
+
+        var drive5 = new TestDrive();
+        var controller5 = new TestDiskController(drive5);
+        var drive6 = new TestDrive();
+        var controller6 = new TestDiskController(drive6);
+        _mockSlots.Setup(s => s.GetCardIn(SlotNumber.Slot5)).Returns(controller5);
+        _mockSlots.Setup(s => s.GetCardIn(SlotNumber.Slot6)).Returns(controller6);
+
+        var settings = new DriveStateSettings
+        {
+            Controllers =
+            [
+                new DiskControllerEntry
+                {
+                    Slot = 5,
+                    Drives = [new DriveEntry { Drive = 1, ImagePath = disk1Path }]
+                },
+                new DiskControllerEntry
+                {
+                    Slot = 6,
+                    Drives = [new DriveEntry { Drive = 1, ImagePath = disk2Path }]
+                }
+            ]
+        };
+
+        // Act
+        _service.RestoreDriveState(settings);
+
+        // Assert
+        Assert.Equal(disk1Path, drive5.InsertedDiskPath);
+        Assert.Equal(disk2Path, drive6.InsertedDiskPath);
     }
 
     #endregion
