@@ -26,6 +26,11 @@
 16. [DI Registration & Service Wiring](#16-di-registration--service-wiring)
 17. [Testing Strategy](#17-testing-strategy)
 18. [Implementation Phases](#18-implementation-phases)
+19. [Coding Standards & DI Architecture](#19-coding-standards--di-architecture)
+20. [Appendix A: `GuiSettings` Changes](#appendix-a-guisettings-changes)
+21. [Appendix B: Message Changes](#appendix-b-message-changes)
+22. [Appendix C: Schema Version Strategy](#appendix-c-schema-version-strategy)
+23. [Appendix D: Incorporating SQLite into Pandowdy](#appendix-d-incorporating-sqlite-into-pandowdy)
 
 ---
 
@@ -35,9 +40,9 @@
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  Pandowdy (Host)  — DI composition root, startup         │
+│  Pandowdy (Host)   — DI composition root, startup        │
 ├──────────────────────────────────────────────────────────┤
-│  Pandowdy.UI      — Start Page, project dialogs, menus   │
+│  Pandowdy.UI       — Start Page, project dialogs, menus  │
 ├──────────────────────────────────────────────────────────┤
 │  Pandowdy.Project  — NEW: .skillet read/write, models,   │
 │                      resolution engine, migrations       │
@@ -1260,6 +1265,29 @@ if (reader.Read())
 
 ## 16. DI Registration & Service Wiring
 
+Pandowdy leans heavily on **constructor-based dependency injection** throughout the
+codebase. Every service, view model, and subsystem receives its dependencies via
+constructor parameters, registered in the composition root (`Program.cs`). The
+`.skillet` project system follows this pattern strictly — no service locators, no
+internal `new` instantiation, no chain-of-command parameter passing.
+
+### DI Principles (Binding for All New Code)
+
+These rules are established project-wide and apply to every class created for
+`Pandowdy.Project`, its tests, and any UI integration:
+
+1. **Constructor Injection for required dependencies.** All dependencies arrive
+   via constructor parameters. Never resolve services from a container at runtime.
+2. **Depend on interfaces, not concrete implementations.** `ISkilletProjectManager`,
+   not `SkilletProjectManager`. `ISkilletProject`, not `SkilletProject`.
+3. **Register services in the DI container** (`Program.cs`) with appropriate lifetimes.
+4. **No Chain of Command.** Classes do not receive a dependency merely to pass it
+   through to another class they construct. Each class requests only what it uses.
+5. **No internal `new` instantiation** of dependencies. This makes classes hard to
+   test and tightly coupled. (Plain data objects and records are fine.)
+6. **No Service Locator pattern.** Hidden dependencies via `ServiceLocator.Get<T>()`
+   or `IServiceProvider.GetService<T>()` are an anti-pattern in this codebase.
+
 ### New Registrations in `Program.cs`
 
 ```csharp
@@ -1270,6 +1298,15 @@ services.AddSingleton<ISettingsResolver, SettingsResolver>();
 // ISkilletProject is transient-like — managed by ISkilletProjectManager
 // Not registered directly; accessed via ISkilletProjectManager.CurrentProject
 ```
+
+### Lifetime Guidelines
+
+| Lifetime | When to Use | Examples |
+|----------|------------|----------|
+| **Singleton** | Stateless services, long-lived managers, global state providers | `ISkilletProjectManager`, `ISettingsResolver`, `ISystemStatusProvider` |
+| **Scoped** | Per-request or per-window services | Avalonia windows (future) |
+| **Transient** | Lightweight, stateless services created per use | `ICard` implementations |
+| **Managed** | Lifecycle owned by another singleton (not registered directly) | `ISkilletProject` (owned by `ISkilletProjectManager`) |
 
 ### Dependency Graph (New)
 
@@ -1287,6 +1324,17 @@ Program.cs (composition root)
   └── StartPageViewModel (new)
       └── ISkilletProjectManager
 ```
+
+### Constructor Parameter Guidelines
+
+For classes with many dependencies (>5 parameters), consider:
+- Grouping related dependencies into facade interfaces.
+- Using primary constructors for cleaner syntax (see §19).
+- Reviewing whether the class has too many responsibilities (SRP violation).
+- Documenting constructor parameters when dependency purpose isn't obvious.
+
+All injected dependencies should be stored in `readonly` fields (or captured by
+primary constructor assignment).
 
 ### Impact on Existing Services
 
@@ -1426,6 +1474,205 @@ Pandowdy.Project.Tests/
 
 ---
 
+## 19. Coding Standards & DI Architecture
+
+This section consolidates the project-wide coding standards that apply to all
+`Pandowdy.Project` implementation work. These rules are drawn from
+`.github/copilot-instructions.md` and `docs/Development-Roadmap.md` §Code Style
+Guidelines, and are **binding for all code produced during Task 32**.
+
+### 19.1 Braces — Always Required
+
+**Every** control statement must use curly braces, even for single-line bodies.
+This applies to: `if`, `else`, `for`, `foreach`, `while`, `do-while`, `using`, `lock`.
+
+```csharp
+// ✅ Correct
+if (connection is null)
+{
+    throw new InvalidOperationException("No open project.");
+}
+
+foreach (var mount in mounts)
+{
+    await MountDiskAsync(mount);
+}
+
+// ❌ Incorrect — will trigger IDE0011 warning
+if (connection is null)
+    throw new InvalidOperationException("No open project.");
+
+if (connection is null) throw new InvalidOperationException("No open project.");
+```
+
+### 19.2 Property Formatting
+
+- **Multi-line** for properties with non-default accessors (logic, access modifiers, ReactiveUI).
+- **Single-line** only for simple auto-properties with default `{ get; set; }`.
+
+```csharp
+// ✅ Multi-line: logic or access modifiers
+public bool HasUnsavedChanges
+{
+    get => _hasUnsavedChanges;
+    private set => _hasUnsavedChanges = value;
+}
+
+// ✅ Single-line: simple auto-properties
+public long Id { get; init; }
+public required string Name { get; set; }
+public bool PersistWorking { get; set; } = true;
+```
+
+### 19.3 Primary Constructors (C# 12)
+
+**Prefer primary constructors** when class initialization is straightforward —
+i.e., no complex logic beyond field assignments. This is the standard pattern
+for service classes and view models in Pandowdy, and is **especially important
+for unit test classes** where this pattern is often forgotten.
+
+```csharp
+// ✅ Correct: Primary constructor for service with DI
+public class SkilletProjectManager(
+    GuiSettingsService settingsService) : ISkilletProjectManager
+{
+    private readonly GuiSettingsService _settingsService = settingsService;
+    private ISkilletProject? _currentProject;
+
+    public ISkilletProject? CurrentProject => _currentProject;
+    // ...
+}
+
+// ✅ Correct: Primary constructor in test class
+public class SkilletProjectManagerTests(ITestOutputHelper output)
+{
+    private readonly ITestOutputHelper _output = output;
+
+    [Fact]
+    public async Task CreateAsync_CreatesValidSkilletFile()
+    {
+        // ...
+    }
+}
+
+// ❌ Incorrect: Traditional constructor for simple DI — use primary constructor instead
+public class SkilletProjectManager : ISkilletProjectManager
+{
+    private readonly GuiSettingsService _settingsService;
+
+    public SkilletProjectManager(GuiSettingsService settingsService)
+    {
+        _settingsService = settingsService;
+    }
+}
+```
+
+**Exception:** When construction involves significant logic (opening connections,
+validating state, subscribing to observables), a traditional constructor body is
+appropriate.
+
+### 19.4 Dependency Injection — The Core Architecture Pattern
+
+Pandowdy leans heavily on DI. The `.skillet` project system follows this strictly.
+See §16 for the full DI rules, which are summarized here:
+
+| ✅ Do | ❌ Don't |
+|-------|----------|
+| Constructor injection for required dependencies | Service Locator (`ServiceLocator.Get<T>()`) |
+| Depend on interfaces (`ISkilletProject`) | Depend on concrete types (`SkilletProject`) |
+| Register in DI container with correct lifetime | Internal `new` of dependencies |
+| Each class requests only what it directly uses | Chain of Command (passing deps through layers) |
+
+```csharp
+// ✅ Correct: Dependencies injected, interface-typed
+public class StartPageViewModel(
+    ISkilletProjectManager projectManager,
+    GuiSettingsService settingsService) : ReactiveObject
+{
+    private readonly ISkilletProjectManager _projectManager = projectManager;
+    private readonly GuiSettingsService _settingsService = settingsService;
+    // ...
+}
+
+// ❌ Incorrect: Internal instantiation — untestable, tightly coupled
+public class StartPageViewModel : ReactiveObject
+{
+    private readonly SkilletProjectManager _projectManager = new SkilletProjectManager(...);
+}
+
+// ❌ Incorrect: Chain of Command — passing a dep just to forward it
+public class SkilletProjectManager(GuiSettingsService settings, ICardFactory cardFactory)
+{
+    public ISkilletProject CreateProject()
+    {
+        return new SkilletProject(settings, cardFactory); // cardFactory passed through!
+    }
+}
+```
+
+### 19.5 Naming Conventions
+
+| Element | Convention | Example |
+|---------|------------|--------|
+| Public members | PascalCase | `HasUnsavedChanges`, `ImportDiskImageAsync` |
+| Private fields | `_camelCase` (underscore prefix) | `_connection`, `_currentProject` |
+| Local variables | camelCase | `var diskRecord = ...` |
+| Constants | PascalCase | `SchemaVersion`, `ApplicationId` |
+| Interfaces | `I` prefix + PascalCase | `ISkilletProject`, `ISettingsResolver` |
+| Async methods | `Async` suffix | `SaveAsync()`, `OpenAsync()` |
+| Test methods | `MethodName_Scenario_ExpectedOutcome` | `CreateAsync_ValidPath_ReturnsProject` |
+
+### 19.6 Other Style Rules
+
+- **`var`** for local variables when type is obvious from the right-hand side.
+- **Expression-bodied members** for simple one-liners.
+- **Nullable reference types** enabled (`string?`, `object?`) — all projects use `<Nullable>enable</Nullable>`.
+- **4-space indentation** (no tabs).
+- **Field default initializers** for small, read-only arrays and collections;
+  use `new[] { ... }` for literal content and `Array.Empty<T>()` for empty arrays.
+- **No comments** unless they match the style of existing comments in the file
+  or are necessary to explain complex logic.
+
+### 19.7 Testing Standards
+
+- **Mirror production code structure** in test projects.
+  `Pandowdy.Project/Services/SkilletProject.cs` → `Pandowdy.Project.Tests/Services/SkilletProjectTests.cs`
+- **xUnit** as the test framework (matches all existing test projects).
+- **`[Fact]`** for standard tests; **`[Theory]`** for parameterized tests.
+- **`[Fact(Skip = "reason")]`** for tests blocked by technical limitations —
+  keep them as design specs.
+- **Group tests** with `#region` blocks by logical category.
+- **Test naming:** `MethodName_Scenario_ExpectedOutcome`
+
+```csharp
+#region ImportDiskImageAsync
+
+[Fact]
+public async Task ImportDiskImageAsync_ValidWozFile_StoresOriginalBlob()
+{
+    // Arrange
+    // Act
+    // Assert
+}
+
+[Fact]
+public async Task ImportDiskImageAsync_NonexistentFile_ThrowsFileNotFoundException()
+{
+    // Arrange
+    // Act & Assert
+}
+
+#endregion
+```
+
+### 19.8 Git Operations
+
+- **Always use `git mv`** when moving or renaming files — preserves history.
+- **Never use create/delete cycles** for file moves.
+- Current branch: `skillet` (dedicated feature branch for Task 32).
+
+---
+
 ## Appendix A: `GuiSettings` Changes
 
 ### Added Properties
@@ -1537,6 +1784,228 @@ internal class V2_AddProfilingTables : ISchemaMigration
         cmd.ExecuteNonQuery();
     }
 }
+```
+
+---
+
+## Appendix D: Incorporating SQLite into Pandowdy
+
+### D.1 Package Selection
+
+SQLite access in .NET involves two distinct layers:
+
+| Layer | Purpose | Package |
+|-------|---------|---------|
+| **ADO.NET Provider** | C# API — connections, commands, readers, parameters | `Microsoft.Data.Sqlite` |
+| **Native Engine** | Platform-specific SQLite C library (`e_sqlite3.dll`, `libe_sqlite3.so`, `libe_sqlite3.dylib`) | `SQLitePCLRaw.bundle_e_sqlite3` |
+
+`Microsoft.Data.Sqlite` declares a transitive dependency on `SQLitePCLRaw.bundle_e_sqlite3`,
+which in turn depends on `SQLitePCLRaw.core` and the platform-specific `SQLitePCLRaw.lib.e_sqlite3`
+packages. The entire chain is pulled in automatically by referencing the single
+`Microsoft.Data.Sqlite` package.
+
+### D.2 Package Dependency Graph
+
+```
+Microsoft.Data.Sqlite (9.0.x)
+  └── SQLitePCLRaw.bundle_e_sqlite3 (2.1.x)
+        ├── SQLitePCLRaw.core (2.1.x)
+        └── SQLitePCLRaw.lib.e_sqlite3 (2.1.x)
+              ├── runtimes/win-x64/native/e_sqlite3.dll
+              ├── runtimes/win-arm64/native/e_sqlite3.dll
+              ├── runtimes/linux-x64/native/libe_sqlite3.so
+              ├── runtimes/linux-arm64/native/libe_sqlite3.so
+              ├── runtimes/osx-x64/native/libe_sqlite3.dylib
+              └── runtimes/osx-arm64/native/libe_sqlite3.dylib
+```
+
+There is no need to install SQLite separately on any platform.
+The native library is bundled inside the NuGet package and copied to the output directory at build time.
+
+### D.3 Pandowdy.Project Owns the Dependency
+
+The `Microsoft.Data.Sqlite` package is referenced **only** in `Pandowdy.Project.csproj`.
+No other project in the solution references it directly.
+
+```
+Pandowdy (host app)
+  ├── Pandowdy.UI         (no SQLite reference)
+  ├── Pandowdy.Project    ← Microsoft.Data.Sqlite here
+  ├── Pandowdy.EmuCore    (no SQLite reference)
+  └── Pandowdy.Cpu        (no SQLite reference)
+```
+
+The host app `Pandowdy` gains the native SQLite binary transitively through its
+`<ProjectReference>` to `Pandowdy.Project`. The native `e_sqlite3` library is
+automatically copied to the publish/output directory as part of the build.
+
+### D.4 Version Alignment
+
+The existing solution uses `Microsoft.Extensions.Hosting` 10.0.1 and
+`Microsoft.Extensions.Logging` 10.0.1 in the host project. `Microsoft.Data.Sqlite`
+is versioned independently from the `Microsoft.Extensions.*` packages — it follows
+the Entity Framework Core release cadence, not the runtime/extensions cadence.
+Version 9.0.x is the latest stable release compatible with .NET 8.
+
+| Package | Version | Rationale |
+|---------|---------|-----------|
+| `Microsoft.Data.Sqlite` | 9.0.7 | Latest stable; targets `netstandard2.0` so compatible with net8.0 |
+| `SQLitePCLRaw.bundle_e_sqlite3` | (transitive) | Pulled in automatically |
+
+**No version conflicts** exist between `Microsoft.Data.Sqlite` 9.0.x and the
+existing package set. The package has no dependency on `Microsoft.Extensions.*`,
+`Avalonia`, or `System.Reactive`.
+
+### D.5 What the Package Adds to the Output Directory
+
+After building `Pandowdy`, the following new files appear in the output directory:
+
+```
+bin/Debug/net8.0/
+  ├── Microsoft.Data.Sqlite.dll          (~120 KB managed assembly)
+  ├── SQLitePCLRaw.core.dll              (~50 KB managed assembly)
+  ├── SQLitePCLRaw.batteries_v2.dll      (~10 KB managed assembly)
+  └── runtimes/
+      ├── win-x64/native/e_sqlite3.dll   (~1.5 MB native)
+      ├── linux-x64/native/libe_sqlite3.so
+      └── osx-x64/native/libe_sqlite3.dylib
+```
+
+The `runtimes/` folder structure is created automatically by the NuGet restore process.
+On publish with a specific RID (e.g., `dotnet publish -r win-x64`), only the relevant
+native binary is included.
+
+**Total size impact:** ~1.7 MB (managed + one platform native binary).
+
+### D.6 Initialization
+
+`SQLitePCLRaw.bundle_e_sqlite3` includes a module initializer that calls
+`SQLitePCL.Batteries_V2.Init()` automatically at assembly load time. No explicit
+initialization code is required in `Program.cs` or elsewhere.
+
+If explicit initialization is ever needed (e.g., for a specific provider configuration),
+it can be done once in the composition root:
+
+```csharp
+// Only if automatic initialization fails (rare)
+SQLitePCL.Batteries_V2.Init();
+```
+
+### D.7 Connection Strings
+
+`Microsoft.Data.Sqlite` uses simple connection strings:
+
+```csharp
+// Open or create a database file
+var connectionString = $"Data Source={filePath}";
+
+// Read-only mode (for inspecting .skillet files)
+var connectionString = $"Data Source={filePath};Mode=ReadOnly";
+
+// In-memory database (for unit tests or future loose-disk mode)
+var connectionString = "Data Source=:memory:";
+```
+
+WAL mode and other pragmas are set via SQL commands after opening:
+
+```csharp
+using var connection = new SqliteConnection(connectionString);
+await connection.OpenAsync();
+
+using var pragmaCmd = connection.CreateCommand();
+pragmaCmd.CommandText = """
+    PRAGMA journal_mode = WAL;
+    PRAGMA foreign_keys = ON;
+    PRAGMA application_id = 0x534B494C;
+    """;
+await pragmaCmd.ExecuteNonQueryAsync();
+```
+
+### D.8 Testing Considerations
+
+**In-memory databases for tests:**
+
+Unit tests use in-memory SQLite databases rather than temp files when testing
+schema creation and CRUD logic. This avoids filesystem I/O and is faster:
+
+```csharp
+// In-memory database — lives as long as the connection is open
+using var connection = new SqliteConnection("Data Source=:memory:");
+await connection.OpenAsync();
+```
+
+**Named in-memory databases for shared connections** (if concurrent access testing is needed):
+
+```csharp
+// Shared in-memory database across multiple connections in the same process
+var connectionString = "Data Source=TestDb;Mode=Memory;Cache=Shared";
+```
+
+**File-based tests for round-trip integration:**
+
+Integration tests (e.g., create project → close → reopen → verify) use temporary
+files with randomized names, following the project's testing convention:
+
+```csharp
+var testPath = Path.Combine(Path.GetTempPath(), $"pandowdy_test_{Guid.NewGuid():N}.skillet");
+// No cleanup — per testing guidelines
+```
+
+**Test project reference:**
+
+`Pandowdy.Project.Tests` references `Microsoft.Data.Sqlite` transitively through
+its `<ProjectReference>` to `Pandowdy.Project`. No additional package reference
+is needed in the test project for SQLite access.
+
+### D.9 Cross-Platform Deployment Notes
+
+| Platform | Native Binary | Notes |
+|----------|---------------|-------|
+| Windows x64 | `e_sqlite3.dll` | Works out of the box |
+| Windows ARM64 | `e_sqlite3.dll` | ARM64 binary included in package |
+| Linux x64 | `libe_sqlite3.so` | No system SQLite dependency; bundled |
+| Linux ARM64 | `libe_sqlite3.so` | ARM64 binary included in package |
+| macOS x64 | `libe_sqlite3.dylib` | Bundled; does not use system SQLite |
+| macOS ARM64 | `libe_sqlite3.dylib` | Apple Silicon native binary included |
+
+The bundled `e_sqlite3` library is a custom build maintained by the SQLitePCLRaw
+project. It includes common SQLite compile-time options (FTS5, JSON1, etc.)
+but is distinct from any system-installed SQLite. This avoids version-mismatch
+issues across platforms.
+
+### D.10 Why Not Other Options
+
+| Alternative | Why Not |
+|-------------|---------|
+| `System.Data.SQLite` | Older, heavier, Windows-focused heritage. `Microsoft.Data.Sqlite` is the modern recommended choice. |
+| `Entity Framework Core` + `Microsoft.EntityFrameworkCore.Sqlite` | ORM overhead not justified. Direct SQL gives full control over schema, pragmas, blob streaming, and transaction boundaries. EF Core would add ~3 MB of assemblies and hide critical SQLite-specific behaviors. |
+| `Dapper` | Micro-ORM convenience not needed. The query surface is small and well-defined. Direct `SqliteCommand` + `SqliteDataReader` is sufficient and avoids the dependency. |
+| `LiteDB` | Document database, not relational. Doesn't support SQL, foreign keys, or the structured schema model the `.skillet` design requires. |
+| Raw `SQLitePCLRaw` without `Microsoft.Data.Sqlite` | Too low-level. `Microsoft.Data.Sqlite` provides the standard ADO.NET abstraction (`DbConnection`, `DbCommand`, `DbDataReader`) with proper async support and parameterized queries. |
+
+### D.11 Additions to Solution File
+
+The solution file must be updated to include the new project:
+
+```
+dotnet sln add Pandowdy.Project/Pandowdy.Project.csproj
+dotnet sln add Pandowdy.Project.Tests/Pandowdy.Project.Tests.csproj
+```
+
+Project references to add:
+
+```xml
+<!-- Pandowdy.csproj (host app) — add project reference -->
+<ProjectReference Include="..\Pandowdy.Project\Pandowdy.Project.csproj" />
+
+<!-- Pandowdy.UI.csproj — add project reference (for ISkilletProjectManager, ISettingsResolver) -->
+<ProjectReference Include="..\Pandowdy.Project\Pandowdy.Project.csproj" />
+
+<!-- Pandowdy.Project.csproj — add project reference to EmuCore (for InternalDiskImage, DiskFormat) -->
+<ProjectReference Include="..\Pandowdy.EmuCore\Pandowdy.EmuCore.csproj" />
+
+<!-- Pandowdy.Project.Tests.csproj — add project reference -->
+<ProjectReference Include="..\Pandowdy.Project\Pandowdy.Project.csproj" />
 ```
 
 ---
