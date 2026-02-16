@@ -16,7 +16,7 @@ public sealed class DiskImageRecord
     public required string OriginalFormat { get; init; }
     public string? ImportSourcePath { get; init; }
     public DateTime ImportedUtc { get; init; }
-    public int TrackCount { get; init; } = 35;
+    public int WholeTrackCount { get; init; } = 35;
     public byte OptimalBitTiming { get; init; } = 32;
     public bool IsWriteProtected { get; set; }
     public bool PersistWorking { get; set; } = true;

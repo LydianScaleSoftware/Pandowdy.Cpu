@@ -199,7 +199,7 @@ CREATE TABLE disk_images (
     original_format     TEXT NOT NULL,                -- DiskFormat enum name ('Woz','Nib','Dsk','Do','Po')
     import_source_path  TEXT,                         -- Full path at import time (informational only)
     imported_utc        TEXT NOT NULL,                -- ISO 8601 timestamp
-    track_count         INTEGER NOT NULL DEFAULT 35,  -- Track-based images only (see §6.2 Block Device Support)
+    whole_track_count    INTEGER NOT NULL DEFAULT 35, -- Whole tracks (quarter-track count derived: (N-1)*4+1)
     optimal_bit_timing  INTEGER NOT NULL DEFAULT 32,  -- Track-based images only
     is_write_protected  INTEGER NOT NULL DEFAULT 0,   -- SQLite boolean
     persist_working     INTEGER NOT NULL DEFAULT 1,   -- Whether to persist working copy on save
@@ -310,7 +310,7 @@ public sealed class DiskImageRecord
     public required string OriginalFormat { get; init; }  // DiskFormat enum name
     public string? ImportSourcePath { get; init; }
     public DateTime ImportedUtc { get; init; }
-    public int TrackCount { get; init; } = 35;
+    public int WholeTrackCount { get; init; } = 35;
     public byte OptimalBitTiming { get; init; } = 32;
     public bool IsWriteProtected { get; set; }
     public bool PersistWorking { get; set; } = true;
@@ -325,10 +325,15 @@ public sealed class DiskImageRecord
 > streaming APIs, never loaded into `DiskImageRecord` to avoid large heap allocations.
 
 > **Note:** `DiskImageRecord` is designed for track-based disk images (`InternalDiskImage`).
-> `TrackCount` and `OptimalBitTiming` are not meaningful for block-based devices. If
+> `WholeTrackCount` and `OptimalBitTiming` are not meaningful for block-based devices. If
 > `InternalBlockDeviceImage` is introduced for hard drive images (see §6.2 Block Device
 > Support), a corresponding model with block-specific properties (`BlockCount`, `BlockSize`)
 > will be added alongside the necessary schema migration.
+
+> **Note:** `WholeTrackCount` in the `.skillet` domain maps to `InternalDiskImage.PhysicalTrackCount`
+> in EmuCore. "Whole" was chosen for the project layer to avoid ambiguity — "physical" could
+> be misread as the count of physical head positions (which is actually `QuarterTrackCount`).
+> If EmuCore is renamed later, the mapping is in `DiskBlobStore.Serialize()` / `Deserialize()`.
 
 ### `MountConfiguration`
 
@@ -491,23 +496,35 @@ Disk images often contain large runs of zeros or repeated byte patterns, so
 compression significantly reduces `.skillet` file size.
 
 ```
-[Header] (uncompressed, 10 bytes)
+[Header] (uncompressed, 12 bytes)
   4 bytes: magic ("PIDI" — Pandowdy Internal Disk Image)
   2 bytes: format version (1)
   1 byte:  compression method (0 = none, 1 = Deflate)
-  1 byte:  track count
+  1 byte:  whole track count (typically 35; quarter-track count derived: (N-1)*4+1)
   1 byte:  optimal bit timing
   1 byte:  write protected flag
+  2 bytes: quarter-track count (little-endian uint16, = (whole_track_count - 1) * 4 + 1)
+
+[Presence Bitmap] (uncompressed, ceil(quarter_track_count / 8) bytes — 18 bytes for 137 QTs)
+  1 bit per quarter-track position, LSB-first within each byte.
+  Bit = 1: quarter-track has data (non-null CircularBitBuffer).
+  Bit = 0: quarter-track is unwritten (null — returns MC3470 random noise when read).
 
 [Payload] (compressed via method specified in header)
-  [Per Track] × track_count
+  [Per non-null quarter-track] — only entries with bit = 1 in presence bitmap, in index order
     4 bytes: bit count (little-endian int32)
     4 bytes: byte count (little-endian int32, = ceil(bit_count/8))
-    N bytes: raw track data
+    N bytes: raw quarter-track data
 
 [Footer] (uncompressed)
-  4 bytes: CRC-32 of header + compressed payload
+  4 bytes: CRC-32 of header + presence bitmap + compressed payload
 ```
+
+The presence bitmap efficiently encodes the sparse nature of quarter-track data.
+A standard 35-track disk imported from NIB/DSK format has only 35 of 137 quarter-track
+positions populated (indices 0, 4, 8, ..., 136). WOZ images may populate additional
+fractional quarter-track positions. The bitmap costs only `ceil(137/8) = 18 bytes`
+and avoids storing empty entries in the payload.
 
 This is implemented in `DiskBlobStore.Serialize()` / `DiskBlobStore.Deserialize()`.
 
@@ -521,34 +538,38 @@ The CRC-32 uses the existing `System.IO.Hashing` package already referenced by
 - **Level:** `CompressionLevel.Optimal` for storage. Speed is not critical —
   serialize/deserialize happens at lifecycle boundaries (mount, save), never
   per-cycle.
-- **Scope:** The per-track payload is compressed as a single Deflate stream.
-  The 10-byte header and 4-byte CRC footer remain uncompressed so the header
-  can be read and the CRC validated without decompressing.
+- **Scope:** The per-quarter-track payload is compressed as a single Deflate stream.
+  The 12-byte header, presence bitmap, and 4-byte CRC footer remain uncompressed so
+  the header can be read and the CRC validated without decompressing.
 - **method byte = 0 (none):** Reserved for diagnostic/debugging use. The
   deserializer must handle uncompressed payloads, but `Serialize()` always
   writes method = 1 (Deflate) in production.
 - **Expected ratio:** Typical Apple II disk images compress to ~40–60% of
   original size. The primary size range spans 140KB 5.25" floppies (most
-  common, ~230KB in PIDI nibblized form), 880KB 3.5" floppies (common), and
-  32MB hard drive images (upper bound — may use a block-based blob format
-  instead of PIDI; see Block Device Support below). A 140KB floppy (~230KB
-  PIDI) typically stores as ~100–140KB compressed. At the upper bound, a hard
-  drive image (~32MB uncompressed) is still fast to compress/decompress at
-  lifecycle boundaries regardless of blob format — these are infrequent bulk
-  operations, not per-cycle work, and the data sizes involved are modest by
-  modern standards.
+  common, ~230KB in PIDI quarter-track form with 35 populated positions),
+  880KB 3.5" floppies (common; half-track resolution only — the Sony 3.5"
+  drives do not support quarter-track positioning), and 32MB hard drive images
+  (upper bound — may use a block-based blob format instead of PIDI; see Block
+  Device Support below). A 140KB floppy (~230KB PIDI) typically stores as
+  ~100–140KB compressed. WOZ images with additional fractional quarter-track
+  data (5.25" only) may be slightly larger before compression. At the upper
+  bound, a hard drive image (~32MB uncompressed) is still fast to
+  compress/decompress at lifecycle boundaries regardless of blob format —
+  these are infrequent bulk operations, not per-cycle work, and the data
+  sizes involved are modest by modern standards.
 - **No new dependencies:** `System.IO.Compression` is part of the .NET runtime.
   `DeflateStream` is available in all target frameworks (net8.0+).
 
 ### Block Device Support (Future)
 
-The PIDI format is designed for track-based `InternalDiskImage` — floppy disk
-images where data is organized as nibblized tracks with per-track bit counts.
+The PIDI format is designed for quarter-track-based `InternalDiskImage` — floppy disk
+images where data is organized as nibblized quarter-tracks with per-quarter-track bit
+counts and a presence bitmap indicating which positions have data.
 Hard drive images (up to 65,536 × 512-byte blocks, ~32MB) may use a
 block-based internal representation (`InternalBlockDeviceImage`) rather than
-the track-based model. If so, a separate blob format (e.g., "PIBI" — Pandowdy
+the quarter-track model. If so, a separate blob format (e.g., "PIBI" — Pandowdy
 Internal Block Image) would be defined with block-oriented payload structure
-instead of per-track layout. The `DiskBlobStore` would gain a second
+instead of per-quarter-track layout. The `DiskBlobStore` would gain a second
 serializer, and the blob magic bytes would distinguish PIDI from PIBI at
 deserialization time. The same compression strategy (Deflate) and CRC-32
 footer apply regardless of internal format.
@@ -568,7 +589,8 @@ Mount: slot 6, drive 1, disk_image_id = 3
     → SELECT working_blob FROM disk_images WHERE id = 3
     → If working_blob IS NULL → SELECT original_blob (regenerate)
     → Validate CRC-32 on compressed blob
-    → Decompress payload (Deflate) → reconstruct InternalDiskImage
+    → Read presence bitmap → decompress payload (Deflate)
+    → Reconstruct InternalDiskImage with quarter-tracks (null for absent positions)
   → Feed InternalDiskImage into DiskIIControllerCard via existing InsertDiskMessage
   → Emulator reads/writes InternalDiskImage in-memory as normal
 ```
@@ -1180,7 +1202,8 @@ The persistence layer is **frontend-agnostic**. Key rules:
 
 ### 15.8 Blob Access
 
-Large blobs (disk images, ~230KB for 35-track disks) are read on the IO thread
+Large blobs (disk images, ~230KB for a 35-whole-track disk with 137 quarter-track
+positions) are read on the IO thread
 using `SqliteDataReader.GetStream()` for streaming access:
 
 ```csharp
@@ -1478,10 +1501,12 @@ and round-trip `InternalDiskImage` through the PIDI blob format.
 
 6. **Implement PIDI blob serializer (`DiskBlobStore`).**
    - `Pandowdy.Project/Services/DiskBlobStore.cs`
-   - `Serialize(InternalDiskImage) → byte[]` — PIDI header (10 bytes, uncompressed) +
-     Deflate-compressed per-track payload + CRC-32 footer.
+   - `Serialize(InternalDiskImage) → byte[]` — PIDI header (12 bytes, uncompressed) +
+     presence bitmap (ceil(quarter_track_count/8) bytes) +
+     Deflate-compressed per-quarter-track payload (non-null entries only) + CRC-32 footer.
    - `Deserialize(byte[]) → InternalDiskImage` — validates magic and CRC-32,
-     decompresses Deflate payload, reconstructs tracks.
+     reads presence bitmap, decompresses Deflate payload, reconstructs quarter-tracks
+     (null for positions with bit = 0 in bitmap).
    - `Deserialize(Stream) → InternalDiskImage` — streaming variant for SQLite blob reads.
    - Compression: `DeflateStream` with `CompressionLevel.Optimal` (`System.IO.Compression`,
      built into .NET runtime — no new package).
@@ -1517,7 +1542,8 @@ and round-trip `InternalDiskImage` through the PIDI blob format.
 
 11. **Write unit tests for all Phase 1 deliverables.**
     - `SkilletSchemaManagerTests.cs` — schema creation, pragma verification, table existence.
-    - `DiskBlobStoreTests.cs` — serialize/deserialize round-trip, CRC validation, corrupt data.
+    - `DiskBlobStoreTests.cs` — serialize/deserialize round-trip (including sparse quarter-track
+      images with presence bitmap), CRC validation, corrupt data.
     - `ProjectSettingsStoreTests.cs` — get/set/remove/upsert across key-value tables.
     - `SkilletProjectTests.cs` — disk image CRUD (metadata), mount config CRUD.
     - `SkilletProjectManagerTests.cs` — create/open/close lifecycle, invalid file rejection.
@@ -1531,7 +1557,7 @@ and round-trip `InternalDiskImage` through the PIDI blob format.
 | `Pandowdy.Project/` class library | New project, compiles, in solution |
 | `Pandowdy.Project.Tests/` test project | New project, compiles, all tests green |
 | Schema creation | 6 V1 tables created, pragmas verified |
-| PIDI blob round-trip | `InternalDiskImage` → blob → `InternalDiskImage`, binary-identical |
+| PIDI blob round-trip | `InternalDiskImage` (with quarter-tracks) → blob → `InternalDiskImage`, binary-identical |
 | Project lifecycle | Create → open → close → reopen cycle works |
 
 #### Test Gate
@@ -1819,7 +1845,7 @@ reopen.
    - Delete override → verify falls back to JSON default.
 
 5. **Performance baseline for blob operations.**
-   - Time serialize/deserialize for a 35-track disk (~230KB).
+   - Time serialize/deserialize for a 35-whole-track disk (137 quarter-track positions, ~230KB).
    - Time full project save with 2 dirty disks.
    - Log results; flag if >500ms for either operation.
 

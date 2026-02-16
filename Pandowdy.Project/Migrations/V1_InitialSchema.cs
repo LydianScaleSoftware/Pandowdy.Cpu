@@ -34,7 +34,7 @@ internal sealed class V1_InitialSchema : ISchemaMigration
                 original_format     TEXT NOT NULL,
                 import_source_path  TEXT,
                 imported_utc        TEXT NOT NULL,
-                track_count         INTEGER NOT NULL DEFAULT 35,
+                whole_track_count    INTEGER NOT NULL DEFAULT 35,
                 optimal_bit_timing  INTEGER NOT NULL DEFAULT 32,
                 is_write_protected  INTEGER NOT NULL DEFAULT 0,
                 persist_working     INTEGER NOT NULL DEFAULT 1,

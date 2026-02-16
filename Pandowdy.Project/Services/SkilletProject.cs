@@ -52,7 +52,7 @@ internal sealed class SkilletProject : ISkilletProject
             using var cmd = conn.CreateCommand();
             cmd.CommandText = $"""
                 SELECT id, name, original_filename, original_format, import_source_path, imported_utc,
-                       track_count, optimal_bit_timing, is_write_protected, persist_working, notes,
+                       whole_track_count, optimal_bit_timing, is_write_protected, persist_working, notes,
                        working_dirty, created_utc, modified_utc
                 FROM {SkilletConstants.TableDiskImages}
                 WHERE id = @id;
@@ -78,7 +78,7 @@ internal sealed class SkilletProject : ISkilletProject
             using var cmd = conn.CreateCommand();
             cmd.CommandText = $"""
                 SELECT id, name, original_filename, original_format, import_source_path, imported_utc,
-                       track_count, optimal_bit_timing, is_write_protected, persist_working, notes,
+                       whole_track_count, optimal_bit_timing, is_write_protected, persist_working, notes,
                        working_dirty, created_utc, modified_utc
                 FROM {SkilletConstants.TableDiskImages};
                 """;
@@ -367,7 +367,7 @@ internal sealed class SkilletProject : ISkilletProject
             OriginalFormat = reader.GetString(3),
             ImportSourcePath = reader.IsDBNull(4) ? null : reader.GetString(4),
             ImportedUtc = DateTime.Parse(reader.GetString(5)),
-            TrackCount = reader.GetInt32(6),
+            WholeTrackCount = reader.GetInt32(6),
             OptimalBitTiming = (byte)reader.GetInt32(7),
             IsWriteProtected = reader.GetInt32(8) != 0,
             PersistWorking = reader.GetInt32(9) != 0,

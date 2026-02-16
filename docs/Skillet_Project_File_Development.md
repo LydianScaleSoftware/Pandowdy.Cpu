@@ -136,8 +136,8 @@ The original is never modified.
 
 ### 6.3 Persistence  
 Saving the project may persist the working copy into the .skillet. However, the project 
-configuation will determine on a disk image-specific basis whether the working copy 
-is persisted or recreated periodcally, as some projects might want to consider changes
+configuration will determine on a disk image-specific basis whether the working copy 
+is persisted or recreated periodically, as some projects might want to consider changes
 made during the session as "throwaway" changes.
 
 ### 6.4 Regeneration  
@@ -149,8 +149,7 @@ Users may export:
 - the original
 - the working copy
 - in any supported format
-  - it is conceivable that the original might not be able to be exported in the same format as it were imported.  In that case a near approximation may be used (for instance a .nib file in lieu of a read-only .woz file)
-	- 
+  - it is conceivable that the original might not be able to be exported in the same format as it were imported.  In that case a near approximation may be used (for instance a nibble format file in lieu of a read-only .woz file)
 Export is:
 
 - explicit
