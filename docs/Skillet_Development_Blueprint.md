@@ -62,6 +62,75 @@ Runtime changes persist to the appropriate layer.
 ### File Extension  
 `.skillet` — registered as a SQLite database with application_id and user_version pragmas.
 
+### Disk Image Ownership Model
+
+Disk images have three stakeholders with distinct roles:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                     Three-Party Ownership Model                     │
+│                                                                     │
+│  ┌──────────────┐   library mgmt    ┌───────────────────────┐       │
+│  │   GUI        │ ──────────────►   │  Skillet (.skillet)   │       │
+│  │  (Pandowdy   │   (import,        │  (Pandowdy.Project)   │       │
+│  │   .UI)       │    catalog,       │                       │       │
+│  │              │    remove)        │  Owns all disk image  │       │
+│  │              │                   │  data (blobs).        │       │
+│  │              │                   │  Implements           │       │
+│  │              │                   │  IDiskImageStore.     │       │
+│  └──────┬───────┘                   └───────────┬───────────┘       │
+│         │ mount/eject                           │                   │
+│         │ requests                              │ CheckOutAsync()   │
+│         ▼                                       │ ReturnAsync()     │
+│  ┌──────────────┐                               │                   │
+│  │  EmuCore     │ ◄─────────────────────────────┘                   │
+│  │              │                                                   │
+│  │  Mediates    │  In-memory InternalDiskImage                      │
+│  │  mount/eject │  lives here while mounted.                        │
+│  │  via card    │  EmuCore reads/writes it at                       │
+│  │  messages.   │  full speed — no SQLite                           │
+│  │              │  during emulation.                                │
+│  └──────────────┘                                                   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Roles:**
+
+| Party | Responsibilities |
+|-------|------------------|
+| **GUI** (Pandowdy.UI) | User intent: requests mount/eject via card messages to EmuCore. Talks to Skillet directly only for library management (import, catalog, remove). |
+| **EmuCore** | Mediates all mount/eject operations. On mount, calls `IDiskImageStore.CheckOutAsync()` to borrow an `InternalDiskImage`. On eject, calls `IDiskImageStore.ReturnAsync()` to return (and serialize) the image. Owns the in-memory `InternalDiskImage` while it is mounted. |
+| **Skillet** (Pandowdy.Project) | Owns all disk image data. Implements `IDiskImageStore` (interface defined in EmuCore). Lends `InternalDiskImage` to EmuCore on checkout; receives it back on return. Serializes returned images to `working_blob`. |
+
+**`IDiskImageStore` Interface (defined in Pandowdy.EmuCore):**
+
+```csharp
+/// <summary>
+/// Abstraction for a persistent store that can lend and accept disk images.
+/// Defined in EmuCore so the controller card can depend on it without
+/// referencing Pandowdy.Project.
+/// </summary>
+public interface IDiskImageStore
+{
+    /// <summary>
+    /// Checks out a disk image for use by the emulator. The returned
+    /// InternalDiskImage is owned by the caller until ReturnAsync is called.
+    /// </summary>
+    Task<InternalDiskImage> CheckOutAsync(long diskImageId);
+
+    /// <summary>
+    /// Returns a disk image to the store after ejection. The store serializes
+    /// the image to working_blob if it has been modified.
+    /// </summary>
+    Task ReturnAsync(long diskImageId, InternalDiskImage image);
+}
+```
+
+**Layer rule:** EmuCore defines `IDiskImageStore` but never references
+`Pandowdy.Project`. `SkilletProject` implements the interface. The host app's
+DI composition root wires the implementation to the interface and injects it
+into the card factory / controller card.
+
 ---
 
 ## 2. New Project: Pandowdy.Project
@@ -103,7 +172,7 @@ This keeps the project file system concerns isolated from emulator core and UI.
 ```
 Pandowdy.Project/
 ├── Interfaces/
-│   ├── ISkilletProject.cs          — Read/write contract for open project
+│   ├── ISkilletProject.cs          — Read/write contract for open project (extends IDiskImageStore)
 │   ├── ISkilletProjectManager.cs   — Open/create/close lifecycle
 │   └── ISettingsResolver.cs        — JSON + skillet resolution
 ├── Models/
@@ -111,7 +180,7 @@ Pandowdy.Project/
 │   ├── DiskImageRecord.cs          — Disk image metadata model
 │   └── MountConfiguration.cs       — Slot/drive mount assignments
 ├── Services/
-│   ├── SkilletProject.cs           — ISkilletProject implementation
+│   ├── SkilletProject.cs           — ISkilletProject + IDiskImageStore implementation
 │   ├── SkilletProjectManager.cs    — ISkilletProjectManager implementation
 │   ├── SkilletSchemaManager.cs     — Schema creation & migration
 │   ├── SettingsResolver.cs         — Hardcoded → JSON → skillet resolution
@@ -393,13 +462,29 @@ User selects project from recent list or file dialog
 ```
 User presses Ctrl+S or auto-save timer fires
   → ISkilletProject.SaveAsync()
+    → Request emulator pause (waits for current instruction to complete)
+    → Emulator pauses at instruction boundary — no concurrent mutation
     → BEGIN TRANSACTION
     → For each mounted disk with persist_working = true AND working_dirty = true:
-      → Serialize InternalDiskImage to blob
+      → Serialize InternalDiskImage to blob (safe — emulator is paused)
       → UPDATE disk_images SET working_blob = ?, working_dirty = 0, modified_utc = ?
     → Update project_metadata modified_utc
     → COMMIT
+    → Resume emulator
 ```
+
+**Why pause?** The emulator thread mutates `InternalDiskImage` at cycle speed.
+Serializing a disk image while the emulator writes to it would produce corrupted
+blobs. The pause approach eliminates this entirely: emulation halts at the current
+instruction boundary (sub-microsecond precision), serialization runs on the IO
+thread with no contention, then emulation resumes. Total pause duration is
+dominated by Deflate compression of dirty blobs — typically <50ms for two
+35-track disks. This adds zero overhead to the emulation hot path; the pause
+only occurs at explicit lifecycle boundaries (Ctrl+S, auto-save timer).
+
+**Alternative considered:** Locking individual `InternalDiskImage` objects during
+serialization. Rejected because it would add per-cycle lock acquisition overhead
+on the emulator thread's hot path, even when no save is in progress.
 
 ### 5.4 Closing a Project
 
@@ -407,31 +492,44 @@ User presses Ctrl+S or auto-save timer fires
 User closes project or opens another
   → Check for unsaved changes (working_dirty on any mounted disk)
   → If unsaved → prompt: Save / Discard / Cancel
-  → If Save → ISkilletProject.SaveAsync()
+  → If Save → ISkilletProject.SaveAsync() (includes pause-serialize-unpause)
+  → GUI sends EjectAllDisksMessage to EmuCore (async, waits for confirmation)
+    → EmuCore ejects each mounted drive:
+      → For each drive with a mounted disk:
+        → DiskIIControllerCard calls IDiskImageStore.ReturnAsync(id, image)
+        → Skillet serializes the returned image to working_blob
+        → Drive is cleared
+    → EmuCore confirms all ejections complete
   → ISkilletProject.Dispose()
+    → Drain IO thread queue
     → Close SQLite connection
   → If opening another → proceed to Open flow
   → If not opening another → show Start Page
 ```
 
+**Key point:** The GUI never closes the Skillet while disks are mounted. The
+eject-all step ensures every in-memory `InternalDiskImage` is returned to the
+store before the SQLite connection is torn down. This prevents data loss.
+
 ### 5.5 `ISkilletProject` Interface
 
 ```csharp
-public interface ISkilletProject : IDisposable
+public interface ISkilletProject : IDiskImageStore, IDisposable
 {
     string FilePath { get; }
     ProjectMetadata Metadata { get; }
     bool HasUnsavedChanges { get; }
 
-    // Disk image management
+    // Disk image library management (GUI → Skillet directly)
     Task<long> ImportDiskImageAsync(string filePath, string name);
     Task<DiskImageRecord> GetDiskImageAsync(long id);
     Task<IReadOnlyList<DiskImageRecord>> GetAllDiskImagesAsync();
     Task RemoveDiskImageAsync(long id);
     Task RegenerateWorkingCopyAsync(long id);
-    Stream OpenOriginalBlobRead(long diskImageId);
-    Stream OpenWorkingBlobRead(long diskImageId);
-    Task WriteWorkingBlobAsync(long diskImageId, Stream data);
+
+    // IDiskImageStore (EmuCore → Skillet via interface)
+    // Task<InternalDiskImage> CheckOutAsync(long diskImageId);  — inherited
+    // Task ReturnAsync(long diskImageId, InternalDiskImage image);  — inherited
 
     // Mount configuration
     Task<IReadOnlyList<MountConfiguration>> GetMountConfigurationAsync();
@@ -445,6 +543,12 @@ public interface ISkilletProject : IDisposable
     Task SaveAsync();
 }
 ```
+
+**Note:** `ISkilletProject` extends `IDiskImageStore` (defined in EmuCore).
+The `CheckOutAsync()` and `ReturnAsync()` methods are called by
+`DiskIIControllerCard` during mount and eject operations. The remaining
+methods (library management, settings, lifecycle) are called by the GUI
+or other Pandowdy.Project consumers directly.
 
 ### 5.6 `ISkilletProjectManager` Interface
 
@@ -579,24 +683,33 @@ changes for block devices will be designed when `InternalBlockDeviceImage` is
 created. The migration infrastructure makes adding the necessary schema
 columns and tables zero-cost at that point.
 
-### 6.3 Internal Use
+### 6.3 Internal Use (Mount via Checkout)
 
 When a disk image is mounted into the emulator:
 
 ```
-Mount: slot 6, drive 1, disk_image_id = 3
-  → DiskBlobStore.DeserializeAsync(project, diskImageId: 3, useWorking: true)
-    → SELECT working_blob FROM disk_images WHERE id = 3
-    → If working_blob IS NULL → SELECT original_blob (regenerate)
-    → Validate CRC-32 on compressed blob
-    → Read presence bitmap → decompress payload (Deflate)
-    → Reconstruct InternalDiskImage with quarter-tracks (null for absent positions)
-  → Feed InternalDiskImage into DiskIIControllerCard via existing InsertDiskMessage
-  → Emulator reads/writes InternalDiskImage in-memory as normal
+GUI: User selects "Mount" for disk_image_id = 3 into slot 6, drive 1
+  → GUI sends MountDiskMessage(DriveNumber: 1, DiskImageId: 3) to EmuCore
+  → DiskIIControllerCard.HandleMessage(MountDiskMessage):
+    → Controller calls IDiskImageStore.CheckOutAsync(diskImageId: 3)
+      → Skillet (on IO thread):
+        → SELECT COALESCE(working_blob, original_blob) FROM disk_images WHERE id = 3
+        → Validate CRC-32 on compressed blob
+        → Read presence bitmap → decompress payload (Deflate)
+        → Reconstruct InternalDiskImage with quarter-tracks (null for absent positions)
+        → Return InternalDiskImage to caller
+    → Controller receives InternalDiskImage, assigns to drive
+    → Emulator reads/writes InternalDiskImage in-memory as normal
 ```
 
-All modifications happen in-memory (uncompressed). On project save, the modified
-`InternalDiskImage` is serialized and compressed back to `working_blob`.
+**Note:** The `HandleMessage()` method is synchronous. The `CheckOutAsync()` call
+blocks the emulator thread briefly (~50ms for decompression of a 35-track disk).
+This is acceptable — mount operations occur at lifecycle boundaries (user action),
+not during cycle-accurate emulation. CPU throttling easily accommodates this pause.
+
+All modifications happen in-memory (uncompressed). On project save, the emulator
+is paused and dirty `InternalDiskImage` objects are serialized back to `working_blob`
+(see §5.3). On eject, the image is returned to the store via `ReturnAsync()` (see §6.6).
 
 ### 6.4 Export Flow
 
@@ -621,6 +734,41 @@ User: "Revert to Original" → context menu on disk
   → If disk is currently mounted → re-mount from original
 ```
 
+### 6.6 Eject Auto-Flush
+
+When a disk is ejected from a drive, the controller automatically returns the
+`InternalDiskImage` to the store. This ensures that within-session modifications
+are preserved across mount/unmount cycles — the user can eject a disk, mount
+another, then re-mount the first and see their changes.
+
+```
+User: "Eject Disk" → GUI sends EjectDiskMessage(DriveNumber: 1) to EmuCore
+  → DiskIIControllerCard.HandleMessage(EjectDiskMessage):
+    → Retrieve InternalDiskImage from the drive being ejected
+    → Retrieve the associated diskImageId (tracked by the controller)
+    → Call IDiskImageStore.ReturnAsync(diskImageId, image)
+      → Skillet (on IO thread):
+        → Serialize InternalDiskImage via DiskBlobStore.Serialize()
+        → UPDATE disk_images SET working_blob = ?, working_dirty = 1, modified_utc = ?
+    → Clear the drive (no disk mounted)
+```
+
+**Key behaviors:**
+
+- **Every eject serializes.** The working copy is updated on every eject, not just
+  on project save. This means `working_blob` always reflects the latest state of
+  any disk that has been ejected.
+- **`working_dirty` flag.** Set to `1` on eject. This flag controls cross-session
+  persistence: on project save, only disks with `persist_working = 1` AND
+  `working_dirty = 1` write their `working_blob` to durable storage. Disks with
+  `persist_working = 0` still have `working_blob` updated on eject (for within-session
+  remounting) but the blob is discarded when the project is closed.
+- **Synchronous blocking.** `ReturnAsync()` blocks the emulator thread briefly
+  (~50ms for serialization + compression). Acceptable for the same reason as mount:
+  eject is a lifecycle operation, not a per-cycle event.
+- **Physical media metaphor.** Think of eject as putting the floppy back in its
+  box — the disk's current state is captured before it leaves the drive.
+
 ---
 
 ## 7. Originals vs Working Copies
@@ -630,7 +778,7 @@ User: "Revert to Original" → context menu on disk
 | Aspect | Original | Working Copy |
 |--------|----------|--------------|
 | **Stored in** | `disk_images.original_blob` | `disk_images.working_blob` |
-| **Mutability** | Immutable (never modified after import) | Mutable (updated on save) |
+| **Mutability** | Immutable (never modified after import) | Mutable (updated on eject and save) |
 | **Null meaning** | N/A (required NOT NULL) | Regenerate from original |
 | **Dirty tracking** | N/A | `working_dirty` flag |
 | **Persistence policy** | Always persisted | Controlled by `persist_working` |
@@ -658,13 +806,14 @@ periodically."*
                  │  original_blob ──┼──── Immutable, compressed (Deflate)
                  │  working_blob  ──┼──── Nullable, compressed (Deflate)
                  └────────┬─────────┘
-                          │ decompress + deserialize on mount
+                          │ CheckOutAsync: decompress + deserialize on mount
                           ▼
                  ┌──────────────────┐
                  │ InternalDiskImage│  ← In-memory, uncompressed, used by emulator
                  │  (mutable)       │
                  └────────┬─────────┘
-                          │ serialize + compress on save (if persist_working)
+                          │ ReturnAsync: serialize + compress on eject (§6.6)
+                          │ SaveAsync: serialize + compress on save (§5.3, if persist_working)
                           ▼
                  ┌──────────────────┐
                  │  .skillet file   │
@@ -1133,8 +1282,8 @@ the emulator enqueues and continues; results arrive asynchronously.
 
 | Operation | Direction | Example |
 |-----------|-----------|---------|
-| Load disk snapshot | Read | Mount a disk image from blob on project open |
-| Save disk snapshot | Write | Persist dirty `InternalDiskImage` working copy |
+| Check out disk image | Read | `IDiskImageStore.CheckOutAsync()` during mount |
+| Return disk image | Write | `IDiskImageStore.ReturnAsync()` during eject |
 | Read symbols | Read | Symbol lookup for disassembly overlay |
 | Read breakpoints | Read | Load breakpoint set on debug session start |
 | Read watchpoints | Read | Load watch expressions for debugger panel |
@@ -1148,10 +1297,16 @@ structures (`InternalDiskImage`, `CircularBitBuffer[]`, breakpoint sets, etc.).
 IO requests are for **bulk operations** at lifecycle boundaries — not per-cycle
 lookups:
 
-- **Disk mount:** Enqueue blob read → IO thread deserializes → emulator receives
-  `InternalDiskImage` via `Task` completion.
-- **Disk save:** Emulator serializes in-memory disk to `byte[]` (on its own thread),
-  then enqueues the blob write to the IO thread.
+- **Disk mount:** `MountDiskMessage` → controller calls `IDiskImageStore.CheckOutAsync()`
+  → IO thread deserializes blob → emulator receives `InternalDiskImage`. Blocks
+  the emulator thread briefly (~50ms) for decompression — acceptable at lifecycle
+  boundaries.
+- **Disk eject:** `EjectDiskMessage` → controller calls `IDiskImageStore.ReturnAsync()`
+  → IO thread serializes `InternalDiskImage` to `working_blob`. Blocks briefly for
+  compression.
+- **Disk save:** `SaveAsync()` pauses the emulator at an instruction boundary,
+  serializes all mounted dirty disks on the IO thread, then resumes emulation.
+  No concurrent mutation — no locking needed on the emulation hot path.
 - **Debug session start:** Enqueue breakpoint/symbol reads → IO thread fetches
   from SQLite → debugger receives collections via `Task` completion.
 
@@ -1229,8 +1384,8 @@ internal InternalDiskImage ReadWorkingBlob(SqliteConnection connection, long dis
 ```
 
 Note: synchronous `ExecuteReader()` is used intentionally — this code runs on the
-dedicated IO thread where blocking is expected and acceptable. The caller sees
-an async `Task<InternalDiskImage>` via the queue façade.
+dedicated IO thread where blocking is expected and acceptable. The caller
+(`CheckOutAsync`) sees an async `Task<InternalDiskImage>` via the queue façade.
 
 ### 15.9 Transaction Boundaries
 
@@ -1239,6 +1394,7 @@ statements within a single transaction:
 
 - **Project save**: Single transaction wrapping all dirty disk writes + metadata updates.
 - **Disk import**: Single transaction for INSERT (blob + metadata).
+- **Disk eject**: Single UPDATE for `working_blob` + `working_dirty` via `ReturnAsync`.
 - **Settings changes**: Individual UPSERTs (no transaction needed for single-row ops).
 - **Breakpoint/watch changes**: Batched within project save transaction.
 - **Bulk symbol import**: Single transaction for batch INSERT.
@@ -1355,6 +1511,10 @@ services.AddSingleton<ISettingsResolver, SettingsResolver>();
 Program.cs (composition root)
   ├── ISkilletProjectManager (singleton)
   │   └── Creates/manages ISkilletProject instances
+  │       └── ISkilletProject also implements IDiskImageStore
+  ├── IDiskImageStore (managed — same instance as ISkilletProject)
+  │   └── Injected into DiskIIControllerCard via ICardFactory
+  │       (interface defined in EmuCore; implemented by SkilletProject)
   ├── ISettingsResolver (singleton)
   │   ├── Reads: GuiSettings (JSON)
   │   └── Reads: ISkilletProjectManager.CurrentProject (skillet)
@@ -1365,6 +1525,13 @@ Program.cs (composition root)
   └── StartPageViewModel (new)
       └── ISkilletProjectManager
 ```
+
+**`IDiskImageStore` wiring:** The interface is defined in `Pandowdy.EmuCore` so
+that `DiskIIControllerCard` can depend on it without referencing `Pandowdy.Project`.
+`SkilletProject` implements the interface. When a project is opened, the host app
+passes the `IDiskImageStore` reference to the card factory so the controller card
+can call `CheckOutAsync()` and `ReturnAsync()` during mount/eject operations.
+When no project is open, a null/no-op implementation is used.
 
 ### Constructor Parameter Guidelines
 
@@ -1384,8 +1551,8 @@ primary constructor assignment).
 | `GuiSettingsService` | Retains JSON persistence. Removes `DriveState` section. |
 | `DriveStateService` | **Removed.** Replaced by `mount_configuration` table. |
 | `MainWindowViewModel` | Gains project lifecycle commands. Save/SaveAs → Export. |
-| `DiskIIControllerCard` | No change to card logic. Mount/unmount messages unchanged. |
-| `InsertDiskMessage` | **Modified**: accepts `InternalDiskImage` directly (not file path). |
+| `DiskIIControllerCard` | Gains `IDiskImageStore` dependency. Calls `CheckOutAsync()` on mount, `ReturnAsync()` on eject. Handles new `MountDiskMessage(DriveNumber, DiskImageId)`. |
+| `InsertDiskMessage` | Retained for potential loose-disk mode. Project-based mounts use `MountDiskMessage` instead. |
 
 ---
 
@@ -1444,8 +1611,9 @@ created by future migrations when those features are designed and implemented.
 **Priority order:**
 1. Core infrastructure (project + schema + blob store) — everything depends on this.
 2. Disk lifecycle migration — the primary user-facing change; replaces filesystem save/load.
+2a. Minimal UI — exercises Phase 2 infrastructure with project commands and mount picker.
 3. Settings & project overrides — enables project-specific emulator/display configuration.
-4. UI — Start Page & project dialogs — makes the project system user-accessible.
+4. UI polish — Start Page & project dialogs — completes the user-facing project experience.
 5. Legacy cleanup — removes dead code paths after new paths are proven.
 6. Integration testing — end-to-end validation of the full workflow.
 7. Deferred features — debugger storage, AppleSoft, workspace layout (when those subsystems exist).
@@ -1611,65 +1779,172 @@ or alongside the Phase 2 steps below.
 
 #### Steps
 
-1. **Implement disk import flow in `SkilletProject`.**
+1. **Define `IDiskImageStore` interface in EmuCore.**
+   - `Pandowdy.EmuCore/DiskII/IDiskImageStore.cs` — interface per §1 Disk Image Ownership Model.
+   - `CheckOutAsync(long diskImageId) → Task<InternalDiskImage>` — lends image to emulator.
+   - `ReturnAsync(long diskImageId, InternalDiskImage image) → Task` — accepts image back
+     on eject, serializes to `working_blob`.
+   - Interface is defined in EmuCore so `DiskIIControllerCard` can depend on it without
+     referencing `Pandowdy.Project`.
+
+2. **Implement `IDiskImageStore` in `SkilletProject`.**
+   - `SkilletProject` implements `IDiskImageStore`.
+   - `CheckOutAsync()`: reads `COALESCE(working_blob, original_blob)` from `disk_images`,
+     deserializes via `DiskBlobStore.Deserialize()`, returns `InternalDiskImage`.
+   - `ReturnAsync()`: serializes `InternalDiskImage` via `DiskBlobStore.Serialize()`,
+     updates `working_blob` and sets `working_dirty = 1`.
+
+3. **Implement disk import flow in `SkilletProject`.**
    - `ImportDiskImageAsync(filePath, name)` — uses existing `IDiskImageImporter` to load
      the file, serializes via `DiskBlobStore.Serialize()`, inserts both `original_blob` and
      initial `working_blob` into `disk_images` table.
    - Detects format via `DiskFormatHelper.FromExtension()`.
    - Records `original_filename`, `original_format`, `import_source_path`.
+   - **Import is a library-management operation:** GUI calls this directly on
+     `ISkilletProject`. The imported disk is stored in the `.skillet` file but
+     not yet mounted into any drive.
 
-2. **Implement disk mount flow (blob → emulator).**
-   - `SkilletProject.OpenWorkingBlobRead(diskImageId)` — streams `working_blob` (falls
-     back to `original_blob` if null).
-   - Deserializes blob → `InternalDiskImage` via `DiskBlobStore.Deserialize()`.
-   - Add `MountDiskMessage(int DriveNumber, InternalDiskImage DiskImage)` to
+4. **Implement disk mount flow (checkout model).**
+   - Add `MountDiskMessage(int DriveNumber, long DiskImageId)` to
      `Pandowdy.EmuCore/DiskII/Messages/`.
    - Implement `MountDiskMessage` handling in `DiskIIControllerCard` (both 13- and 16-sector
-     variants) — same logic as `InsertDiskMessage` but receives `InternalDiskImage` directly
-     instead of a file path.
+     variants):
+     - Controller calls `IDiskImageStore.CheckOutAsync(DiskImageId)`.
+     - Receives `InternalDiskImage`, assigns to the specified drive.
+     - Tracks the `DiskImageId` associated with each drive (for `ReturnAsync` on eject).
+   - `HandleMessage()` is synchronous; the `CheckOutAsync()` call blocks briefly (~50ms)
+     for blob decompression. Acceptable at lifecycle boundaries.
 
-3. **Implement disk export flow.**
+5. **Implement eject auto-flush (return model).**
+   - Modify `EjectDiskMessage` handling in `DiskIIControllerCard`:
+     - Before clearing the drive, call `IDiskImageStore.ReturnAsync(diskImageId, image)`.
+     - Skillet serializes the image to `working_blob` on the IO thread.
+     - Clear the drive after return completes.
+   - This ensures within-session changes are preserved across mount/unmount cycles.
+
+6. **Implement disk export flow.**
    - Add `ExportDiskMessage(int DriveNumber, string FilePath, DiskFormat Format)` to
      `Pandowdy.EmuCore/DiskII/Messages/`.
    - Implement handler: retrieves in-memory `InternalDiskImage` from drive, uses existing
      `IDiskImageExporter` to write to filesystem.
    - No project state changes — export is non-destructive.
 
-4. **Implement working copy persistence in `SkilletProject.SaveAsync()`.**
-   - For each disk with `persist_working = true` AND `working_dirty = true`:
+7. **Implement working copy persistence in `SkilletProject.SaveAsync()`.**
+   - Request emulator pause (waits for current instruction boundary).
+   - For each mounted disk with `persist_working = true` AND `working_dirty = true`:
      serialize current in-memory `InternalDiskImage` → `UPDATE disk_images SET working_blob = ?`.
    - Clear `working_dirty` flag after successful write.
    - Wrap in transaction with metadata timestamp update.
+   - Resume emulator after transaction completes.
 
-5. **Implement working copy regeneration.**
+8. **Implement working copy regeneration.**
    - `RegenerateWorkingCopyAsync(diskImageId)` — sets `working_blob = NULL`,
      `working_dirty = 0`.
    - Next mount reads from `original_blob` instead.
 
-6. **Write tests for disk lifecycle.**
-   - `DiskImportTests.cs` — import WOZ/nibble format/DSK files, verify blob stored correctly.
-   - `DiskMountTests.cs` — mount from blob, verify `InternalDiskImage` is usable.
-   - `DiskExportTests.cs` — export in-memory disk to file, verify output format.
-   - `DiskPersistenceTests.cs` — modify disk, save project, reopen, verify working copy.
-   - `DiskRegenerationTests.cs` — regenerate working copy, verify reverts to original.
-   - `DiskImportExportRoundTripTests.cs` — full import → mount → modify → save → reopen
-     → export cycle.
+9. **Wire `IDiskImageStore` into DI.**
+   - `DiskIIControllerCard` receives `IDiskImageStore` via constructor (injected by card factory).
+   - When a project is open, the card factory provides the `SkilletProject` instance
+     (which implements `IDiskImageStore`).
+   - When no project is open, a no-op implementation is used (mount operations are
+     disabled without a project).
+
+10. **Write tests for disk lifecycle.**
+    - `DiskImportTests.cs` — import WOZ/nibble format/DSK files, verify blob stored correctly.
+    - `DiskMountTests.cs` — mount from blob via `CheckOutAsync`, verify `InternalDiskImage` is usable.
+    - `DiskEjectTests.cs` — eject triggers `ReturnAsync`, verify `working_blob` updated.
+    - `DiskExportTests.cs` — export in-memory disk to file, verify output format.
+    - `DiskPersistenceTests.cs` — modify disk, save project (pause-serialize-unpause), reopen, verify working copy.
+    - `DiskRegenerationTests.cs` — regenerate working copy, verify reverts to original.
+    - `DiskImportExportRoundTripTests.cs` — full import → mount → modify → save → reopen
+      → export cycle.
 
 #### Deliverables
 
 | Artifact | State |
 |----------|-------|
-| `MountDiskMessage` | New message type in EmuCore |
+| `IDiskImageStore` | New interface in EmuCore |
+| `MountDiskMessage` | New message type in EmuCore — carries `DiskImageId`, not `InternalDiskImage` |
 | `ExportDiskMessage` | New message type in EmuCore |
-| Disk import into `.skillet` | External file → blob, metadata recorded |
-| Disk mount from `.skillet` | Blob → `InternalDiskImage` → emulator drive |
-| Working copy save/restore | Dirty disks persist across sessions |
+| Disk import into `.skillet` | External file → blob, metadata recorded (library management) |
+| Disk mount from `.skillet` | `CheckOutAsync` → `InternalDiskImage` → emulator drive |
+| Eject auto-flush | `ReturnAsync` → serialize to `working_blob` on every eject |
+| Working copy save/restore | Pause-serialize-unpause; dirty disks persist across sessions |
 | Export to filesystem | In-memory disk → external file format |
 
 #### Test Gate
 
 All disk lifecycle tests pass. Blob round-trip is binary-identical. Import/export
 works for all supported formats (WOZ, nibble format, DSK/DO/PO).
+
+---
+
+### Phase 2a: Minimal UI for Project & Disk Workflow
+
+**Goal:** Provide the minimum UI necessary to exercise the Phase 2 infrastructure:
+create/open/save/close projects, import disk images into the library, mount from
+the library into drives, and verify eject auto-flush. Without this phase, the
+Phase 2 work has no user-facing entry point.
+
+**Depends on:** Phase 2 (disk lifecycle, IDiskImageStore, mount/eject).
+
+**Rationale:** Originally, all UI work was planned for Phase 4. However, Phases 2
+and 3 produce infrastructure that cannot be tested end-to-end without at least
+minimal UI wiring. Phase 2a pulls forward the essential UI items needed to
+validate the disk lifecycle; Phase 4 retains the Start Page, new project dialog,
+and other polish work.
+
+#### Steps
+
+1. **Add project commands to File menu.**
+   - Add: New Project..., Open Project..., Save Project (Ctrl+S), Close Project.
+   - Wire to `ISkilletProjectManager.CreateAsync()`, `OpenAsync()`, `SaveAsync()`,
+     `CloseAsync()`.
+   - Add Import Disk Image... (Ctrl+I) — opens file dialog, calls
+     `ISkilletProject.ImportDiskImageAsync()`.
+   - Add Export Disk Image... — sends `ExportDiskMessage` to EmuCore.
+
+2. **Create "Mount from Library" picker dialog.**
+   - Simple list dialog showing all disk images in the current project
+     (`ISkilletProject.GetAllDiskImagesAsync()`).
+   - User selects a disk image → sends `MountDiskMessage(DriveNumber, DiskImageId)`
+     to EmuCore.
+   - Launched from the disk status widget's "Insert Disk" button (replaces file
+     dialog for project-based workflow).
+
+3. **Update `DiskStatusWidgetViewModel` commands.**
+   - "Insert Disk" → opens "Mount from Library" picker (if project open) or file
+     dialog (if no project — future loose-disk mode).
+   - "Eject" → sends `EjectDiskMessage` as before. The controller's eject handler
+     now calls `IDiskImageStore.ReturnAsync()` automatically (Phase 2 Step 5).
+   - "Save" → `ISkilletProject.SaveAsync()` (pause-serialize-unpause).
+   - "Save As" → becomes "Export Disk" → `ExportDiskMessage`.
+
+4. **Show project name in title bar.**
+   - `MainWindowViewModel` reads `ISkilletProject.Metadata.Name` and updates
+     the window title: "Pandowdy — {ProjectName}".
+   - When no project is open: "Pandowdy" (no suffix).
+
+5. **Write tests for minimal UI commands.**
+   - `MainWindowViewModelProjectTests.cs` — project open/close/save commands,
+     title bar binding.
+   - `DiskStatusWidgetMountTests.cs` — mount from library picker triggers correct
+     message.
+
+#### Deliverables
+
+| Artifact | State |
+|----------|-------|
+| File menu | Project commands + Import/Export Disk |
+| Mount from Library picker | List dialog for mounting stored disk images |
+| Disk widget commands | Updated for project-based mount/eject/save |
+| Title bar | Shows project name |
+
+#### Test Gate
+
+Create project → import disk → mount via picker → emulator uses disk → eject
+(auto-flush) → save project → close → reopen → remount → verify changes persisted.
+Existing UI tests still pass.
 
 ---
 
@@ -1722,13 +1997,17 @@ All resolution tests pass. Existing `GuiSettingsService` tests still pass.
 
 ---
 
-### Phase 4: UI — Start Page & Project Dialogs
+### Phase 4: UI Polish — Start Page, Dialogs & Startup Flow
 
-**Goal:** Give users a way to create, open, and switch `.skillet` projects through
-the UI. The Start Page replaces the current "empty launch" state. The File menu
-gains project-oriented commands.
+**Goal:** Add the Start Page, new project dialog, startup auto-open flow, and
+recent projects list. These are the UI polish items that were not essential for
+Phase 2a's minimal workflow validation but complete the user-facing project
+experience.
 
-**Depends on:** Phases 1–3 (project manager, settings, recent projects).
+**Depends on:** Phases 2a and 3 (minimal UI wiring, settings, recent projects).
+
+**Note:** File menu commands, disk widget commands, and the "Mount from Library"
+picker were pulled forward to Phase 2a. This phase adds the remaining UI pieces.
 
 #### Steps
 
@@ -1755,23 +2034,12 @@ gains project-oriented commands.
    - If file exists → auto-open project, skip Start Page.
    - If not → show Start Page.
 
-6. **Update File menu.**
-   - Add: New Project, Open Project, Save Project, Import Disk Image, Export Disk Image,
-     Close Project, Recent Projects submenu.
-   - Wire commands to `ISkilletProjectManager` and `ISkilletProject`.
+6. **Add Recent Projects submenu to File menu.**
+   - Populated from `GuiSettings.RecentProjects`.
+   - Clicking an entry opens that project.
+   - "Clear Recent" option.
 
-7. **Update `DiskStatusWidgetViewModel` commands.**
-   - "Insert Disk" → opens file dialog, calls `ISkilletProject.ImportDiskImageAsync()`,
-     then mounts via `MountDiskMessage`.
-     (Depends on Phase 2 Steps 1–2: `ImportDiskImageAsync()` and `MountDiskMessage`.)
-   - "Save" → `ISkilletProject.SaveAsync()` (persists working copy to `.skillet`).
-     (Depends on Phase 2 Step 4: working copy persistence.)
-   - "Save As" → becomes "Export Disk" → `ExportDiskMessage`.
-     (Depends on Phase 2 Step 3: `ExportDiskMessage`.)
-   - "Insert Blank Disk" → creates blank `InternalDiskImage`, inserts into project, mounts.
-     (Depends on Phase 2 Steps 1–2: import + mount flow.)
-
-8. **Write tests for Start Page and project commands.**
+7. **Write tests for Start Page and project dialogs.**
    - `StartPageViewModelTests.cs` — recent projects list, create/open commands.
    - `NewProjectDialogViewModelTests.cs` — validation, path generation.
 
@@ -1781,22 +2049,23 @@ gains project-oriented commands.
 |----------|-------|
 | Start Page | New view + view model, shown on launch |
 | New Project Dialog | New dialog for creating `.skillet` files |
-| File menu | Project-oriented commands |
-| Disk widget commands | Updated for import/mount/export workflow |
+| Recent Projects submenu | Populated from GuiSettings |
+| Startup auto-open | Reads `ActiveProjectPath`, opens project or shows Start Page |
 
 #### Test Gate
 
-Start Page renders. Project creation flow works end-to-end. File menu commands
-function. Existing UI tests still pass.
+Start Page renders. Project creation flow works end-to-end via dialog. Recent
+projects list populates correctly. Startup auto-open works. Existing UI tests
+still pass.
 
 ---
 
 ### Phase 5: Legacy Cleanup
 
 **Goal:** Remove dead code paths that are fully superseded by the `.skillet`
-workflow. This phase runs after Phases 2–4 are proven working.
+workflow. This phase runs after Phases 2a–4 are proven working.
 
-**Depends on:** Phases 2 and 4 (disk lifecycle and UI are fully wired).
+**Depends on:** Phases 2a and 4 (disk lifecycle UI and project dialogs are fully wired).
 
 #### Steps
 
@@ -1920,10 +2189,11 @@ documented in `docs/Skillet_Deferred_Features_Reference.md` §9.
 | Phase | Priority | Depends On | Core Deliverable |
 |-------|----------|------------|------------------|
 | 1. Foundation | **P0** | — | Project + schema + blob store + lifecycle |
-| 2. Disk Lifecycle | **P0** | Phase 1 | Import / mount / export / persist |
+| 2. Disk Lifecycle | **P0** | Phase 1 | IDiskImageStore + import / mount / export / eject auto-flush |
+| 2a. Minimal UI | **P0** | Phase 2 | File menu, mount picker, disk widget, title bar |
 | 3. Settings | **P1** | Phase 1 | Four-layer resolution + recent projects |
-| 4. UI | **P1** | Phases 1–3 | Start Page + project dialogs + updated menus |
-| 5. Legacy Cleanup | **P2** | Phases 2, 4 | Remove dead code (SaveDisk*, DriveState*) |
+| 4. UI Polish | **P1** | Phases 2a, 3 | Start Page + new project dialog + startup flow |
+| 5. Legacy Cleanup | **P2** | Phases 2a, 4 | Remove dead code (SaveDisk*, DriveState*) |
 | 6. Integration Testing | **P2** | Phases 1–5 | End-to-end validation |
 
 ---
@@ -2170,25 +2440,53 @@ public sealed class RecentProject
 
 ```csharp
 /// <summary>
-/// Message requesting a disk image be mounted from an in-memory InternalDiskImage.
-/// Replaces the file-path-based InsertDiskMessage for project-based workflows.
+/// Message requesting a disk image be mounted from the project's disk image store.
+/// The controller calls IDiskImageStore.CheckOutAsync(DiskImageId) to obtain the
+/// InternalDiskImage. This replaces the file-path-based InsertDiskMessage for
+/// project-based workflows.
 /// </summary>
-public record MountDiskMessage(int DriveNumber, InternalDiskImage DiskImage) : ICardMessage;
+public record MountDiskMessage(int DriveNumber, long DiskImageId) : ICardMessage;
 
 /// <summary>
 /// Message requesting a disk image be exported to the filesystem.
 /// Replaces SaveDiskAsMessage.
 /// </summary>
 public record ExportDiskMessage(int DriveNumber, string FilePath, DiskFormat Format) : ICardMessage;
+
+/// <summary>
+/// Message requesting all drives eject their disks. Used during project close
+/// to ensure all InternalDiskImages are returned to the store before the
+/// SQLite connection is torn down.
+/// </summary>
+public record EjectAllDisksMessage() : ICardMessage;
+```
+
+### New Interface (in EmuCore)
+
+```csharp
+/// <summary>
+/// Abstraction for a persistent store that can lend and accept disk images.
+/// Defined in EmuCore so the controller card can depend on it without
+/// referencing Pandowdy.Project. Implemented by SkilletProject.
+/// </summary>
+public interface IDiskImageStore
+{
+    Task<InternalDiskImage> CheckOutAsync(long diskImageId);
+    Task ReturnAsync(long diskImageId, InternalDiskImage image);
+}
 ```
 
 ### Retained Messages (Unchanged)
 
-- `EjectDiskMessage` — still needed
 - `SwapDrivesMessage` — still needed
 - `SetWriteProtectMessage` — still needed
 - `InsertBlankDiskMessage` — still needed (blank disk → immediately stored in project)
 - `InsertDiskMessage` — retained for potential loose-disk mode (future)
+
+### Modified Messages
+
+- `EjectDiskMessage` — still needed, but handler now calls `IDiskImageStore.ReturnAsync()`
+  before clearing the drive (eject auto-flush, see §6.6).
 
 ### Removed Messages
 
