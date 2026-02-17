@@ -115,27 +115,30 @@ public class DiskStatusWidgetViewModel : ReactiveObject
     /// Inserts a disk image from a file path (called by drag-and-drop or command).
     /// </summary>
     /// <param name="filePath">The full path to the disk image file.</param>
+    /// <remarks>
+    /// PHASE 2a: This method is temporarily disabled during the transition to project-based
+    /// disk loading. Filesystem-based disk insertion has been removed. Use the "Mount from
+    /// Library" workflow instead (import disk to project, then mount via MountDiskMessage).
+    /// This method will be replaced with the mount-from-library picker in Step 14.
+    /// </remarks>
+    [Obsolete("Filesystem-based disk loading removed in Phase 2a. Use Mount from Library workflow.")]
     public async Task InsertDiskAsync(string filePath)
     {
-        await _emulator.SendCardMessageAsync(
-            (SlotNumber)_snapshot.SlotNumber,
-            new InsertDiskMessage(_snapshot.DriveNumber, filePath));
+        await Task.CompletedTask; // Silence async warning
+        throw new NotSupportedException(
+            "Direct filesystem disk insertion is no longer supported. " +
+            "Import the disk image to the project first, then mount it from the library.");
     }
 
     private async Task InsertDiskWithDialogAsync()
     {
-        var filePath = await _fileDialogService.ShowOpenFileDialogAsync();
-        if (!string.IsNullOrEmpty(filePath))
-        {
-            try
-            {
-                await InsertDiskAsync(filePath);
-            }
-            catch (CardMessageException ex)
-            {
-                await _messageBoxService.ShowErrorAsync("Insert Disk Failed", ex.Message);
-            }
-        }
+        // PHASE 2a: Temporarily disabled during transition to project-based workflow.
+        // Will be replaced with "Mount from Library" dialog in Step 14.
+        await Task.CompletedTask; // Silence async warning
+        throw new NotSupportedException(
+            "Direct filesystem disk insertion is no longer supported. " +
+            "Use 'Import Disk Image' to add the disk to the project, " +
+            "then mount it from the library.");
     }
 
     private async Task InsertBlankDiskAsync()

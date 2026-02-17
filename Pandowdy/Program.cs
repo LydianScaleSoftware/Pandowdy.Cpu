@@ -18,6 +18,8 @@ using Pandowdy.EmuCore.DataTypes;
 using Pandowdy.EmuCore.Cards;
 using Pandowdy.EmuCore.DiskII;
 using Pandowdy.EmuCore.DiskII.Providers;
+using Pandowdy.Project.Services;
+using Pandowdy.Project.Interfaces;
 
 namespace Pandowdy
 {
@@ -80,7 +82,17 @@ namespace Pandowdy
                     services.AddSingleton<ICardResponseProvider>(sp => sp.GetRequiredService<CardResponseChannel>());
                     services.AddSingleton<ICardResponseEmitter>(sp => sp.GetRequiredService<CardResponseChannel>());
 
-                    services.AddSingleton<ICardFactory, CardFactory>();
+                    // Project management - ad hoc project always exists (Phase 2a)
+                    services.AddSingleton<ISkilletProjectManager, SkilletProjectManager>();
+
+                    // Card factory - receives IDiskImageStore from current project
+                    services.AddSingleton<ICardFactory>(sp =>
+                    {
+                        var cards = sp.GetServices<ICard>();
+                        var projectManager = sp.GetRequiredService<ISkilletProjectManager>();
+                        var diskImageStore = projectManager.CurrentProject ?? throw new InvalidOperationException("No project loaded (ad hoc project initialization failed)");
+                        return new CardFactory(cards, diskImageStore);
+                    });
                     services.AddSingleton<ISlots, Slots>();
 
                     services.AddSingleton<CpuClockingCounters>();
@@ -202,6 +214,13 @@ namespace Pandowdy
         {
             System.Diagnostics.Debug.WriteLine("[Program] === Initializing Emulator Core ===");
 
+            // Create ad hoc project (Phase 2a - non-nullable IDiskImageStore requirement)
+            // Ad hoc project is an in-memory .skillet used when no user project is open
+            var projectManager = services.GetRequiredService<ISkilletProjectManager>();
+            var tempProjectPath = Path.Combine(Path.GetTempPath(), $"pandowdy-adhoc-{Guid.NewGuid()}.skillet");
+            await projectManager.CreateAsync(tempProjectPath, "Ad Hoc Session");
+            System.Diagnostics.Debug.WriteLine($"[Program] Created ad hoc project: {tempProjectPath}");
+
             // Install Disk II controller in slot 6 (standard Apple II configuration)
             var slots = services.GetRequiredService<ISlots>();
             slots.InstallCard(10, SlotNumber.Slot6); // 10 = DiskIIControllerCard16Sector
@@ -213,7 +232,6 @@ namespace Pandowdy
 
             // Disk image restoration has been moved to MainWindow.InitialStartup()
             // This ensures the GUI is fully initialized before restoring user state
-            await Task.CompletedTask;
         }
     }
 }

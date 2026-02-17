@@ -3,6 +3,7 @@
 // See LICENSE file for details
 
 using Pandowdy.EmuCore.DataTypes;
+using Pandowdy.EmuCore.DiskII;
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.EmuCore.Services;
 
@@ -32,7 +33,8 @@ public class DiskIIControllerCard13Sector(
     CpuClockingCounters cpuClocking,
     IDiskIIFactory factory,
     IDiskStatusMutator statusMutator,
-    ICardResponseEmitter responseEmitter) : DiskIIControllerCard(cpuClocking, factory, statusMutator, responseEmitter)
+    ICardResponseEmitter responseEmitter,
+    IDiskImageStore diskImageStore) : DiskIIControllerCard(cpuClocking, factory, statusMutator, responseEmitter, diskImageStore)
 {
     private static readonly byte[] Rom =
     [
@@ -72,6 +74,12 @@ public class DiskIIControllerCard13Sector(
     /// <inheritdoc />
     public override ICard Clone()
     {
-        return new DiskIIControllerCard13Sector(_clocking, _diskIIFactory, _statusMutator, _responseEmitter);
+        return new DiskIIControllerCard13Sector(_clocking, _diskIIFactory, _statusMutator, _responseEmitter, _diskImageStore);
+    }
+
+    /// <inheritdoc />
+    public override ICard CreateWithStore(IDiskImageStore diskImageStore)
+    {
+        return new DiskIIControllerCard13Sector(_clocking, _diskIIFactory, _statusMutator, _responseEmitter, diskImageStore);
     }
 }

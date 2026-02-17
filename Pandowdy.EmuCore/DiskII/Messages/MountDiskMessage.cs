@@ -14,8 +14,8 @@ namespace Pandowdy.EmuCore.DiskII.Messages;
 /// <remarks>
 /// <para>
 /// The controller calls <see cref="IDiskImageStore.CheckOutAsync"/> to obtain the
-/// <see cref="InternalDiskImage"/>. This replaces the file-path-based
-/// <see cref="InsertDiskMessage"/> for project-based workflows.
+/// <see cref="InternalDiskImage"/>. This is the project-based disk loading workflow
+/// that replaced the legacy filesystem-based loading path.
 /// </para>
 /// </remarks>
 public record MountDiskMessage(int DriveNumber, long DiskImageId) : ICardMessage;

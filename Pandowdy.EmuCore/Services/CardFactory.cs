@@ -4,6 +4,8 @@
 
 
 using Pandowdy.EmuCore.Interfaces;
+using Pandowdy.EmuCore.Cards;
+using Pandowdy.EmuCore.DiskII;
 
 namespace Pandowdy.EmuCore.Services;
 
@@ -26,12 +28,21 @@ namespace Pandowdy.EmuCore.Services;
 /// (NullCard) registered, as this is used to represent empty slots. The Slots class
 /// depends on this during initialization.
 /// </para>
+/// <para>
+/// <strong>Special Dependency Injection (Phase 2a):</strong> Some cards require runtime-injected
+/// dependencies that are not available at prototype creation time. For these cards (currently
+/// DiskIIControllerCard descendants), the factory bypasses Clone() and creates instances directly,
+/// injecting the required dependencies. This pattern allows cards to depend on services that
+/// have shorter or different lifetimes than the factory itself (e.g., IDiskImageStore tied to
+/// the current project).
+/// </para>
 /// </remarks>
-public class CardFactory : ICardFactory
+public class CardFactory(IEnumerable<ICard> cards, IDiskImageStore diskImageStore) : ICardFactory
 {
-    private readonly IEnumerable<ICard> _allCards;
+    private readonly IEnumerable<ICard> _allCards = InitializeCards(cards);
+    private readonly IDiskImageStore _diskImageStore = diskImageStore ?? throw new ArgumentNullException(nameof(diskImageStore));
 
-    public CardFactory(IEnumerable<ICard> cards)
+    private static IEnumerable<ICard> InitializeCards(IEnumerable<ICard> cards)
     {
         ArgumentNullException.ThrowIfNull(cards);
 
@@ -78,48 +89,69 @@ public class CardFactory : ICardFactory
                 $"Duplicate card names detected during registration:{Environment.NewLine}{errorMessage}");
         }
 
-            _allCards = cardList;
-        }
+        return cardList;
+    }
 
-            /// <inheritdoc />
-            /// <remarks>
-            /// Returns a cloned instance of the prototype card with the specified ID.
-            /// The clone is independent and can be installed in any slot.
-            /// </remarks>
-            public ICard? GetCardWithId(int internalId)
-            {
-                return _allCards.FirstOrDefault(card => card.Id == internalId)?.Clone();
-            }
+    /// <summary>
+    /// Creates a card instance, injecting runtime dependencies for cards that require them.
+    /// </summary>
+    /// <param name="prototype">The prototype card to clone or recreate.</param>
+    /// <returns>A new card instance with appropriate dependencies injected.</returns>
+    /// <remarks>
+    /// DiskIIControllerCard descendants require IDiskImageStore, which is injected here
+    /// rather than using Clone(). This allows the store reference to come from the current
+    /// project (which may change during the application lifetime).
+    /// </remarks>
+    private ICard CreateCardInstance(ICard prototype)
+    {
+        return prototype switch
+        {
+            DiskIIControllerCard diskCard => diskCard.CreateWithStore(_diskImageStore),
+            _ => prototype.Clone()
+        };
+    }
 
-            /// <inheritdoc />
-            /// <remarks>
-            /// Name matching is case-sensitive. Returns a cloned instance of the prototype
-            /// card with the matching name.
-            /// </remarks>
-            public ICard? GetCardWithName(string name)
-            {
-                return _allCards.FirstOrDefault(card => card.Name == name)?.Clone();
-            }
+    /// <inheritdoc />
+    /// <remarks>
+    /// Returns a cloned instance of the prototype card with the specified ID.
+    /// The clone is independent and can be installed in any slot.
+    /// </remarks>
+    public ICard? GetCardWithId(int internalId)
+    {
+        var prototype = _allCards.FirstOrDefault(card => card.Id == internalId);
+        return prototype != null ? CreateCardInstance(prototype) : null;
+    }
 
-            /// <inheritdoc />
-            /// <remarks>
-            /// Convenience method that returns the card with ID 0 (NullCard).
-            /// This card type must always be registered for proper slot initialization.
-            /// </remarks>
-            public ICard? GetNullCard()
-            {
-                return GetCardWithId(0);
-            }
+    /// <inheritdoc />
+    /// <remarks>
+    /// Name matching is case-sensitive. Returns a cloned instance of the prototype
+    /// card with the matching name.
+    /// </remarks>
+    public ICard? GetCardWithName(string name)
+    {
+        var prototype = _allCards.FirstOrDefault(card => card.Name == name);
+        return prototype != null ? CreateCardInstance(prototype) : null;
+    }
 
-            /// <inheritdoc />
-            /// <remarks>
-            /// Returns a list of (ID, Name) tuples for all registered card types,
-            /// sorted by ID. Useful for building UI card selection menus.
-            /// </remarks>
-            public List<(int, string)> GetAllCardTypes()
-            {
-                return [.. _allCards
-                    .Select(card => (card.Id, card.Name))
-                    .OrderBy(tuple => tuple.Id)];
-            }
-        }
+    /// <inheritdoc />
+    /// <remarks>
+    /// Convenience method that returns the card with ID 0 (NullCard).
+    /// This card type must always be registered for proper slot initialization.
+    /// </remarks>
+    public ICard? GetNullCard()
+    {
+        return GetCardWithId(0);
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Returns a list of (ID, Name) tuples for all registered card types,
+    /// sorted by ID. Useful for building UI card selection menus.
+    /// </remarks>
+    public List<(int, string)> GetAllCardTypes()
+    {
+        return [.. _allCards
+            .Select(card => (card.Id, card.Name))
+            .OrderBy(tuple => tuple.Id)];
+    }
+}

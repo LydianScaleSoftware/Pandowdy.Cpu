@@ -69,6 +69,7 @@ public abstract class DiskIIControllerCard : ICard
     protected readonly IDiskIIFactory _diskIIFactory;
     protected readonly IDiskStatusMutator _statusMutator;
     protected readonly ICardResponseEmitter _responseEmitter;
+    protected readonly IDiskImageStore _diskImageStore;
     protected SlotNumber _slotNumber = SlotNumber.Unslotted;
 
     /// <inheritdoc />
@@ -176,6 +177,10 @@ public abstract class DiskIIControllerCard : ICard
     // Bit timing for shift register
     private double _lastBitShiftCycle = 0;
 
+    // Disk image ID tracking for Return operations (Phase 2a)
+    // Maps drive index (0-based) to the disk image ID from which it was checked out
+    private readonly Dictionary<int, long> _mountedDiskImageIds = new();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="DiskIIControllerCard"/> class.
     /// </summary>
@@ -183,21 +188,25 @@ public abstract class DiskIIControllerCard : ICard
     /// <param name="diskIIFactory">Factory for creating drive instances.</param>
     /// <param name="statusMutator">Status mutator for publishing controller state changes.</param>
     /// <param name="responseEmitter">Card response emitter for publishing card identification and device enumeration responses.</param>
+    /// <param name="diskImageStore">Disk image store for checking out and returning disk images (implements IDiskImageStore).</param>
     protected DiskIIControllerCard(
         CpuClockingCounters cpuClocking,
         IDiskIIFactory diskIIFactory,
         IDiskStatusMutator statusMutator,
-        ICardResponseEmitter responseEmitter)
+        ICardResponseEmitter responseEmitter,
+        IDiskImageStore diskImageStore)
     {
         ArgumentNullException.ThrowIfNull(cpuClocking);
         ArgumentNullException.ThrowIfNull(diskIIFactory);
         ArgumentNullException.ThrowIfNull(statusMutator);
         ArgumentNullException.ThrowIfNull(responseEmitter);
+        ArgumentNullException.ThrowIfNull(diskImageStore);
 
         _clocking = cpuClocking;
         _diskIIFactory = diskIIFactory;
         _statusMutator = statusMutator;
         _responseEmitter = responseEmitter;
+        _diskImageStore = diskImageStore;
 
         // Subscribe to VBlank for periodic motor-off checking
         // This ensures motor-off happens even when no disk I/O is occurring
@@ -1291,12 +1300,14 @@ public abstract class DiskIIControllerCard : ICard
     /// - <see cref="Messages.IdentifyCardMessage"/>: Emits card identity via response channel<br/>
     /// - <see cref="Messages.EnumerateDevicesMessage"/>: Emits device list via response channel<br/>
     /// - <see cref="Messages.RefreshStatusMessage"/>: Pushes current drive status<br/>
-    /// - <see cref="DiskII.Messages.InsertDiskMessage"/>: Inserts disk image into drive<br/>
+    /// - <see cref="DiskII.Messages.MountDiskMessage"/>: Mounts disk from project store<br/>
     /// - <see cref="DiskII.Messages.InsertBlankDiskMessage"/>: Creates and inserts blank disk<br/>
     /// - <see cref="DiskII.Messages.EjectDiskMessage"/>: Ejects disk from drive<br/>
     /// - <see cref="DiskII.Messages.SwapDrivesMessage"/>: Swaps disk media between drives<br/>
     /// - <see cref="DiskII.Messages.SaveDiskMessage"/>: Saves disk to attached destination<br/>
     /// - <see cref="DiskII.Messages.SaveDiskAsMessage"/>: Exports disk to user-specified path<br/>
+    /// - <see cref="DiskII.Messages.ExportDiskMessage"/>: Exports disk to filesystem<br/>
+    /// - <see cref="DiskII.Messages.EjectAllDisksMessage"/>: Ejects all mounted disks<br/>
     /// - <see cref="DiskII.Messages.SetWriteProtectMessage"/>: Toggles write protection<br/>
     /// </para>
     /// </remarks>
@@ -1317,9 +1328,9 @@ public abstract class DiskIIControllerCard : ICard
                 HandleRefreshStatus();
                 break;
 
-            case DiskII.Messages.InsertDiskMessage insert:
-                ValidateDriveNumber(insert.DriveNumber);
-                _drives[insert.DriveNumber - 1].InsertDisk(insert.DiskImagePath);
+            case DiskII.Messages.MountDiskMessage mount:
+                ValidateDriveNumber(mount.DriveNumber);
+                MountDiskFromStore(mount.DriveNumber, mount.DiskImageId);
                 break;
 
             case DiskII.Messages.InsertBlankDiskMessage blank:
@@ -1329,7 +1340,7 @@ public abstract class DiskIIControllerCard : ICard
 
             case DiskII.Messages.EjectDiskMessage eject:
                 ValidateDriveNumber(eject.DriveNumber);
-                _drives[eject.DriveNumber - 1].EjectDisk(); // no-op if empty
+                EjectDisk(eject.DriveNumber);
                 break;
 
             case DiskII.Messages.SwapDrivesMessage:
@@ -1349,6 +1360,15 @@ public abstract class DiskIIControllerCard : ICard
             case DiskII.Messages.SaveDiskAsMessage saveAs:
                 ValidateDriveNumber(saveAs.DriveNumber);
                 ExportDriveImage(saveAs.DriveNumber, saveAs.FilePath);
+                break;
+
+            case DiskII.Messages.ExportDiskMessage export:
+                ValidateDriveNumber(export.DriveNumber);
+                ExportDisk(export.DriveNumber, export.FilePath, export.Format);
+                break;
+
+            case DiskII.Messages.EjectAllDisksMessage:
+                EjectAllDisks();
                 break;
 
             case DiskII.Messages.SetWriteProtectMessage wp:
@@ -1742,4 +1762,175 @@ public abstract class DiskIIControllerCard : ICard
         Debug.WriteLine($"Drive {driveNumber} write protection: {(writeProtected ? "ON" : "OFF")}");
 #endif
     }
+
+    /// <summary>
+    /// Mounts a disk image from the project store into the specified drive.
+    /// </summary>
+    /// <param name="driveNumber">1-based drive number (1 or 2).</param>
+    /// <param name="diskImageId">ID of the disk image in the project's disk_images table.</param>
+    /// <exception cref="Exceptions.CardMessageException">
+    /// Thrown if mount fails.
+    /// </exception>
+    /// <remarks>
+    /// Calls <see cref="IDiskImageStore.CheckOutAsync"/> to obtain the InternalDiskImage,
+    /// then assigns it to the drive. The disk image ID is tracked for later Return during eject.
+    /// </remarks>
+    private void MountDiskFromStore(int driveNumber, long diskImageId)
+    {
+        int driveIndex = driveNumber - 1;
+        IDiskIIDrive drive = _drives[driveIndex];
+
+        try
+        {
+            // Eject any existing disk first (triggers ReturnAsync if mounted)
+            if (drive.HasDisk)
+            {
+                EjectDisk(driveNumber);
+            }
+
+            // Check out disk image from store (blocking — acceptable at lifecycle boundary)
+            InternalDiskImage diskImage = _diskImageStore.CheckOutAsync(diskImageId).GetAwaiter().GetResult();
+
+            // Create provider and insert into drive
+            var provider = new UnifiedDiskImageProvider(diskImage);
+            drive.ImageProvider = provider;
+            provider.SetQuarterTrack(drive.QuarterTrack);
+
+            // Track the disk image ID for later Return
+            _mountedDiskImageIds[driveIndex] = diskImageId;
+
+            // Update status
+            RefreshAllDriveStatus();
+
+#if ControllerDebug
+            Debug.WriteLine($"Mounted disk image {diskImageId} into drive {driveNumber}");
+#endif
+        }
+        catch (Exception ex)
+        {
+            throw new Exceptions.CardMessageException(
+                $"Failed to mount disk image {diskImageId} into drive {driveNumber}: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Ejects the disk from the specified drive.
+    /// </summary>
+    /// <param name="driveNumber">1-based drive number (1 or 2).</param>
+    /// <remarks>
+    /// If the disk was mounted from the project store (via MountDiskMessage),
+    /// this calls <see cref="IDiskImageStore.ReturnAsync"/> to serialize the disk
+    /// back to working_blob before ejecting (eject auto-flush).
+    /// </remarks>
+    private void EjectDisk(int driveNumber)
+    {
+        int driveIndex = driveNumber - 1;
+        IDiskIIDrive drive = _drives[driveIndex];
+
+        // If this drive has a disk mounted from the store, return it
+        if (_mountedDiskImageIds.TryGetValue(driveIndex, out long diskImageId))
+        {
+            InternalDiskImage? internalImage = drive.InternalImage;
+            if (internalImage != null)
+            {
+                // Return the disk image to the store (blocking — acceptable at lifecycle boundary)
+                _diskImageStore.ReturnAsync(diskImageId, internalImage).GetAwaiter().GetResult();
+
+#if ControllerDebug
+                Debug.WriteLine($"Returned disk image {diskImageId} from drive {driveNumber} to store (eject auto-flush)");
+#endif
+            }
+
+            // Remove from tracking
+            _mountedDiskImageIds.Remove(driveIndex);
+        }
+
+        // Eject the disk from the drive
+        drive.EjectDisk();
+
+        // Update status
+        RefreshAllDriveStatus();
+    }
+
+    /// <summary>
+    /// Exports the disk image in the specified drive to a user-specified path.
+    /// </summary>
+    /// <param name="driveNumber">1-based drive number (1 or 2).</param>
+    /// <param name="filePath">Destination path for the exported disk image.</param>
+    /// <param name="format">Disk format for export.</param>
+    /// <exception cref="Exceptions.CardMessageException">
+    /// Thrown if no disk is inserted or export fails.
+    /// </exception>
+    private void ExportDisk(int driveNumber, string filePath, DiskFormat format)
+    {
+        IDiskIIDrive drive = _drives[driveNumber - 1];
+
+        if (!drive.HasDisk)
+        {
+            throw new Exceptions.CardMessageException(
+                $"Cannot export: no disk inserted in drive {driveNumber}.");
+        }
+
+        // Access internal state via interface
+        InternalDiskImage? internalImage = drive.InternalImage ?? throw new Exceptions.CardMessageException(
+                "Cannot export: no internal disk image available.");
+
+        // Validate format
+        if (!DiskFormatHelper.IsExportSupported(format))
+        {
+            throw new Exceptions.CardMessageException(
+                $"Unsupported export format: {format}");
+        }
+
+        // Export to specified path
+        try
+        {
+            IDiskImageExporter exporter = DiskFormatHelper.GetExporterForFormat(format);
+            exporter.Export(internalImage, filePath);
+
+#if ControllerDebug
+            Debug.WriteLine($"Exported disk image from drive {driveNumber} to {filePath} ({format})");
+#endif
+        }
+        catch (Exception ex)
+        {
+            throw new Exceptions.CardMessageException(
+                $"Failed to export disk image: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// Ejects all mounted disks, returning them to the store.
+    /// </summary>
+    /// <remarks>
+    /// Used during project close to ensure all InternalDiskImages are returned to the store
+    /// before the SQLite connection is torn down.
+    /// </remarks>
+    private void EjectAllDisks()
+    {
+        for (int driveNumber = 1; driveNumber <= _drives.Length; driveNumber++)
+        {
+            if (_drives[driveNumber - 1].HasDisk)
+            {
+                EjectDisk(driveNumber);
+            }
+        }
+
+#if ControllerDebug
+        Debug.WriteLine("Ejected all disks");
+#endif
+    }
+
+    /// <summary>
+    /// Creates a new instance of this card type with the specified disk image store.
+    /// </summary>
+    /// <param name="diskImageStore">The disk image store to inject into the new instance.</param>
+    /// <returns>A new card instance of the same type with the provided store.</returns>
+    /// <remarks>
+    /// This method is used by CardFactory to create card instances with runtime-injected
+    /// dependencies. Each derived class must implement this to return an instance of its
+    /// own type with the current prototype's other dependencies plus the new store reference.
+    /// </remarks>
+    public abstract ICard CreateWithStore(IDiskImageStore diskImageStore);
 }
+

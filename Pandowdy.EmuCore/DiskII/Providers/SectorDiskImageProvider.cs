@@ -139,8 +139,9 @@ public class SectorDiskImageProvider : IDiskImageProvider, IDisposable
 
         FilePath = filePath;
 
-        // Open the file with CiderPress2 - use ReadWrite sharing for concurrent test access
-        _stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+        // Open the file with CiderPress2 - use Read access with ReadWrite sharing for concurrent test access
+        // FileAccess.ReadWrite can cause locking issues during parallel test execution
+        _stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
         try
         {

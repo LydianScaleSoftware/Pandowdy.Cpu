@@ -118,7 +118,8 @@ public class DriveStateServiceTests : IDisposable
                 new CpuClockingCounters(),
                 Mock.Of<IDiskIIFactory>(),
                 Mock.Of<IDiskStatusMutator>(),
-                Mock.Of<ICardResponseEmitter>())
+                Mock.Of<ICardResponseEmitter>(),
+                Mock.Of<IDiskImageStore>())
         {
             _drives = drives; // Set drives directly (protected field)
         }
@@ -128,6 +129,11 @@ public class DriveStateServiceTests : IDisposable
         public override int Id => 101; // Disk II controller ID
         public override byte? ReadRom(byte offset) => null;
         public override ICard Clone() => new TestDiskController(_drives);
+
+        public override Pandowdy.EmuCore.Cards.DiskIIControllerCard CreateWithStore(IDiskImageStore diskImageStore)
+        {
+            return new TestDiskController(_drives);
+        }
     }
 
     #endregion

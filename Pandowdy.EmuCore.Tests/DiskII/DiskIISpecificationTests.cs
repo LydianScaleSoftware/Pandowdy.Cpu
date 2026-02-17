@@ -27,6 +27,7 @@ using Pandowdy.EmuCore.DataTypes;
 using Pandowdy.EmuCore.DiskII;
 using Pandowdy.EmuCore.Interfaces;
 using Pandowdy.EmuCore.Services;
+using Pandowdy.EmuCore.Tests.Mocks;
 
 namespace Pandowdy.EmuCore.Tests.DiskII;
 
@@ -57,10 +58,11 @@ public class DiskIISpecificationTests
     private readonly DiskStatusProvider _statusProvider = new();
     private readonly CardResponseChannel _responseChannel = new();
     private readonly MockDiskIIFactory _driveFactory = new();
+    private static readonly MockDiskImageStore MockStore = new();
 
     private DiskIIControllerCard16Sector CreateCard()
     {
-        return new DiskIIControllerCard16Sector(_clocking, _driveFactory, _statusProvider, _responseChannel);
+        return new DiskIIControllerCard16Sector(_clocking, _driveFactory, _statusProvider, _responseChannel, MockStore);
     }
 
     private void AdvanceCycles(int cycles)

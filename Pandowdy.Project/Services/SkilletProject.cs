@@ -351,9 +351,47 @@ internal sealed class SkilletProject : ISkilletProject
 
     // Lifecycle
 
-    public Task SaveAsync()
+    /// <summary>
+    /// Saves the project, optionally ejecting all mounted disks first to ensure working copies are serialized.
+    /// </summary>
+    /// <param name="ejectAllFirst">If true, sends EjectAllDisksMessage to ensure mounted disk changes are serialized before save.</param>
+    /// <param name="emulatorCore">Optional emulator core interface for sending eject message. Required if ejectAllFirst is true.</param>
+    /// <returns>A task that completes when the save operation is finished.</returns>
+    /// <remarks>
+    /// <para>
+    /// <strong>Phase 2a Implementation:</strong> This method clears the <c>working_dirty</c> flags for
+    /// all disks with <c>persist_working = 1</c>. If <paramref name="ejectAllFirst"/> is true, it first
+    /// sends <see cref="EjectAllDisksMessage"/> to the emulator core, which triggers
+    /// <see cref="IDiskImageStore.ReturnAsync"/> for each mounted disk, serializing their current state
+    /// to <c>working_blob</c> and setting <c>working_dirty = 1</c> before this method clears the flags.
+    /// </para>
+    /// <para>
+    /// <strong>Rationale:</strong> Mounted disks are modified in-memory by drive operations. The eject
+    /// flow (<c>ReturnAsync</c>) is responsible for serializing these changes back to the database.
+    /// By ejecting all disks before saving, we ensure all changes are committed to <c>working_blob</c>
+    /// before the dirty flags are cleared.
+    /// </para>
+    /// <para>
+    /// <strong>Future Enhancement:</strong> A future phase may implement pause-serialize-resume to avoid
+    /// the brief eject/re-mount disruption, but Phase 2a uses eject-then-clear for correctness and simplicity.
+    /// </para>
+    /// </remarks>
+    public async Task SaveAsync(bool ejectAllFirst = true, Pandowdy.EmuCore.Interfaces.IEmulatorCoreInterface? emulatorCore = null)
     {
-        return EnqueueAsync(conn =>
+        if (ejectAllFirst)
+        {
+            if (emulatorCore is null)
+            {
+                throw new ArgumentNullException(nameof(emulatorCore), "emulatorCore is required when ejectAllFirst is true");
+            }
+
+            // Eject all mounted disks to ensure their working copies are serialized via ReturnAsync
+            await emulatorCore.SendCardMessageAsync(
+                slot: null, // Broadcast to all slots
+                message: new Pandowdy.EmuCore.DiskII.Messages.EjectAllDisksMessage());
+        }
+
+        await EnqueueAsync(conn =>
         {
             using var transaction = conn.BeginTransaction();
             try

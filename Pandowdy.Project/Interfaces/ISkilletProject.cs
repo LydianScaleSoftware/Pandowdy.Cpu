@@ -112,7 +112,9 @@ public interface ISkilletProject : IDiskImageStore, IDisposable
     // Lifecycle
 
     /// <summary>
-    /// Saves the project (persists dirty working copies, updates metadata).
+    /// Saves the project, optionally ejecting all mounted disks first to ensure working copies are serialized.
     /// </summary>
-    Task SaveAsync();
+    /// <param name="ejectAllFirst">If true, sends EjectAllDisksMessage to ensure mounted disk changes are serialized before save.</param>
+    /// <param name="emulatorCore">Optional emulator core interface for sending eject message. Required if ejectAllFirst is true.</param>
+    Task SaveAsync(bool ejectAllFirst = true, Pandowdy.EmuCore.Interfaces.IEmulatorCoreInterface? emulatorCore = null);
 }
