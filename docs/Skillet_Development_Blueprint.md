@@ -32,6 +32,7 @@
 21. [Appendix B: Message Changes](#appendix-b-message-changes)
 22. [Appendix C: Schema Version Strategy](#appendix-c-schema-version-strategy)
 23. [Appendix D: Incorporating SQLite into Pandowdy](#appendix-d-incorporating-sqlite-into-pandowdy)
+24. [Appendix E: Ad Hoc Project Design](#appendix-e-ad-hoc-project-design)
 
 ---
 
@@ -425,6 +426,8 @@ See `docs/Skillet_Deferred_Features_Reference.md` §2 for reference designs.
 
 ### 5.1 Creating a New Project
 
+**File-based project (user-initiated):**
+
 ```
 User clicks "Create New Skillet Project"
   → File dialog: choose location and name
@@ -436,8 +439,23 @@ User clicks "Create New Skillet Project"
     → Insert default mount_configuration rows (slot 6, drives 1 & 2, empty)
     → Return ISkilletProject handle
   → Update pandowdy-settings.json: set active_project_path, add to recent list
-  → UI transitions from Start Page to main workspace
+  → UI transitions to main workspace
 ```
+
+**Ad hoc project (automatic on startup / after close):**
+
+```
+SkilletProjectManager.CreateAdHocAsync()
+  → Open in-memory SQLite connection (Data Source=:memory:)
+  → Set pragmas (application_id, user_version, journal_mode not applicable, foreign_keys)
+  → Run SkilletSchemaManager.InitializeSchema() — creates V1 tables
+  → Insert project_metadata rows (name = "untitled", timestamps, version)
+  → Insert default mount_configuration rows (slot 6, drives 1 & 2, empty)
+  → Return ISkilletProject handle (FilePath = null, IsAdHoc = true)
+```
+
+The ad hoc project is treated identically to any file-based project once created.
+See [Appendix E](#appendix-e-ad-hoc-project-design) for the full design.
 
 ### 5.2 Opening an Existing Project
 
@@ -459,8 +477,12 @@ User selects project from recent list or file dialog
 
 ### 5.3 Saving a Project (Explicit & Periodic)
 
+**Save Project (Ctrl+Alt+S):** Available only when `ISkilletProject.IsAdHoc` is false
+(the project has a file path). Disabled in the UI when the project is ad hoc.
+
 ```
-User presses Ctrl+S or auto-save timer fires
+User presses Ctrl+Alt+S or auto-save timer fires
+  → Guard: if ISkilletProject.IsAdHoc → no-op (Save is disabled)
   → ISkilletProject.SaveAsync()
     → Request emulator pause (waits for current instruction to complete)
     → Emulator pauses at instruction boundary — no concurrent mutation
@@ -473,6 +495,31 @@ User presses Ctrl+S or auto-save timer fires
     → Resume emulator
 ```
 
+**Save Project As... (Ctrl+Shift+S):** Always available. Persists the current
+project (including ad hoc) to a new file on disk.
+
+```
+User: File → Save Project As...
+  → File dialog: choose location and filename
+  → ISkilletProjectManager.SaveAsAsync(filePath)
+    → Request emulator pause
+    → Serialize all mounted dirty disks (same as SaveAsync)
+    → VACUUM INTO 'filePath' — copies entire in-memory DB to new file
+    → Close current in-memory connection
+    → Open file-based connection to the new file
+    → Update ISkilletProject: FilePath = filePath, IsAdHoc = false
+    → Resume emulator
+  → Update pandowdy-settings.json: set active_project_path, add to recent list
+  → Update title bar: "Pandowdy — {ProjectName}"
+```
+
+**`VACUUM INTO` rationale:** SQLite 3.27.0+ (available in the bundled e_sqlite3
+native library) supports `VACUUM INTO 'filepath'` which atomically copies the
+entire database to a new file. This is the cleanest way to persist an in-memory
+database: no manual table copying, no schema recreation, and the output file is
+optimally compacted. After the vacuum, the in-memory connection is closed and
+replaced with a file-based connection to the newly created file.
+
 **Why pause?** The emulator thread mutates `InternalDiskImage` at cycle speed.
 Serializing a disk image while the emulator writes to it would produce corrupted
 blobs. The pause approach eliminates this entirely: emulation halts at the current
@@ -480,7 +527,7 @@ instruction boundary (sub-microsecond precision), serialization runs on the IO
 thread with no contention, then emulation resumes. Total pause duration is
 dominated by Deflate compression of dirty blobs — typically <50ms for two
 35-track disks. This adds zero overhead to the emulation hot path; the pause
-only occurs at explicit lifecycle boundaries (Ctrl+S, auto-save timer).
+only occurs at explicit lifecycle boundaries (Ctrl+Alt+S, auto-save timer).
 
 **Alternative considered:** Locking individual `InternalDiskImage` objects during
 serialization. Rejected because it would add per-cycle lock acquisition overhead
@@ -488,11 +535,25 @@ on the emulator thread's hot path, even when no save is in progress.
 
 ### 5.4 Closing a Project
 
+**Close Project enablement:**
+
+- **File-based project:** Close Project is **always enabled**. The project has a
+  file on disk and is always closable.
+- **Ad hoc project with data** (imported disks, overrides, or other modifications):
+  Close Project is **enabled**. The user is prompted to save before discarding.
+- **Pristine ad hoc project** (no imported disks, no overrides — the project is
+  in its initial creation state and has never been saved to disk): Close Project
+  is **disabled**. There is nothing to close.
+
 ```
 User closes project or opens another
-  → Check for unsaved changes (working_dirty on any mounted disk)
-  → If unsaved → prompt: Save / Discard / Cancel
+  → Guard: if ad hoc AND pristine → Close is disabled (unreachable from UI)
+  → Check for unsaved changes (working_dirty on any mounted disk, or ad hoc with data)
+  → If unsaved:
+    → If ad hoc with disk images → prompt: Save As / Discard / Cancel
+    → If file-based with dirty data → prompt: Save / Discard / Cancel
   → If Save → ISkilletProject.SaveAsync() (includes pause-serialize-unpause)
+  → If Save As → ISkilletProjectManager.SaveAsAsync(filePath) (file dialog first)
   → GUI sends EjectAllDisksMessage to EmuCore (async, waits for confirmation)
     → EmuCore ejects each mounted drive:
       → For each drive with a mounted disk:
@@ -502,21 +563,33 @@ User closes project or opens another
     → EmuCore confirms all ejections complete
   → ISkilletProject.Dispose()
     → Drain IO thread queue
-    → Close SQLite connection
+    → Close SQLite connection (in-memory data is lost if ad hoc)
   → If opening another → proceed to Open flow
-  → If not opening another → show Start Page
+  → If not opening another → SkilletProjectManager.CreateAdHocAsync()
 ```
 
-**Key point:** The GUI never closes the Skillet while disks are mounted. The
-eject-all step ensures every in-memory `InternalDiskImage` is returned to the
-store before the SQLite connection is torn down. This prevents data loss.
+**Key points:**
+
+- The GUI never closes the Skillet while disks are mounted. The eject-all step
+  ensures every in-memory `InternalDiskImage` is returned to the store before the
+  SQLite connection is torn down. This prevents data loss.
+- After closing, the system **always** creates a new ad hoc project — there is
+  never a state with no active project. This may result in an "untitled" project
+  being replaced by another "untitled" project — that is expected behavior.
+- Closing an ad hoc project with disk images imported prompts "Save As" (not
+  "Save") since there is no file path to save to. Discarding loses all imported
+  disk images and settings.
+- A pristine ad hoc project cannot be closed — the menu item is disabled. The
+  user must import a disk, change a setting, or use "Save Project As..." to give
+  the project content before Close Project becomes available.
 
 ### 5.5 `ISkilletProject` Interface
 
 ```csharp
 public interface ISkilletProject : IDiskImageStore, IDisposable
 {
-    string FilePath { get; }
+    string? FilePath { get; }           // null for ad hoc in-memory projects
+    bool IsAdHoc { get; }               // true when FilePath is null
     ProjectMetadata Metadata { get; }
     bool HasUnsavedChanges { get; }
 
@@ -544,6 +617,11 @@ public interface ISkilletProject : IDiskImageStore, IDisposable
 }
 ```
 
+**Note:** `FilePath` is nullable — ad hoc in-memory projects have no file on
+disk. `IsAdHoc` is a convenience property equivalent to `FilePath is null`.
+The "Save Project" command is disabled when `IsAdHoc` is true; the user must
+use "Save Project As..." to persist an ad hoc project to a file.
+
 **Note:** `ISkilletProject` extends `IDiskImageStore` (defined in EmuCore).
 The `CheckOutAsync()` and `ReturnAsync()` methods are called by
 `DiskIIControllerCard` during mount and eject operations. The remaining
@@ -555,13 +633,21 @@ or other Pandowdy.Project consumers directly.
 ```csharp
 public interface ISkilletProjectManager
 {
-    ISkilletProject? CurrentProject { get; }
+    ISkilletProject CurrentProject { get; }   // Never null — ad hoc if no file
 
+    Task<ISkilletProject> CreateAdHocAsync();  // In-memory project (Data Source=:memory:)
     Task<ISkilletProject> CreateAsync(string filePath, string projectName);
     Task<ISkilletProject> OpenAsync(string filePath);
-    Task CloseAsync();
+    Task SaveAsAsync(string filePath);         // Persist ad hoc/current to file
+    Task CloseAsync();                         // Closes current; creates new ad hoc
 }
 ```
+
+**Key design change:** `CurrentProject` is **non-nullable**. On startup, the
+manager calls `CreateAdHocAsync()` to create an in-memory project. `CloseAsync()`
+disposes the current project and immediately creates a new ad hoc project — the
+result is never "no project open." See [Appendix E](#appendix-e-ad-hoc-project-design)
+for full lifecycle details.
 
 ---
 
@@ -925,7 +1011,9 @@ When the user changes a setting at runtime:
 
 ### 9.1 Start Page
 
-On launch, Pandowdy shows a Start Page (new Avalonia UserControl):
+On launch, Pandowdy can show a Start Page (new Avalonia UserControl) as an
+optional project management panel. The workspace is always accessible — an ad
+hoc project exists on startup (see §9.6).
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -943,9 +1031,6 @@ On launch, Pandowdy shows a Start Page (new Avalonia UserControl):
 │  │                     │   │                              │  │
 │  └─────────────────────┘   │  [Open Project...]           │  │
 │                            └──────────────────────────────┘  │
-│                                                              │
-│  ────────────────────────────────────────────────────────    │
-│  Loose-disk mode is not available in this version.           │
 │                                                              │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -969,16 +1054,22 @@ Program.Main()
   → Read active_project_path from settings
   → If active_project_path exists AND file exists:
     → Auto-open project (SkilletProjectManager.OpenAsync)
-    → Skip Start Page, go directly to workspace
+    → Go directly to workspace
   → Else:
-    → Show Start Page
+    → SkilletProjectManager.CreateAdHocAsync()
+    → Go directly to workspace (with ad hoc project)
 ```
+
+**Note:** There is no gated Start Page that blocks the workspace. The emulator
+is always usable — even with an ad hoc project, users can import and mount disk
+images. The Start Page (Phase 4) becomes an **optional** project management
+panel, not a required gate.
 
 ### 9.4 Project Switching
 
 ```
 User: File → Open Project (while project is open)
-  → Check for unsaved changes → prompt if needed
+  → Check for unsaved changes → prompt if needed (Save As if ad hoc)
   → CloseAsync() current project
   → OpenAsync() new project
   → Rebuild UI from new project's workspace_layout + mount_configuration
@@ -986,18 +1077,26 @@ User: File → Open Project (while project is open)
 
 ### 9.5 Menu Changes
 
+**Keyboard Shortcut Constraint:** The EmuCore captures `Ctrl+A` through `Ctrl+Z`
+(ASCII 1–26) for Apple IIe keyboard emulation. GUI keyboard shortcuts must avoid
+bare `Ctrl+letter` combinations. Preferred patterns: `Ctrl+Shift+letter`,
+`Ctrl+Alt+letter`, `Alt+letter`, or multi-keystroke sequences. This constraint
+applies whenever the emulator display has focus; future editor windows may reclaim
+simple `Ctrl+letter` shortcuts for their own use.
+
 **File Menu (Updated):**
 ```
 File
 ├── New Project...          Ctrl+Shift+N
 ├── Open Project...         Ctrl+Shift+O
 ├── ──────────────
-├── Save Project            Ctrl+S
+├── Save Project            Ctrl+Alt+S     (disabled when ad hoc)
+├── Save Project As...      Ctrl+Shift+S   (always available)
 ├── ──────────────
-├── Import Disk Image...    Ctrl+I
-├── Export Disk Image...    Ctrl+E
+├── Import Disk Image...    Ctrl+Shift+I
+├── Export Disk Image...    Ctrl+Shift+E
 ├── ──────────────
-├── Close Project
+├── Close Project                          (disabled when ad hoc is pristine)
 ├── ──────────────
 ├── Recent Projects  →
 │   ├── Lode Runner Analysis
@@ -1011,6 +1110,20 @@ File
 - ~~Open Disk Image~~ (replaced by Import)
 - ~~Save~~ (disk images are no longer saved to filesystem)
 - ~~Save As~~ (replaced by Export)
+
+### 9.6 Ad Hoc Project Behavior
+
+Pandowdy **always** has an active project. When no named project is specified
+(fresh launch with no `active_project_path`, or after closing a project without
+opening another), the system automatically creates an **ad hoc project** — an
+in-memory SQLite database that behaves identically to any file-based project.
+
+See [Appendix E: Ad Hoc Project Design](#appendix-e-ad-hoc-project-design) for
+full design details including lifecycle, persistence, and transition mechanics.
+
+**Key invariant:** `ISkilletProjectManager.CurrentProject` is **never null**.
+This eliminates null guards throughout the codebase and simplifies DI wiring —
+`IDiskImageStore` injection is always non-nullable.
 
 ---
 
@@ -1158,9 +1271,12 @@ threading concerns at the architectural level.
 ### 15.3 Connection Management
 
 - One `SqliteConnection` per `SkilletProject` instance.
-- Opened on the IO thread during `OpenAsync()`.
+- Opened on the IO thread during `OpenAsync()` or `CreateAdHocAsync()`.
 - Closed on the IO thread during `Dispose()`.
 - The connection object is **never** exposed outside the IO thread.
+- **Ad hoc projects** use `Data Source=:memory:` — the database exists only in
+  process memory and is lost when the connection is closed.
+- **File-based projects** use `Data Source={filePath}` — standard persistent connection.
 
 ```csharp
 // Connection lifecycle — all calls execute on the IO thread
@@ -1170,9 +1286,13 @@ internal sealed class ProjectIOThread : IDisposable
     private readonly BlockingCollection<IORequest> _queue = new();
     private SqliteConnection? _connection;
 
-    public ProjectIOThread(string filePath)
+    public ProjectIOThread(string? filePath)
     {
-        _thread = new Thread(() => RunLoop(filePath))
+        var connectionString = filePath is not null
+            ? $"Data Source={filePath}"
+            : "Data Source=:memory:";
+
+        _thread = new Thread(() => RunLoop(connectionString))
         {
             Name = "Pandowdy.Project.IO",
             IsBackground = true
@@ -1180,9 +1300,9 @@ internal sealed class ProjectIOThread : IDisposable
         _thread.Start();
     }
 
-    private void RunLoop(string filePath)
+    private void RunLoop(string connectionString)
     {
-        _connection = new SqliteConnection($"Data Source={filePath}");
+        _connection = new SqliteConnection(connectionString);
         _connection.Open();
         SetPragmas(_connection);
 
@@ -1197,6 +1317,10 @@ internal sealed class ProjectIOThread : IDisposable
     // ...
 }
 ```
+
+**Note:** `PRAGMA journal_mode = WAL` is not applicable for in-memory databases
+(SQLite silently ignores it). All other pragmas (`foreign_keys`, `application_id`,
+`user_version`) work normally with in-memory connections.
 
 ### 15.4 Request Queue & Async Façade
 
@@ -1322,7 +1446,7 @@ the order they are enqueued. This means:
 - An import request that completes before a mount request is guaranteed to have
   written its blob to SQLite before the mount reads it.
 - A save request enqueued after a settings change will see the updated settings.
-- Multiple save requests from different sources (auto-save timer, explicit Ctrl+S,
+- Multiple save requests from different sources (auto-save timer, explicit Ctrl+Alt+S,
   emulator snapshot) are serialized — no concurrent writes, no transaction conflicts.
 
 If priority scheduling is needed in the future (e.g., expediting a breakpoint
@@ -1528,10 +1652,10 @@ Program.cs (composition root)
 
 **`IDiskImageStore` wiring:** The interface is defined in `Pandowdy.EmuCore` so
 that `DiskIIControllerCard` can depend on it without referencing `Pandowdy.Project`.
-`SkilletProject` implements the interface. When a project is opened, the host app
-passes the `IDiskImageStore` reference to the card factory so the controller card
-can call `CheckOutAsync()` and `ReturnAsync()` during mount/eject operations.
-When no project is open, a null/no-op implementation is used.
+`SkilletProject` implements the interface. Because an ad hoc project always exists
+on startup, the `IDiskImageStore` reference is **always non-null** — the controller
+card can depend on it without nullable guards. When the active project changes
+(open, close, Save As), the card factory receives the new project's store reference.
 
 ### Constructor Parameter Guidelines
 
@@ -1552,7 +1676,7 @@ primary constructor assignment).
 | `DriveStateService` | **Removed.** Replaced by `mount_configuration` table. |
 | `MainWindowViewModel` | Gains project lifecycle commands. Save/SaveAs → Export. |
 | `DiskIIControllerCard` | Gains `IDiskImageStore` dependency. Calls `CheckOutAsync()` on mount, `ReturnAsync()` on eject. Handles new `MountDiskMessage(DriveNumber, DiskImageId)`. |
-| `InsertDiskMessage` | Retained for potential loose-disk mode. Project-based mounts use `MountDiskMessage` instead. |
+| `InsertDiskMessage` | **Removed in Phase 2a.** Filesystem-based disk loading is eliminated entirely. All disk loading flows through `IDiskImageStore.CheckOutAsync()` via `MountDiskMessage`. |
 
 ---
 
@@ -1885,6 +2009,36 @@ and other polish work.
 
 **All Phase 2 infrastructure is complete.** Phase 2a integration work (controller handlers, DI wiring, UI commands) can proceed.
 
+#### ⚠️ Breaking Change: Filesystem-Based Disk Loading Removed
+
+Phase 2a is the point of a **fundamental paradigm shift** in how Pandowdy loads
+disk images. The legacy workflow — where the emulator core directly opens and
+reads disk image files from the host filesystem via `InsertDiskMessage` — is
+**removed entirely** in this phase. There is no fallback, no compatibility
+shim, and no "loose-disk mode" retained for continuity.
+
+**Before Phase 2a:**
+```
+User → file dialog → filesystem path → InsertDiskMessage → EmuCore loads file directly
+```
+
+**After Phase 2a:**
+```
+User → Import → .skillet library → Mount from Library → MountDiskMessage
+  → EmuCore calls IDiskImageStore.CheckOutAsync() → receives InternalDiskImage
+```
+
+All disk images must be imported into a `.skillet` project before they can be
+used. The emulator core no longer has any code path that opens disk image files
+from the filesystem. `InsertDiskMessage` and its handler are removed in this
+phase (not deferred to Phase 5). This is a clean break — the old system is
+replaced, not wrapped or deprecated.
+
+**Rationale:** Maintaining two parallel loading paths (filesystem and library)
+adds complexity without benefit. The `.skillet` project is the single source of
+truth for all disk image data. Removing the filesystem path in Phase 2a ensures
+that all subsequent phases build exclusively on the new architecture.
+
 #### Phase 2 Integration Work (Deferred to Phase 2a)
 
 The following items were deferred from Phase 2 because they are **controller and
@@ -1913,8 +2067,8 @@ and will be implemented alongside the UI commands and dialogs below.
    - **Status:** Message type exists; handler implementation is Phase 2a work
 
 5. **Wire `IDiskImageStore` into DI** (Phase 2 Step 9)
-   - Add `IDiskImageStore?` dependency to `DiskIIControllerCard` constructor (nullable when no project open)
-   - Update `ICardFactory` to accept `IDiskImageStore?` parameter
+   - Add `IDiskImageStore` dependency to `DiskIIControllerCard` constructor (non-nullable — ad hoc project always exists)
+   - Update `ICardFactory` to accept `IDiskImageStore` parameter
    - Register in `Program.cs`: pass `ISkilletProjectManager.CurrentProject` to card factory
    - **Status:** Interface ready; DI wiring is Phase 2a work
 
@@ -1933,7 +2087,7 @@ and will be implemented alongside the UI commands and dialogs below.
    - `EjectAllDisksMessage` handler: eject all drives.
 
 2. **Wire `IDiskImageStore` into DI and card factory** (integration work item 5).
-   - `DiskIIControllerCard` receives `IDiskImageStore?` via constructor.
+   - `DiskIIControllerCard` receives `IDiskImageStore` via constructor (non-nullable — ad hoc project always exists).
    - `ICardFactory` passes current project's store to card.
    - Register in `Program.cs`.
 
@@ -1943,10 +2097,10 @@ and will be implemented alongside the UI commands and dialogs below.
    - Resume emulator after serialization completes.
 
 4. **Add project commands to File menu.**
-   - Add: New Project..., Open Project..., Save Project (Ctrl+S), Close Project.
+   - Add: New Project..., Open Project..., Save Project (Ctrl+Alt+S), Close Project.
    - Wire to `ISkilletProjectManager.CreateAsync()`, `OpenAsync()`, `SaveAsync()`,
      `CloseAsync()`.
-   - Add Import Disk Image... (Ctrl+I) — opens file dialog, calls
+   - Add Import Disk Image... (Ctrl+Shift+I) — opens file dialog, calls
      `ISkilletProject.ImportDiskImageAsync()`.
    - Add Export Disk Image... — sends `ExportDiskMessage` to EmuCore (handler from step 1).
 
@@ -1959,36 +2113,48 @@ and will be implemented alongside the UI commands and dialogs below.
      dialog for project-based workflow).
 
 6. **Update `DiskStatusWidgetViewModel` commands.**
-   - "Insert Disk" → opens "Mount from Library" picker (if project open) or file
-     dialog (if no project — future loose-disk mode).
+   - "Insert Disk" → opens "Mount from Library" picker. Always enabled — a project
+     (file-based or ad hoc) is always active.
    - "Eject" → sends `EjectDiskMessage` as before. The controller's eject handler
      now calls `IDiskImageStore.ReturnAsync()` automatically (step 1).
    - "Save" → `ISkilletProject.SaveAsync()` (pause-serialize-unpause from step 3).
    - "Save As" → becomes "Export Disk" → `ExportDiskMessage` (handler from step 1).
 
-7. **Show project name in title bar.**
+7. **Remove `InsertDiskMessage` and filesystem loading path.**
+   - Delete `InsertDiskMessage` message class and its handler in `DiskIIControllerCard`.
+   - Remove all code paths where EmuCore directly opens disk image files from the
+     host filesystem. The controller no longer accepts a filesystem path for disk
+     insertion — all disk loading flows through `IDiskImageStore.CheckOutAsync()`
+     via `MountDiskMessage`.
+   - Update all references (view models, tests) that sent `InsertDiskMessage`.
+   - This is the **breaking change** described above: the filesystem loading
+     paradigm is replaced, not deprecated.
+
+8. **Show project name in title bar.**
    - `MainWindowViewModel` reads `ISkilletProject.Metadata.Name` and updates
      the window title: "Pandowdy — {ProjectName}".
-   - When no project is open: "Pandowdy" (no suffix).
+   - Ad hoc project: "Pandowdy — untitled".
+   - After Save As: title updates to the saved project name.
 
-8. **Write tests for controller handlers and UI commands.**
+9. **Write tests for controller handlers and UI commands.**
    - `DiskIIControllerCardMountTests.cs` — mount/eject/export/eject-all handlers
-     (tests for step 1).
+     (tests for step 1). Verify `InsertDiskMessage` is no longer accepted.
    - `MainWindowViewModelProjectTests.cs` — project open/close/save commands,
-     title bar binding (tests for steps 4, 7).
+     title bar binding (tests for steps 4, 8).
    - `DiskStatusWidgetMountTests.cs` — mount from library picker triggers correct
-     message (tests for step 5, 6).
+     message (tests for steps 5, 6). Verify Insert Disk is always enabled.
 
 #### Deliverables
 
 | Artifact | State |
 |----------|-------|
 | Controller handlers | Mount, eject (updated), export, eject-all messages implemented |
-| DI wiring | `IDiskImageStore` injected into `DiskIIControllerCard` via factory |
+| DI wiring | `IDiskImageStore` injected into `DiskIIControllerCard` via factory (non-nullable) |
 | Emulator pause integration | `SaveAsync()` pauses, serializes mounted disks, resumes |
 | File menu | Project commands + Import/Export Disk |
 | Mount from Library picker | List dialog for mounting stored disk images |
 | Disk widget commands | Updated for project-based mount/eject/save |
+| `InsertDiskMessage` removed | Filesystem loading path eliminated — all loading via `IDiskImageStore` |
 | Title bar | Shows project name |
 | Test coverage | Controller handlers, UI commands, integration flows |
 
@@ -2054,15 +2220,19 @@ All resolution tests pass. Existing `GuiSettingsService` tests still pass.
 
 ### Phase 4: UI Polish — Start Page, Dialogs & Startup Flow
 
-**Goal:** Add the Start Page, new project dialog, startup auto-open flow, and
-recent projects list. These are the UI polish items that were not essential for
-Phase 2a's minimal workflow validation but complete the user-facing project
-experience.
+**Goal:** Add the Start Page as an optional project management panel, the new
+project dialog, and recent projects list. These are the UI polish items that were
+not essential for Phase 2a's minimal workflow validation but complete the
+user-facing project experience.
 
 **Depends on:** Phases 2a and 3 (minimal UI wiring, settings, recent projects).
 
 **Note:** File menu commands, disk widget commands, and the "Mount from Library"
 picker were pulled forward to Phase 2a. This phase adds the remaining UI pieces.
+
+**Note:** The Start Page is **not** a gate — the emulator workspace is always
+accessible because an ad hoc project exists on startup. The Start Page is an
+optional panel for project management (creating, opening, or switching projects).
 
 #### Steps
 
@@ -2074,27 +2244,26 @@ picker were pulled forward to Phase 2a. This phase adds the remaining UI pieces.
 2. **Create `StartPage.axaml`.**
    - `Pandowdy.UI/Views/StartPage.axaml` + code-behind.
    - Layout per §9.1: "Create New Project" panel + "Recent Projects" list.
+   - Shown as an optional panel or welcome overlay, not as a blocking gate.
 
 3. **Create `NewProjectDialogViewModel` and dialog.**
    - `Pandowdy.UI/ViewModels/NewProjectDialogViewModel.cs`
    - `Pandowdy.UI/Views/NewProjectDialog.axaml` + code-behind.
    - Fields: project name, folder location, file name.
+   - Also used for "Save Project As..." when an ad hoc project is being persisted.
 
-4. **Modify `MainWindow` to show Start Page when no project is open.**
-   - Add a `ContentControl` that switches between Start Page and the main workspace.
-   - When `ISkilletProjectManager.CurrentProject` is null → show Start Page.
+4. **Integrate Start Page into `MainWindow`.**
+   - Add a `ContentControl` that can show the Start Page as an overlay or panel.
+   - The workspace is always accessible regardless of Start Page visibility.
+   - Start Page is shown on launch when running with an ad hoc project (no
+     `active_project_path`) and can be dismissed.
 
-5. **Implement startup flow.**
-   - On launch: read `ActiveProjectPath` from `GuiSettings`.
-   - If file exists → auto-open project, skip Start Page.
-   - If not → show Start Page.
-
-6. **Add Recent Projects submenu to File menu.**
+5. **Add Recent Projects submenu to File menu.**
    - Populated from `GuiSettings.RecentProjects`.
-   - Clicking an entry opens that project.
+   - Clicking an entry opens that project (closes current, including ad hoc).
    - "Clear Recent" option.
 
-7. **Write tests for Start Page and project dialogs.**
+6. **Write tests for Start Page and project dialogs.**
    - `StartPageViewModelTests.cs` — recent projects list, create/open commands.
    - `NewProjectDialogViewModelTests.cs` — validation, path generation.
 
@@ -2102,16 +2271,16 @@ picker were pulled forward to Phase 2a. This phase adds the remaining UI pieces.
 
 | Artifact | State |
 |----------|-------|
-| Start Page | New view + view model, shown on launch |
-| New Project Dialog | New dialog for creating `.skillet` files |
+| Start Page | New view + view model, optional project management panel |
+| New Project Dialog | New dialog for creating `.skillet` files and Save As |
 | Recent Projects submenu | Populated from GuiSettings |
-| Startup auto-open | Reads `ActiveProjectPath`, opens project or shows Start Page |
+| Startup flow | Ad hoc project on startup; auto-open if `ActiveProjectPath` exists |
 
 #### Test Gate
 
 Start Page renders. Project creation flow works end-to-end via dialog. Recent
-projects list populates correctly. Startup auto-open works. Existing UI tests
-still pass.
+projects list populates correctly. Startup auto-open works. Ad hoc-to-file
+transition via Save As works. Existing UI tests still pass.
 
 ---
 
@@ -2147,10 +2316,10 @@ workflow. This phase runs after Phases 2a–4 are proven working.
    - Remove `DriveState` property from `GuiSettings`.
    - Remove DI registration for `IDriveStateService` from `Program.cs`.
 
-5. **Remove legacy `InsertDiskMessage` (file-path variant).**
-   - Evaluate whether `InsertDiskMessage(DriveNumber, DiskImagePath)` is still needed.
-   - If all insertion now flows through `MountDiskMessage` → remove it.
-   - If retained for future loose-disk mode → mark with `[Obsolete]` and document intent.
+5. **~~Remove legacy `InsertDiskMessage`~~ — handled in Phase 2a.**
+   - `InsertDiskMessage` and its filesystem loading handler were removed in Phase 2a
+     Step 7 as part of the paradigm shift to library-based disk loading. No evaluation
+     needed — the decision to remove (not deprecate) was made in Phase 2a.
 
 6. **Clean up `MainWindowViewModel` exit flow.**
    - `HandleExitAsync()` currently checks `dirtyDisks` via `DiskStatusWidgetViewModel`.
@@ -2497,8 +2666,8 @@ public sealed class RecentProject
 /// <summary>
 /// Message requesting a disk image be mounted from the project's disk image store.
 /// The controller calls IDiskImageStore.CheckOutAsync(DiskImageId) to obtain the
-/// InternalDiskImage. This replaces the file-path-based InsertDiskMessage for
-/// project-based workflows.
+/// InternalDiskImage. This replaces InsertDiskMessage entirely — all disk loading
+/// now flows through the .skillet library.
 /// </summary>
 public record MountDiskMessage(int DriveNumber, long DiskImageId) : ICardMessage;
 
@@ -2536,7 +2705,6 @@ public interface IDiskImageStore
 - `SwapDrivesMessage` — still needed
 - `SetWriteProtectMessage` — still needed
 - `InsertBlankDiskMessage` — still needed (blank disk → immediately stored in project)
-- `InsertDiskMessage` — retained for potential loose-disk mode (future)
 
 ### Modified Messages
 
@@ -2547,6 +2715,7 @@ public interface IDiskImageStore
 
 - `SaveDiskMessage` — obsolete (internal persistence replaces filesystem save)
 - `SaveDiskAsMessage` — replaced by `ExportDiskMessage`
+- `InsertDiskMessage` — removed in Phase 2a; filesystem-based disk loading eliminated entirely, replaced by `MountDiskMessage` + `IDiskImageStore.CheckOutAsync()`
 
 ---
 
@@ -2814,6 +2983,187 @@ Project references to add:
 <!-- Pandowdy.Project.Tests.csproj — add project reference -->
 <ProjectReference Include="..\Pandowdy.Project\Pandowdy.Project.csproj" />
 ```
+
+---
+
+## Appendix E: Ad Hoc Project Design
+
+### E.1 Concept
+
+Pandowdy **always** has an active project. When no named project file is
+specified — on first launch, after closing a project, or when the last
+`active_project_path` no longer exists — the system automatically creates an
+**ad hoc project**: an in-memory SQLite database (`Data Source=:memory:`) that
+behaves identically to any file-based `.skillet` project.
+
+**Key invariant:** `ISkilletProjectManager.CurrentProject` is **never null**.
+
+This eliminates an entire class of null guards throughout the codebase:
+`IDiskImageStore` injection is always non-nullable, "Insert Disk" is always
+enabled, settings resolution always has a project layer to query, and view
+models never need to check for a "no project" state.
+
+### E.2 Ad Hoc Project Properties
+
+| Property | Value |
+|----------|-------|
+| `FilePath` | `null` |
+| `IsAdHoc` | `true` |
+| `Metadata.Name` | `"untitled"` |
+| SQLite connection | `Data Source=:memory:` |
+| Schema | Full V1 schema (6 tables, all pragmas except WAL) |
+| `mount_configuration` | Default: slot 6, drives 1 & 2, empty |
+| `HasUnsavedChanges` | `true` if any disk images imported or settings modified |
+
+### E.3 Lifecycle
+
+```
+┌───────────────────────────────────────────────────────────────────┐
+│                    Ad Hoc Project Lifecycle                       │
+│                                                                   │
+│  1. CREATION (automatic)                                          │
+│     Startup with no active_project_path                           │
+│     CloseAsync() without opening another project                  │
+│     → CreateAdHocAsync() → in-memory SQLite → full V1 schema      │
+│                                                                   │
+│  2. USE (identical to file-based)                                 │
+│     Import disk images → mount → emulate → eject                  │
+│     All data lives in the in-memory SQLite database               │
+│                                                                   │
+│  3. TRANSITION (user-initiated)                                   │
+│     "Save Project As..." → VACUUM INTO 'filepath'                 │
+│     → Close in-memory connection → reopen as file-based           │
+│     → IsAdHoc becomes false, FilePath becomes non-null            │
+│     → Project is now a normal file-based .skillet project         │
+│                                                                   │
+│  4. DISCARD (on close without saving)                             │
+│     Close project → prompt if data exists → Discard               │
+│     → Dispose() closes in-memory connection → all data lost       │
+│     → New ad hoc created immediately                              │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+### E.4 Save Behavior
+
+| Command | Ad Hoc Project | File-Based Project |
+|---------|---------------|--------------------|
+| **Save Project** (Ctrl+Alt+S) | Disabled — no file path | Saves to existing file |
+| **Save Project As...** (Ctrl+Shift+S) | Persists to new file via `VACUUM INTO` | Saves copy to new file |
+| **Auto-save timer** | Skipped — nothing to auto-save to | Fires normally |
+| **Eject auto-flush** | Works normally — `ReturnAsync()` writes to in-memory `working_blob` | Works normally |
+| **Close Project** | Disabled when pristine; enabled when project has data | Always enabled |
+
+### E.5 Save As Mechanics
+
+The transition from ad hoc (in-memory) to file-based uses SQLite's `VACUUM INTO`
+command, available in SQLite 3.27.0+ (bundled in `SQLitePCLRaw.lib.e_sqlite3`):
+
+```sql
+VACUUM INTO 'C:\projects\myproject.skillet';
+```
+
+This atomically copies the entire in-memory database to a new file on disk. The
+output file is optimally compacted (no wasted pages). After the vacuum:
+
+1. Close the in-memory `SqliteConnection`.
+2. Open a new `SqliteConnection` with `Data Source=C:\projects\myproject.skillet`.
+3. Set pragmas (including `PRAGMA journal_mode = WAL` — now applicable).
+4. Update `ISkilletProject.FilePath` and `ISkilletProject.IsAdHoc`.
+5. Update `pandowdy-settings.json`: set `active_project_path`, add to recent list.
+6. Update title bar: "Pandowdy — {ProjectName}".
+
+The `ProjectIOThread` manages this transition internally — the connection swap
+happens on the IO thread, so callers never see an inconsistent state.
+
+**Transparent to EmuCore:** The connection swap does not disrupt any
+`InternalDiskImage` objects currently checked out by the emulator. Checked-out
+disk images are fully deserialized, in-memory .NET objects with no reference to
+the underlying `SqliteConnection` — they were produced by `DiskBlobStore.Deserialize()`
+at checkout time and exist independently of the database thereafter. The emulator
+continues reading and writing them at full speed throughout the transition.
+
+The swap is transparent to all `ISkilletProject` and `IDiskImageStore` consumers:
+
+- **Pending IO requests** (already enqueued before the swap) execute against the
+  old connection. They complete normally because the old connection is not closed
+  until the IO thread finishes the swap sequence.
+- **Future IO requests** (enqueued after the swap) execute against the new
+  file-based connection. The data is identical — `VACUUM INTO` made a complete copy.
+- **`ReturnAsync()` calls** from future eject operations write `working_blob` to
+  the new file-based database. The `disk_images.id` values are unchanged across
+  the vacuum, so the controller's stored `diskImageId` remains valid.
+- **`CheckOutAsync()` calls** for subsequent mounts read from the new file-based
+  database. Blob data is byte-identical to the in-memory version.
+
+The `SkilletProject` instance itself is preserved — `ISkilletProjectManager`
+does **not** dispose and recreate it. Only the internal `SqliteConnection` and
+the `FilePath` / `IsAdHoc` properties change. References held by other services
+(view models, card factory, settings resolver) remain valid without re-injection
+or event-driven updates.
+
+### E.6 Close / Discard Behavior
+
+**File-based projects** always have Close Project enabled:
+
+- **Clean file-based** (no dirty disks, no unsaved overrides): closes immediately
+  — no prompt. A new ad hoc project is created.
+- **Dirty file-based** (unsaved changes): prompt: "Save / Discard / Cancel".
+  Save writes to the existing file, then closes. A new ad hoc project is created.
+
+**Ad hoc projects** have Close Project enabled only when the project has content:
+
+- **Pristine ad hoc** (no imported disks, no overrides — initial creation state):
+  Close Project is **disabled** in the menu. The user cannot initiate a close.
+  This state is the starting point on launch or after closing another project.
+- **Ad hoc with data** (imported disks, settings overrides): prompt the user:
+  "You have unsaved work in the current project. Save before closing?"
+  - **Save As** → file dialog → `SaveAsAsync()` → then close and create new ad hoc.
+  - **Discard** → `Dispose()` → all in-memory data lost → new ad hoc created.
+  - **Cancel** → abort close operation.
+
+### E.7 Title Bar
+
+| State | Title |
+|-------|-------|
+| Ad hoc project | Pandowdy — untitled |
+| File-based project | Pandowdy — {ProjectName} |
+| File-based project (dirty) | Pandowdy — {ProjectName} * |
+
+### E.8 Impact on Start Page (Phase 4)
+
+The Start Page is **not** a gate that blocks the workspace. Because an ad hoc
+project always exists on startup, the emulator workspace is always accessible.
+The Start Page becomes an optional project management panel:
+
+- Shown as an overlay or sidebar on first launch (with ad hoc project).
+- Can be dismissed — the user can immediately start importing and using disks.
+- Provides "Create New Project", "Open Project", and "Recent Projects" actions.
+- Can be reopened via File menu or a toolbar button.
+
+### E.9 Impact on DI Wiring
+
+Because `CurrentProject` is never null:
+
+- `IDiskImageStore` is injected as **non-nullable** into `DiskIIControllerCard`.
+- `ICardFactory` accepts `IDiskImageStore` (not `IDiskImageStore?`).
+- `ISettingsResolver` always has a project layer to query.
+- View models do not need "no project" checks for disk operations.
+
+When the active project changes (open, close, Save As), the card factory and
+other consumers receive the new project's `IDiskImageStore` reference. The
+exact mechanism (re-injection, event, or re-creation) is an implementation
+detail resolved in Phase 2a.
+
+### E.10 Testing Considerations
+
+- **Unit tests** can use `CreateAdHocAsync()` to get a fully functional project
+  without filesystem involvement — simpler and faster than temp file creation.
+- **Round-trip tests** for Save As: create ad hoc → import disk → `SaveAsAsync()`
+  → open saved file → verify data integrity.
+- **Lifecycle tests**: create ad hoc → verify `IsAdHoc` → `SaveAsAsync()` →
+  verify `IsAdHoc` is false and `FilePath` is set.
+- **Close behavior tests**: ad hoc with data → close → verify prompt → discard →
+  verify new ad hoc created.
 
 ---
 

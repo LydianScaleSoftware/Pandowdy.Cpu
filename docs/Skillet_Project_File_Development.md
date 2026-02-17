@@ -1,6 +1,4 @@
 # Pandowdy Workstation Architecture & Project Model  
-## First‑Draft Conceptual Design Specification  
-(for use by downstream AI agents such as Claude Opus)
 
 ---
 
@@ -52,24 +50,35 @@ Pandowdy is still in pre‑release, so this transition is implemented as a clean
 - Exporting is the only way to write disk images back to the filesystem.
 - No backward compatibility with earlier versions is required.
 
-A future "loose‑disk mode" may return later as a **limited, non‑persistent convenience 
-mode**, implemented as a temporary in‑memory project. It will not replicate the old 
-file‑centric workflow.
+Pandowdy always has an active project. When no named project file is open, the
+system automatically creates an **ad hoc project** — an in‑memory SQLite database
+(`Data Source=:memory:`) that behaves identically to any file‑based `.skillet`
+project. The ad hoc project can be persisted to a file at any time via
+"Save Project As...". This replaces the previously envisioned "loose‑disk mode"
+with a simpler, unified model: there is always a project, and it always supports
+the full feature set.
 
 ---
 
-## 4. Startup Workflow (Visual‑Studio‑Inspired)  
-On launch, Pandowdy presents a **Start Page** offering:
+## 4. Startup Workflow  
+On launch, Pandowdy checks for a previously active project:
 
-1. **Open Recent Skillet Project**
-2. **Create New Skillet Project**
-3. **Open Disk Image (Limited Mode)** — optional, feature‑limited, and clearly labeled
+1. If an `active_project_path` exists in settings and the file is present,
+   the project is opened automatically and the workspace is shown.
+2. Otherwise, an **ad hoc project** (in‑memory SQLite) is created automatically
+   and the workspace is shown immediately.
 
-This mirrors Visual Studio’s project‑centric workflow and communicates that 
-`.skillet` projects are the primary mode of operation.
+The emulator workspace is **always accessible** — even with an ad hoc project,
+users can import disk images, mount them, and use the emulator. There is no
+gated Start Page that blocks the workspace.
 
-During early development, Pandowdy will operate in a **skillet‑mandatory mode**,
-with loose‑disk mode disabled or hidden.  The Limited Mode will be a later addition.
+An optional **Start Page** panel (implemented in a later phase) provides
+project management actions: "Create New Project", "Open Project", and
+"Recent Projects". It is an overlay or sidebar, not a prerequisite for
+using the emulator.
+
+The key invariant: `ISkilletProjectManager.CurrentProject` is **never null**.
+This eliminates null guards throughout the codebase and simplifies DI wiring.
 
 ---
 
@@ -223,15 +232,23 @@ The `.skillet` architecture supports all of these without branching logic.
 
 ---
 
-## 11. Future Loose‑Disk Mode  
-Loose‑disk mode may be reintroduced later as:
+## 11. Ad Hoc Project Model  
+The previously envisioned "loose‑disk mode" has been superseded by the **ad hoc
+project** — an in‑memory `.skillet` that is always created when no named project
+is open:
 
-- a temporary in‑memory `.skillet`
-- non‑persistent
-- feature‑limited
-- intended for quick testing
+- Backed by `Data Source=:memory:` (SQLite in‑memory database)
+- Full V1 schema — all features available (import, mount, settings overrides)
+- Non‑persistent by default (data is lost when the connection is closed)
+- Persistable via "Save Project As..." using `VACUUM INTO` to atomically
+  copy the in‑memory database to a new file on disk
+- The `SkilletProject` instance is preserved across the Save As transition;
+  only the internal `SqliteConnection` and `FilePath` / `IsAdHoc` properties
+  change. References held by other services remain valid.
+- The ad hoc project name is `"untitled"`
 
-It will not replicate the old file‑centric workflow.
+This unified model eliminates the need for a separate "limited mode" and ensures
+that all code paths operate against a single project abstraction.
 
 ---
 
@@ -240,6 +257,10 @@ Pandowdy is transitioning to a **project‑centric workstation architecture**.
 
 The `.skillet` file, implemented as a SQLite database, becomes the 
 authoritative container for all project state.
+
+Pandowdy **always** has an active project. When no named project file is open,
+an in‑memory ad hoc project provides the full feature set. The ad hoc project
+can be persisted to a file at any time via "Save Project As...".
 
 JSON files store global defaults and workstation preferences.
 

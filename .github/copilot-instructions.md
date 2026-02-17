@@ -217,3 +217,15 @@ The Disk II controller emulation reflects hardware-accurate motor control:
 
 ## Disk Image Formats
 - When discussing disk image formats, use "nibble format" instead of ".nib" or ".nib extension" to work around rendering/display issues in VS.
+
+## Keyboard Shortcuts
+
+### Apple IIe Keyboard Emulation
+- EmuCore captures Ctrl+A through Ctrl+Z (ASCII 1-26) for Apple IIe keyboard emulation.
+- GUI keyboard shortcuts must avoid bare Ctrl+letter combinations.
+- Preferred patterns: 
+  - Ctrl+Shift+letter
+  - Ctrl+Alt+letter
+  - Alt+letter
+  - Multi-keystroke sequences
+- Simple Ctrl+letter is reserved for the emulator (unless focused in a future editor window).
