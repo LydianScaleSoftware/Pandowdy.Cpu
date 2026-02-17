@@ -38,10 +38,52 @@ internal sealed class SkilletProject : ISkilletProject
     {
         return EnqueueAsync(conn =>
         {
-            // TODO: Use IDiskImageImporter to load the file into InternalDiskImage
-            // For now, placeholder implementation returns 0
-            // Full implementation in Phase 2
-            return 0L;
+            // Detect format from file extension
+            var format = DiskFormatHelper.GetFormatFromPath(filePath);
+            if (format == DiskFormat.Unknown)
+            {
+                throw new ArgumentException($"Unsupported disk image format: {Path.GetExtension(filePath)}", nameof(filePath));
+            }
+
+            // Get importer and load the disk image
+            var importer = DiskImageFactory.GetImporter(format);
+            var diskImage = importer.Import(filePath);
+
+            // Serialize both original and working copy to PIDI format
+            var blob = DiskBlobStore.Serialize(diskImage);
+
+            // Insert disk image record
+            var now = DateTime.UtcNow.ToString("o");
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = $"""
+                INSERT INTO {SkilletConstants.TableDiskImages}
+                    (name, original_filename, original_format, import_source_path, imported_utc,
+                     whole_track_count, optimal_bit_timing, is_write_protected, persist_working, notes,
+                     original_blob, working_blob, working_dirty, created_utc, modified_utc)
+                VALUES
+                    (@name, @originalFilename, @originalFormat, @importSourcePath, @importedUtc,
+                     @wholeTrackCount, @optimalBitTiming, @isWriteProtected, @persistWorking, @notes,
+                     @originalBlob, @workingBlob, 0, @createdUtc, @modifiedUtc);
+                SELECT last_insert_rowid();
+                """;
+
+            cmd.Parameters.AddWithValue("@name", name);
+            cmd.Parameters.AddWithValue("@originalFilename", Path.GetFileName(filePath));
+            cmd.Parameters.AddWithValue("@originalFormat", format.ToString());
+            cmd.Parameters.AddWithValue("@importSourcePath", filePath);
+            cmd.Parameters.AddWithValue("@importedUtc", now);
+            cmd.Parameters.AddWithValue("@wholeTrackCount", diskImage.PhysicalTrackCount);
+            cmd.Parameters.AddWithValue("@optimalBitTiming", diskImage.OptimalBitTiming);
+            cmd.Parameters.AddWithValue("@isWriteProtected", diskImage.IsWriteProtected ? 1 : 0);
+            cmd.Parameters.AddWithValue("@persistWorking", 1);
+            cmd.Parameters.AddWithValue("@notes", (object?)DBNull.Value);
+            cmd.Parameters.AddWithValue("@originalBlob", blob);
+            cmd.Parameters.AddWithValue("@workingBlob", blob); // Initial working copy = original
+            cmd.Parameters.AddWithValue("@createdUtc", now);
+            cmd.Parameters.AddWithValue("@modifiedUtc", now);
+
+            var result = cmd.ExecuteScalar();
+            return Convert.ToInt64(result);
         });
     }
 
@@ -230,6 +272,24 @@ internal sealed class SkilletProject : ISkilletProject
         });
     }
 
+    // IDiskImageStore implementation
+
+    /// <summary>
+    /// Checks out a disk image for use by the emulator (IDiskImageStore.CheckOutAsync).
+    /// </summary>
+    public Task<InternalDiskImage> CheckOutAsync(long diskImageId)
+    {
+        return LoadDiskImageAsync(diskImageId);
+    }
+
+    /// <summary>
+    /// Returns a disk image to the store after ejection (IDiskImageStore.ReturnAsync).
+    /// </summary>
+    public Task ReturnAsync(long diskImageId, InternalDiskImage image)
+    {
+        return SaveDiskImageAsync(diskImageId, image);
+    }
+
     // Mount configuration
 
     public Task<IReadOnlyList<MountConfiguration>> GetMountConfigurationAsync()
@@ -340,7 +400,10 @@ internal sealed class SkilletProject : ISkilletProject
 
     // IO thread helpers
 
-    private Task<T> EnqueueAsync<T>(Func<SqliteConnection, T> operation)
+    /// <summary>
+    /// Internal helper for tests to execute operations on the IO thread.
+    /// </summary>
+    internal Task<T> EnqueueAsync<T>(Func<SqliteConnection, T> operation)
     {
         return _ioThread.EnqueueAsync(operation);
     }

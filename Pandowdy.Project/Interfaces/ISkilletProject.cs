@@ -10,7 +10,13 @@ namespace Pandowdy.Project.Interfaces;
 /// <summary>
 /// Represents an open .skillet project with read/write access.
 /// </summary>
-public interface ISkilletProject : IDisposable
+/// <remarks>
+/// <para>
+/// Extends <see cref="IDiskImageStore"/> to allow the controller card to check out
+/// and return disk images during mount/eject operations.
+/// </para>
+/// </remarks>
+public interface ISkilletProject : IDiskImageStore, IDisposable
 {
     /// <summary>
     /// Gets the file path of the .skillet project.

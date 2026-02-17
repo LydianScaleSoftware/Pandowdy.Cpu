@@ -100,9 +100,21 @@ internal static class DiskBlobStore
                 deflateStream.Write(BitConverter.GetBytes(bitCount));
                 deflateStream.Write(BitConverter.GetBytes(byteCount));
 
-                // TODO: Access CircularBitBuffer underlying byte array
-                // For Phase 1, this is a placeholder that will be completed when disk import is implemented in Phase 2
-                throw new NotImplementedException("DiskBlobStore.Serialize requires CircularBitBuffer byte array access (Phase 2)");
+                // Extract raw bytes from CircularBitBuffer using public API only
+                // Save the current position, read all bytes, then restore position
+                var cbb = diskImage.QuarterTracks[i]!;
+                int savedPosition = cbb.BitPosition;
+                cbb.BitPosition = 0;
+
+                var trackBytes = new byte[byteCount];
+                for (int j = 0; j < byteCount; j++)
+                {
+                    trackBytes[j] = cbb.ReadOctet();
+                }
+
+                cbb.BitPosition = savedPosition;  // Restore original position
+
+                deflateStream.Write(trackBytes);
             }
         }
 
