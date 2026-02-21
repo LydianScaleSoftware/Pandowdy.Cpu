@@ -267,7 +267,7 @@ public sealed class VA2MBus : IAppleIIBus, IDisposable
     public void Reset()
     {
         ThrowIfDisposed();
-        
+
         _addressSpace.Reset();
         _cpu!.Reset(this);
         _clockCounters.Reset();

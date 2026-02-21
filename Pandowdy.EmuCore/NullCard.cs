@@ -73,7 +73,7 @@ namespace Pandowdy.EmuCore;
 /// Initializes a new instance of the <see cref="NullCard"/> class.
 /// </remarks>
 /// <param name="responseEmitter">The card response emitter for sending card responses.</param>
-public class NullCard(ICardResponseEmitter responseEmitter) : ICard
+public class NullCard(ICardResponseEmitter responseEmitter) : ICard 
 {
     private readonly ICardResponseEmitter _responseEmitter = responseEmitter;
     private SlotNumber _slotNumber = SlotNumber.Unslotted;

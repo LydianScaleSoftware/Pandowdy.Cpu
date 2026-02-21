@@ -254,7 +254,7 @@ public sealed class SoftSwitches
         ResetAllSwitches();
     }
 
-   
+
 
 
     /// <summary>

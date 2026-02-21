@@ -129,7 +129,7 @@ public interface IKeyboardSetter
         /// <para>
         /// <strong>Purpose:</strong> This method simulates a hardware reset (power cycle) of the Apple IIe
         /// keyboard system. It is typically called when the emulator performs a cold boot or system reset
-        /// via <see cref="IEmulatorCoreInterface.Reset"/>.
+        /// via <see cref="IEmulatorCoreInterface.DoReset"/>.
         /// </para>
         /// <para>
         /// <strong>Reset Behavior:</strong>

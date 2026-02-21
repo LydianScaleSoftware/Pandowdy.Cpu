@@ -260,7 +260,7 @@ public sealed class AddressSpaceController : IPandowdyMemory, IMemoryAccessNotif
         _ => _systemRam.Read(address)                // $0000-$BFFF
 };
 
-public void Reset()
+    public void Reset()
     {
         _slots.Reset();
         _io.Reset();
@@ -311,7 +311,7 @@ public void Reset()
         MemoryWritten?.Invoke(this, new MemoryAccessEventArgs { Address = address, Value = value });
     }
 
-    /// <summary>
+    /// <summary> 
     /// Releases all resources used by this instance.
     /// </summary>
     /// <remarks>

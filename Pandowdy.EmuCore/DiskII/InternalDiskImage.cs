@@ -166,6 +166,7 @@ public class InternalDiskImage
 
     /// <summary>
     /// Destination file path for save operations (null until set by import derivation or Save As).
+    /// </summary>
     /// <remarks>
     /// <para>
     /// When a disk is imported, this is derived from <see cref="SourceFilePath"/> with a "_new"

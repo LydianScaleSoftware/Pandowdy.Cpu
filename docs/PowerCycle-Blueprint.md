@@ -1,7 +1,7 @@
 # PowerCycle Blueprint — VA2M Power Lifecycle
 
 **Status:** Design  
-**Branch:** `PowerCycle` (to be created from `skillet`)  
+**Branch:** `CoreUpdates` (to be created from `skillet`)  
 **Date:** 2026-01  
 **Depends on:** Skillet project system (mount/eject/store already implemented)  
 **Blocked by this:** Skillet project switching (New/Open/Close project requires cold boot)
@@ -188,6 +188,9 @@ public interface ISystemIoHandler : IRestartable { ... }
 
 // IAppleIIBus gains Restart() via IRestartable
 public interface IAppleIIBus : IRestartable { ... }
+
+// IDiskIIDrive gains Restart() via IRestartable
+public interface IDiskIIDrive : IRestartable { ... }
 
 // Standalone subsystem interfaces
 public interface ISystemRamSelector : IPandowdyMemory, IRestartable { ... }
@@ -391,9 +394,17 @@ public void Restart()
 **Note:** Mounted disks (`_mountedDiskImageIds`) are NOT cleared. Disk ejection
 happens at the project level via `EjectAllDisksMessage` before `Restart()`.
 
-### 4.12 IDiskIIDrive Implementations
+### 4.12 IDiskIIDrive and Implementations
 
-**Change:** Add `Restart()` that resets mechanical state:
+**`IDiskIIDrive`** already declares `Reset()`. It now also extends `IRestartable`:
+
+```csharp
+public interface IDiskIIDrive : IRestartable { ... }
+```
+
+Four classes implement `IDiskIIDrive` and each needs `Restart()`:
+
+**`DiskIIDrive`** (concrete drive) — resets mechanical state to power-on:
 
 ```csharp
 public void Restart()
@@ -402,6 +413,62 @@ public void Restart()
     _headPosition = 0;
     _phaseMagnets = 0;
     // Disk media stays inserted (if any)
+}
+```
+
+**`NullDiskIIDrive`** (empty slot placeholder) — no-op:
+
+```csharp
+public void Restart() { } // No state to clear
+```
+
+**`DiskIIStatusDecorator`** (publishes drive state to `IDiskStatusMutator`) —
+delegates to inner drive then syncs status to reflect cold state. The existing
+`SyncStatus()` call is already correct:
+
+```csharp
+public void Restart()
+{
+    _innerDrive.Restart(); // Resets head to track 0, clears phase magnets
+    SyncStatus();          // Republishes cleared state to IDiskStatusMutator
+}
+```
+
+**`DiskIIDebugDecorator`** (debug logging wrapper) — delegates transparently:
+
+```csharp
+public void Restart() => _innerDrive.Restart();
+```
+
+**Decorator call chain** — `DiskIIControllerCard` holds the outermost decorator.
+Calling `drive.Restart()` on the outermost layer propagates inward:
+```
+DiskIIDebugDecorator.Restart()
+  → DiskIIStatusDecorator.Restart()   // syncs status after
+      → DiskIIDrive.Restart()          // resets track 0, phases
+```
+
+### 4.12a NoSlotClockIoHandler
+
+**Current state:** `NoSlotClockIoHandler` is a decorator on `ISystemIoHandler`
+that implements the Dallas DS1216 No-Slot Clock protocol. Its `Reset()` resets
+the NSC state machine (pattern-match state, bit index, clock data accumulator)
+but deliberately **preserves `_timeOffsetTicks`** — modelling the battery-backed
+clock hardware that retains the time across power cycles.
+
+**Change:** `Restart()` is identical in behaviour to `Reset()` — the time offset
+survives both warm reset and power cycle, just as real battery-backed hardware
+would:
+
+```csharp
+public void Restart()
+{
+    _downstream.Restart();          // Restart the wrapped ISystemIoHandler
+    _state = NscState.Matching;
+    _bitIndex = 0;
+    _patternAccumulator = 0;
+    _clockData = 0;
+    // _timeOffsetTicks preserved intentionally — battery-backed RTC
 }
 ```
 
@@ -676,6 +743,7 @@ Existing interfaces that now extend `IRestartable`:
 | `ISlots` | `ISlots : IPandowdyMemory, IConfigurable, IRestartable` — iterates cards |
 | `ISystemIoHandler` | `ISystemIoHandler : IRestartable` — delegates to SoftSwitches |
 | `IAppleIIBus` | `IAppleIIBus : IRestartable` — flows to AddressSpace + CPU + counters |
+| `IDiskIIDrive` | `IDiskIIDrive : IRestartable` — mechanical state reset (track 0, phases) |
 | `ISystemRamSelector` | Extends `IRestartable` — clears both 48K banks |
 | `ILanguageCard` | Extends `IRestartable` — clears both 16K banks |
 | `IKeyboardSetter` | Extends `IRestartable` — delegates to `ResetKeyboard()` |
@@ -702,9 +770,14 @@ Classes that implement `IRestartable` through their interface:
 | `SystemRamSelector` | Via `ISystemRamSelector : IRestartable` |
 | `LanguageCard` | Via `ILanguageCard : IRestartable` |
 | `SystemIoHandler` | Via `ISystemIoHandler : IRestartable` |
+| `NoSlotClockIoHandler` | Via `ISystemIoHandler : IRestartable` — same as `Reset()`; `_timeOffsetTicks` preserved (battery-backed) |
 | `Slots` | Via `ISlots : IRestartable` |
 | `NullCard` | Via `ICard : IRestartable` — no-op |
 | `DiskIIControllerCard` (both variants) | Via `ICard : IRestartable` — full cold init |
+| `DiskIIDrive` | Via `IDiskIIDrive : IRestartable` — resets track 0, phase magnets |
+| `NullDiskIIDrive` | Via `IDiskIIDrive : IRestartable` — no-op |
+| `DiskIIStatusDecorator` | Via `IDiskIIDrive : IRestartable` — delegates + `SyncStatus()` |
+| `DiskIIDebugDecorator` | Via `IDiskIIDrive : IRestartable` — transparent delegation |
 | `QueuedKeyHandler` | Via `IKeyboardSetter : IRestartable` |
 | `SimpleGameController` | Via `IGameControllerStatus : IRestartable` |
 | `VA2MBus` | Via `IAppleIIBus : IRestartable` |
@@ -834,35 +907,38 @@ project switching to work correctly.**
 ### Phase 3: I/O and Cards
 
 7. `ISystemIoHandler : IRestartable` + `SystemIoHandler.Restart()`
-8. `ICard : IRestartable` + `NullCard.Restart()`
-9. `DiskIIControllerCard.Restart()` (both 13-sector and 16-sector)
-10. `IDiskIIDrive` Restart implementations
-11. `ISlots : IRestartable` + `Slots.Restart()`
+8. `NoSlotClockIoHandler.Restart()` (same as `Reset()`; `_timeOffsetTicks` preserved)
+9. `ICard : IRestartable` + `NullCard.Restart()`
+10. `IDiskIIDrive : IRestartable` + `DiskIIDrive.Restart()` + `NullDiskIIDrive.Restart()`
+11. `DiskIIStatusDecorator.Restart()` (delegate + `SyncStatus()`)
+12. `DiskIIDebugDecorator.Restart()` (transparent delegation)
+13. `DiskIIControllerCard.Restart()` (both 13-sector and 16-sector)
+14. `ISlots : IRestartable` + `Slots.Restart()`
 
 ### Phase 4: Bus and Controller
 
-12. `AddressSpaceController : IRestartable`
-13. `IAppleIIBus : IRestartable` + `VA2MBus.Restart()`
+15. `AddressSpaceController : IRestartable`
+16. `IAppleIIBus : IRestartable` + `VA2MBus.Restart()`
 
 ### Phase 5: Power State Service + Top Level
 
-14. `IPowerStateProvider` + `IPowerStateMutator` + `PowerStateProvider` (NEW)
-15. DI registration for `PowerStateProvider` (split read/write interfaces)
-16. `VA2M.Restart()` + `PowerOff()` + `PowerOn()` (publishes via `IPowerStateMutator`)
-17. `VA2M._isPoweredOn` starts as `false` (machine OFF at construction)
-18. `IEmulatorCoreInterface` additions (`Restart`, `PowerOff`, `PowerOn`)
+17. `IPowerStateProvider` + `IPowerStateMutator` + `PowerStateProvider` (NEW)
+18. DI registration for `PowerStateProvider` (split read/write interfaces)
+19. `VA2M.Restart()` + `PowerOff()` + `PowerOn()` (publishes via `IPowerStateMutator`)
+20. `VA2M._isPoweredOn` starts as `false` (machine OFF at construction)
+21. `IEmulatorCoreInterface` additions (`Restart`, `PowerOff`, `PowerOn`)
 
 ### Phase 6: DI Wiring Fix
 
-19. `DiskImageStoreFacade` + DI registration change
+22. `DiskImageStoreFacade` + DI registration change
 
 ### Phase 7: Integration
 
-20. Update `MainWindow.InitialStartup()`: subscribe to `IPowerStateProvider.Stream`, then call `PowerOn()` instead of `Reset()` + `OnEmuStartClicked()`
-21. Update `CloseProjectInternalAsync()` to call `PowerOff()`
-22. Update `OpenProjectAsync()` / `NewProjectAsync()` to call `PowerOn()`
-23. Update `OnClosingAsync()` exit path
-24. GUI cosmetic handling: subscribe `Apple2Display` / `MainWindowViewModel` to `IPowerStateProvider.Stream`
+23. Update `MainWindow.InitialStartup()`: subscribe to `IPowerStateProvider.Stream`, then call `PowerOn()` instead of `Reset()` + `OnEmuStartClicked()`
+24. Update `CloseProjectInternalAsync()` to call `PowerOff()`
+25. Update `OpenProjectAsync()` / `NewProjectAsync()` to call `PowerOn()`
+26. Update `OnClosingAsync()` exit path
+27. GUI cosmetic handling: subscribe `Apple2Display` / `MainWindowViewModel` to `IPowerStateProvider.Stream`
 
 ### Phase 8: Testing
 

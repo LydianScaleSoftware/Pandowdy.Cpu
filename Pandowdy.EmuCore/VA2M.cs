@@ -444,6 +444,8 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// </remarks>
     private readonly CpuClockingCounters _clockCounters;
 
+    private readonly ResetCollection _resetters;
+
     /// <summary>
     /// Frame counter for snapshot debugging and diagnostics.
     /// </summary>
@@ -574,7 +576,8 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
             IDiskStatusProvider diskStatusProvider,
             CpuClockingCounters clockCounters,
             IMemoryInspector memoryInspector,
-            ISlots slots)
+            ISlots slots,
+            ResetCollection resetters)
         {
             ArgumentNullException.ThrowIfNull(stateSink);
             ArgumentNullException.ThrowIfNull(frameSink);
@@ -589,10 +592,11 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
             ArgumentNullException.ThrowIfNull(diskStatusProvider);
             ArgumentNullException.ThrowIfNull(clockCounters);
             ArgumentNullException.ThrowIfNull(memoryInspector);
-            ArgumentNullException.ThrowIfNull(slots);
+        ArgumentNullException.ThrowIfNull(slots);
+        ArgumentNullException.ThrowIfNull(resetters);
 
 
-            _stateSink = stateSink;
+        _stateSink = stateSink;
             _frameSink = frameSink;
             _sysStatusSink = statusProvider;
             _diskStatusProvider = diskStatusProvider;
@@ -604,6 +608,7 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
         _clockCounters = clockCounters;
         _memoryInspector = memoryInspector;
         _slots = slots;
+        _resetters = resetters;
         Bus = bus;
         MemoryPool = memoryPool;
 
@@ -1093,10 +1098,14 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// instruction boundary, respecting 6502 atomic instruction guarantees.
     /// </para>
     /// </remarks>
-    public void Reset()
+    public void DoReset()
     {
         Enqueue(() =>
         {
+            // Perform full system reset (CPU, memory, soft switches, etc.) on anything
+            // implementing IResetable capability attribute `[Capability(typeof(IResetable))]`
+            _resetters.ResetAll();
+
             // Reset keyboard state (clear pending keystrokes and strobe)
             _keyboardSetter.ResetKeyboard();
 
@@ -1111,7 +1120,7 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
             // Reset adaptive throttling state
             _throttleErrorAccumulator = 0;
             _throttleLastError = 0;
-            _adaptiveSpinWaitIterations = 100;
+            _adaptiveSpinWaitIterations = 100;        
         });
     }
 
@@ -1387,11 +1396,11 @@ public class VA2M : IDisposable,  IEmulatorCoreInterface
     /// <para>
     /// <strong>Thread Safety:</strong> This method is thread-safe. It enqueues the keyboard reset
     /// command which will be executed on the emulator thread at the next instruction boundary
-    /// (via ProcessAnyPendingActions). This is typically called internally by <see cref="Reset"/>
+    /// (via ProcessAnyPendingActions). This is typically called internally by <see cref="DoReset"/>
     /// during full system reset.
     /// </para>
     /// <para>
-    /// <strong>Note:</strong> For full system reset (power cycle), use <see cref="Reset"/> instead,
+    /// <strong>Note:</strong> For full system reset (power cycle), use <see cref="DoReset"/> instead,
     /// which resets the entire emulator including CPU, memory, and all peripherals.
     /// </para>
     /// </remarks>

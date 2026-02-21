@@ -83,7 +83,7 @@ public interface IEmulatorCoreInterface : IKeyboardSetter
     /// throttle stopwatch, and resets performance measurement counters.
     /// </para>
     /// </remarks>
-    void Reset();
+    void DoReset();
     
    
     /// <summary>
@@ -118,7 +118,7 @@ public interface IEmulatorCoreInterface : IKeyboardSetter
     /// <para>
     /// <strong>Thread Safety:</strong> Thread-safe. The message is enqueued on the emulator
     /// thread's command queue and executed at the next instruction boundary, identical to
-    /// Reset() and EnqueueKey(). The returned Task allows the caller to await completion
+    /// DoReset() and EnqueueKey(). The returned Task allows the caller to await completion
     /// and observe any errors.
     /// </para>
     /// <para>

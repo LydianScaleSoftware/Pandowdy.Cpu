@@ -64,7 +64,7 @@ public class EmulatorStateViewModelTests
         public void SetPushButton(byte button, bool pressed) { }
         public void EnqueueKey(byte key) { }
         public void ResetKeyboard() { }
-        public void Reset() { }
+        public void DoReset() { }
     }
 
     /// <summary>

@@ -1117,7 +1117,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
         // Reset to establish known initial state
         System.Diagnostics.Debug.WriteLine("[MainWindow] Resetting machine to initial state");
-        _machine.Reset();
+        _machine.DoReset();
 
         // Start emulator thread
         System.Diagnostics.Debug.WriteLine("[MainWindow] Starting emulator thread");
@@ -1299,7 +1299,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     { 
         if (_depsInjected) 
         { 
-            _machine?.Reset(); 
+            _machine?.DoReset(); 
         } 
     }
 
