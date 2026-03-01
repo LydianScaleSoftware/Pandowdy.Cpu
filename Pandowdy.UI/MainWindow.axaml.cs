@@ -78,7 +78,7 @@ namespace Pandowdy.UI;
 /// var factory = serviceProvider.GetRequiredService&lt;IMainWindowFactory&gt;();
 /// var mainWindow = factory.Create();
 /// mainWindow.Show();
-/// 
+///
 /// // Incorrect: Manual construction
 /// var mainWindow = new MainWindow(); // Missing dependencies!
 /// </code>
@@ -89,14 +89,14 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     #region Private Fields
 
     //  private readonly AppHook mAppHook = new(new SimpleMessageLog());
-    
+
     /// <summary>
     /// Temporary disk read test functionality (will be removed in future refactoring).
     /// </summary>
 #pragma warning disable CS0169 // Field is never used - reserved for future disk image support
     private DiskReadTestTemp? mDiskReadTest;
 #pragma warning restore CS0169
-    
+
     /// <summary>
     /// Last used directory path for disk file operations.
     /// </summary>
@@ -114,7 +114,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// and execution control via RunAsync, Clock, and ThrottleEnabled.
     /// </remarks>
     private IEmulatorCoreInterface? _machine;
-    
+
     /// <summary>
     /// Cancellation token source for controlling emulator thread lifetime.
     /// </summary>
@@ -159,7 +159,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// True while mouse pointer is over the menu bar (prevents keyboard capture).
     /// </summary>
     private bool _menuPointerActive;
-    
+
     /// <summary>
     /// Guard flag ensuring Initialize() is called exactly once.
     /// </summary>
@@ -253,7 +253,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// // Correct: Use factory
     /// var factory = serviceProvider.GetRequiredService&lt;IMainWindowFactory&gt;();
     /// var window = factory.Create();
-    /// 
+    ///
     /// // Incorrect: Manual construction (missing dependencies!)
     /// var window = new MainWindow();
     /// </code>
@@ -262,7 +262,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     public MainWindow()
     {
         InitializeComponent();
-        
+
         // Setup menu interaction handlers using x:Name generated field or fallback
         var mainMenu = GetMainMenu();
         if (mainMenu != null)
@@ -270,10 +270,10 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             mainMenu.PointerEntered += (_, __) => _menuPointerActive = true;
             mainMenu.PointerExited += (_, __) => _menuPointerActive = false;
         }
-        
+
         // Track window size changes to save "normal" bounds (for maximized restoration)
         this.PropertyChanged += OnWindowPropertyChanged;
-        
+
         // No FindControl calls needed - controls are available via x:Name fields (with fallback)
         // Defer attaching machine/frame until Initialize, which should be called next.
     }
@@ -289,26 +289,26 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             var oldState = _previousWindowState;
             var newState = WindowState;
             System.Diagnostics.Debug.WriteLine($"[MainWindow] WindowState changed: {oldState} â†’ {newState}");
-            
+
             _previousWindowState = newState;
-            
+
             // If transitioning TO Maximized, find the last valid user-set size from history
             if (oldState == WindowState.Normal && newState == WindowState.Maximized)
             {
                 var now = DateTime.UtcNow;
                 var threshold = TimeSpan.FromMilliseconds(SizeHistoryThresholdMs);
-                
+
                 // Walk backwards through history to find a size that's old enough to be a real user action
                 (int Left, int Top, int Width, int Height)? validBounds = null;
                 var historyArray = _sizeHistory.ToArray();
-                
+
                 for (int i = historyArray.Length - 1; i >= 0; i--)
                 {
                     var entry = historyArray[i];
                     var age = now - entry.Timestamp;
-                    
+
                     System.Diagnostics.Debug.WriteLine($"[MainWindow] History[{i}]: {entry.Width}x{entry.Height} at ({entry.Left},{entry.Top}) age={age.TotalMilliseconds:F0}ms");
-                    
+
                     // Find the first entry that's older than our threshold
                     if (age >= threshold)
                     {
@@ -317,7 +317,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                         break;
                     }
                 }
-                
+
                 // If we found a valid historical size, use it; otherwise fall back to current
                 if (validBounds.HasValue)
                 {
@@ -340,7 +340,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             }
             return;
         }
-        
+
         // Track size changes in history ONLY when in Normal state
         if ((e.Property == WidthProperty || e.Property == HeightProperty))
         {
@@ -352,16 +352,16 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
                 var newWidth = (int)Width;
                 var newHeight = (int)Height;
                 var now = DateTime.UtcNow;
-                
+
                 // Add to circular buffer
                 _sizeHistory.Enqueue((newLeft, newTop, newWidth, newHeight, now));
-                
+
                 // Keep buffer size limited
                 while (_sizeHistory.Count > MaxSizeHistoryCount)
                 {
                     _sizeHistory.Dequeue();
                 }
-                
+
                 // Also update _normalBounds directly for non-maximize scenarios
                 _normalBounds = (newLeft, newTop, newWidth, newHeight);
                 System.Diagnostics.Debug.WriteLine($"[MainWindow] Added to history: {newWidth}x{newHeight} at ({newLeft},{newTop}) (history size={_sizeHistory.Count})");
@@ -476,7 +476,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
         {
             throw new InvalidOperationException("ScreenDisplay control not found. Ensure x:Name='ScreenDisplay' is set in XAML.");
         }
-        
+
         // Initialize status panel with its view model
         var statusPanel = SoftSwitchStatusPanel ?? this.FindControl<SoftSwitchStatusPanel>("SoftSwitchStatusPanel");
         statusPanel?.Initialize(viewModel.SystemStatus);
@@ -650,7 +650,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             diskPanel.IsVisible = isVisible;
         }
     }
-    
+
     /// <summary>
     /// Gets the Apple2Display control with fallback to FindControl.
     /// </summary>
@@ -659,7 +659,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// First attempts to use the x:Name generated field, falls back to FindControl if needed.
     /// </remarks>
     private Apple2Display? GetScreenDisplay() => ScreenDisplay ?? this.FindControl<Apple2Display>("ScreenDisplay");
-    
+
     /// <summary>
     /// Gets the main menu control with fallback to FindControl.
     /// </summary>
@@ -707,7 +707,7 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     {
         base.OnOpened(e);
         if (!_depsInjected) { return; }
-        
+
         // If MainWindowFactory flagged this window to be maximized, do it now
         // (after the window is shown, so restore bounds are properly set)
         if (Tag is string tag && tag == "ShouldMaximize")
@@ -715,14 +715,14 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             WindowState = WindowState.Maximized;
             Tag = null; // Clear the flag
         }
-        
+
         // Windows 11 workaround: Reapply saved position after a short delay
         // This gives Windows 11 time to do its "smart" placement, then we override it with our saved position
         ApplyWindows11PositionFallback();
-        
+
         var screenDisplay = ScreenDisplay ?? this.FindControl<Apple2Display>("ScreenDisplay");
         screenDisplay?.Focus();
-        
+
         if (_refreshTicker != null && screenDisplay != null)
         {
             _refreshTicker.Start();
@@ -1280,12 +1280,12 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     /// CPU instruction completes, maintaining 6502 atomic instruction guarantees.
     /// </para>
     /// </remarks>
-    private void OnEmuResetClicked(object? sender, RoutedEventArgs e) 
-    { 
-        if (_depsInjected) 
-        { 
-            _machine?.DoReset(); 
-        } 
+    private void OnEmuResetClicked(object? sender, RoutedEventArgs e)
+    {
+        if (_depsInjected)
+        {
+            _machine?.DoReset();
+        }
     }
 
     /// <summary>
@@ -1947,16 +1947,15 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
             case Key.F10:
                 ViewModel?.ToggleCapsLock.Execute().Subscribe();
                 return true;
+            case Key.F12:
+            ViewModel?.ResetEmu.Execute().Subscribe();
+            return true;
+
         }
         if ((e.KeyModifiers & KeyModifiers.Control) != 0 && (e.KeyModifiers & KeyModifiers.Shift) != 0 && e.Key == Key.D2)
         {
             _machine?.EnqueueKey(0x00);
             e.Handled = true;
-            return true;
-        }
-        if (e.Key == Key.F12 && (e.KeyModifiers & KeyModifiers.Control) != 0)
-        {
-            ViewModel?.ResetEmu.Execute().Subscribe();
             return true;
         }
         return false;
