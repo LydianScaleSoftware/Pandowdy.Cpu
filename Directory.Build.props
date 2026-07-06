@@ -9,7 +9,7 @@
     <Authors>Mark D. Long</Authors>
     <Company>Lydian Scale Software</Company>
     <Product>Pandowdy.Cpu</Product>
-    <Copyright>Copyright 2025 Mark D. Long</Copyright>
+    <Copyright>Copyright 2026 Lydian Scale Software</Copyright>
     <Description>A cycle-accurate 6502/65C02 CPU emulator for .NET. Pure C# implementation with no external dependencies.</Description>
     <PackageTags>6502;65C02;emulator;cpu;retro;8-bit;cycle-accurate</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>

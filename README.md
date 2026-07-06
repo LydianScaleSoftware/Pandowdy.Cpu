@@ -124,4 +124,4 @@ Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for detai
 
 ## Author
 
-Copyright 2026 Mark D. Long
+Copyright 2026 Lydian Scale Software (Mark D. Long)

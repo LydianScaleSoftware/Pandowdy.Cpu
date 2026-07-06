@@ -1,4 +1,4 @@
-// Copyright 2026 Mark D. Long
+// Copyright 2026 Lydian Scale Software
 // Licensed under the Apache License, Version 2.0
 // See LICENSE file for details
 
